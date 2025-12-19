@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Projects - LeDeuxions.com</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f5f7;
+            color: #333;
+        }
+
+        .header {
+            background-color: #fff;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .header h1 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 3rem;
+            margin: 0;
+            color: #222;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 700px;
+            margin: 10px auto 0;
+            line-height: 1.7;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 30px;
+        }
+
+        .project-card {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .card-content {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-content h2 {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            color: #111;
+        }
+
+        .card-content p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #555;
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+
+        .card-footer {
+            padding: 25px;
+            background-color: #fcfcfc;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .card-footer .btn {
+            display: block;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .card-footer .btn:hover {
+            background-color: #000;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #888;
+            border-top: 1px solid #e0e0e0;
+        }
+        footer a {
+            color: #555;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>Web Projects & Utilities</h1>
+        <p>일상의 필요와 업무의 효율을 위해 만든 실용적인 웹 도구 모음입니다. 각 카드를 클릭하여 해당 서비스로 이동할 수 있습니다.</p>
+    </header>
+
+    <main class="project-grid">
+        <div class="project-card">
+            <div class="card-content">
+                <h2>PDF 300 Service</h2>
+                <p>다양한 PDF 관련 작업을 웹에서 간편하게 처리하는 서비스입니다. PDF 파일 압축, 변환, 병합 등의 기능을 제공합니다.</p>
+            </div>
+            <div class="card-footer">
+                <a href="/web-projects/pdf300/" class="btn">서비스 바로가기</a>
+            </div>
+        </div>
+
+        <div class="project-card">
+            <div class="card-content">
+                <h2>Stamp Maker</h2>
+                <p>개인 또는 법인용 디지털 도장을 생성하는 도구입니다. 다양한 스타일의 도장을 간편하게 만들고 다운로드할 수 있습니다.</p>
+            </div>
+            <div class="card-footer">
+                <a href="/web-projects/stamp/" class="btn">서비스 바로가기</a>
+            </div>
+        </div>
+
+        <div class="project-card">
+            <div class="card-content">
+                <h2>Free Comfort Lab</h2>
+                <p>오디오 및 비디오 파일 변환 등 일상에서 필요한 미디어 관련 유틸리티를 제공하는 실험적인 프로젝트입니다.</p>
+            </div>
+            <div class="card-footer">
+                <a href="/web-projects/freecomfortlab/" class="btn">서비스 바로가기</a>
+            </div>
+        </div>
+        
+        <!-- 향후 프로젝트 추가를 위한 예시 카드 -->
+        <div class="project-card">
+            <div class="card-content">
+                <h2>More Projects</h2>
+                <p>더 많은 유용한 도구들이 준비 중입니다. 지속적으로 업데이트될 예정이니 기대해주세요.</p>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn" style="background-color: #888; cursor: not-allowed;">준비 중</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p><a href="/">© 2025 LeDeuxions</a></p>
+    </footer>
+
+</body>
+</html>
