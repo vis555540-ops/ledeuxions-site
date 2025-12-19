@@ -47,12 +47,8 @@
             z-index: 5;
             text-shadow: 0 2px 12px rgba(0,0,0,0.8);
             pointer-events: none;
-            transition: opacity .5s;
+            opacity: 0; /* Always hide main title */
             white-space: nowrap;
-        }
-
-        body:has(.trigger-zone:hover) .main-title {
-            opacity: 0;
         }
 
         /* ================= CURTAINS ================= */
@@ -65,29 +61,27 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
             overflow: hidden;
         }
 
         .curtain-layer.left {
             left: 0;
             background: rgba(43,10,10,.92);
-            transform: translateX(-100%);
+            transform: translateX(0); /* Always open */
             color: #f0f0f0;
         }
 
         .curtain-layer.right {
             right: 0;
             background: rgba(255,255,255,.92);
-            transform: translateX(100%);
+            transform: translateX(0); /* Always open */
             color: #111;
         }
 
         .content-box {
             text-align: center;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity .5s ease .4s, transform .5s ease .4s;
+            opacity: 1; /* Always visible */
+            transform: translateY(0); /* Always visible */
             padding: 0 10vw;
         }
 
@@ -140,37 +134,6 @@
             color: #fff;
         }
 
-        /* ================= TRIGGER ================= */
-        .trigger-zone {
-            position: absolute;
-            top: 0;
-            width: 25%;
-            height: 100%;
-            z-index: 50;
-            cursor: pointer;
-        }
-
-        .trigger-zone.left { left: 0; }
-        .trigger-zone.right { right: 0; }
-
-        body:has(.trigger-zone.left:hover) .curtain-layer.left {
-            transform: translateX(0);
-        }
-
-        body:has(.trigger-zone.left:hover) .curtain-layer.left .content-box {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        body:has(.trigger-zone.right:hover) .curtain-layer.right {
-            transform: translateX(0);
-        }
-
-        body:has(.trigger-zone.right:hover) .curtain-layer.right .content-box {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
         /* ================= ABOUT ================= */
         .about-section {
             max-width: 900px;
@@ -213,9 +176,6 @@
         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjcpXJX6l9KdYjCVoVeHydFlFNhyphenhyphendvBemFHNxSERnA0OovUmZ69wSApZfYUkcvIg7JmcGnSYma9sK-gz8rLwhOGV1ePidhKIrVvX_zZn4KPw7jN-r0hNWLFztmKVWkQVd6IWjJdAywBmwLLFjSAyXlWTxGIMOQO3nqZtHw8VUglm4YEB_HY71k0SaLgnHn_/s1536/%EB%82%98%EC%95%84%EB%B9%A0%EC%97%84%EB%A7%88%EB%8F%99%EC%83%9D.png" class="anchor-img" alt="">
         <h1 class="main-title">LEDEUXIONS</h1>
     </div>
-
-    <div class="trigger-zone left"></div>
-    <div class="trigger-zone right"></div>
 
     <div class="curtain-layer left">
         <div class="content-box">
