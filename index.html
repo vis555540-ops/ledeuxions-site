@@ -4,61 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LeDeuxions: The Clear Vision</title>
+
     <style>
-        /* * Directed by Robert McKee 
-         * Scene 6: "Clarity within Depth"
-         */
-        
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400&family=Noto+Sans+KR:wght@300;500;700&display=swap');
 
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
-            /* height: 100%; -> 스크롤을 위해 제거 */
-            /* overflow: hidden; -> 스크롤을 위해 제거 */
             background-color: #f0f0f0;
         }
 
-        /* --- Main Visual Area --- */
+        /* ================= MAIN VISUAL ================= */
         .main-visual {
             position: relative;
             width: 100%;
-            height: 100vh; /* 화면 높이를 100% 채우는 영역 */
-            overflow: hidden; /* 이 영역 안에서는 스크롤 없음 */
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* --- LAYER 0: THE GROUND (Family Drawing) --- */
         .background-anchor {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            inset: 0;
             z-index: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         .anchor-img {
-            width: 100%; 
+            width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        /* --- THE MAIN TITLE (Between Mom & Daughter) --- */
         .main-title {
             position: absolute;
-            top: 48%; 
+            top: 48%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-family: 'Cinzel', serif;
-            font-size: 1.8rem;
+            font-size: 2rem;
             letter-spacing: 3px;
-            color: #ffffff;
+            color: #fff;
             z-index: 5;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 12px rgba(0,0,0,0.8);
             pointer-events: none;
-            transition: opacity 0.5s;
+            transition: opacity .5s;
             white-space: nowrap;
         }
 
@@ -66,83 +55,66 @@
             opacity: 0;
         }
 
-        /* --- LAYER 1: THE CURTAINS (Solid & Classy) --- */
+        /* ================= CURTAINS ================= */
         .curtain-layer {
             position: absolute;
             top: 0;
             width: 50%;
             height: 100%;
             z-index: 10;
-            transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
+            transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
             overflow: hidden;
         }
 
         .curtain-layer.left {
             left: 0;
-            background-color: rgba(43, 10, 10, 0.92); 
+            background: rgba(43,10,10,.92);
             transform: translateX(-100%);
             color: #f0f0f0;
-        }
-        
-        .curtain-layer.left::before {
-            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
-            background: url('https://blogger.googleusercontent.com/img/a/AVvXsEgQp9HReNF97UAAm3MKsJl93L7xIhmKTXxuA7Fud2fuaCcizrjWmDe00o9-bEipE8503NURQI9C2Vhs91L6zORRDbJwUHRBFQZkT4hqTfbj48oX1EwAZmwVZvpDXQdOL0cZRx_lgBWSyFvKtKA2urgMY-RFA_lQvghR7FV71qixSB2nnv3ZB3HBIRIhWMHf');
-            background-size: cover;
-            opacity: 0.2;
-            mix-blend-mode: overlay;
         }
 
         .curtain-layer.right {
             right: 0;
-            background-color: rgba(255, 255, 255, 0.92); 
+            background: rgba(255,255,255,.92);
             transform: translateX(100%);
             color: #111;
         }
 
-        .curtain-layer.right::before {
-            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIg6BLVsRZYZX5tyiVinHbav_QLMxG2ESxOOvCi-X3t6mCK1zNyK8SQU2R1N803clNMoAJnQtv1x7WYagn20hAvPXgB-okPABfGrdcycZJ7nZcGQJgXsTXiBbP2iegWCFD5RpzL6dMEDiTBMyI9Pgy7awqdou9GEGcHcixot7MnFGYC-K4V-9no-kqiWnc/s640/%EC%9B%B9%EC%82%AC%EC%9D%B4%ED%8A%B8%20%EC%88%98%EC%A0%95.png') top center;
-            background-size: cover;
-            opacity: 0.1;
-        }
-
-        /* --- CONTENT TYPOGRAPHY --- */
         .content-box {
-            position: relative;
-            z-index: 20;
             text-align: center;
             opacity: 0;
             transform: translateY(10px);
-            transition: opacity 0.5s ease 0.5s, transform 0.5s ease 0.5s;
+            transition: opacity .5s ease .4s, transform .5s ease .4s;
             padding: 0 10vw;
         }
 
         h2 {
             font-family: 'Cinzel', serif;
             font-size: 2.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             border-bottom: 1px solid currentColor;
-            padding-bottom: 10px;
             display: inline-block;
+            padding-bottom: 8px;
         }
-        .curtain-layer.right h2 { font-family: 'Oswald', sans-serif; letter-spacing: -1px; }
+
+        .curtain-layer.right h2 {
+            font-family: 'Oswald', sans-serif;
+        }
 
         p {
             font-family: 'Noto Sans KR', sans-serif;
             font-size: 1.1rem;
             line-height: 1.8;
-            margin-bottom: 3rem;
-            font-weight: 500;
+            margin-bottom: 2.5rem;
         }
 
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 14px;
             align-items: center;
         }
 
@@ -152,15 +124,23 @@
             text-decoration: none;
             color: inherit;
             font-family: 'Oswald', sans-serif;
-            text-transform: uppercase;
             letter-spacing: 1px;
-            transition: all 0.3s;
-            width: 200px;
+            width: 220px;
+            transition: all .3s;
         }
-        
-        .curtain-layer.left .nav-btn:hover { background: #fff; color: #2b0a0a; font-weight: bold; }
-        .curtain-layer.right .nav-btn:hover { background: #000; color: #fff; }
 
+        .curtain-layer.left .nav-btn:hover {
+            background: #fff;
+            color: #2b0a0a;
+            font-weight: bold;
+        }
+
+        .curtain-layer.right .nav-btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        /* ================= TRIGGER ================= */
         .trigger-zone {
             position: absolute;
             top: 0;
@@ -169,130 +149,121 @@
             z-index: 50;
             cursor: pointer;
         }
+
         .trigger-zone.left { left: 0; }
         .trigger-zone.right { right: 0; }
 
-        body:has(.trigger-zone.left:hover) .curtain-layer.left { transform: translateX(0); }
-        body:has(.trigger-zone.left:hover) .curtain-layer.left .content-box { opacity: 1; transform: translateY(0); }
+        body:has(.trigger-zone.left:hover) .curtain-layer.left {
+            transform: translateX(0);
+        }
 
-        body:has(.trigger-zone.right:hover) .curtain-layer.right { transform: translateX(0); }
-        body:has(.trigger-zone.right:hover) .curtain-layer.right .content-box { opacity: 1; transform: translateY(0); }
+        body:has(.trigger-zone.left:hover) .curtain-layer.left .content-box {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-        /* --- Scrollable Content Section --- */
+        body:has(.trigger-zone.right:hover) .curtain-layer.right {
+            transform: translateX(0);
+        }
+
+        body:has(.trigger-zone.right:hover) .curtain-layer.right .content-box {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ================= ABOUT ================= */
         .about-section {
-            padding: 50px 20px;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background-color: #ffffff;
+            padding: 60px 20px;
+            background: #fff;
             font-family: 'Noto Sans KR', sans-serif;
-            color: #333;
             line-height: 1.8;
         }
+
         .about-section h2 {
             font-family: 'Oswald', sans-serif;
-            font-size: 2rem;
             border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .about-section h3 {
-            font-family: 'Oswald', sans-serif;
-            font-size: 1.5rem;
-            margin-top: 30px;
-        }
-        .about-section p {
-            font-size: 1rem;
-            margin-bottom: 1rem;
         }
 
-        /* --- Footer --- */
+        /* ================= FOOTER ================= */
         footer {
-            /* position: absolute; bottom: 0; -> 스크롤 위해 제거 */
-            width: 100%;
-            z-index: 1;
             text-align: center;
-            padding: 20px 0;
-            font-family: sans-serif;
-            font-size: 14px;
-            color: #555;
-            background-color: #f0f0f0;
+            padding: 25px 0;
+            background: #f0f0f0;
             border-top: 1px solid #ddd;
-        }
-        footer p {
-            margin: 0 0 10px 0;
             font-size: 14px;
-            line-height: 1.5;
         }
+
         footer a {
             color: #333;
             text-decoration: none;
         }
+
         footer a:hover {
             text-decoration: underline;
         }
-
     </style>
 </head>
+
 <body>
 
-    <div class="main-visual">
-        <div class="background-anchor">
-            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjcpXJX6l9KdYjCVoVeHydFlFNhyphenhyphendvBemFHNxSERnA0OovUmZ69wSApZfYUkcvIg7JmcGnSYma9sK-gz8rLwhOGV1ePidhKIrVvX_zZn4KPw7jN-r0hNWLFztmKVWkQVd6IWjJdAywBmwLLFjSAyXlWTxGIMOQO3nqZtHw8VUglm4YEB_HY71k0SaLgnHn_/s1536/%EB%82%98%EC%95%84%EB%B9%A0%EC%97%84%EB%A7%88%EB%8F%99%EC%83%9D.png" alt="Family" class="anchor-img">
-            <h1 class="main-title">LeDeuxions's World</h1>
-        </div>
+<div class="main-visual">
+    <div class="background-anchor">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjcpXJX6l9KdYjCVoVeHydFlFNhyphenhyphendvBemFHNxSERnA0OovUmZ69wSApZfYUkcvIg7JmcGnSYma9sK-gz8rLwhOGV1ePidhKIrVvX_zZn4KPw7jN-r0hNWLFztmKVWkQVd6IWjJdAywBmwLLFjSAyXlWTxGIMOQO3nqZtHw8VUglm4YEB_HY71k0SaLgnHn_/s1536/%EB%82%98%EC%95%84%EB%B9%A0%EC%97%84%EB%A7%88%EB%8F%99%EC%83%9D.png" class="anchor-img" alt="">
+        <h1 class="main-title">LEDEUXIONS</h1>
+    </div>
 
-        <div class="trigger-zone left" title="Art & Thoughts"></div>
-        <div class="trigger-zone right" title="Work & Projects"></div>
+    <div class="trigger-zone left"></div>
+    <div class="trigger-zone right"></div>
 
-        <div class="curtain-layer left">
-            <div class="content-box">
-                <h2>LeDeuxions</h2>
-                <p>
-                    "고통을 외면하지 않는 시선.<br>
-                    상처난 벽에 빛을 설계합니다."
-                </p>
-                <div class="btn-group">
-                    <a href="https://ledeuxions-column.blogspot.com/" class="nav-btn" target="_blank">Artworks</a>
-                    <a href="https://ledeuxions-column.blogspot.com/" class="nav-btn" target="_blank">Philosophy</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="curtain-layer right">
-            <div class="content-box">
-                <h2>Father's Room</h2>
-                <p>
-                    "가족을 지키는 현실의 건축.<br>
-                    단단하고 유용한 도구들을 만듭니다."
-                </p>
-                <div class="btn-group">
-                    <a href="/work/index.html" class="nav-btn">Web Projects</a>
-                    <a href="#" class="nav-btn">Applications</a>
-                    <a href="#" class="nav-btn" style="border:none; border-bottom:1px solid; width:auto; padding:5px;">More History >></a>
-                </div>
+    <div class="curtain-layer left">
+        <div class="content-box">
+            <h2>LeDeuxions</h2>
+            <p>
+                고통을 외면하지 않는 시선.<br>
+                상처 난 벽에 빛을 설계합니다.
+            </p>
+            <div class="btn-group">
+                <a href="https://ledeuxions-column.blogspot.com/" target="_blank" class="nav-btn">Artworks</a>
+                <a href="https://ledeuxions-column.blogspot.com/" target="_blank" class="nav-btn">Philosophy</a>
             </div>
         </div>
     </div>
 
-    <div class="about-section">
-        <h2>About LeDeuxions.com</h2>
-        <p>LeDeuxions.com은 개인 개발자가 운영하는 디지털 아카이브이자 웹 유틸리티 작업 공간입니다. 이곳은 창작 과정에서 발생한 아이디어를 실험하고, 일상 속에서 마주한 문제들을 해결하기 위해 직접 만든 도구들을 기록하고 공유하는 공간입니다. 단순히 광고 수익을 목적으로 양산된 서비스가 아닌, 실제 필요에 의해 탄생하고 꾸준히 사용되는 프로젝트들을 담고자 합니다.</p>
-        <p>이 웹사이트는 화려한 디자인이나 복잡한 기능보다는, 빠르고 직관적으로 핵심 기능에 집중할 수 있는 도구들을 제공하는 것을 목표로 합니다. 모든 프로젝트는 개인적인 호기심과 실용적인 필요에서 출발했으며, 그 결과물이 누군가에게도 도움이 되기를 바랍니다.</p>
-        
-        <h3>두 갈래의 작업: LeDeuxions와 현실의 기록</h3>
-        <p>이곳의 프로젝트들은 크게 두 가지 성격으로 나뉩니다. 하나는 'LeDeuxions'라는 이름 아래 진행되는 개념적이고 실험적인 작업들입니다. 이는 정체성에 대한 탐구나 예술적 표현의 일환으로, 실용성보다는 아이디어 자체에 중점을 둡니다.</p>
-        <p>다른 하나는 현실의 필요에 의해 만들어진 실용적인 도구들입니다. 한 명의 '아빠'이자 생활인으로서 마주하는 구체적인 문제들(문서 변환, 파일 처리 등)을 해결하기 위해 탄생한 결과물입니다. 이 작업들은 명확한 목적을 가지며, 효율성과 편리함을 최우선으로 고려합니다.</p>
-        <p>LeDeuxions.com은 이처럼 한 명의 창작자가 지닌 두 가지 다른 면모—이상적 탐구와 현실적 해결—를 모두 담아내는 통합 아카이브입니다. 성격은 다르지만, 모든 프로젝트는 창작의 과정이라는 하나의 뿌리에서 시작되었기에 이 공간에 함께 기록됩니다.</p>
+    <div class="curtain-layer right">
+        <div class="content-box">
+            <h2>Father's Room</h2>
+            <p>
+                가족을 지키는 현실의 건축.<br>
+                단단하고 유용한 도구들.
+            </p>
+            <div class="btn-group">
+                <a href="/work/" class="nav-btn">Web Projects</a>
+                <a href="/applications/" class="nav-btn">Applications</a>
+                <a href="/history/" class="nav-btn" style="border:none;border-bottom:1px solid;width:auto;">More History &gt;&gt;</a>
+            </div>
+        </div>
     </div>
+</div>
 
-    <footer>
-        <p>
-            <a href="/privacy/index.html">Privacy Policy</a> |
-            <a href="/terms/index.html">Terms of Service</a> |
-            <a href="/contact/index.html">Contact</a>
-        </p>
-        <p>© 2025 LeDeuxions</p>
-    </footer>
+<div class="about-section">
+    <h2>About LeDeuxions</h2>
+    <p>
+        LeDeuxions.com은 개인 창작자이자 아버지인 개발자의
+        기록 공간이자 실험실입니다.
+    </p>
+</div>
+
+<footer>
+    <p>
+        <a href="/privacy/">Privacy</a> |
+        <a href="/terms/">Terms</a> |
+        <a href="/contact/">Contact</a>
+    </p>
+    <p>© 2025 LeDeuxions</p>
+</footer>
 
 </body>
 </html>
+EOF
