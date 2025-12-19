@@ -1,0 +1,441 @@
+<section>
+<h1>PDF300</h1>
+<p>PDF300은 PDF 파일을 변환하고 처리하기 위한 웹 기반 유틸리티 도구입니다.</p>
+<p>별도의 설치 없이 브라우저에서 바로 사용할 수 있으며, 일상적인 문서 작업의 효율을 높이는 것을 목표로 합니다.</p>
+</section>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF300 | 공공기관 제출용 전문 압축 솔루션</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1e40af;
+            --bg-color: #F8FAFC;
+            --surface: #FFFFFF;
+            --text-main: #1E293B;
+            --text-sub: #64748B;
+            --border: #E2E8F0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .header-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo i { font-size: 1.8rem; }
+        .tagline {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .intro-text { text-align: center; margin-bottom: 40px; }
+        .intro-text h2 { font-size: 2rem; margin-bottom: 10px; }
+        .intro-text p { color: var(--text-sub); }
+
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        .step-badge {
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 12px;
+        }
+        .section-title { font-size: 1.1rem; font-weight: 700; }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .radio-card { position: relative; }
+        .radio-card input[type="radio"] { position: absolute; opacity: 0; cursor: pointer; }
+        .radio-card label {
+            display: block;
+            padding: 20px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            height: 100%;
+        }
+        .radio-card label:hover { border-color: #93c5fd; background: #eff6ff; }
+        .radio-card input[type="radio"]:checked + label {
+            border-color: var(--primary);
+            background: #eff6ff;
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+        .opt-title { font-weight: 700; margin-bottom: 5px; }
+        .opt-desc { font-size: 0.85rem; color: var(--text-sub); }
+        .icon-check {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .radio-card input[type="radio"]:checked + label .icon-check { opacity: 1; }
+
+        .details-panel {
+            margin-top: 15px;
+            padding: 20px;
+            background: #F1F5F9;
+            border-radius: 8px;
+            display: none;
+        }
+        .details-panel.active { display: block; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px);} to {opacity:1;transform:translateY(0);} }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; }
+        .form-input {
+            width: 100%; padding: 10px 12px;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px; font-size: 1rem;
+        }
+
+        .upload-zone {
+            border: 2px dashed #94A3B8;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #F8FAFC;
+        }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background:#EFF6FF; }
+        .upload-icon { font-size: 3rem; color: #94A3B8; margin-bottom: 15px; }
+        .upload-text { font-weight: 600; margin-bottom: 5px; }
+        .upload-sub { font-size: 0.85rem; color: var(--text-sub); }
+        #fileInput { display:none; }
+        .file-info { margin-top:15px;font-weight:bold;color:var(--primary);display:none; }
+
+        .submit-btn {
+            width: 100%; padding: 18px;
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white; border: none; border-radius: 8px;
+            font-size: 1.1rem; font-weight: 700; cursor:pointer;
+            box-shadow:0 4px 6px rgba(37,99,235,0.2);
+        }
+
+        .overlay {
+            position: fixed; top:0;left:0;width:100%;height:100%;
+            background:rgba(255,255,255,0.9);
+            display:flex;flex-direction:column;justify-content:center;align-items:center;
+            z-index:1000; display:none;
+        }
+        .spinner {
+            width: 50px; height:50px;
+            border:5px solid #f3f3f3;
+            border-top:5px solid var(--primary);
+            border-radius:50%;
+            animation: spin 1s linear infinite;
+            margin-bottom:20px;
+        }
+        @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-container">
+        <div class="logo">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span>PDF300</span>
+        </div>
+        <div class="tagline">공공기관 제출용 PDF 최적화 솔루션</div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="intro-text">
+        <h2>용량 제한 때문에 고민이신가요?</h2>
+        <p>나라장터, e-나라도움 등 제출 규격에 맞춰 정확하게 압축해드립니다.</p>
+    </div>
+
+    <form id="uploadForm">
+
+        <!-- 1단계 -->
+        <div class="card">
+            <div class="section-header">
+                <div class="step-badge">1</div>
+                <div class="section-title">제출 기관 선택</div>
+            </div>
+
+            <div class="options-grid">
+                <div class="radio-card">
+                    <input type="radio" name="target_mode" id="mode_g2b" value="g2b_300" checked>
+                    <label for="mode_g2b">
+                        <i class="fa-solid fa-check icon-check"></i>
+                        <span class="opt-title">나라장터</span>
+                        <span class="opt-desc">최대 300MB</span>
+                    </label>
+                </div>
+                <div class="radio-card">
+                    <input type="radio" name="target_mode" id="mode_enara" value="enara_500">
+                    <label for="mode_enara">
+                        <i class="fa-solid fa-check icon-check"></i>
+                        <span class="opt-title">e-나라도움</span>
+                        <span class="opt-desc">최대 500MB</span>
+                    </label>
+                </div>
+                <div class="radio-card">
+                    <input type="radio" name="target_mode" id="mode_custom" value="custom">
+                    <label for="mode_custom">
+                        <i class="fa-solid fa-check icon-check"></i>
+                        <span class="opt-title">직접 입력</span>
+                        <span class="opt-desc">원하는 용량 지정</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="customPanel" class="details-panel">
+                <div class="input-group">
+                    <label>목표 용량 (MB)</label>
+                    <input type="number" name="custom_target_mb" class="form-input" placeholder="예: 50" min="1">
+                </div>
+            </div>
+        </div>
+
+        <!-- 2단계 -->
+        <div class="card">
+            <div class="section-header">
+                <div class="step-badge">2</div>
+                <div class="section-title">압축 방식 선택</div>
+            </div>
+
+            <div class="options-grid">
+                <div class="radio-card">
+                    <input type="radio" name="quality_mode" id="q_auto" value="auto" checked>
+                    <label for="q_auto">
+                        <i class="fa-solid fa-check icon-check"></i>
+                        <span class="opt-title">스마트 자동</span>
+                        <span class="opt-desc">품질/용량 자동 최적화</span>
+                    </label>
+                </div>
+                <div class="radio-card">
+                    <input type="radio" name="quality_mode" id="q_strong" value="strong">
+                    <label for="q_strong">
+                        <i class="fa-solid fa-check icon-check"></i>
+                        <span class="opt-title">강력 압축</span>
+                        <span class="opt-desc">용량 우선</span>
+                    </label>
+                </div>
+                <div class="radio-card">
+                    <input type="radio" name="quality_mode" id="q_expert" value="expert">
+                    <label for="q_expert">
+                        <i class="fa-solid fa-check icon-check"></i>
+                        <span class="opt-title">전문가 설정</span>
+                        <span class="opt-desc">DPI / JPEG 품질 제어</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="expertPanel" class="details-panel">
+                <div class="input-group">
+                    <label>해상도 (DPI)</label>
+                    <select name="expert_dpi" class="form-input">
+                        <option value="72">72 DPI</option>
+                        <option value="150" selected>150 DPI</option>
+                        <option value="300">300 DPI</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>JPEG 품질 (10~95)</label>
+                    <input type="number" name="expert_quality" class="form-input" value="70">
+                </div>
+                <div style="margin-top:10px;">
+                    <input type="checkbox" name="strip_metadata" id="stripMeta" value="true">
+                    <label for="stripMeta" style="display:inline;margin-left:5px;">메타데이터 제거</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3단계 -->
+        <div class="card">
+            <div class="section-header">
+                <div class="step-badge">3</div>
+                <div class="section-title">PDF 업로드</div>
+            </div>
+
+            <div class="upload-zone" id="dropZone">
+                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <div class="upload-text">클릭 또는 드래그하여 파일 선택</div>
+                <div class="upload-sub">PDF 파일만 가능 (최대 1GB)</div>
+                <input type="file" name="file" id="fileInput" accept=".pdf" required>
+                <div class="file-info" id="fileInfo"></div>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">
+            <i class="fa-solid fa-bolt"></i> 압축 시작하기
+        </button>
+    </form>
+</div>
+
+<div class="overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <h3>파일 분석 및 압축 중...</h3>
+    <p style="color:#666;margin-top:10px;">파일 크기에 따라 시간이 걸릴 수 있습니다.</p>
+</div>
+
+<script>
+    const targetRadios = document.querySelectorAll('input[name="target_mode"]');
+    const customPanel = document.getElementById('customPanel');
+
+    targetRadios.forEach(radio => {
+        radio.addEventListener('change', e => {
+            if (e.target.value === 'custom') customPanel.classList.add('active');
+            else customPanel.classList.remove('active');
+        });
+    });
+
+    const qualityRadios = document.querySelectorAll('input[name="quality_mode"]');
+    const expertPanel = document.getElementById('expertPanel');
+
+    qualityRadios.forEach(radio => {
+        radio.addEventListener('change', e => {
+            if (e.target.value === 'expert') expertPanel.classList.add('active');
+            else expertPanel.classList.remove('active');
+        });
+    });
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            updateFileInfo(e.dataTransfer.files[0]);
+        }
+    });
+    fileInput.addEventListener('change', (e) => {
+        if (fileInput.files.length) updateFileInfo(fileInput.files[0]);
+    });
+
+    function updateFileInfo(file) {
+        fileInfo.style.display = 'block';
+        fileInfo.textContent = `선택된 파일: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
+    }
+
+    // 제출 처리
+    const form = document.getElementById('uploadForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!fileInput.files.length) {
+            alert('PDF 파일을 선택하세요.');
+            return;
+        }
+
+        // custom 용량 검증
+        const targetValue = document.querySelector('input[name="target_mode"]:checked').value;
+        if (targetValue === 'custom') {
+            const customVal = document.querySelector('input[name="custom_target_mb"]').value;
+            if (!customVal || Number(customVal) <= 0) {
+                alert('직접 입력 용량(MB)을 올바르게 입력하세요.');
+                return;
+            }
+        }
+
+        loadingOverlay.style.display = 'flex';
+
+        const formData = new FormData(form);
+
+        try {
+            // 백엔드 API
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                alert('압축 완료! 파일을 다운로드합니다.');
+                window.location.href = result.download_url;
+            } else {
+                alert('압축 중 오류 발생. 서버 상태를 확인해주세요.');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('네트워크 오류가 발생했습니다.');
+        } finally {
+            loadingOverlay.style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>
+

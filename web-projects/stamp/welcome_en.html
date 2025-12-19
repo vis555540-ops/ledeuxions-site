@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="naver-site-verification" content="67407c86256b78a687de37b03a945eda2e4b64c7" />
+  <title>도장 PNG 추출기 | 작업하기</title>
+  <meta name="description" content="도장 사진을 올리면 배경을 제거하고 투명 PNG로 추출해주는 도구입니다." />
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
+       crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 작업 페이지 전용 스타일 */
+    .work-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 968px) {
+      .work-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .work-panel {
+      background: var(--bg-white);
+      border-radius: 8px;
+      padding: 24px;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-md);
+    }
+
+    .work-panel h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+      border-bottom: none;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .file-input-label {
+      display: block;
+      padding: 48px 24px;
+      border: 2px dashed var(--border-medium);
+      border-radius: 8px;
+      text-align: center;
+      background: var(--bg-main);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-input-label:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .file-input-label.has-file {
+      border-color: var(--success);
+      background: #d4edda;
+    }
+
+    .file-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .file-input-label strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .file-input-label small {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .file-info {
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--primary-light);
+      border-radius: 4px;
+      font-size: 13px;
+      color: var(--primary);
+      display: none;
+    }
+
+    .file-info.active {
+      display: block;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .button-group .btn {
+      flex: 1;
+    }
+
+    .status-box {
+      padding: 12px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-box.idle {
+      background: var(--bg-main);
+      color: var(--text-secondary);
+    }
+
+    .status-box.working {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .status-box.success {
+      background: #d4edda;
+      color: var(--success);
+    }
+
+    .status-box.error {
+      background: #f8d7da;
+      color: var(--error);
+    }
+
+    .status-icon {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-icon.pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .preview-box {
+      background: var(--bg-main);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 24px;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .preview-box canvas {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 4px;
+      box-shadow: var(--shadow-sm);
+      background:
+        linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+
+    .preview-placeholder {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .preview-meta {
+      margin-top: 16px;
+      padding: 12px;
+      background: var(--bg-white);
+      border-radius: 4px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: none;
+    }
+
+    .preview-meta.active {
+      display: block;
+    }
+
+    .preview-meta div {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .guide-box {
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+
+    .guide-box h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+
+    .guide-box ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .guide-box li {
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index_en.html" class="logo">도장 PNG 추출기</a>
+      <div class="nav-links">
+        <a href="welcome.html">도장 작업하기</a>
+        <a href="welcome.html">PNG 추출</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="hero" style="margin-bottom: 32px; padding: 32px;">
+      <h1 style="font-size: 28px;">도장 PNG 추출 작업</h1>
+      <p>도장 사진을 업로드하면 자동으로 배경을 제거하고 투명 PNG로 변환합니다</p>
+    </div>
+
+    <div class="work-container">
+      <!-- 왼쪽: 업로드 및 제어 -->
+      <div>
+        <div class="work-panel">
+          <h2>1. 도장 사진 선택</h2>
+
+          <div class="file-input-wrapper">
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            <label for="fileInput" id="uploadLabel" class="file-input-label">
+              <div class="file-icon">📁</div>
+              <strong>클릭하여 Choose File</strong>
+              <small>JPG, PNG 형식 (최대 10MB 권장)</small>
+            </label>
+          </div>
+
+          <div id="fileInfo" class="file-info"></div>
+
+          <h2 style="margin-top: 24px;">2. 배경 제거 실행</h2>
+
+          <div class="button-group">
+            <button id="extractBtn" class="btn btn-success">
+              🎯 도장 추출하기
+            </button>
+            <button id="resetBtn" class="btn btn-secondary">
+              🔄 초기화
+            </button>
+          </div>
+
+          <div id="statusBox" class="status-box idle">
+            <span class="status-icon"></span>
+            <span id="statusText">파일을 선택해 주세요</span>
+          </div>
+        </div>
+
+        <!-- 가이드 박스 -->
+        <div class="guide-box">
+          <h3>💡 좋은 결과를 위한 팁</h3>
+          <ul>
+            <li>A4 흰 종이에 도장을 크게 찍어 주세요</li>
+            <li>그림자와 반사가 없도록 조명에 주의하세요</li>
+            <li>정면에서 수직으로 촬영해 주세요</li>
+            <li>빨간색 도장이 가장 잘 인식됩니다</li>
+          </ul>
+        </div>
+
+        <!-- 광고 영역 1 -->
+        <div style="margin-top: 24px; text-align: center;">
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-2824624880449066"
+               data-ad-slot="1234567890"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>
+               (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 미리보기 -->
+      <div>
+        <div class="work-panel">
+          <h2>3. 결과 미리보기</h2>
+
+          <div class="preview-box">
+            <canvas id="resultCanvas"></canvas>
+            <div id="previewPlaceholder" class="preview-placeholder">
+              <div style="font-size: 48px; margin-bottom: 12px;">🖼️</div>
+              <p>처리된 도장 이미지가<br />여기에 표시됩니다</p>
+            </div>
+          </div>
+
+          <div id="previewMeta" class="preview-meta">
+            <div>
+              <span>해상도:</span>
+              <span id="metaResolution">-</span>
+            </div>
+            <div>
+              <span>파일 크기:</span>
+              <span id="metaSize">-</span>
+            </div>
+          </div>
+
+          <h2 style="margin-top: 24px;">4. Download</h2>
+
+          <button id="downloadBtn" class="btn btn-block" disabled>
+            💾 PNG 파일 Download
+          </button>
+
+          <!-- 광고 영역 2 (결과 하단) -->
+          <div style="margin-top: 24px; text-align: center;">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-2824624880449066"
+                 data-ad-slot="9876543210"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 광고 영역 3 (하단 전체 너비) -->
+    <div style="margin-top: 32px; text-align: center;">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-2824624880449066"
+           data-ad-slot="5555555555"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+           (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 도장 PNG 추출기 · FreeComfortLab 실험 프로젝트</p>
+    <p><a href="index_en.html">Home Back</a></p>
+  </footer>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const uploadLabel = document.getElementById('uploadLabel');
+    const fileInfo = document.getElementById('fileInfo');
+    const extractBtn = document.getElementById('extractBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusBox = document.getElementById('statusBox');
+    const statusText = document.getElementById('statusText');
+    const resultCanvas = document.getElementById('resultCanvas');
+    const previewPlaceholder = document.getElementById('previewPlaceholder');
+    const previewMeta = document.getElementById('previewMeta');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const metaResolution = document.getElementById('metaResolution');
+    const metaSize = document.getElementById('metaSize');
+
+    let selectedFile = null;
+
+    function setStatus(type, text) {
+      statusBox.className = `status-box ${type}`;
+      statusText.textContent = text;
+
+      const icon = statusBox.querySelector('.status-icon');
+      if (type === 'working') {
+        icon.classList.add('pulse');
+      } else {
+        icon.classList.remove('pulse');
+      }
+    }
+
+    function resetUI() {
+      selectedFile = null;
+      fileInput.value = '';
+      uploadLabel.classList.remove('has-file');
+      uploadLabel.innerHTML = `
+        <div class="file-icon">📁</div>
+        <strong>클릭하여 Choose File</strong>
+        <small>JPG, PNG 형식 (최대 10MB 권장)</small>
+      `;
+      fileInfo.classList.remove('active');
+      fileInfo.textContent = '';
+      setStatus('idle', '파일을 선택해 주세요');
+      downloadBtn.disabled = true;
+      previewPlaceholder.style.display = 'block';
+      previewMeta.classList.remove('active');
+      const ctx = resultCanvas.getContext('2d');
+      ctx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+    }
+
+    fileInput.addEventListener('change', () => {
+      if (!fileInput.files || !fileInput.files[0]) return;
+
+      selectedFile = fileInput.files[0];
+      const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
+
+      uploadLabel.classList.add('has-file');
+      uploadLabel.innerHTML = `
+        <div class="file-icon">✅</div>
+        <strong>파일이 선택되었습니다</strong>
+        <small>${selectedFile.name}</small>
+      `;
+
+      fileInfo.classList.add('active');
+      fileInfo.textContent = `📄 ${selectedFile.name} (${sizeMB} MB)`;
+
+      setStatus('idle', '준비 완료. "도장 추출하기" 버튼을 눌러주세요');
+    });
+
+    function removeBackground(img) {
+      const ctx = resultCanvas.getContext('2d');
+
+      resultCanvas.width = img.width;
+      resultCanvas.height = img.height;
+
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, resultCanvas.width, resultCanvas.height);
+      const data = imageData.data;
+
+      const corners = [
+        [0, 0],
+        [resultCanvas.width - 1, 0],
+        [0, resultCanvas.height - 1],
+        [resultCanvas.width - 1, resultCanvas.height - 1]
+      ];
+
+      let bgR = 0, bgG = 0, bgB = 0;
+      corners.forEach(([x, y]) => {
+        const idx = (y * resultCanvas.width + x) * 4;
+        bgR += data[idx];
+        bgG += data[idx + 1];
+        bgB += data[idx + 2];
+      });
+      bgR = Math.round(bgR / 4);
+      bgG = Math.round(bgG / 4);
+      bgB = Math.round(bgB / 4);
+
+      const threshold = 80;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        const diffR = r - bgR;
+        const diffG = g - bgG;
+        const diffB = b - bgB;
+        const distance = Math.sqrt(diffR * diffR + diffG * diffG + diffB * diffB);
+
+        const brightness = (r + g + b) / 3;
+
+        if (distance < threshold && brightness > 180) {
+          data[i + 3] = 0;
+        } else if (distance < threshold * 1.5 && brightness > 180) {
+          const alpha = Math.max(0, 255 * (1 - (threshold * 1.5 - distance) / (threshold * 0.5)));
+          data[i + 3] = Math.min(data[i + 3], alpha);
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    extractBtn.addEventListener('click', () => {
+      if (!selectedFile) {
+        setStatus('error', '먼저 도장 이미지 파일을 선택해 주세요');
+        return;
+      }
+
+      setStatus('working', '이미지를 처리하는 중입니다...');
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            removeBackground(img);
+
+            previewPlaceholder.style.display = 'none';
+            previewMeta.classList.add('active');
+
+            metaResolution.textContent = `${img.width} x ${img.height}`;
+            metaSize.textContent = `${(selectedFile.size / 1024).toFixed(1)} KB`;
+
+            downloadBtn.disabled = false;
+            setStatus('success', '✅ 배경 제거 완료! PNG를 Download할 수 있습니다');
+          } catch (error) {
+            setStatus('error', '이미지 처리 중 오류가 발생했습니다');
+          }
+        };
+        img.onerror = () => {
+          setStatus('error', '이미지를 불러오는 중 오류가 발생했습니다');
+        };
+        img.src = e.target.result;
+      };
+      reader.onerror = () => {
+        setStatus('error', '파일을 읽는 중 오류가 발생했습니다');
+      };
+      reader.readAsDataURL(selectedFile);
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (downloadBtn.disabled) return;
+      const link = document.createElement('a');
+      link.download = `stamp_${Date.now()}.png`;
+      link.href = resultCanvas.toDataURL('image/png');
+      link.click();
+      setStatus('success', '✅ PNG 파일이 Download되었습니다');
+    });
+
+    resetBtn.addEventListener('click', () => {
+      resetUI();
+    });
+
+    resetUI();
+  </script>
+</body>
+</html>

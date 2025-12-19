@@ -1,0 +1,43 @@
+
+/* === 📱 모바일 최적화 추가 (Mobile Responsive) === */
+@media (max-width: 768px) {
+    /* 1. 헤더 영역 줄이기 */
+    .hero, .hero-section {
+        padding: 40px 20px 80px 20px !important;
+        text-align: center;
+    }
+    .hero h1, .hero-title {
+        font-size: 1.8rem !important; /* 제목 크기 축소 */
+        word-break: keep-all; /* 단어 단위 줄바꿈 */
+    }
+    
+    /* 2. 카드 박스 여백 조정 */
+    .tool-card, .container {
+        padding: 20px !important;
+        margin-top: -40px !important; /* 헤더와 겹치는 부분 조정 */
+        width: 90% !important;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* 3. 버튼 큼직하게 (터치하기 좋게) */
+    .btn-primary, .btn-action, .btn-save, .upload-btn-wrapper .btn-upload {
+        width: 100% !important; /* 가로 꽉 차게 */
+        display: block;
+        margin-bottom: 10px;
+        padding: 15px 0 !important;
+        font-size: 1.1rem !important;
+    }
+
+    /* 4. Flex 박스 줄바꿈 (버튼들이 세로로 쌓이게) */
+    div[style*="display:flex"] {
+        flex-direction: column;
+        gap: 10px !important;
+    }
+    
+    /* 5. 캔버스 화면 맞춤 */
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+}

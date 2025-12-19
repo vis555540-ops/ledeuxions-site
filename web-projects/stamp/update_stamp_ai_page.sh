@@ -1,0 +1,440 @@
+#!/usr/bin/env bash
+set -e
+
+cd ~/문서/stamp-pages
+
+cat << 'HTML' > stamp-ai.html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="naver-site-verification" content="67407c86256b78a687de37b03a945eda2e4b64c7" />
+  <title>도장 · 서명 PNG 만들기 (AI 배경 제거)</title>
+  <meta name="description" content="종이에 찍은 도장이나 손글씨 서명을 업로드하면, AI가 배경을 제거하고 전자서명용 투명 PNG로 만들어 주는 도장/서명 변환 도구입니다." />
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .hero-ai {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color:#fff;
+      padding: 48px 28px;
+      border-radius: 8px;
+      margin-bottom: 32px;
+    }
+    .hero-ai-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .hero-ai-sub {
+      font-size: 14px;
+      opacity:0.95;
+      line-height:1.7;
+      margin-bottom: 18px;
+    }
+    .hero-badge {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.15);
+      margin-bottom:10px;
+    }
+    .hero-meta {
+      font-size:12px;
+      opacity:0.9;
+    }
+
+    .ai-layout {
+      display:grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2.5fr);
+      gap:24px;
+    }
+    @media (max-width: 900px) {
+      .ai-layout { grid-template-columns: 1fr; }
+    }
+
+    .ai-card {
+      background: var(--bg-white);
+      border-radius: 12px;
+      padding: 18px 16px 20px;
+      border: 1px solid var(--border-light);
+    }
+    .ai-card h2 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .ai-card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .ai-field {
+      margin: 10px 0 12px;
+    }
+
+    .ai-field input[type="file"] {
+      width:100%;
+      padding:10px;
+      border-radius: 8px;
+      border:1px solid var(--border-light);
+      background:#fff;
+      font-size:13px;
+    }
+
+    .ai-hint {
+      font-size:11px;
+      color:#888;
+      margin-top:4px;
+    }
+
+    .ai-actions {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      margin-top:8px;
+    }
+
+    .ai-btn-primary {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 10px 20px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:600;
+      background:#22c55e;
+      color:#fff;
+      box-shadow:0 10px 26px rgba(34,197,94,0.35);
+      transition:0.18s;
+    }
+    .ai-btn-primary:hover:not(:disabled) {
+      background:#16a34a;
+      transform:translateY(-1px);
+    }
+    .ai-btn-primary:disabled {
+      opacity:0.6;
+      box-shadow:none;
+      cursor:default;
+    }
+
+    .ai-status {
+      font-size:12px;
+      color: var(--text-secondary);
+    }
+    .ai-status.error {
+      color:#dc2626;
+    }
+
+    .ai-preview-grid {
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:12px;
+      margin-top:10px;
+    }
+    @media (max-width: 600px) {
+      .ai-preview-grid { grid-template-columns: 1fr; }
+    }
+
+    .ai-preview-box {
+      border-radius:10px;
+      border:1px dashed var(--border-light);
+      background:#fafafa;
+      padding:10px;
+      text-align:center;
+      font-size:12px;
+      color: var(--text-secondary);
+    }
+    .ai-preview-box strong {
+      display:block;
+      margin-bottom:4px;
+      color:#111827;
+    }
+    .ai-preview-box img {
+      max-width:100%;
+      max-height:260px;
+      object-fit:contain;
+      display:block;
+      margin:4px auto 0;
+      background:transparent;
+    }
+
+    .ai-footer-note {
+      margin-top:14px;
+      font-size:11px;
+      color:#6b7280;
+      line-height:1.6;
+    }
+
+    .ai-steps {
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:18px;
+      margin-top:24px;
+    }
+    @media (max-width: 700px) {
+      .ai-steps { grid-template-columns: 1fr; }
+    }
+    .ai-step {
+      text-align:left;
+      font-size:13px;
+    }
+    .ai-step-label {
+      font-weight:600;
+      margin-bottom:4px;
+      color:#111827;
+    }
+    .ai-step-badge {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:24px;
+      height:24px;
+      border-radius:999px;
+      background:#22c55e;
+      color:#fff;
+      font-size:13px;
+      margin-right:6px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html" class="logo">도장 PNG 추출기</a>
+      <div class="nav-links">
+        <a href="guide.html">도장 상식</a>
+        <a href="welcome.html">도장 만들기</a>
+        <a href="stamp-ai.html" style="color:#22c55e; font-weight:bold;">✒ 도장·서명 PNG</a>
+        <a href="board.html">문의하기</a>
+        <a href="seal-info.html" style="color:#22c55e; font-weight:bold;">📝 도장 용어집</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero-ai">
+      <div class="hero-badge">
+        <span>AI 배경 제거</span>
+        <span>도장 · 서명 변환</span>
+      </div>
+      <h1 class="hero-ai-title">종이에 찍은 도장·서명을<br />전자문서용 투명 PNG로 바꿉니다.</h1>
+      <p class="hero-ai-sub">
+        A4 흰 종이에 도장을 찍거나, 검정색 볼펜으로 서명을 한 뒤 사진을 업로드하면<br />
+        배경을 제거하고 <strong>검정색 선의 투명 PNG</strong>로 정리해 줍니다. PDF 전자서명, 계약서 이미지 서명에 바로 사용할 수 있습니다.
+      </p>
+      <div class="hero-meta">
+        브라우저에서 파일을 업로드하지만, 결과 이미지를 제외한 원본은 별도 보관하지 않습니다.
+      </div>
+    </section>
+
+    <section class="ai-layout">
+      <!-- 왼쪽: 업로드 & 옵션 -->
+      <section class="ai-card">
+        <h2>1. 도장 / 서명 이미지 업로드</h2>
+        <p>
+          흰 배경 위에 찍힌 도장 또는 검정색 서명 이미지를 업로드해 주세요.
+          해상도가 높을수록 결과가 깔끔합니다.
+        </p>
+
+        <div class="ai-field">
+          <input id="fileInput" type="file" accept="image/*" />
+          <p class="ai-hint">JPG, PNG 등 대부분의 이미지 형식을 지원합니다. 그림자가 적고 배경이 밝을수록 좋습니다.</p>
+        </div>
+
+        <div class="ai-field">
+          <label for="contrastRange" style="font-size:13px; font-weight:600; display:block; margin-bottom:4px;">선 굵기 / 대비 조절</label>
+          <input id="contrastRange" type="range" min="0" max="100" value="50" style="width:100%;" />
+          <p class="ai-hint">
+            서명이 너무 가늘게 보이면 값을 높이고, 너무 두껍게 보이면 값을 낮춰 보세요.
+            (현재 서버가 대비 값을 무시하는 경우 기본값으로 동작합니다.)
+          </p>
+        </div>
+
+        <div class="ai-actions">
+          <button class="ai-btn-primary" id="processBtn">배경 제거하기</button>
+          <span id="statusText" class="ai-status">이미지를 선택한 뒤 버튼을 눌러 주세요.</span>
+        </div>
+
+        <div class="ai-footer-note">
+          ※ 결과는 <strong>모노크롬(검정색 선)</strong> 위주의 PNG를 목표로 합니다. 원본에 색상이 섞여 있으면 일부 색이 남을 수 있습니다.<br />
+          ※ 중요한 인감/서명은 항상 출력 후 육안으로 검토하고, 테스트 문서로 먼저 사용해 보시길 권장합니다.
+        </div>
+      </section>
+
+      <!-- 오른쪽: 미리보기 & 다운로드 -->
+      <section class="ai-card">
+        <h2>2. 결과 확인 · PNG 다운로드</h2>
+        <p>
+          왼쪽에는 원본 이미지, 오른쪽에는 배경 제거 결과가 표시됩니다.
+          결과 이미지는 투명 PNG로 저장할 수 있습니다.
+        </p>
+
+        <div class="ai-preview-grid">
+          <div class="ai-preview-box">
+            <strong>원본 이미지</strong>
+            <img id="originalPreview" alt="원본 미리보기" />
+          </div>
+          <div class="ai-preview-box">
+            <strong>배경 제거 결과 (PNG)</strong>
+            <img id="resultPreview" alt="결과 미리보기" />
+          </div>
+        </div>
+
+        <div class="ai-actions" style="margin-top:14px;">
+          <button class="ai-btn-primary" id="downloadBtn" disabled>결과 PNG 다운로드</button>
+          <span class="ai-status" id="downloadHint">결과가 생성되면 다운로드 버튼이 활성화됩니다.</span>
+        </div>
+
+        <div class="ai-footer-note">
+          서버 엔드포인트: <code>http://localhost:8100/extract</code><br />
+          로컬에서 실행 중인 <code>stamp-ai-server</code>가 이 요청을 처리합니다.
+        </div>
+      </section>
+    </section>
+
+    <section style="margin-top:32px;">
+      <h2 style="margin-bottom:16px;">권장 사용 방법</h2>
+      <div class="ai-steps">
+        <div class="ai-step">
+          <div class="ai-step-label">
+            <span class="ai-step-badge">1</span> 흰 종이에 도장/서명 준비
+          </div>
+          <p>빛 반사가 적은 곳에서 A4 흰 종이에 도장을 찍거나, 검정색 펜으로 서명을 크게 써 주세요.</p>
+        </div>
+        <div class="ai-step">
+          <div class="ai-step-label">
+            <span class="ai-step-badge">2</span> 사진 촬영 및 업로드
+          </div>
+          <p>스마트폰으로 정면에서 촬영한 뒤, 이 페이지에 이미지를 업로드합니다. 그림자·기울어짐이 적을수록 정확도가 높습니다.</p>
+        </div>
+        <div class="ai-step">
+          <div class="ai-step-label">
+            <span class="ai-step-badge">3</span> 결과 확인 후 전자문서에 삽입
+          </div>
+          <p>다운로드한 PNG를 PDF 편집기나 워드, 전자계약 서비스의 서명/도장 삽입 기능에서 사용하면 됩니다.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="margin-top:60px; padding:30px 0; text-align:center; color:#888; border-top:1px solid #eee; font-size:13px;">
+    <p>&copy; 2025 도장 PNG 추출기 · <span style="background:#fef3c7; color:#d97706; padding:2px 6px; border-radius:4px; font-size:11px;">BETA</span></p>
+    <div style="margin-top:10px;">
+      <a href="index.html" style="margin:0 8px; color:#666; text-decoration:none;">홈</a>
+      <a href="guide.html" style="margin:0 8px; color:#666; text-decoration:none;">도장 상식</a>
+      <a href="welcome.html" style="margin:0 8px; color:#666; text-decoration:none;">도장 만들기</a>
+      <a href="board.html" style="margin:0 8px; color:#666; text-decoration:none;">문의하기</a>
+      <a href="privacy.html" style="margin:0 8px; color:#666; text-decoration:none;">개인정보처리방침</a>
+    </div>
+  </footer>
+
+  <script>
+    const fileInput     = document.getElementById('fileInput');
+    const contrastRange = document.getElementById('contrastRange');
+    const processBtn    = document.getElementById('processBtn');
+    const statusText    = document.getElementById('statusText');
+    const originalPrev  = document.getElementById('originalPreview');
+    const resultPrev    = document.getElementById('resultPreview');
+    const downloadBtn   = document.getElementById('downloadBtn');
+
+    let resultBlob = null;
+
+    function setStatus(msg, isError=false) {
+      statusText.textContent = msg;
+      statusText.classList.toggle('error', isError);
+    }
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      resultBlob = null;
+      resultPrev.src = '';
+      downloadBtn.disabled = true;
+
+      if (!file) {
+        originalPrev.src = '';
+        setStatus('이미지를 다시 선택해 주세요.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        originalPrev.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+
+      setStatus('이미지 선택 완료. "배경 제거하기"를 눌러 주세요.');
+    });
+
+    processBtn.addEventListener('click', async () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        setStatus('먼저 도장/서명 이미지를 선택해 주세요.', true);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('contrast', contrastRange.value);
+
+      processBtn.disabled = true;
+      downloadBtn.disabled = true;
+      resultBlob = null;
+      setStatus('AI가 배경을 제거하는 중입니다... 잠시만 기다려 주세요.');
+
+      try {
+        const res = await fetch('http://localhost:8100/extract', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          throw new Error('서버 오류: ' + res.status);
+        }
+
+        const blob = await res.blob();
+        resultBlob = blob;
+        const url = URL.createObjectURL(blob);
+        resultPrev.src = url;
+        downloadBtn.disabled = false;
+        setStatus('완료! 오른쪽 결과를 확인한 뒤 PNG로 다운로드해 주세요.');
+      } catch (err) {
+        console.error(err);
+        setStatus('배경 제거 중 오류가 발생했습니다. stamp-ai-server가 실행 중인지 확인해 주세요.', true);
+      } finally {
+        processBtn.disabled = false;
+      }
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (!resultBlob) return;
+      const url = URL.createObjectURL(resultBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'stamp-signature.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
+HTML
+
+git add stamp-ai.html
+git commit -m "add AI-based stamp/signature PNG page with site colors"
+git push origin main
+
+echo "✅ stamp-ai.html 생성 및 git push 완료"
