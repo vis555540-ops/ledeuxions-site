@@ -119,9 +119,78 @@
             color: #555;
             text-decoration: none;
         }
+
+        /* 전면 광고 오버레이 */
+        .interstitial-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .interstitial-overlay.active {
+            display: flex;
+        }
+        .interstitial-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+        .interstitial-countdown {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .interstitial-close {
+            display: none;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .interstitial-close:hover {
+            background: #000;
+        }
     </style>
 </head>
 <body>
+
+    <!-- 전면 광고 오버레이 -->
+    <div class="interstitial-overlay" id="interstitialAd">
+        <div class="interstitial-content">
+            <div class="interstitial-countdown" id="adCountdown">광고 5초</div>
+
+            <!-- AdSense 전면 광고 Placeholder -->
+            <!-- 실제 AdSense 전면 광고 코드를 여기에 삽입하세요 -->
+            <div style="min-height: 250px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border: 2px dashed #ccc; margin: 20px 0;">
+                <p style="color: #666; font-size: 14px;">AdSense 전면 광고 영역<br>(실제 광고 코드로 교체 필요)</p>
+            </div>
+            <!-- AdSense 전면 광고 끝 -->
+
+            <button class="interstitial-close" id="closeInterstitial">페이지로 이동</button>
+        </div>
+    </div>
 
     <header class="header">
         <h1>Web Projects & Utilities</h1>
@@ -174,6 +243,73 @@
     <footer>
         <p><a href="/">© 2025 LeDeuxions</a></p>
     </footer>
+
+    <script>
+        // 전면 광고 로직
+        (function() {
+            const interstitialAd = document.getElementById('interstitialAd');
+            const closeBtn = document.getElementById('closeInterstitial');
+            const countdownEl = document.getElementById('adCountdown');
+            const projectLinks = document.querySelectorAll('.card-footer .btn');
+
+            let targetUrl = '';
+            let countdownSeconds = 5;
+            let countdownInterval = null;
+
+            // 각 프로젝트 링크에 클릭 이벤트 추가
+            projectLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+
+                    // 준비 중이거나 # 링크는 광고 표시 안 함
+                    if (!href || href === '#') {
+                        return;
+                    }
+
+                    e.preventDefault();
+                    targetUrl = href;
+
+                    // sessionStorage 체크: 이미 광고를 본 경우 바로 이동
+                    if (sessionStorage.getItem('interstitial_shown')) {
+                        window.location.href = targetUrl;
+                        return;
+                    }
+
+                    // 전면 광고 표시
+                    showInterstitial();
+                });
+            });
+
+            function showInterstitial() {
+                interstitialAd.classList.add('active');
+                countdownSeconds = 5;
+                updateCountdown();
+
+                countdownInterval = setInterval(() => {
+                    countdownSeconds--;
+                    updateCountdown();
+
+                    if (countdownSeconds <= 0) {
+                        clearInterval(countdownInterval);
+                        closeBtn.style.display = 'block';
+                    }
+                }, 1000);
+            }
+
+            function updateCountdown() {
+                countdownEl.textContent = `광고 ${countdownSeconds}초`;
+            }
+
+            closeBtn.addEventListener('click', function() {
+                interstitialAd.classList.remove('active');
+                sessionStorage.setItem('interstitial_shown', 'true');
+
+                if (targetUrl) {
+                    window.location.href = targetUrl;
+                }
+            });
+        })();
+    </script>
 
 </body>
 </html>

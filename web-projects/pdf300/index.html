@@ -195,16 +195,63 @@
             margin-bottom:20px;
         }
         @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
+        /* 다운로드 전면 광고 오버레이 */
+        .download-interstitial {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .download-interstitial.active {
+            display: flex;
+        }
+        .download-ad-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+        .download-countdown {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .download-close-btn {
+            display: none;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .download-close-btn:hover {
+            background: var(--primary-dark);
+        }
     </style>
 </head>
 
 <body>
-
-<!-- AdSense Placeholder -->
-<div class="ad-slot" style="margin:40px 0; padding:20px; border:1px dashed #ccc; text-align:center;">
-  <small>Advertisement</small>
-</div>
-
 
 <header>
     <div class="header-container">
@@ -342,10 +389,35 @@
     </form>
 </div>
 
+<!-- 하단 가로형 광고 -->
+<div style="max-width: 800px; margin: 40px auto; padding: 20px; text-align: center; background: #f9f9f9; border-radius: 8px; border: 1px solid #e0e0e0;">
+    <!-- AdSense 가로형 광고 코드를 여기에 삽입하세요 -->
+    <div style="min-height: 90px; display: flex; align-items: center; justify-content: center; background: #fff; border: 2px dashed #ccc; border-radius: 4px;">
+        <p style="color: #999; font-size: 14px; margin: 0;">AdSense 가로형 광고 영역<br>(실제 광고 코드로 교체 필요)</p>
+    </div>
+    <!-- AdSense 광고 끝 -->
+</div>
+
 <div class="overlay" id="loadingOverlay">
     <div class="spinner"></div>
     <h3>파일 분석 및 압축 중...</h3>
     <p style="color:#666;margin-top:10px;">파일 크기에 따라 시간이 걸릴 수 있습니다.</p>
+</div>
+
+<!-- 다운로드 전면 광고 오버레이 -->
+<div class="download-interstitial" id="downloadInterstitial">
+    <div class="download-ad-content">
+        <div class="download-countdown" id="downloadCountdown">광고 5초</div>
+
+        <!-- AdSense 전면 광고 Placeholder -->
+        <!-- 실제 AdSense 전면 광고 코드를 여기에 삽입하세요 -->
+        <div style="min-height: 250px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border: 2px dashed #ccc; margin: 20px 0;">
+            <p style="color: #666; font-size: 14px;">다운로드 전면 광고 영역<br>(실제 광고 코드로 교체 필요)</p>
+        </div>
+        <!-- AdSense 전면 광고 끝 -->
+
+        <button class="download-close-btn" id="downloadCloseBtn">다운로드 시작</button>
+    </div>
 </div>
 
 <script>
@@ -393,6 +465,51 @@
         fileInfo.textContent = `선택된 파일: ${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
     }
 
+    // 다운로드 전면 광고 로직
+    const downloadInterstitial = document.getElementById('downloadInterstitial');
+    const downloadCloseBtn = document.getElementById('downloadCloseBtn');
+    const downloadCountdownEl = document.getElementById('downloadCountdown');
+    let downloadUrl = '';
+    let downloadCountdownSeconds = 5;
+    let downloadCountdownInterval = null;
+
+    function showDownloadAd(url) {
+        downloadUrl = url;
+
+        // sessionStorage 체크: 이미 광고를 본 경우 바로 다운로드
+        if (sessionStorage.getItem('download_ad_shown')) {
+            window.location.href = downloadUrl;
+            return;
+        }
+
+        downloadInterstitial.classList.add('active');
+        downloadCountdownSeconds = 5;
+        updateDownloadCountdown();
+
+        downloadCountdownInterval = setInterval(() => {
+            downloadCountdownSeconds--;
+            updateDownloadCountdown();
+
+            if (downloadCountdownSeconds <= 0) {
+                clearInterval(downloadCountdownInterval);
+                downloadCloseBtn.style.display = 'block';
+            }
+        }, 1000);
+    }
+
+    function updateDownloadCountdown() {
+        downloadCountdownEl.textContent = `광고 ${downloadCountdownSeconds}초`;
+    }
+
+    downloadCloseBtn.addEventListener('click', function() {
+        downloadInterstitial.classList.remove('active');
+        sessionStorage.setItem('download_ad_shown', 'true');
+
+        if (downloadUrl) {
+            window.location.href = downloadUrl;
+        }
+    });
+
     // 제출 처리
     const form = document.getElementById('uploadForm');
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -428,8 +545,11 @@
 
             if (res.ok) {
                 const result = await res.json();
-                alert('압축 완료! 파일을 다운로드합니다.');
-                window.location.href = result.download_url;
+                loadingOverlay.style.display = 'none';
+                alert('압축 완료! 광고 후 파일을 다운로드합니다.');
+
+                // 전면 광고 표시 후 다운로드
+                showDownloadAd(result.download_url);
             } else {
                 alert('압축 중 오류 발생. 서버 상태를 확인해주세요.');
             }
