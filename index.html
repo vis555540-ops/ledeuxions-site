@@ -1,0 +1,290 @@
+<!-- build: 2025-12-21 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LeDeuxions: Architect of Vision. Art, Philosophy, and Web Projects.">
+    <title>LeDeuxions: The Clear Vision</title>
+    <style>
+        /* * Directed by Robert McKee 
+         * Scene 6: "Clarity within Depth" - Revision 2
+         * 1. 호버 안정성 강화: 커튼 진입 시 z-index 상승으로 인터랙션 끊김 방지.
+         * 2. 경로 수정: Work 폴더 및 외부 블로그 연결.
+         * 3. 애드센스 규격: 하단 고정 풋터 추가.
+         */
+        
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Oswald:wght@400&family=Noto+Sans+KR:wght@300;500;700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+
+        /* --- LAYER 0: THE GROUND (Family Drawing) --- */
+        .background-anchor {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .anchor-img {
+            width: 100%; 
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- THE MAIN TITLE --- */
+        .main-title {
+            position: absolute;
+            top: 48%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            color: #ffffff;
+            z-index: 5;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8), 
+                         0 0 20px rgba(0,0,0,0.5);
+            pointer-events: none;
+            transition: opacity 0.5s;
+            white-space: nowrap;
+        }
+
+        /* 호버 시 타이틀 숨김 (트리거 혹은 커튼에 마우스가 있을 때) */
+        body:has(.trigger-zone:hover, .curtain-layer:hover) .main-title {
+            opacity: 0;
+        }
+
+        /* --- LAYER 1: THE CURTAINS --- */
+        .curtain-layer {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            z-index: 10; /* 평소에는 트리거(50)보다 아래 */
+            transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), z-index 0s step-end; /* z-index는 즉시 변경 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* LEFT: LeDeuxions (Artist) */
+        .curtain-layer.left {
+            left: 0;
+            background-color: rgba(43, 10, 10, 0.95); 
+            transform: translateX(-100%);
+            color: #f0f0f0;
+        }
+        
+        .curtain-layer.left::before {
+            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+            background: url('https://blogger.googleusercontent.com/img/a/AVvXsEgQp9HReNF97UAAm3MKsJl93L7xIhmKTXxuA7Fud2fuaCcizrjWmDe00o9-bEipE8503NURQI9C2Vhs91L6zORRDbJwUHRBFQZkT4hqTfbj48oX1EwAZmwVZvpDXQdOL0cZRx_lgBWSyFvKtKA2urgMY-RFA_lQvghR7FV71qixSB2nnv3ZB3HBIRIhWMHf');
+            background-size: cover;
+            opacity: 0.2;
+            mix-blend-mode: overlay;
+        }
+
+        /* RIGHT: Father (Worker) */
+        .curtain-layer.right {
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.95); 
+            transform: translateX(100%);
+            color: #111;
+        }
+
+        .curtain-layer.right::before {
+            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgIg6BLVsRZYZX5tyiVinHbav_QLMxG2ESxOOvCi-X3t6mCK1zNyK8SQU2R1N803clNMoAJnQtv1x7WYagn20hAvPXgB-okPABfGrdcycZJ7nZcGQJgXsTXiBbP2iegWCFD5RpzL6dMEDiTBMyI9Pgy7awqdou9GEGcHcixot7MnFGYC-K4V-9no-kqiWnc/s640/%EC%9B%B9%EC%82%AC%EC%9D%B4%ED%8A%B8%20%EC%88%98%EC%A0%95.png') top center;
+            background-size: cover;
+            opacity: 0.1;
+        }
+
+        /* --- CONTENT TYPOGRAPHY --- */
+        .content-box {
+            position: relative;
+            z-index: 20;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease 0.4s, transform 0.5s ease 0.4s;
+            padding: 0 5vw;
+        }
+
+        h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid currentColor;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        .curtain-layer.right h2 { font-family: 'Oswald', sans-serif; letter-spacing: -1px; }
+
+        p {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 12px 30px;
+            border: 1px solid currentColor;
+            text-decoration: none;
+            color: inherit;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            width: 180px;
+            text-align: center;
+            background: transparent;
+            cursor: pointer;
+        }
+        
+        .curtain-layer.left .nav-btn:hover { background: #fff; color: #2b0a0a; font-weight: bold; }
+        .curtain-layer.right .nav-btn:hover { background: #000; color: #fff; }
+
+        /* --- TRIGGER ZONES --- */
+        .trigger-zone {
+            position: absolute;
+            top: 0;
+            width: 20%; /* 영역을 조금 좁혀서 중앙 타이틀 침범 최소화 */
+            height: 100%;
+            z-index: 50;
+            cursor: pointer;
+        }
+        .trigger-zone.left { left: 0; }
+        .trigger-zone.right { right: 0; }
+
+        /* --- STABLE INTERACTION LOGIC (핵심 수정) --- */
+        /* 트리거(zone)에 마우스가 있거나, 
+           이미 열린 커튼(layer) 위에 마우스가 있으면 -> 열린 상태 유지 
+        */
+
+        /* Left Action */
+        body:has(.trigger-zone.left:hover, .curtain-layer.left:hover) .curtain-layer.left {
+            transform: translateX(0);
+            z-index: 60; /* 열렸을 때 트리거(50)보다 위로 올라와서 버튼 클릭 가능하게 함 */
+        }
+        body:has(.trigger-zone.left:hover, .curtain-layer.left:hover) .curtain-layer.left .content-box {
+            opacity: 1; transform: translateY(0);
+        }
+
+        /* Right Action */
+        body:has(.trigger-zone.right:hover, .curtain-layer.right:hover) .curtain-layer.right {
+            transform: translateX(0);
+            z-index: 60;
+        }
+        body:has(.trigger-zone.right:hover, .curtain-layer.right:hover) .curtain-layer.right .content-box {
+            opacity: 1; transform: translateY(0);
+        }
+
+        /* --- ADSENSE FOOTER --- */
+        footer.adsense-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 0;
+            background-color: rgba(0, 0, 0, 0.7); /* 반투명 검정 */
+            color: #bbb;
+            text-align: center;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.8rem;
+            z-index: 100; /* 최상위 노출 */
+            backdrop-filter: blur(5px);
+        }
+
+        footer.adsense-footer a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        footer.adsense-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* 모바일 대응 */
+        @media (max-width: 768px) {
+            .trigger-zone { width: 30%; }
+            .curtain-layer { width: 80%; }
+            .main-title { font-size: 1.2rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="background-anchor">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjcpXJX6l9KdYjCVoVeHydFlFNhyphenhyphendvBemFHNxSERnA0OovUmZ69wSApZfYUkcvIg7JmcGnSYma9sK-gz8rLwhOGV1ePidhKIrVvX_zZn4KPw7jN-r0hNWLFztmKVWkQVd6IWjJdAywBmwLLFjSAyXlWTxGIMOQO3nqZtHw8VUglm4YEB_HY71k0SaLgnHn_/s1536/%EB%82%98%EC%95%84%EB%B9%A0%EC%97%84%EB%A7%88%EB%8F%99%EC%83%9D.png" alt="Family" class="anchor-img">
+        
+        <h1 class="main-title">LeDeuxions's World</h1>
+    </div>
+
+    <div class="trigger-zone left" title="Art & Thoughts"></div>
+    <div class="trigger-zone right" title="Work & Projects"></div>
+
+    <div class="curtain-layer left">
+        <div class="content-box">
+            <h2>LeDeuxions</h2>
+            <p>
+                "고통을 외면하지 않는 시선.<br>
+                상처난 벽에 빛을 설계합니다."
+            </p>
+            <div class="btn-group">
+                <a href="https://ledeuxions.blogspot.com/" target="_blank" class="nav-btn">Portfolio</a>
+                <a href="https://ledeuxions-column.blogspot.com/" target="_blank" class="nav-btn">Column</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="curtain-layer right">
+        <div class="content-box">
+            <h2>Father's Room</h2>
+            <p>
+                "가족을 지키는 현실의 건축.<br>
+                단단하고 유용한 도구들을 만듭니다."
+            </p>
+            <div class="btn-group">
+                <a href="work/index.html" class="nav-btn">Web Projects</a>
+                <a href="work/index.html" class="nav-btn">Applications</a>
+                <a href="work/index.html" class="nav-btn" style="border:none; border-bottom:1px solid; width:auto; padding:5px;">More History >></a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="adsense-footer">
+        <p>
+            &copy; 2025 LeDeuxions. All rights reserved. 
+            <br style="display:none;"> <span style="opacity: 0.5;">|</span>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Use</a>
+            <a href="mailto:contact@ledeuxions.com">Contact</a>
+        </p>
+    </footer>
+
+</body>
+</html>
