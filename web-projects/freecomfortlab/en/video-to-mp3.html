@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video to MP3 Converter — FreeComfort Studio</title>
+  <meta name="description" content="Convert video files to MP3 audio format instantly. No installation required." />
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color:#fff;
+      min-height:100vh;
+      padding: 24px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 48px;
+    }
+    .brand {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .lang-btn {
+      background: rgba(255,255,255,0.2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.3);
+      text-decoration: none;
+      color: inherit;
+    }
+    h1 {
+      font-size: 42px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .subtitle {
+      text-align: center;
+      opacity: 0.9;
+      margin-bottom: 48px;
+      font-size: 18px;
+    }
+    .converter-box {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      border: 1px solid rgba(255,255,255,0.2);
+      text-align: center;
+    }
+    .upload-area {
+      border: 2px dashed rgba(255,255,255,0.4);
+      border-radius: 12px;
+      padding: 60px 20px;
+      margin-bottom: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .upload-area:hover {
+      border-color: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.05);
+    }
+    .upload-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    .btn {
+      background: #fff;
+      color: #667eea;
+      padding: 14px 32px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 24px 0;
+      display: none;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #fff;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .result {
+      display: none;
+      margin-top: 24px;
+    }
+    .download-btn {
+      background: #4CAF50;
+      color: white;
+      padding: 16px 40px;
+      border-radius: 12px;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .download-btn:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 32px;
+      opacity: 0.8;
+    }
+    .back-link a {
+      color: white;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">FreeComfort Studio</div>
+      <a href="../video-to-mp3.html" class="lang-btn">🇰🇷 한국어</a>
+    </div>
+
+    <h1>🎵 Video to MP3</h1>
+    <p class="subtitle">Extract audio from video files instantly</p>
+
+    <div class="converter-box">
+      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">📹</div>
+        <p style="font-size:18px; margin-bottom:8px;">Click to select video file</p>
+        <p style="opacity:0.7; font-size:14px;">or drag and drop here</p>
+        <input type="file" id="fileInput" accept="video/*" onchange="handleFile(this.files[0])">
+      </div>
+
+      <div id="fileName" style="margin-bottom:16px; display:none;"></div>
+
+      <button class="btn" id="convertBtn" onclick="convertFile()" disabled>
+        Convert to MP3
+      </button>
+
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="result" id="result">
+        <p style="margin-bottom:16px; font-size:18px;">✅ Conversion completed!</p>
+        <a href="#" class="download-btn" id="downloadBtn" download>
+          Download MP3
+        </a>
+      </div>
+    </div>
+
+    <div class="back-link">
+      <a href="index.html">← Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    let selectedFile = null;
+
+    function handleFile(file) {
+      if (!file) return;
+      selectedFile = file;
+      document.getElementById('fileName').textContent = `Selected: ${file.name}`;
+      document.getElementById('fileName').style.display = 'block';
+      document.getElementById('convertBtn').disabled = false;
+    }
+
+    async function convertFile() {
+      if (!selectedFile) return;
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      document.getElementById('convertBtn').disabled = true;
+      document.getElementById('progressBar').style.display = 'block';
+
+      try {
+        const response = await fetch('/api/convert-video-to-mp3', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('Conversion failed');
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        
+        document.getElementById('downloadBtn').href = url;
+        document.getElementById('downloadBtn').download = selectedFile.name.replace(/\.[^/.]+$/, '') + '.mp3';
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('progressFill').style.width = '100%';
+      } catch (error) {
+        alert('Conversion failed. Please try again.');
+        console.error(error);
+      } finally {
+        document.getElementById('convertBtn').disabled = false;
+      }
+    }
+
+    // Drag and drop
+    const uploadArea = document.querySelector('.upload-area');
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = 'rgba(255,255,255,0.8)';
+    });
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.style.borderColor = 'rgba(255,255,255,0.4)';
+    });
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = 'rgba(255,255,255,0.4)';
+      if (e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+  </script>
+</body>
+</html>
