@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEIC Converter</title>
+    <script>
+        // 브라우저 언어 감지 및 리디렉트
+        (function() {
+            const userLang = navigator.language || navigator.userLanguage;
+            const langCode = userLang.toLowerCase().split('-')[0];
+
+            // 한국어면 ko로, 그 외는 en으로
+            const targetLang = langCode === 'ko' ? 'ko' : 'en';
+
+            // 리디렉트
+            window.location.href = `./${targetLang}/`;
+        })();
+    </script>
+</head>
+<body>
+    <p style="text-align: center; margin-top: 50px; font-family: -apple-system, sans-serif;">
+        Redirecting...
+    </p>
+</body>
+</html>

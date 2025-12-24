@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#F2F2F7">
+    <title>HEIC 변환</title>
+    
+    <style>
+        :root {
+            --bg-color: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --separator: #C6C6C8;
+            --blue: #007AFF;
+            --radius: 10px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --card-bg: #1C1C1E;
+                --text-primary: #FFFFFF;
+                --text-secondary: #98989D;
+                --separator: #38383A;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-bar { padding: 20px 16px 10px; }
+        h1 { font-size: 34px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+        
+        .section { margin: 20px 16px; }
+        .card { background-color: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
+        
+        .list-item {
+            display: flex; align-items: center; padding: 12px 16px;
+            background: var(--card-bg); border-bottom: 0.5px solid var(--separator);
+            min-height: 44px; font-size: 17px;
+        }
+        .list-item:last-child { border-bottom: none; }
+
+        .action-row { justify-content: center; color: var(--blue); cursor: pointer; }
+        .action-row:active { background-color: rgba(0,0,0,0.05); }
+
+        .btn-primary {
+            background-color: var(--blue); color: white; border: none; width: 100%;
+            padding: 14px; font-size: 17px; font-weight: 600; border-radius: var(--radius);
+            margin-top: 20px; cursor: pointer;
+        }
+        .btn-primary:active { opacity: 0.7; }
+
+        .footer-text { font-size: 13px; color: var(--text-secondary); margin: 8px 16px; padding-bottom: 20px; }
+        .hidden { display: none !important; }
+        input[type="file"] { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-bar">
+        <h1>변환기</h1>
+    </div>
+
+    <div class="section">
+        <div class="card">
+            <div id="uploadRow" class="list-item action-row" onclick="document.getElementById('fileInput').click()">
+                사진 선택...
+            </div>
+            <input type="file" id="fileInput" accept=".heic,.heif,image/heic,image/heif" multiple>
+
+            <div id="fileListContainer" class="hidden"></div>
+        </div>
+        
+        <p id="statusText" class="footer-text">HEIC 사진을 선택하여 JPG로 변환합니다.</p>
+
+        <button id="convertButton" class="btn-primary hidden">
+            변환 시작
+        </button>
+        
+        <button id="shareBtn" class="btn-primary hidden">
+            공유 및 저장
+        </button>
+    </div>
+
+    <div class="section">
+        <div class="card">
+            <div class="list-item">
+                <span style="flex:1">품질</span>
+                <span style="color:var(--text-secondary)">고화질</span>
+            </div>
+            <div class="list-item">
+                <span style="flex:1">보안</span>
+                <span style="color:var(--text-secondary)">기기 내 처리 (Local)</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadRow = document.getElementById('uploadRow');
+        const fileListContainer = document.getElementById('fileListContainer');
+        const convertButton = document.getElementById('convertButton');
+        const statusText = document.getElementById('statusText');
+
+        fileInput.addEventListener('change', (e) => {
+            const count = e.target.files.length;
+            if(count > 0) {
+                statusText.innerText = `${count}장 선택됨`;
+                uploadRow.innerText = "사진 추가...";
+                convertButton.classList.remove('hidden');
+                
+                fileListContainer.classList.remove('hidden');
+                fileListContainer.innerHTML = `
+                    <div class="list-item" style="color: var(--text-primary);">
+                        ${count}개의 파일 준비됨
+                    </div>
+                `;
+            }
+        });
+
+        window.APP_TEXTS = {
+            invalidFiles: 'HEIC 파일만 선택해주세요',
+            fileTooLarge: '50MB 이하만 가능합니다',
+            converting: '변환 중...',
+            success: '완료',
+            error: '오류 발생'
+        };
+    </script>
+    <script src="../assets/app.js"></script>
+<!-- 화면 컨텐츠 -->
+
+<!-- AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
+     crossorigin="anonymous"></script>
+
+<div id="ad-container" style="margin:20px 0;">
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-2824624880449066"
+       data-ad-slot="1361526932"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+</div>
+
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+</body>
+</html>
