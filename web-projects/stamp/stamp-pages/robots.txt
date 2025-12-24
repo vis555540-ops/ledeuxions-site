@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://도장문서.store/sitemap.xml
