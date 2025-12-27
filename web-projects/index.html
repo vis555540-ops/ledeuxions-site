@@ -1,64 +1,217 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Projects - LeDeuxions.com</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; line-height: 1.7; margin: 0; padding: 0; background-color: #f8f9fa; color: #212529; }
-        .container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        nav { background-color: #343a40; padding: 1rem 0; }
-        nav .container { padding: 0 20px; display: flex; justify-content: flex-start; }
-        nav a { color: white; padding: 0.5rem 1rem; text-decoration: none; font-weight: 500; }
-        nav a:hover { background-color: #495057; border-radius: 4px; }
-        h1 { font-size: 2.5rem; border-bottom: 2px solid #dee2e6; padding-bottom: 0.5rem; }
-        p { margin-bottom: 1rem; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin-bottom: 1rem; }
-        li a { font-size: 1.2rem; text-decoration: none; color: #007bff; }
-        li a:hover { text-decoration: underline; }
-        footer { text-align: center; padding: 2rem 0; margin-top: 2rem; font-size: 0.9em; color: #6c757d; border-top: 1px solid #dee2e6; }
-        footer a { color: #495057; text-decoration: none; }
-        footer a:hover { text-decoration: underline; }
-    </style>
+  <!-- Google AdSense (자동 광고 전용) -->
+  <script async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
+    crossorigin="anonymous"></script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Projects | LeDeuxions</title>
+
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ---------- NAV ---------- */
+    nav {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav .nav-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      gap: 16px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+
+    nav a:hover {
+      background-color: #f1f5f9;
+    }
+
+    /* ---------- LAYOUT ---------- */
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    header {
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 720px;
+    }
+
+    /* ---------- GRID ---------- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      margin: 0 0 8px 0;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .card a {
+      text-decoration: none;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* ---------- SECTION ---------- */
+    .section {
+      margin-top: 48px;
+    }
+
+    .section h3 {
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+    }
+
+    /* ---------- FOOTER ---------- */
+    footer {
+      margin-top: 80px;
+      padding: 30px 20px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+      margin: 0 6px;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
+
 <body>
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/">Home</a>
+      <a href="/web-projects/">Web Projects</a>
+      <a href="/contact/">Contact</a>
+    </div>
+  </nav>
 
-<!-- AdSense Placeholder -->
-<div class="ad-slot" style="margin:40px 0; padding:20px; border:1px dashed #ccc; text-align:center;">
-  <small>Advertisement</small>
-</div>
+  <div class="container">
+    <!-- HEADER -->
+    <header>
+      <h1>Web Projects</h1>
+      <p>
+        LeDeuxions에서 제작한 웹 기반 유틸리티와 실험적 도구들을 모아둔 공간입니다.
+        설치 없이 바로 사용할 수 있는 실용적인 프로젝트들을 중심으로 구성되어 있습니다.
+      </p>
+    </header>
 
+    <!-- MAIN PROJECTS -->
+    <div class="grid">
+      <div class="card">
+        <h2>PDF300</h2>
+        <p>PDF 변환, 분리, 이미지 추출 등 실무에서 바로 쓰는 PDF 도구 모음</p>
+        <a href="/web-projects/pdf300/">바로가기 →</a>
+      </div>
 
-    <nav>
-        <div class="container">
-            <a href="/">Home</a>
-            <a href="/web-projects/">Web Projects</a>
-            <a href="/contact/">Contact</a>
-        </div>
-    </nav>
+      <div class="card">
+        <h2>Stamp Maker</h2>
+        <p>도장 이미지를 빠르게 생성하고 투명 PNG로 추출하는 웹 도구</p>
+        <a href="/web-projects/stamp/">바로가기 →</a>
+      </div>
 
-    <div class="container">
-        <h1>Web Projects</h1>
-        <p>이곳은 LeDeuxions.com에서 제작한 다양한 웹 기반 유틸리티와 도구들을 모아놓은 허브 페이지입니다. PDF 변환, 문서 형식 처리와 같은 사무용 도구부터 이미지 및 오디오 파일을 다루는 간단한 편집 도구까지, 일상과 업무의 효율을 높이기 위해 개발된 프로젝트들을 만나볼 수 있습니다.</p>
-        <p>각 프로젝트는 특정한 목적을 위해 독립적으로 개발 및 운영되고 있으며, 별도의 설치 없이 웹 브라우저에서 바로 사용할 수 있습니다. 필요한 도구를 찾아 자유롭게 이용해 보시기 바랍니다.</p>
-        
-        <ul>
-            <!-- 각 프로젝트 링크를 여기에 추가합니다. -->
-            <li><a href="/web-projects/pdf300/">PDF300 Service (예시)</a></li>
-            <li><a href="/web-projects/stamp-maker/">Stamp Maker (예시)</a></li>
-        </ul>
+      <div class="card">
+        <h2>FreeComfortLab</h2>
+        <p>생활과 작업을 편하게 만드는 작은 실험실 같은 유틸리티 모음</p>
+        <a href="/web-projects/freecomfortlab/">바로가기 →</a>
+      </div>
     </div>
 
-    <footer>
-      <p>© 2025 LeDeuxions</p>
-      <p>
-        <a href="/privacy/">Privacy</a> |
-        <a href="/terms/">Terms</a> |
-        <a href="/contact/">Contact</a>
-      </p>
-    </footer>
+    <!-- OTHER -->
+    <div class="section">
+      <h3>Work & Experiments</h3>
 
+      <div class="grid">
+        <div class="card">
+          <h2>Work</h2>
+          <p>개인 작업, 실험적 프로젝트, 구조 테스트용 페이지 모음</p>
+          <a href="/web-projects/work/">바로가기 →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 LeDeuxions</p>
+    <p>
+      <a href="/privacy/">Privacy</a> |
+      <a href="/terms/">Terms</a> |
+      <a href="/contact/">Contact</a>
+    </p>
+  </footer>
 </body>
 </html>
