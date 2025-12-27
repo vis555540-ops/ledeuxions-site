@@ -13,13 +13,306 @@
   <meta name="description"
         content="카카오톡 영상 변환, 아이폰 HEIC 사진 변환, 오디오 MP3 추출을 설치 없이 바로 사용하는 무료 온라인 변환 작업실입니다." />
 
-  <!-- ✅ OpenGraph (SNS 공유 안정화) -->
+  <!-- OpenGraph (SNS 공유 안정화) -->
   <meta property="og:title" content="FreeComfort Studio – 설치 없이 바로 쓰는 변환 작업실" />
   <meta property="og:description" content="카카오톡 영상, 아이폰 사진, 오디오 파일을 브라우저에서 바로 변환하세요." />
   <meta property="og:type" content="website" />
 
-  <!-- ⚠️ 스타일은 기존 그대로 유지 -->
-  <!-- 네가 사용 중인 CSS 그대로 유지 -->
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body{
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+      background: radial-gradient(circle at top, #f7f0ff 0%, #f4f6ff 45%, #ffffff 100%);
+      color:#1f2430;
+      min-height:100vh;
+    }
+
+    a{ text-decoration:none; color:inherit; }
+
+    .page-wrap{
+      max-width:1120px;
+      margin:0 auto;
+      padding:28px 18px 40px;
+    }
+
+    /* Header */
+    .top-bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .brand{
+      font-weight:900;
+      font-size:22px;
+      letter-spacing:-0.02em;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .brand span{
+      font-weight:600;
+      font-size:12px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.85);
+      border:1px solid rgba(180,160,255,0.55);
+      color:#6b4dff;
+    }
+
+    .nav{
+      display:flex;
+      gap:10px;
+      font-size:13px;
+      color:#4f5565;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .nav a{
+      padding:7px 10px;
+      border-radius:999px;
+      transition:background .15s ease, color .15s ease;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(210,200,255,0.55);
+      white-space:nowrap;
+    }
+    .nav a:hover{
+      background: rgba(123,92,255,0.08);
+      color:#4f3bd9;
+      border-color: rgba(123,92,255,0.35);
+    }
+
+    /* Hero */
+    .hero{
+      background: rgba(255,255,255,0.92);
+      border:1px solid rgba(196,182,255,0.75);
+      border-radius:22px;
+      box-shadow:0 16px 40px rgba(123,92,255,0.14);
+      padding:22px 22px;
+      display:grid;
+      grid-template-columns:minmax(0, 1.7fr) minmax(0, 1.1fr);
+      gap:18px;
+      margin-bottom:22px;
+    }
+
+    .hero-label{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+      color:#6f6f86;
+      padding:5px 10px;
+      border-radius:999px;
+      background:rgba(123,92,255,0.06);
+      margin-bottom:10px;
+      width:fit-content;
+    }
+    .hero-label-dot{
+      width:7px; height:7px; border-radius:50%;
+      background:#7b5cff;
+    }
+
+    .hero-title{
+      font-size:26px;
+      font-weight:900;
+      letter-spacing:-0.03em;
+      margin-bottom:8px;
+      color:#23243a;
+    }
+
+    .hero-desc{
+      font-size:13.5px;
+      color:#565b6b;
+      line-height:1.7;
+      margin-bottom:14px;
+    }
+
+    .hero-buttons{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .btn-main{
+      padding:9px 14px;
+      border-radius:999px;
+      background: linear-gradient(135deg, #7b5cff, #b07cff);
+      color:#fff;
+      font-weight:800;
+      font-size:12.5px;
+      box-shadow:0 12px 28px rgba(123,92,255,0.26);
+    }
+
+    .btn-sub{
+      padding:9px 13px;
+      border-radius:999px;
+      background:rgba(123,92,255,0.04);
+      border:1px solid rgba(167,153,255,0.7);
+      color:#5e4bdf;
+      font-weight:700;
+      font-size:12.5px;
+    }
+
+    .hero-note{
+      font-size:12px;
+      color:#6a667b;
+      line-height:1.7;
+      padding:12px 14px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.92);
+      border:1px dashed rgba(199,185,255,0.95);
+    }
+    .hero-note strong{ color:#4a33d8; font-weight:900; }
+
+    /* About block */
+    .about{
+      margin-top:14px;
+      margin-bottom:18px;
+      padding:18px 16px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.92);
+      border:1px solid rgba(210,200,255,0.9);
+      color:#5f5a74;
+      font-size:12.5px;
+      line-height:1.8;
+    }
+    .about strong{ color:#2b2840; }
+
+    /* Section title */
+    .section-title-row{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      margin:14px 2px 12px;
+    }
+    .section-title{
+      font-size:14px;
+      font-weight:900;
+      color:#2c2a44;
+    }
+    .section-caption{
+      font-size:11px;
+      color:#8a82a8;
+    }
+
+    /* Cards */
+    .tool-grid{ display:flex; flex-direction:column; gap:14px; }
+
+    .tool-row{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:14px;
+    }
+    .tool-row.second{
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      max-width:760px;
+    }
+
+    .card{
+      background:rgba(255,255,255,0.94);
+      border-radius:18px;
+      padding:16px 16px 14px;
+      border:1px solid rgba(209,197,255,0.88);
+      box-shadow:0 10px 26px rgba(120,90,255,0.10);
+      overflow:hidden;
+    }
+
+    .card-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:10px;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(123,92,255,0.06);
+      color:#6a5bf1;
+      margin-bottom:8px;
+      font-weight:800;
+      border:1px solid rgba(167,153,255,0.35);
+      width:fit-content;
+    }
+    .card-badge--primary{
+      background:rgba(255,255,255,0.95);
+      color:#ff3d8f;
+      border:1px solid rgba(255,127,170,0.75);
+    }
+
+    .card-title{
+      font-size:14px;
+      font-weight:900;
+      color:#2f2944;
+      margin-bottom:6px;
+      letter-spacing:-0.02em;
+    }
+
+    .card-desc{
+      font-size:12px;
+      color:#6b6684;
+      line-height:1.7;
+      margin-bottom:12px;
+      min-height:44px;
+    }
+
+    .card-actions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .pill-link{
+      padding:7px 11px;
+      border-radius:999px;
+      background:rgba(123,92,255,0.09);
+      color:#4c3ad1;
+      font-weight:900;
+      font-size:11.5px;
+      border:1px solid rgba(123,92,255,0.18);
+    }
+    .pill-link.small{
+      font-size:10.5px;
+      padding:6px 10px;
+    }
+
+    .card-hint{
+      font-size:11px;
+      color:#9189b0;
+      font-weight:700;
+    }
+
+    /* Footer */
+    .footer{
+      margin-top:18px;
+      padding:14px 4px 0;
+      font-size:11px;
+      color:#8e86ab;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      border-top:1px solid rgba(210,200,255,0.7);
+    }
+    .footer a{ color:#8e86ab; font-weight:800; }
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .hero{ grid-template-columns:1fr; }
+      .nav{ justify-content:flex-start; }
+    }
+    @media (max-width: 768px){
+      .page-wrap{ padding:18px 14px 30px; }
+      .tool-row{ grid-template-columns:1fr; }
+      .tool-row.second{ grid-template-columns:1fr; max-width:none; }
+      .nav{ display:none; }
+      .hero-title{ font-size:22px; }
+    }
+  </style>
 </head>
 
 <body>
@@ -31,13 +324,15 @@
         FreeComfort Studio
         <span>가볍게 쓰는 변환 작업실</span>
       </div>
+
       <nav class="nav">
         <a href="#kakao-main">카카오 영상</a>
         <a href="#iphone-photo">아이폰 사진</a>
         <a href="#audio-mp3">오디오</a>
         <a href="#other-tools">다른 작업들</a>
-        <a href="en/index.html"
-           style="background:rgba(123,92,255,0.08); color:#4f3bd9;">🌐 English</a>
+        <a href="en/index.html" style="background:rgba(123,92,255,0.08); color:#4f3bd9; border-color:rgba(123,92,255,0.35);">
+          🌐 English
+        </a>
       </nav>
     </header>
 
@@ -48,18 +343,22 @@
           <span class="hero-label-dot"></span>
           설치 없이 바로 쓰는 변환 작업실
         </div>
+
         <h1 class="hero-title">FreeComfort Studio</h1>
+
         <p class="hero-desc">
           카카오톡 영상, 아이폰 사진(HEIC), 오디오 파일을<br />
           <strong>별도 프로그램 설치 없이</strong> 브라우저에서 바로 변환할 수 있는
           개인 실험용 웹 작업실입니다.
         </p>
+
         <div class="hero-buttons">
           <a href="#kakao-main" class="btn-main">카카오 영상 변환</a>
           <a href="#iphone-photo" class="btn-sub">아이폰 사진 변환</a>
           <a href="#tools" class="btn-sub">전체 도구 보기</a>
         </div>
       </div>
+
       <div>
         <div class="hero-note">
           이 사이트는 <strong>Google 자동 광고만 사용</strong>합니다.<br />
@@ -70,7 +369,7 @@
       </div>
     </section>
 
-    <!-- SEO / 체류용 설명 블록 (중요) -->
+    <!-- SEO / 체류용 설명 블록 -->
     <section class="about">
       <strong>이 사이트는 어떤 곳인가요?</strong><br /><br />
       FreeComfort Studio는 일상에서 자주 반복되는
@@ -102,9 +401,7 @@
               MP3 또는 MP4로 다시 변환합니다.
             </p>
             <div class="card-actions">
-              <a href="/kakao-video-to-mp3.html" class="pill-link">
-                MP3 / MP4 변환
-              </a>
+              <a href="/kakao-video-to-mp3.html" class="pill-link">MP3 / MP4 변환</a>
               <span class="card-hint">브라우저 즉시 실행</span>
             </div>
           </article>
@@ -119,9 +416,7 @@
               윈도우·웹에서도 바로 사용할 수 있습니다.
             </p>
             <div class="card-actions">
-              <a href="/iphone-heic/" class="pill-link">
-                JPG / PNG 변환
-              </a>
+              <a href="/iphone-heic/" class="pill-link">JPG / PNG 변환</a>
               <span class="card-hint">아이폰 사진 호환</span>
             </div>
           </article>
@@ -154,6 +449,20 @@
             </p>
             <div class="card-actions">
               <a href="/web-projects/" class="pill-link small">모아보기</a>
+              <span class="card-hint">정리 중</span>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-badge">English</div>
+            <h2 class="card-title">영어 버전</h2>
+            <p class="card-desc">
+              해외 유입을 위한 영어 인덱스 페이지입니다.
+              간단한 소개와 도구 링크를 제공합니다.
+            </p>
+            <div class="card-actions">
+              <a href="en/index.html" class="pill-link small">English Index</a>
+              <span class="card-hint">EN</span>
             </div>
           </article>
         </div>
