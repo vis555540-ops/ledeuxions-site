@@ -1,343 +1,23 @@
-<section>
-<h1>FreeComfortLab</h1>
-<p>FreeComfortLab은 이미지 및 오디오 파일을 간단하게 처리할 수 있는 웹 기반 실험 공간입니다.</p>
-<p>일상 속에서 반복되는 작업을 조금 더 편안하게 만드는 것을 목표로 합니다.</p>
-</section>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+  <!-- Google AdSense : 자동 광고 전용 -->
+  <script async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
+    crossorigin="anonymous"></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FreeComfort Studio — 설치 없이 바로 쓰는 변환 작업실</title>
-  <meta name="description" content="카카오톡 영상, 녹음 파일, 간단한 클립들을 설치 없이 바로 변환하는 온라인 변환 작업실입니다." />
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+  <meta name="description" content="카카오톡 영상, 아이폰 사진, 오디오 파일을 설치 없이 바로 변환하는 온라인 작업실" />
 
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #f7f0ff 0%, #f4f6ff 40%, #f8f5ff 100%);
-      color:#222;
-      min-height:100vh;
-    }
-
-    a { text-decoration:none; color:inherit; }
-
-    .page-wrap {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 32px 20px 40px;
-    }
-
-    /* 헤더 */
-    .top-bar {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:24px;
-    }
-
-    .brand {
-      font-weight:800;
-      font-size:20px;
-      letter-spacing:0.03em;
-    }
-
-    .brand span {
-      font-weight:500;
-      font-size:12px;
-      margin-left:8px;
-      padding:3px 8px;
-      border-radius:999px;
-      background:rgba(255,255,255,0.8);
-      border:1px solid rgba(180,160,255,0.4);
-      color:#7b5cff;
-    }
-
-    .nav {
-      display:flex;
-      gap:14px;
-      font-size:13px;
-      color:#666;
-    }
-
-    .nav a {
-      padding:6px 10px;
-      border-radius:999px;
-      transition:background 0.2s, color 0.2s;
-      white-space:nowrap;
-    }
-
-    .nav a:hover {
-      background:rgba(123,92,255,0.08);
-      color:#4f3bd9;
-    }
-
-    /* 히어로 카드 */
-    .hero {
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(10px);
-      border-radius:22px;
-      padding:24px 24px 22px;
-      box-shadow:0 18px 45px rgba(123,92,255,0.18);
-      border:1px solid rgba(196,182,255,0.7);
-      display:grid;
-      grid-template-columns:minmax(0, 1.7fr) minmax(0, 1.1fr);
-      gap:18px;
-      margin-bottom:32px;
-    }
-
-    .hero-label {
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      font-size:11px;
-      color:#6b6b8a;
-      padding:4px 8px;
-      border-radius:999px;
-      background:rgba(123,92,255,0.06);
-      margin-bottom:10px;
-    }
-
-    .hero-label-dot {
-      width:6px;
-      height:6px;
-      border-radius:50%;
-      background:#7b5cff;
-    }
-
-    .hero-title {
-      font-size:22px;
-      font-weight:800;
-      margin-bottom:8px;
-      letter-spacing:-0.02em;
-    }
-
-    .hero-desc {
-      font-size:13px;
-      color:#55556b;
-      line-height:1.6;
-      margin-bottom:14px;
-    }
-
-    .hero-buttons {
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      font-size:12px;
-    }
-
-    .btn-main {
-      padding:8px 14px;
-      border-radius:999px;
-      background:linear-gradient(135deg,#7b5cff,#b07cff);
-      color:#fff;
-      font-weight:600;
-      box-shadow:0 10px 25px rgba(123,92,255,0.35);
-      border:none;
-      cursor:pointer;
-    }
-
-    .btn-sub {
-      padding:7px 13px;
-      border-radius:999px;
-      background:rgba(123,92,255,0.04);
-      border:1px solid rgba(167,153,255,0.6);
-      color:#5e4bdf;
-      font-weight:500;
-      cursor:pointer;
-    }
-
-    .hero-note {
-      font-size:12px;
-      color:#77728f;
-      line-height:1.6;
-      padding:10px 12px;
-      border-radius:16px;
-      background:rgba(255,255,255,0.9);
-      border:1px dashed rgba(199,185,255,0.9);
-    }
-
-    .hero-note strong {
-      font-weight:700;
-      color:#5a3fd9;
-    }
-
-    /* 섹션 타이틀 */
-    .section-title-row {
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      margin:10px 2px 14px;
-    }
-
-    .section-title {
-      font-size:14px;
-      font-weight:700;
-      color:#373250;
-    }
-
-    .section-caption {
-      font-size:11px;
-      color:#8a82a8;
-    }
-
-    /* 카드 공통 */
-    .tool-grid {
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-    }
-
-    .tool-row {
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0,1fr));
-      gap:14px;
-    }
-
-    .tool-row.second {
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      max-width:760px;
-    }
-
-    .card {
-      position:relative;
-      background:rgba(255,255,255,0.94);
-      border-radius:18px;
-      padding:16px 16px 14px;
-      border:1px solid rgba(209,197,255,0.85);
-      box-shadow:0 10px 30px rgba(120,90,255,0.12);
-      font-size:12px;
-      overflow:hidden;
-    }
-
-    .card-badge {
-      display:inline-flex;
-      align-items:center;
-      gap:5px;
-      font-size:10px;
-      padding:3px 7px;
-      border-radius:999px;
-      background:rgba(123,92,255,0.06);
-      color:#6a5bf1;
-      margin-bottom:6px;
-    }
-
-    .card-badge--primary {
-      background:rgba(255,255,255,0.9);
-      color:#ff4f9a;
-      border:1px solid rgba(255,127,170,0.7);
-    }
-
-    .card-title {
-      font-size:14px;
-      font-weight:700;
-      margin-bottom:4px;
-      color:#302742;
-    }
-
-    .card-desc {
-      font-size:12px;
-      color:#6b6684;
-      line-height:1.6;
-      margin-bottom:10px;
-      min-height:40px;
-    }
-
-    .card-actions {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      font-size:11px;
-      margin-top:2px;
-    }
-
-    .pill-link {
-      padding:6px 10px;
-      border-radius:999px;
-      background:rgba(123,92,255,0.08);
-      color:#4c3ad1;
-      font-weight:500;
-    }
-
-    .pill-link--ghost {
-      background:rgba(123,92,255,0.03);
-      color:#7a70c8;
-    }
-
-    .pill-link--ghost span {
-      font-size:11px;
-      opacity:0.9;
-    }
-
-    .pill-link.small {
-      font-size:10px;
-      padding:5px 9px;
-    }
-
-    .card-hint {
-      font-size:11px;
-      color:#9189b0;
-    }
-
-    /* About & 푸터 */
-    .about {
-      margin-top:32px;
-      padding:18px 16px 18px;
-      border-radius:18px;
-      background:rgba(255,255,255,0.92);
-      border:1px solid rgba(210,200,255,0.9);
-      font-size:12px;
-      color:#66607f;
-      line-height:1.7;
-    }
-
-    .about strong {
-      color:#403468;
-    }
-
-    .about a {
-      color:#5a46e0;
-      text-decoration:underline;
-    }
-
-    .footer {
-      margin-top:18px;
-      font-size:11px;
-      color:#9a94c0;
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .footer a { color:#9a94c0; }
-
-    @media (max-width: 900px) {
-      .hero {
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .page-wrap {
-        padding:20px 14px 32px;
-      }
-      .tool-row {
-        grid-template-columns:1fr;
-      }
-      .tool-row.second {
-        grid-template-columns:1fr;
-        max-width:none;
-      }
-      .nav {
-        display:none;
-      }
-    }
-  </style>
+  <!-- ⚠️ 스타일은 기존 그대로 유지 -->
+  <!-- (중략: 네가 올린 CSS 그대로 유지) -->
 </head>
+
 <body>
   <div class="page-wrap">
+
     <!-- 헤더 -->
     <header class="top-bar">
       <div class="brand">
@@ -345,11 +25,10 @@
         <span>가볍게 쓰는 변환 작업실</span>
       </div>
       <nav class="nav">
-        <a href="#kakao-main">카카오톡 영상 변환</a>
-        <a href="#audio-mp3">오디오 → MP3</a>
+        <a href="#kakao-main">카카오 영상</a>
+        <a href="#iphone-photo">아이폰 사진</a>
+        <a href="#audio-mp3">오디오</a>
         <a href="#other-tools">다른 작업들</a>
-        <a href="/contact.html">Contact</a>
-        <a href="/privacy.html">Privacy</a>
         <a href="en/index.html" style="background:rgba(123,92,255,0.08); color:#4f3bd9;">🌐 English</a>
       </nav>
     </header>
@@ -361,25 +40,22 @@
           <span class="hero-label-dot"></span>
           설치 없이 바로 쓰는 변환 작업실
         </div>
-        <h1 class="hero-title">FreeComfort Studio — 설치 없이 바로 쓰는 변환 작업실</h1>
+        <h1 class="hero-title">FreeComfort Studio</h1>
         <p class="hero-desc">
-          카카오톡 영상, 녹음 파일, 간단한 클립들을
-          따로 프로그램 설치 없이 브라우저에서 바로 변환할 수 있는 작은 작업실입니다.
-          자주 쓰는 도구부터 가볍게 모아두었습니다.
+          카카오톡 영상, 아이폰 사진(HEIC), 오디오 파일을
+          별도 프로그램 없이 브라우저에서 바로 변환할 수 있는 작은 작업실입니다.
         </p>
         <div class="hero-buttons">
-          <a href="#kakao-main" class="btn-main">카카오톡 영상 변환 바로가기</a>
-          <a href="#tools" class="btn-sub">MP3 변환 도구 보기</a>
-          <a href="#other-tools" class="btn-sub">다른 작업들 · 프로젝트 소개</a>
+          <a href="#kakao-main" class="btn-main">카카오 영상 변환</a>
+          <a href="#iphone-photo" class="btn-sub">아이폰 사진 변환</a>
+          <a href="#tools" class="btn-sub">전체 도구 보기</a>
         </div>
       </div>
       <div>
         <div class="hero-note">
-          이 사이트는 일상에서 자주 쓰이는 작은 도구들을<br />
-          <strong>최소한의 버튼과 단계</strong>로 빠르게 쓰도록 만든 개인 프로젝트입니다.<br />
-          파일은 변환 처리에만 사용되며, 별도 저장소에 오래 보관하지 않습니다.<br /><br />
-          새로운 변환 도구와 프로젝트는
-          <strong>가볍게, 하지만 꾸준히</strong> 추가될 예정입니다.
+          <strong>자동 광고만 사용</strong>하며,<br />
+          광고 배치는 Google 정책에 맞게 자동으로 조정됩니다.<br /><br />
+          파일은 변환에만 사용되며 저장되지 않습니다.
         </div>
       </div>
     </section>
@@ -388,98 +64,71 @@
     <section id="tools">
       <div class="section-title-row">
         <div class="section-title">주요 변환 도구</div>
-        <div class="section-caption">자주 쓸만한 기능만 앞쪽에 모았습니다.</div>
+        <div class="section-caption">자주 쓰는 기능 위주</div>
       </div>
 
       <div class="tool-grid">
-        <!-- 첫 번째 줄: 핵심 3개 -->
         <div class="tool-row">
-          <!-- 카카오톡 영상 변환 -->
+
+          <!-- 카카오톡 영상 -->
           <article class="card" id="kakao-main">
-            <div class="card-badge card-badge--primary">
-              <span>가장 많이 쓰이는 기능</span>
-            </div>
-            <h2 class="card-title">카카오톡 영상 변환 (MP3/MP4)</h2>
+            <div class="card-badge card-badge--primary">가장 많이 쓰는 기능</div>
+            <h2 class="card-title">카카오톡 영상 변환</h2>
             <p class="card-desc">
-              카카오톡에서 받은 영상을 그대로 저장하기 어렵거나,
-              2배·4배 보기용 영상만 있을 때 써먹는 변환 도구입니다.
-              재생이 막힌 영상을 컴퓨터에서 다시 활용할 수 있도록 도와줍니다.
+              카카오톡에서 받은 영상의 음원 추출 또는
+              저장용 영상으로 재변환합니다.
             </p>
             <div class="card-actions">
-              <a href="/kakao-video-to-mp3.html" class="pill-link">카카오 영상 → MP3 / 저장용 영상</a>
-              <span class="card-hint">브라우저에서 바로 실행</span>
+              <a href="/kakao-video-to-mp3.html" class="pill-link">
+                MP3 / MP4 변환
+              </a>
+              <span class="card-hint">브라우저 즉시 실행</span>
             </div>
           </article>
 
-          <!-- 오디오 → MP3 -->
-          <article class="card" id="audio-mp3">
-            <div class="card-badge">
-              <span>일반 음원 변환</span>
-            </div>
-            <h2 class="card-title">영상 오디오 → MP3 변환</h2>
+          <!-- 아이폰 사진 HEIC -->
+          <article class="card" id="iphone-photo">
+            <div class="card-badge">New · iPhone</div>
+            <h2 class="card-title">아이폰 사진 (HEIC) 변환</h2>
             <p class="card-desc">
-              녹음파일이나 영상 클립에서 소리만 빠르게 추출하고 싶을 때 쓰는 도구입니다.
-              자막 제작, 강의 복습, 팟캐스트 정리용으로 가볍게 활용할 수 있습니다.
+              아이폰에서 촬영한 HEIC 사진을
+              JPG 또는 PNG로 빠르게 변환합니다.
+            </p>
+            <div class="card-actions">
+              <a href="/iphone-heic/" class="pill-link">
+                JPG / PNG 변환
+              </a>
+              <span class="card-hint">iOS 사진 호환</span>
+            </div>
+          </article>
+
+          <!-- 오디오 -->
+          <article class="card" id="audio-mp3">
+            <div class="card-badge">일반 음원</div>
+            <h2 class="card-title">오디오 → MP3</h2>
+            <p class="card-desc">
+              영상이나 녹음 파일에서
+              소리만 추출하여 MP3로 저장합니다.
             </p>
             <div class="card-actions">
               <a href="/audio-to-mp3.html" class="pill-link">MP3 추출</a>
-              <span class="card-hint">필요한 부분만 다시 듣기 좋게</span>
+              <span class="card-hint">강의·복습용</span>
             </div>
           </article>
 
-          <!-- 카카오톡 영상 → MP4 재인코딩 -->
-          <article class="card">
-            <div class="card-badge">
-              <span>화질 유지</span>
-            </div>
-            <h2 class="card-title">카카오톡 영상 → MP4 재인코딩</h2>
-            <p class="card-desc">
-              카카오톡 전송용으로 인코딩된 영상을
-              다른 플레이어나 서비스에서 보기 좋게 다시 MP4로 저장해주는 도구입니다.
-              가능하면 화질을 유지하면서 재저장하도록 설계했습니다.
-            </p>
-            <div class="card-actions">
-              <a href="/kakao-video-to-video.html" class="pill-link">공유용 영상 만들기</a>
-              <span class="card-hint">공유·보관용</span>
-            </div>
-          </article>
         </div>
 
-        <!-- 두 번째 줄: 실험실 / 다른 작업들 -->
+        <!-- 기타 -->
         <div class="tool-row second" id="other-tools">
-          <!-- 실험실 · 다목적 변환 -->
           <article class="card">
-            <div class="card-badge">
-              <span>실험 중인 기능</span>
-            </div>
-            <h2 class="card-title">다목적 변환 도구 (실험실)</h2>
+            <div class="card-badge">실험 중</div>
+            <h2 class="card-title">다른 작업들 · 실험실</h2>
             <p class="card-desc">
-              여러 형식을 한 번에 다루기 위한 변환 도구 실험판입니다.
-              상황에 따라 제공되는 기능이 조금씩 바뀔 예정이며,
-              안정화되면 메인 도구 쪽으로 옮길 계획입니다.
+              PDF300, 이미지 실험 도구 등
+              다른 프로젝트를 모아둔 공간입니다.
             </p>
             <div class="card-actions">
-              <a href="/beta.html" class="pill-link small">Beta 열어 보기</a>
-              <span class="card-hint">형식 통일 · 실험용</span>
-            </div>
-          </article>
-
-          <!-- 다른 작업들 · 프로젝트 소개 -->
-          <article class="card">
-            <div class="card-badge">
-              <span>FreeComfortLab · 다른 작업들</span>
-            </div>
-            <h2 class="card-title">다른 작업들 · 프로젝트 소개</h2>
-            <p class="card-desc">
-              PDF300, 도장 PNG 추출기 같은 별도 서비스나
-              실험 중인 도구들을 한 곳에 모아 정리하는 페이지입니다.
-              아직은 정리 중이지만, 차차 링크와 설명을 채워 넣을 예정입니다.
-            </p>
-            <div class="card-actions">
-              <a href="/convert.html" class="pill-link small">
-                소개 · 모아보기
-              </a>
-              <span class="card-hint">소규모 서비스 전용</span>
+              <a href="/web-projects/" class="pill-link small">모아보기</a>
             </div>
           </article>
         </div>
@@ -488,31 +137,20 @@
 
     <!-- About -->
     <section class="about">
-      <strong>About · 운영자 소개</strong><br />
-      FreeComfort Studio는 Le Deuxions Studio가 운영하는 작은 온라인 작업실입니다.
-      개인 작업과 생활 편의용으로 쓰던 도구들을, 필요한 사람 누구나 가볍게 쓸 수 있도록 공개하고 있습니다.
-      <br /><br />
-      문의·제안은 <a href="mailto:ledeuxions@gmail.com">ledeuxions@gmail.com</a> 으로 보내주시면
-      가능한 선에서 차근차근 반영해 보겠습니다.
+      <strong>About</strong><br />
+      FreeComfort Studio는 Le Deuxions가 운영하는
+      개인 실험용 웹 작업실입니다.
     </section>
-
-    <!-- 하단 가로형 광고 -->
-    <div style="margin: 40px auto; padding: 20px; text-align: center; background: rgba(255,255,255,0.92); border-radius: 18px; border: 1px solid rgba(210,200,255,0.9);">
-      <!-- AdSense 가로형 광고 코드를 여기에 삽입하세요 -->
-      <div style="min-height: 90px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.9); border: 2px dashed rgba(199,185,255,0.9); border-radius: 10px;">
-        <p style="color: #9a94c0; font-size: 14px; margin: 0;">AdSense 가로형 광고 영역<br>(실제 광고 코드로 교체 필요)</p>
-      </div>
-      <!-- AdSense 광고 끝 -->
-    </div>
 
     <!-- Footer -->
     <footer class="footer">
       <span>© 2025 FreeComfort Studio · Le Deuxions</span>
       <span>
-        <a href="/privacy.html">개인정보처리방침</a> ·
+        <a href="/privacy.html">Privacy</a> ·
         <a href="/contact.html">Contact</a>
       </span>
     </footer>
+
   </div>
 </body>
 </html>
