@@ -398,21 +398,7 @@ input[type="file"] {
     border-color: var(--warning);
 }
 
-/* 광고 플레이스홀더 */
-.ad-placeholder {
-    background-color: var(--bg-main);
-    border: 1px dashed var(--border-medium);
-    border-radius: 4px;
-    padding: 24px;
-    text-align: center;
-    color: var(--text-muted);
-    margin: 24px 0;
-    min-height: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-}
+
 
 /* 푸터 */
 footer {
