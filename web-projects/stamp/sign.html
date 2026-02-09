@@ -68,9 +68,6 @@
     }
 
     main {
-      max-width: 960px;
-      margin: 32px auto 48px;
-      padding: 0 20px 40px;
     }
 
     .hero {
@@ -259,6 +256,63 @@
         font-size: 22px;
       }
     }
+    /* Styles for the page wrapper and banner */
+    .page-wrapper-with-banner {
+      max-width: 1200px;
+      margin: 32px auto 48px; /* Adjusted margin to match original main */
+      padding: 0 20px; /* Adjusted padding to match original main */
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .main-content-layout {
+      flex-grow: 1;
+      max-width: 960px; /* Original max-width for main */
+      margin: 0; /* Reset margin */
+      padding: 0; /* Reset padding */
+    }
+
+    .right-side-banner {
+      width: 250px;
+      background: #fdfefe;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      display: none; /* Hidden on mobile */
+    }
+    @media (min-width: 1024px) { /* Display on desktop */
+      .right-side-banner {
+        display: block;
+      }
+    }
+    .banner-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .banner-subtitle {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .banner-button {
+      display: inline-block;
+      background: #4A90E2;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .banner-button:hover {
+      background: #357ABD;
+    }
   </style>
 </head>
 <body>
@@ -277,7 +331,8 @@
     </div>
   </header>
 
-  <main>
+  <div class="page-wrapper-with-banner">
+    <main class="main-content-layout">
     <section class="hero">
       <div class="hero-tag">
         ✒ 전자서명용 서명 이미지 · Signature for PDF
@@ -349,11 +404,12 @@
         </div>
       </div>
     </section>
-  </main>
+    </main>
+      </div>
 
   <footer>
     <div class="footer-inner">
-      <div>© 2025 도장/서명 작업 도구. 일부 기능은 계속 업데이트될 예정입니다.</div>
+      <div>© 2005–2026 도장/서명 작업 도구. 일부 기능은 계속 업데이트될 예정입니다.</div>
       <div>
         <a href="index.html">도장 PNG</a>
         <a href="sign.html">서명 PNG</a>

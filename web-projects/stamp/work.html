@@ -56,9 +56,6 @@
     nav a:hover { color: #111827; }
 
     main {
-      max-width: 960px;
-      margin: 24px auto 40px;
-      padding: 0 16px;
     }
     h1 {
       font-size: 22px;
@@ -117,6 +114,70 @@
       color: #9ca3af;
       text-align: right;
     }
+    /* Overrides for main layout */
+    main {
+      max-width: none; /* Override existing max-width */
+      margin: 0;      /* Override existing margin */
+      padding: 0;     /* Override existing padding */
+    }
+
+    /* Styles for the page wrapper and banner */
+    .page-wrapper-with-banner {
+      max-width: 1200px;
+      margin: 24px auto 40px auto; /* Adjusted to match original main margin */
+      padding: 0 16px; /* Adjusted padding to match original main */
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .main-content-layout {
+      flex-grow: 1;
+      max-width: 960px; /* Original max-width for main */
+      margin: 0; /* Reset margin */
+      padding: 0; /* Reset padding */
+    }
+
+    .right-side-banner {
+      width: 250px;
+      background: #fdfefe;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      display: none; /* Hidden on mobile */
+    }
+    @media (min-width: 1024px) { /* Display on desktop */
+      .right-side-banner {
+        display: block;
+      }
+    }
+    .banner-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .banner-subtitle {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .banner-button {
+      display: inline-block;
+      background: #4A90E2;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .banner-button:hover {
+      background: #357ABD;
+    }
   </style>
   
 </head>
@@ -137,7 +198,8 @@
     </nav>
   </header>
 
-  <main>
+  <div class="page-wrapper-with-banner">
+    <main class="main-content-layout">
     <h1>도장 PNG 추출기 사용 가이드</h1>
     <p class="lead">
       이 페이지는 <strong>도장 이미지를 어떻게 준비하면 좋은지</strong>,<br>
@@ -325,8 +387,8 @@
     </section>
     <!-- DOC-EXAMPLE-END -->
     
-</main>
-
+    </main>
+      </div>
   <!-- FOOTER-START -->
   <footer style="margin-top:32px;padding:20px 0;font-size:12px;color:#9ca3af;text-align:center;">
     <div style="margin-bottom:6px;">

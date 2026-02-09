@@ -43,6 +43,49 @@
       font-size: 14px; padding: 8px;
     }
     .btn-again:hover { text-decoration: underline; color: #374151; }
+
+    /* Styles for the right-side banner */
+    .right-side-banner {
+      width: 250px;
+      background: #fdfefe;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin: 40px auto; /* Centered with vertical margin */
+      display: none; /* Hidden on mobile */
+    }
+    @media (min-width: 1024px) { /* Display on desktop */
+      .right-side-banner {
+        display: block;
+      }
+    }
+    .banner-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .banner-subtitle {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .banner-button {
+      display: inline-block;
+      background: #4A90E2;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .banner-button:hover {
+      background: #357ABD;
+    }
   </style>
 </head>
 <body>
@@ -60,6 +103,8 @@
 
 
     </div>
+
+    
   </div>
   <script>
     const dataUrl = sessionStorage.getItem('stampResultDataUrl');

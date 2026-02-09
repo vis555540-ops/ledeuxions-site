@@ -114,6 +114,61 @@
             .hero-en h1 { font-size: 2rem; }
             .btn-main, .btn-sub { width: 100%; display: block; text-align: center; margin-bottom: 10px; }
         }
+
+        /* Styles for the page wrapper and banner */
+        .page-wrapper-with-banner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .main-content-layout {
+            flex-grow: 1;
+        }
+
+        .right-side-banner {
+            width: 250px;
+            background: #fdfefe;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            display: none; /* Hidden on mobile */
+        }
+        @media (min-width: 1024px) { /* Display on desktop */
+            .right-side-banner {
+                display: block;
+            }
+        }
+        .banner-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .banner-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .banner-button {
+            display: inline-block;
+            background: #4A90E2;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        .banner-button:hover {
+            background: #357ABD;
+        }
     </style>
 </head>
 <body>
@@ -123,48 +178,53 @@
         <a href="index.html" class="lang-btn">🇰🇷 한국어 Site</a>
     </nav>
 
-    <header class="hero-en">
-        <div class="security-badge">🔒 Private & Secure: Files never leave your browser</div>
-        <h1>Digitize Your Signature<br>in Seconds</h1>
-        <p>
-            Remove backgrounds from handwritten signatures or stamps using AI.<br>
-            Get a transparent PNG instantly. No signup required.
-        </p>
+    <div class="page-wrapper-with-banner">
+        <div class="main-content-layout">
+            <header class="hero-en">
+                <div class="security-badge">🔒 Private & Secure: Files never leave your browser</div>
+                <h1>Digitize Your Signature<br>in Seconds</h1>
+                <p>
+                    Remove backgrounds from handwritten signatures or stamps using AI.<br>
+                    Get a transparent PNG instantly. No signup required.
+                </p>
 
-        <div class="btn-group-en">
-            <a href="stamp-ai-sign_en.html" class="btn-main">Make Transparent Signature (AI)</a>
-            <a href="welcome_en.html" class="btn-sub">Traditional Stamp Tool</a>
-        </div>
-    </header>
+                <div class="btn-group-en">
+                    <a href="stamp-ai-sign_en.html" class="btn-main">Make Transparent Signature (AI)</a>
+                    <a href="welcome_en.html" class="btn-sub">Traditional Stamp Tool</a>
+                </div>
+            </header>
 
-    <section class="features-grid">
-        <div class="feature-item">
-            <h3>⚡ Instant Processing</h3>
-            <p>Everything happens in your browser. No waiting for server uploads or downloads.</p>
-        </div>
-        <div class="feature-item">
-            <h3>🛡️ 100% Private</h3>
-            <p>We do not store your data. Your signature files are processed locally and vanish when you close the tab.</p>
-        </div>
-        <div class="feature-item">
-            <h3>✨ High Quality</h3>
-            <p>Use our Threshold Slider and B&W Mode to clean up messy scans and get crisp lines.</p>
-        </div>
-    </section>
+            <section class="features-grid">
+                <div class="feature-item">
+                    <h3>⚡ Instant Processing</h3>
+                    <p>Everything happens in your browser. No waiting for server uploads or downloads.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🛡️ 100% Private</h3>
+                    <p>We do not store your data. Your signature files are processed locally and vanish when you close the tab.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>✨ High Quality</h3>
+                    <p>Use our Threshold Slider and B&W Mode to clean up messy scans and get crisp lines.</p>
+                </div>
+            </section>
 
-    <section style="max-width:800px;margin:60px auto;padding:20px;background:#fff;border-top:1px solid #eee">
-    <h2 style="text-align:center;margin-bottom:30px">Frequently Asked Questions</h2>
-    <details open style="margin-bottom:15px;cursor:pointer"><summary style="font-weight:bold;font-size:1.1rem">Q. Is this tool really free?</summary><p style="margin-top:10px;color:#555">Yes, it is 100% free with no usage limits and no signup required.</p></details>
-    <details style="margin-bottom:15px;cursor:pointer"><summary style="font-weight:bold;font-size:1.1rem">Q. Is my signature safe?</summary><p style="margin-top:10px;color:#555">Absolutely. We use client-side processing technology. Your images are processed in your browser and are NEVER uploaded to our servers.</p></details>
-    <details style="margin-bottom:15px;cursor:pointer"><summary style="font-weight:bold;font-size:1.1rem">Q. How do I get the best results?</summary><p style="margin-top:10px;color:#555">Use white paper and a dark pen. Avoid shadows. Use the 'Threshold Slider' in our AI tool to fine-tune the transparency.</p></details>
-</section>
+            <section style="max-width:800px;margin:60px auto;padding:20px;background:#fff;border-top:1px solid #eee">
+            <h2 style="text-align:center;margin-bottom:30px">Frequently Asked Questions</h2>
+            <details open style="margin-bottom:15px;cursor:pointer"><summary style="font-weight:bold;font-size:1.1rem">Q. Is this tool really free?</summary><p style="margin-top:10px;color:#555">Yes, it is 100% free with no usage limits and no signup required.</p></details>
+            <details style="margin-bottom:15px;cursor:pointer"><summary style="font-weight:bold;font-size:1.1rem">Q. Is my signature safe?</summary><p style="margin-top:10px;color:#555">Absolutely. We use client-side processing technology. Your images are processed in your browser and are NEVER uploaded to our servers.</p></details>
+            <details style="margin-bottom:15px;cursor:pointer"><summary style="font-weight:bold;font-size:1.1rem">Q. How do I get the best results?</summary><p style="margin-top:10px;color:#555">Use white paper and a dark pen. Avoid shadows. Use the 'Threshold Slider' in our AI tool to fine-tune the transparency.</p></details>
+        </section>
+        </div>
+        
+            </div>
 
 <footer>
         <a href="terms_en.html" style="color:#666;text-decoration:none;margin:0 10px;">Terms of Service</a> | <a href="privacy_en.html"
 >Privacy Policy</a>
         <a href="https://playnstock.tistory.com/guestbook" target="_blank">Contact</a>
         <br><br>
-        © 2025 Signature Extractor Tools
+        © 2005–2026 Signature Extractor Tools
     </footer>
 
 </body>

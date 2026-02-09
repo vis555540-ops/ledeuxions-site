@@ -18,7 +18,7 @@
         .hero-title { font-size: 2.2rem; font-weight: bold; margin-bottom: 10px; }
         .hero-desc { font-size: 1.1rem; opacity: 0.9; font-weight: 300; }
 
-        .container { max-width: 800px; margin: -60px auto 40px auto; padding: 0 20px; }
+        .container { }
         .tool-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 40px; text-align: center; }
 
         .upload-btn-wrapper { margin-bottom: 30px; }
@@ -51,7 +51,64 @@
 
         .nav-bar { padding: 15px 20px; text-align: left; background: white; border-bottom: 1px solid #eee; }
         .nav-logo { font-weight: bold; text-decoration: none; color: #333; font-size: 1.2rem; }
-    </style>
+      /* Styles for the page wrapper and banner */
+    .page-wrapper-with-banner {
+      max-width: 1200px;
+      margin: -60px auto 40px auto; /* Adjusted to match original main.container margin */
+      padding: 0 20px;
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .main-content-layout {
+      flex-grow: 1;
+      max-width: 800px; /* Original max-width for main.container */
+      margin: 0; /* Reset margin */
+      padding: 0; /* Reset padding */
+    }
+
+    .right-side-banner {
+      width: 250px;
+      background: #fdfefe;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      display: none; /* Hidden on mobile */
+    }
+    @media (min-width: 1024px) { /* Display on desktop */
+      .right-side-banner {
+        display: block;
+      }
+    }
+    .banner-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .banner-subtitle {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .banner-button {
+      display: inline-block;
+      background: #4A90E2;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .banner-button:hover {
+      background: #357ABD;
+    }
+  </style>
 </head>
 <body>
     <nav class="nav-bar">
@@ -63,7 +120,8 @@
         <div class="hero-desc">Make your handwritten signature transparent instantly.</div>
     </header>
 
-    <main class="container">
+    <div class="page-wrapper-with-banner">
+        <main class="main-content-layout container">
         <div class="tool-card">
             <div class="upload-btn-wrapper">
                 <label for="uploadInput" class="btn-upload">
@@ -94,13 +152,14 @@
                 </div>
             </div>
         </div>
-    </main>
+        </main>
+            </div>
 
     <footer style="text-align: center; margin: 50px 0; color: #888; font-size: 0.9rem;">
         <a href="terms_en.html" style="color:#666;text-decoration:none;margin:0 10px;">Terms of Service</a> | <a href="privacy_en.html"
  style="color: #666; text-decoration: none;">Privacy Policy</a>
         <br><br>
-        © 2025 Signature Extractor Tools
+        © 2005–2026 Signature Extractor Tools
     </footer>
 
     <script>

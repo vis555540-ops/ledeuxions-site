@@ -21,9 +21,6 @@
 
         /* 2. 메인 컨테이너 (카드 레이아웃) */
         .container {
-            max-width: 800px;
-            margin: -60px auto 40px auto; /* 헤더 위로 살짝 올라오게 */
-            padding: 0 20px;
         }
         
         .tool-card {
@@ -102,7 +99,64 @@
         /* 네비게이션 (간단 ver) */
         .nav-bar { padding: 15px 20px; text-align: left; background: white; border-bottom: 1px solid #eee; }
         .nav-logo { font-weight: bold; text-decoration: none; color: #333; font-size: 1.2rem; }
-    </style>
+      /* Styles for the page wrapper and banner */
+    .page-wrapper-with-banner {
+      max-width: 1200px;
+      margin: -60px auto 40px auto; /* Adjusted to match original main.container margin */
+      padding: 0 20px;
+      display: flex;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .main-content-layout {
+      flex-grow: 1;
+      max-width: 800px; /* Original max-width for main.container */
+      margin: 0; /* Reset margin */
+      padding: 0; /* Reset padding */
+    }
+
+    .right-side-banner {
+      width: 250px;
+      background: #fdfefe;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      display: none; /* Hidden on mobile */
+    }
+    @media (min-width: 1024px) { /* Display on desktop */
+      .right-side-banner {
+        display: block;
+      }
+    }
+    .banner-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .banner-subtitle {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .banner-button {
+      display: inline-block;
+      background: #4A90E2;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .banner-button:hover {
+      background: #357ABD;
+    }
+  </style>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -117,7 +171,8 @@
         <div class="hero-desc">흐릿한 서명을 선명하게 만들고 투명 배경으로 저장하세요.</div>
     </header>
 
-    <main class="container">
+    <div class="page-wrapper-with-banner">
+        <main class="main-content-layout container">
         <div class="tool-card">
             
             <div class="upload-btn-wrapper">
@@ -150,13 +205,14 @@
             </div>
 
         </div>
-    </main>
+        </main>
+            </div>
 
     <footer style="text-align: center; margin: 50px 0; color: #888; font-size: 0.9rem;">
         <a href="terms.html" style="color:#666;text-decoration:none;margin:0 10px;">이용약관</a> | <a href="privacy.html"
  style="color: #666; text-decoration: none;">개인정보처리방침</a>
         <br><br>
-        © 2025 Stamp Remover Tools
+        © 2005–2026 Stamp Remover Tools
     </footer>
 
     <script>
