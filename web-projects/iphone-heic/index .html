@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>아이폰 HEIC 사진 변환 | FreeComfort Studio</title>
+  <meta name="description" content="아이폰 HEIC 사진을 JPG/PNG로 무료 변환. 설치 없이 브라우저에서 즉시 사용 가능합니다.">
+  
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+      background: radial-gradient(circle at top, #f7f0ff 0%, #f4f6ff 45%, #ffffff 100%);
+      color: #1f2430;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      color: #2f2944;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      font-size: 14px;
+      color: #6b6684;
+      line-height: 1.6;
+    }
+    
+    .converter-box {
+      background: rgba(255,255,255,0.94);
+      border-radius: 18px;
+      padding: 30px;
+      border: 1px solid rgba(209,197,255,0.88);
+      box-shadow: 0 10px 26px rgba(120,90,255,0.10);
+      margin-bottom: 20px;
+    }
+    
+    .upload-area {
+      border: 2px dashed rgba(123,92,255,0.3);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: rgba(123,92,255,0.02);
+    }
+    
+    .upload-area:hover {
+      border-color: rgba(123,92,255,0.6);
+      background: rgba(123,92,255,0.05);
+    }
+    
+    .upload-area.active {
+      border-color: #7b5cff;
+      background: rgba(123,92,255,0.08);
+    }
+    
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    
+    .upload-text {
+      font-size: 16px;
+      color: #4c3ad1;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    
+    .upload-hint {
+      font-size: 12px;
+      color: #8e86ab;
+    }
+    
+    #fileInput {
+      display: none;
+    }
+    
+    .format-selector {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    .format-btn {
+      padding: 10px 24px;
+      border-radius: 999px;
+      border: 2px solid rgba(123,92,255,0.3);
+      background: white;
+      color: #4c3ad1;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .format-btn:hover {
+      border-color: #7b5cff;
+      background: rgba(123,92,255,0.05);
+    }
+    
+    .format-btn.active {
+      border-color: #7b5cff;
+      background: linear-gradient(135deg, #7b5cff, #b07cff);
+      color: white;
+    }
+    
+    .preview-area {
+      margin-top: 20px;
+      display: none;
+    }
+    
+    .preview-area.show {
+      display: block;
+    }
+    
+    .preview-image {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+    
+    .download-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #7b5cff, #b07cff);
+      color: white;
+      border: none;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 12px 28px rgba(123,92,255,0.26);
+      transition: transform 0.2s;
+    }
+    
+    .download-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .download-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 13px;
+      color: #6b6684;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(210,200,255,0.7);
+      font-size: 12px;
+      color: #8e86ab;
+    }
+    
+    .footer a {
+      color: #4c3ad1;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    
+    .info-box {
+      background: rgba(255,255,255,0.92);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px dashed rgba(199,185,255,0.95);
+      font-size: 13px;
+      color: #6a667b;
+      line-height: 1.7;
+    }
+    
+    .info-box strong {
+      color: #4a33d8;
+      font-weight: 900;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📱 아이폰 HEIC 사진 변환</h1>
+      <p>아이폰에서 촬영한 HEIC 사진을 JPG 또는 PNG로 변환합니다.<br>설치 없이 브라우저에서 바로 사용 가능합니다.</p>
+    </div>
+    
+    <div class="converter-box">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📸</div>
+        <div class="upload-text">HEIC 파일 선택 또는 드래그</div>
+        <div class="upload-hint">클릭하거나 파일을 여기에 드롭하세요</div>
+      </div>
+      
+      <input type="file" id="fileInput" accept=".heic,.heif" multiple>
+      
+      <div class="format-selector">
+        <button class="format-btn active" data-format="jpeg">JPG</button>
+        <button class="format-btn" data-format="png">PNG</button>
+      </div>
+      
+      <div class="preview-area" id="previewArea">
+        <img id="previewImage" class="preview-image" alt="미리보기">
+        <button class="download-btn" id="downloadBtn">변환된 이미지 다운로드</button>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+    
+    <div class="info-box">
+      <strong>사용 방법:</strong><br>
+      1. HEIC 파일을 선택하거나 드래그하여 업로드<br>
+      2. JPG 또는 PNG 형식 선택<br>
+      3. 자동 변환 후 다운로드<br><br>
+      
+      <strong>참고:</strong> 모든 처리는 브라우저에서 진행되며, 서버에 파일이 업로드되지 않습니다.
+    </div>
+    
+    <div class="footer">
+      <p>© 2025 <a href="/web-projects/freecomfortlab/">FreeComfort Studio</a> · <a href="/">LeDeuxions</a></p>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewArea = document.getElementById('previewArea');
+    const previewImage = document.getElementById('previewImage');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const status = document.getElementById('status');
+    const formatBtns = document.querySelectorAll('.format-btn');
+    
+    let selectedFormat = 'jpeg';
+    let convertedBlob = null;
+    
+    // 포맷 선택
+    formatBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        formatBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedFormat = btn.dataset.format;
+      });
+    });
+    
+    // 클릭으로 파일 선택
+    uploadArea.addEventListener('click', () => {
+      fileInput.click();
+    });
+    
+    // 드래그 앤 드롭
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('active');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('active');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('active');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFile(files[0]);
+      }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+    
+    async function handleFile(file) {
+      if (!file.name.toLowerCase().match(/\.(heic|heif)$/)) {
+        alert('HEIC 또는 HEIF 파일만 선택 가능합니다.');
+        return;
+      }
+      
+      status.textContent = '변환 중...';
+      previewArea.classList.add('show');
+      downloadBtn.disabled = true;
+      
+      try {
+        const convertedBlobs = await heic2any({
+          blob: file,
+          toType: `image/${selectedFormat}`,
+          quality: 0.9
+        });
+        
+        const blob = Array.isArray(convertedBlobs) ? convertedBlobs[0] : convertedBlobs;
+        convertedBlob = blob;
+        
+        const url = URL.createObjectURL(blob);
+        previewImage.src = url;
+        
+        status.textContent = `변환 완료! (${(blob.size / 1024).toFixed(1)} KB)`;
+        downloadBtn.disabled = false;
+        
+      } catch (error) {
+        console.error('변환 오류:', error);
+        status.textContent = '변환 실패. 다시 시도해주세요.';
+      }
+    }
+    
+    downloadBtn.addEventListener('click', () => {
+      if (!convertedBlob) return;
+      
+      const url = URL.createObjectURL(convertedBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `converted_${Date.now()}.${selectedFormat === 'jpeg' ? 'jpg' : 'png'}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
