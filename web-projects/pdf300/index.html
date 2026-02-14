@@ -247,10 +247,36 @@
         }
 
 
+    /* ---------- PROJECT SIDEBAR ---------- */
+    .project-sidebar { display: none; }
+    .project-sidebar h4 { font-size: 0.85rem; color: #6b7280; margin: 0 0 12px 0; letter-spacing: 0.3px; }
+    .project-sidebar a { display: block; text-decoration: none; color: #1f2937; font-size: 0.88rem; padding: 8px 10px; border-radius: 8px; transition: background 0.15s ease, color 0.15s ease; margin-bottom: 2px; }
+    .project-sidebar a:hover { background: #f1f5f9; color: #2563eb; }
+    .project-sidebar a.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
+    @media (min-width: 768px) {
+      body { padding-left: 210px; }
+      .project-sidebar {
+        display: block; position: fixed; top: 70px; left: 16px; width: 180px;
+        background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        border: 1px solid #e5e7eb; border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06); padding: 18px 14px; z-index: 100;
+      }
+    }
     </style>
 </head>
 
 <body>
+
+<!-- PROJECT SIDEBAR -->
+<aside class="project-sidebar">
+  <h4>📌 빠른 이동</h4>
+  <a href="/">🏠 Home</a>
+  <a href="/web-projects/paintcomfortfro/">🎨 PaintComfortFRO</a>
+  <a href="/web-projects/pdf300/" class="active">📄 PDF300</a>
+  <a href="/web-projects/stamp/">🖼️ Stamp Maker</a>
+  <a href="/web-projects/freecomfortlab/">🛠️ FreeComfortLab</a>
+  <a href="/web-projects/iphone-heic/">📱 iPhone HEIC</a>
+</aside>
 
 <header>
     <div class="header-container">

@@ -300,10 +300,44 @@
     }
     .footer a{ color:#8e86ab; font-weight:800; }
 
+    /* ---------- PROJECT SIDEBAR ---------- */
+    .project-sidebar { display: none; }
+    .project-sidebar h4 { font-size: 0.85rem; color: #6b7280; margin: 0 0 12px 0; letter-spacing: 0.3px; }
+    .project-sidebar a { display: block; text-decoration: none; color: #1f2937; font-size: 0.88rem; padding: 8px 10px; border-radius: 8px; transition: background 0.15s ease, color 0.15s ease; margin-bottom: 2px; }
+    .project-sidebar a:hover { background: #f1f5f9; color: #2563eb; }
+    .project-sidebar a.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
+
+    /* ---------- OTHER PROJECTS ---------- */
+    .other-projects { margin-top: 28px; }
+    .other-projects-title { font-size: 14px; font-weight: 900; color: #2c2a44; margin: 14px 2px 12px; }
+    .other-projects-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .other-card {
+      background: rgba(255,255,255,0.94); border-radius: 18px; padding: 18px 16px;
+      border: 1px solid rgba(209,197,255,0.88); box-shadow: 0 10px 26px rgba(120,90,255,0.10);
+      text-decoration: none; color: inherit; transition: transform 0.15s ease, box-shadow 0.15s ease;
+      display: flex; flex-direction: column;
+    }
+    .other-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(120,90,255,0.18); }
+    .other-card.featured { border: 2px solid rgba(123,92,255,0.6); position: relative; }
+    .new-badge {
+      position: absolute; top: -10px; right: 12px;
+      background: linear-gradient(135deg, #7b5cff, #b07cff); color: #fff;
+      font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 999px;
+    }
+    .other-icon { font-size: 28px; margin-bottom: 8px; }
+    .other-card h3 { font-size: 13px; font-weight: 900; color: #2f2944; margin-bottom: 4px; }
+    .other-card p { font-size: 11.5px; color: #6b6684; line-height: 1.6; margin-bottom: 10px; flex-grow: 1; }
+    .other-link {
+      display: inline-block; padding: 6px 12px; border-radius: 999px;
+      background: linear-gradient(135deg, #7b5cff, #b07cff); color: #fff;
+      font-size: 11px; font-weight: 800; width: fit-content;
+    }
+
     /* Responsive */
     @media (max-width: 900px){
       .hero{ grid-template-columns:1fr; }
       .nav{ justify-content:flex-start; }
+      .other-projects-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 768px){
       .page-wrap{ padding:18px 14px 30px; }
@@ -311,11 +345,32 @@
       .tool-row.second{ grid-template-columns:1fr; max-width:none; }
       .nav{ display:none; }
       .hero-title{ font-size:22px; }
+      .other-projects-grid { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 768px) {
+      body { padding-left: 210px; }
+      .project-sidebar {
+        display: block; position: fixed; top: 70px; left: 16px; width: 180px;
+        background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        border: 1px solid #e5e7eb; border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06); padding: 18px 14px; z-index: 100;
+      }
     }
   </style>
 </head>
 
 <body>
+  <!-- PROJECT SIDEBAR -->
+  <aside class="project-sidebar">
+    <h4>📌 빠른 이동</h4>
+    <a href="/">🏠 Home</a>
+    <a href="/web-projects/paintcomfortfro/">🎨 PaintComfortFRO</a>
+    <a href="/web-projects/pdf300/">📄 PDF300</a>
+    <a href="/web-projects/stamp/">🖼️ Stamp Maker</a>
+    <a href="/web-projects/freecomfortlab/" class="active">🛠️ FreeComfortLab</a>
+    <a href="/web-projects/iphone-heic/">📱 iPhone HEIC</a>
+  </aside>
+
   <div class="page-wrap">
 
     <!-- 헤더 -->
@@ -459,6 +514,35 @@
             </div>
           </article>
         </div>
+      </div>
+    </section>
+
+    <!-- Other Projects -->
+    <section class="other-projects">
+      <div class="other-projects-title">🎨 다른 도구 둘러보기</div>
+      <div class="other-projects-grid">
+        <a href="/web-projects/paintcomfortfro/" class="other-card featured">
+          <span class="new-badge">새로 추가됨!</span>
+          <div class="other-icon">🎨</div>
+          <h3>PaintComfortFRO</h3>
+          <p>6개 언어 지원 웹 기반 그림판 + 프레젠테이션 도구</p>
+          <span class="other-link">사용해보기 →</span>
+        </a>
+        <a href="/web-projects/pdf300/" class="other-card">
+          <div class="other-icon">📄</div>
+          <h3>PDF300</h3>
+          <p>PDF 변환, 분할, 병합 도구</p>
+        </a>
+        <a href="/web-projects/stamp/" class="other-card">
+          <div class="other-icon">🖼️</div>
+          <h3>Stamp Maker</h3>
+          <p>도장 이미지 배경 제거 도구</p>
+        </a>
+        <a href="/web-projects/iphone-heic/" class="other-card">
+          <div class="other-icon">📱</div>
+          <h3>iPhone HEIC</h3>
+          <p>HEIC 사진 변환 도구</p>
+        </a>
       </div>
     </section>
 
