@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaintComfortFRO - Multi-Language Paint & Presentation</title>
+    
+    <!-- Google AdSense 자동광고 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
+     crossorigin="anonymous"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* 상단 메뉴바 */
+        .menu-bar {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .menu-bar h1 {
+            font-size: 1.2em;
+            margin-right: auto;
+        }
+
+        .language-selector {
+            padding: 6px 12px;
+            border-radius: 5px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .menu-bar button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .menu-bar button:hover {
+            background: #2980b9;
+        }
+
+        .menu-bar button.success {
+            background: #27ae60;
+        }
+
+        .menu-bar button.success:hover {
+            background: #229954;
+        }
+
+        .menu-bar button.danger {
+            background: #e74c3c;
+        }
+
+        .menu-bar button.danger:hover {
+            background: #c0392b;
+        }
+
+        /* 도구 모음 */
+        .toolbar {
+            background: white;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-bottom: 1px solid #ddd;
+            align-items: center;
+        }
+
+        .tool-section {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            padding: 5px;
+            border-right: 1px solid #ddd;
+            padding-right: 15px;
+        }
+
+        .tool-section:last-child {
+            border-right: none;
+        }
+
+        .tool-btn {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: #f0f0f0;
+            border-color: #3498db;
+        }
+
+        .tool-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .color-picker {
+            width: 50px;
+            height: 45px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="range"] {
+            width: 100px;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        label {
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* 캔버스 영역 */
+        .canvas-area {
+            flex: 1;
+            overflow: auto;
+            background: #c0c0c0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        canvas {
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            cursor: crosshair;
+            display: block;
+        }
+
+        canvas.eraser-cursor {
+            cursor: cell;
+        }
+
+        canvas.select-cursor {
+            cursor: default;
+        }
+
+        canvas.fill-cursor {
+            cursor: pointer;
+        }
+
+        canvas.text-cursor {
+            cursor: text;
+        }
+
+        /* 리사이즈 핸들 */
+        .resize-handle {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #3498db;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        .resize-handle.bottom-right {
+            bottom: -7px;
+            right: -7px;
+            cursor: nwse-resize;
+        }
+
+        .resize-handle.bottom {
+            bottom: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: ns-resize;
+        }
+
+        .resize-handle.right {
+            right: -7px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: ew-resize;
+        }
+
+        /* 프레젠테이션 모드 */
+        .presentation-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: black;
+            z-index: 9999;
+            display: none;
+        }
+
+        .presentation-mode.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .presentation-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .presentation-toolbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .presentation-toolbar button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .presentation-toolbar button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .presentation-toolbar button.active {
+            background: #3498db;
+            border-color: #2980b9;
+        }
+
+        .presentation-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        /* 상태 표시줄 */
+        .status-bar {
+            background: #ecf0f1;
+            padding: 5px 20px;
+            font-size: 12px;
+            color: #555;
+            border-top: 1px solid #bdc3c7;
+        }
+
+        /* 저장 전 광고 오버레이 */
+        .save-ad-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .save-ad-overlay.active {
+            display: flex;
+        }
+
+        .ad-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        }
+
+        .ad-header {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        .ad-content {
+            min-height: 250px;
+            background: #f5f5f5;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .ad-placeholder {
+            color: #999;
+            font-size: 16px;
+        }
+
+        .ad-close-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .ad-close-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .ad-close-btn:not(:disabled):hover {
+            background: #2980b9;
+        }
+
+        .ad-timer {
+            color: #999;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 메뉴바 -->
+        <div class="menu-bar">
+            <h1>🎨 PaintComfortFRO</h1>
+            
+            <!-- 언어 선택 -->
+            <select id="languageSelector" class="language-selector" onchange="switchLanguage(this.value)">
+                <option value="ko">🇰🇷 한국어</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="it">🇮🇹 Italiano</option>
+            </select>
+            
+            <button onclick="newCanvas()" id="btnNew">새로 만들기</button>
+            <button onclick="saveImage()" class="success" id="btnSave">💾 저장</button>
+            <button onclick="loadImage()" id="btnLoad">📂 불러오기</button>
+            <button onclick="togglePresentation()" id="btnPresentation">🖥️ 프레젠테이션</button>
+            <button class="danger" onclick="clearCanvas()" id="btnClear">전체 지우기</button>
+        </div>
+
+        <!-- 도구 모음 -->
+        <div class="toolbar">
+            <div class="tool-section">
+                <div class="tool-btn active" onclick="selectTool('brush')" title="Brush">🖌️</div>
+                <div class="tool-btn" onclick="selectTool('pencil')" title="Pencil">✏️</div>
+                <div class="tool-btn" onclick="selectTool('eraser')" title="Eraser">🧹</div>
+                <div class="tool-btn" onclick="selectTool('fill')" title="Fill">🪣</div>
+            </div>
+
+            <div class="tool-section">
+                <div class="tool-btn" onclick="selectTool('select')" title="Select">🔲</div>
+                <div class="tool-btn" onclick="selectTool('text')" title="Text">A</div>
+            </div>
+
+            <div class="tool-section">
+                <div class="tool-btn" onclick="selectTool('line')" title="Line">📏</div>
+                <div class="tool-btn" onclick="selectTool('rect')" title="Rectangle">▭</div>
+                <div class="tool-btn" onclick="selectTool('circle')" title="Circle">⭕</div>
+            </div>
+
+            <div class="tool-section">
+                <label id="lblColor">색상:</label>
+                <input type="color" id="colorPicker" class="color-picker" value="#000000">
+                <input type="color" id="bgColorPicker" class="color-picker" value="#ffffff" title="Background Color">
+            </div>
+
+            <div class="tool-section">
+                <label id="lblWidth">굵기:</label>
+                <input type="range" id="lineWidth" min="1" max="50" value="2">
+                <span id="lineWidthValue">2px</span>
+            </div>
+
+            <div class="tool-section">
+                <label>
+                    <input type="checkbox" id="fillShape" style="margin-right: 5px;">
+                    <span id="lblFill">채우기</span>
+                </label>
+            </div>
+
+            <div class="tool-section">
+                <label id="lblSize">크기:</label>
+                <input type="number" id="canvasWidth" value="800" style="width: 70px;">
+                <span>×</span>
+                <input type="number" id="canvasHeight" value="600" style="width: 70px;">
+                <button style="padding: 5px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 3px;" onclick="resizeCanvas()" id="btnApply">적용</button>
+            </div>
+        </div>
+
+        <!-- 캔버스 영역 -->
+        <div class="canvas-area" id="canvasArea">
+            <div class="canvas-wrapper" id="canvasWrapper">
+                <canvas id="canvas"></canvas>
+                <div class="resize-handle bottom-right" id="resizeHandleBR"></div>
+                <div class="resize-handle bottom" id="resizeHandleB"></div>
+                <div class="resize-handle right" id="resizeHandleR"></div>
+            </div>
+        </div>
+
+        <!-- 하단 배너 광고 -->
+        <div style="margin: 0; padding: 10px; text-align: center; background: #fff; border-top: 1px solid #ddd;">
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
+                 crossorigin="anonymous"></script>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-2824624880449066"
+                 data-ad-slot="7450540483"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+              (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <!-- 상태 표시줄 -->
+        <div class="status-bar" id="statusBar">준비</div>
+    </div>
+
+    <!-- 프레젠테이션 모드 -->
+    <div class="presentation-mode" id="presentationMode">
+        <canvas id="presentationCanvas" class="presentation-canvas"></canvas>
+        <div class="presentation-info" id="presentationInfo">
+            ESC: <span id="txtExit">종료</span> | Space: <span id="txtClear">주석 지우기</span>
+        </div>
+        <div class="presentation-toolbar">
+            <button onclick="setPresentationTool('pen')" id="penBtn">🖊️ <span id="txtPen">펜</span></button>
+            <button onclick="setPresentationTool('highlighter')" id="highlighterBtn">🖍️ <span id="txtHighlighter">형광펜</span></button>
+            <input type="color" id="presentationColor" value="#ff0000" style="width: 40px; height: 35px; border-radius: 20px;">
+            <input type="range" id="presentationSize" min="2" max="30" value="3" style="width: 100px;">
+            <button onclick="clearAnnotations()" id="btnClearAnnotations">지우기</button>
+            <button onclick="togglePresentation()" id="btnExitPresentation">종료</button>
+        </div>
+    </div>
+
+    <!-- 저장 전 광고 오버레이 -->
+    <div class="save-ad-overlay" id="saveAdOverlay">
+        <div class="ad-container">
+            <div class="ad-header" id="adHeader">💾 잠시만 기다려주세요...</div>
+            <div class="ad-content">
+                <!-- Google AdSense 전환 페이지용 광고 -->
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-2824624880449066"
+                     data-ad-slot="2715843344"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+            </div>
+            <button class="ad-close-btn" id="adCloseBtn" onclick="closeSaveAd()" disabled>
+                <span id="btnAdClose">닫기</span> <span id="adTimerText">(3초)</span>
+            </button>
+            <div class="ad-timer" id="adTimer"></div>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" style="display: none;" accept="image/*">
+
+    <script>
+        // 다국어 번역
+        const i18n = {
+            ko: {
+                appName: "PaintComfortFRO",
+                btnNew: "새로 만들기",
+                btnSave: "💾 저장",
+                btnLoad: "📂 불러오기",
+                btnPresentation: "🖥️ 프레젠테이션",
+                btnClear: "전체 지우기",
+                lblColor: "색상:",
+                lblWidth: "굵기:",
+                lblFill: "채우기",
+                lblSize: "크기:",
+                btnApply: "적용",
+                statusReady: "준비",
+                statusSelectionMove: "선택 영역 이동 중...",
+                statusSelectionComplete: "선택 완료 - 드래그로 이동 | Ctrl+C: 복사 | Ctrl+X: 잘라내기",
+                statusCopied: "복사됨",
+                statusCut: "잘라내기 완료",
+                statusPasted: "붙여넣기 완료",
+                statusPasteImage: "스크린샷이 붙여넣기 되었습니다! 📸",
+                statusUndo: "실행 취소",
+                statusRedo: "다시 실행",
+                statusNoUndo: "더 이상 취소할 수 없습니다",
+                statusNoRedo: "더 이상 다시 실행할 수 없습니다",
+                statusDeselect: "선택 해제됨",
+                confirmClear: "전체를 지우시겠습니까?",
+                confirmNew: "새 캔버스를 만드시겠습니까?",
+                confirmResize: "이미지를 캔버스 크기에 맞추시겠습니까?\n\n확인: 캔버스 크기 조정\n취소: 원본 크기로 붙여넣기\n\n※ 이 질문은 최초 1회만 표시됩니다.",
+                promptText: "텍스트 입력:",
+                promptFilename: "파일명을 입력하세요 (확장자 제외):",
+                adHeader: "💾 잠시만 기다려주세요...",
+                btnAdClose: "닫기",
+                adTimerText: "초",
+                txtExit: "종료",
+                txtClear: "주석 지우기",
+                txtPen: "펜",
+                txtHighlighter: "형광펜"
+            },
+            en: {
+                appName: "PaintComfortFRO",
+                btnNew: "New",
+                btnSave: "💾 Save",
+                btnLoad: "📂 Load",
+                btnPresentation: "🖥️ Presentation",
+                btnClear: "Clear All",
+                lblColor: "Color:",
+                lblWidth: "Width:",
+                lblFill: "Fill",
+                lblSize: "Size:",
+                btnApply: "Apply",
+                statusReady: "Ready",
+                statusSelectionMove: "Moving selection...",
+                statusSelectionComplete: "Selection complete - Drag to move | Ctrl+C: Copy | Ctrl+X: Cut",
+                statusCopied: "Copied",
+                statusCut: "Cut complete",
+                statusPasted: "Pasted",
+                statusPasteImage: "Screenshot pasted! 📸",
+                statusUndo: "Undo",
+                statusRedo: "Redo",
+                statusNoUndo: "Nothing to undo",
+                statusNoRedo: "Nothing to redo",
+                statusDeselect: "Selection cleared",
+                confirmClear: "Clear entire canvas?",
+                confirmNew: "Create new canvas?",
+                confirmResize: "Resize canvas to match image?\n\nOK: Resize canvas\nCancel: Paste at original size\n\n※ This prompt appears only once.",
+                promptText: "Enter text:",
+                promptFilename: "Enter filename (without extension):",
+                adHeader: "💾 Please wait a moment...",
+                btnAdClose: "Close",
+                adTimerText: "sec",
+                txtExit: "Exit",
+                txtClear: "Clear annotations",
+                txtPen: "Pen",
+                txtHighlighter: "Highlighter"
+            },
+            de: {
+                appName: "PaintComfortFRO",
+                btnNew: "Neu",
+                btnSave: "💾 Speichern",
+                btnLoad: "📂 Laden",
+                btnPresentation: "🖥️ Präsentation",
+                btnClear: "Alles löschen",
+                lblColor: "Farbe:",
+                lblWidth: "Breite:",
+                lblFill: "Füllen",
+                lblSize: "Größe:",
+                btnApply: "Anwenden",
+                statusReady: "Bereit",
+                statusSelectionMove: "Auswahl wird verschoben...",
+                statusSelectionComplete: "Auswahl abgeschlossen - Ziehen zum Verschieben | Strg+C: Kopieren | Strg+X: Ausschneiden",
+                statusCopied: "Kopiert",
+                statusCut: "Ausschneiden abgeschlossen",
+                statusPasted: "Eingefügt",
+                statusPasteImage: "Screenshot eingefügt! 📸",
+                statusUndo: "Rückgängig",
+                statusRedo: "Wiederholen",
+                statusNoUndo: "Nichts rückgängig zu machen",
+                statusNoRedo: "Nichts zu wiederholen",
+                statusDeselect: "Auswahl aufgehoben",
+                confirmClear: "Gesamte Leinwand löschen?",
+                confirmNew: "Neue Leinwand erstellen?",
+                confirmResize: "Leinwand an Bildgröße anpassen?\n\nOK: Leinwand anpassen\nAbbrechen: In Originalgröße einfügen\n\n※ Diese Frage erscheint nur einmal.",
+                promptText: "Text eingeben:",
+                promptFilename: "Dateiname eingeben (ohne Erweiterung):",
+                adHeader: "💾 Bitte warten Sie einen Moment...",
+                btnAdClose: "Schließen",
+                adTimerText: "Sek",
+                txtExit: "Beenden",
+                txtClear: "Anmerkungen löschen",
+                txtPen: "Stift",
+                txtHighlighter: "Textmarker"
+            },
+            fr: {
+                appName: "PaintComfortFRO",
+                btnNew: "Nouveau",
+                btnSave: "💾 Enregistrer",
+                btnLoad: "📂 Charger",
+                btnPresentation: "🖥️ Présentation",
+                btnClear: "Tout effacer",
+                lblColor: "Couleur:",
+                lblWidth: "Largeur:",
+                lblFill: "Remplir",
+                lblSize: "Taille:",
+                btnApply: "Appliquer",
+                statusReady: "Prêt",
+                statusSelectionMove: "Déplacement de la sélection...",
+                statusSelectionComplete: "Sélection terminée - Glisser pour déplacer | Ctrl+C: Copier | Ctrl+X: Couper",
+                statusCopied: "Copié",
+                statusCut: "Coupe terminée",
+                statusPasted: "Collé",
+                statusPasteImage: "Capture d'écran collée! 📸",
+                statusUndo: "Annuler",
+                statusRedo: "Rétablir",
+                statusNoUndo: "Rien à annuler",
+                statusNoRedo: "Rien à rétablir",
+                statusDeselect: "Sélection annulée",
+                confirmClear: "Effacer tout le canevas?",
+                confirmNew: "Créer un nouveau canevas?",
+                confirmResize: "Redimensionner le canevas pour correspondre à l'image?\n\nOK: Redimensionner\nAnnuler: Coller à la taille d'origine\n\n※ Cette question n'apparaît qu'une fois.",
+                promptText: "Entrer le texte:",
+                promptFilename: "Entrer le nom du fichier (sans extension):",
+                adHeader: "💾 Veuillez patienter un instant...",
+                btnAdClose: "Fermer",
+                adTimerText: "sec",
+                txtExit: "Quitter",
+                txtClear: "Effacer les annotations",
+                txtPen: "Stylo",
+                txtHighlighter: "Surligneur"
+            },
+            es: {
+                appName: "PaintComfortFRO",
+                btnNew: "Nuevo",
+                btnSave: "💾 Guardar",
+                btnLoad: "📂 Cargar",
+                btnPresentation: "🖥️ Presentación",
+                btnClear: "Borrar todo",
+                lblColor: "Color:",
+                lblWidth: "Ancho:",
+                lblFill: "Rellenar",
+                lblSize: "Tamaño:",
+                btnApply: "Aplicar",
+                statusReady: "Listo",
+                statusSelectionMove: "Moviendo selección...",
+                statusSelectionComplete: "Selección completa - Arrastrar para mover | Ctrl+C: Copiar | Ctrl+X: Cortar",
+                statusCopied: "Copiado",
+                statusCut: "Corte completado",
+                statusPasted: "Pegado",
+                statusPasteImage: "¡Captura de pantalla pegada! 📸",
+                statusUndo: "Deshacer",
+                statusRedo: "Rehacer",
+                statusNoUndo: "Nada que deshacer",
+                statusNoRedo: "Nada que rehacer",
+                statusDeselect: "Selección eliminada",
+                confirmClear: "¿Borrar todo el lienzo?",
+                confirmNew: "¿Crear nuevo lienzo?",
+                confirmResize: "¿Redimensionar lienzo para coincidir con la imagen?\n\nOK: Redimensionar\nCancelar: Pegar en tamaño original\n\n※ Esta pregunta aparece solo una vez.",
+                promptText: "Introducir texto:",
+                promptFilename: "Introducir nombre de archivo (sin extensión):",
+                adHeader: "💾 Por favor espera un momento...",
+                btnAdClose: "Cerrar",
+                adTimerText: "seg",
+                txtExit: "Salir",
+                txtClear: "Borrar anotaciones",
+                txtPen: "Pluma",
+                txtHighlighter: "Resaltador"
+            },
+            it: {
+                appName: "PaintComfortFRO",
+                btnNew: "Nuovo",
+                btnSave: "💾 Salva",
+                btnLoad: "📂 Carica",
+                btnPresentation: "🖥️ Presentazione",
+                btnClear: "Cancella tutto",
+                lblColor: "Colore:",
+                lblWidth: "Larghezza:",
+                lblFill: "Riempi",
+                lblSize: "Dimensione:",
+                btnApply: "Applica",
+                statusReady: "Pronto",
+                statusSelectionMove: "Spostamento selezione...",
+                statusSelectionComplete: "Selezione completata - Trascina per spostare | Ctrl+C: Copia | Ctrl+X: Taglia",
+                statusCopied: "Copiato",
+                statusCut: "Taglio completato",
+                statusPasted: "Incollato",
+                statusPasteImage: "Screenshot incollato! 📸",
+                statusUndo: "Annulla",
+                statusRedo: "Ripeti",
+                statusNoUndo: "Niente da annullare",
+                statusNoRedo: "Niente da ripetere",
+                statusDeselect: "Selezione annullata",
+                confirmClear: "Cancellare tutta la tela?",
+                confirmNew: "Creare nuova tela?",
+                confirmResize: "Ridimensionare la tela per adattarla all'immagine?\n\nOK: Ridimensiona\nAnnulla: Incolla alla dimensione originale\n\n※ Questa domanda appare solo una volta.",
+                promptText: "Inserisci testo:",
+                promptFilename: "Inserisci nome file (senza estensione):",
+                adHeader: "💾 Attendere un momento...",
+                btnAdClose: "Chiudi",
+                adTimerText: "sec",
+                txtExit: "Esci",
+                txtClear: "Cancella annotazioni",
+                txtPen: "Penna",
+                txtHighlighter: "Evidenziatore"
+            }
+        };
+
+        let currentLang = 'ko';
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            const t = i18n[lang];
+            
+            // 메뉴
+            document.getElementById('btnNew').textContent = t.btnNew;
+            document.getElementById('btnSave').textContent = t.btnSave;
+            document.getElementById('btnLoad').textContent = t.btnLoad;
+            document.getElementById('btnPresentation').textContent = t.btnPresentation;
+            document.getElementById('btnClear').textContent = t.btnClear;
+            
+            // 도구
+            document.getElementById('lblColor').textContent = t.lblColor;
+            document.getElementById('lblWidth').textContent = t.lblWidth;
+            document.getElementById('lblFill').textContent = t.lblFill;
+            document.getElementById('lblSize').textContent = t.lblSize;
+            document.getElementById('btnApply').textContent = t.btnApply;
+            
+            // 광고
+            document.getElementById('adHeader').textContent = t.adHeader;
+            document.getElementById('btnAdClose').textContent = t.btnAdClose;
+            
+            // 프레젠테이션
+            document.getElementById('txtExit').textContent = t.txtExit;
+            document.getElementById('txtClear').textContent = t.txtClear;
+            document.getElementById('txtPen').textContent = t.txtPen;
+            document.getElementById('txtHighlighter').textContent = t.txtHighlighter;
+            document.getElementById('btnClearAnnotations').textContent = t.lblFill === 'Fill' ? 'Clear' : '지우기';
+            document.getElementById('btnExitPresentation').textContent = t.txtExit;
+            
+            // 상태바
+            updateStatus(t.statusReady);
+        }
+
+        // 캔버스 초기화
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const presentationCanvas = document.getElementById('presentationCanvas');
+        const presentationCtx = presentationCanvas.getContext('2d');
+
+        let currentTool = 'brush';
+        let isDrawing = false;
+        let startX, startY;
+        let currentColor = '#000000';
+        let currentWidth = 2;
+        let tempCanvas, tempCtx;
+        let clipboard = null;
+        let selectionRect = null;
+        let selectedImage = null;
+        
+        // 실행 취소/다시 실행 (최대 10단계)
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_UNDO = 10;
+        
+        // 붙여넣기 크기 확인 플래그 (최초 1회만)
+        let hasAskedPasteResize = false;
+        
+        // 선택 영역 이동 (무브)
+        let isMovingSelection = false;
+        let moveStartX, moveStartY;
+
+        // 초기 캔버스 설정
+        function initCanvas() {
+            canvas.width = parseInt(document.getElementById('canvasWidth').value);
+            canvas.height = parseInt(document.getElementById('canvasHeight').value);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 임시 캔버스 생성
+            tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            tempCtx = tempCanvas.getContext('2d');
+        }
+
+        initCanvas();
+
+        // 실행 취소/다시 실행 함수
+        function saveState() {
+            if (undoStack.length >= MAX_UNDO) {
+                undoStack.shift();
+            }
+            undoStack.push(canvas.toDataURL());
+            redoStack = [];
+        }
+
+        function undo() {
+            const t = i18n[currentLang];
+            if (undoStack.length > 0) {
+                redoStack.push(canvas.toDataURL());
+                const imageData = undoStack.pop();
+                const img = new Image();
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = imageData;
+                updateStatus(t.statusUndo);
+            } else {
+                updateStatus(t.statusNoUndo);
+            }
+        }
+
+        function redo() {
+            const t = i18n[currentLang];
+            if (redoStack.length > 0) {
+                undoStack.push(canvas.toDataURL());
+                const imageData = redoStack.pop();
+                const img = new Image();
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = imageData;
+                updateStatus(t.statusRedo);
+            } else {
+                updateStatus(t.statusNoRedo);
+            }
+        }
+
+        // 초기 상태 저장
+        saveState();
+
+        // 캔버스 마우스 드래그 리사이즈
+        let isResizing = false;
+        let resizeType = null;
+        let resizeStartX, resizeStartY, resizeStartWidth, resizeStartHeight;
+
+        const resizeHandleBR = document.getElementById('resizeHandleBR');
+        const resizeHandleB = document.getElementById('resizeHandleB');
+        const resizeHandleR = document.getElementById('resizeHandleR');
+
+        function startResize(e, type) {
+            isResizing = true;
+            resizeType = type;
+            resizeStartX = e.clientX;
+            resizeStartY = e.clientY;
+            resizeStartWidth = canvas.width;
+            resizeStartHeight = canvas.height;
+            e.stopPropagation();
+            e.preventDefault();
+        }
+
+        resizeHandleBR.addEventListener('mousedown', (e) => startResize(e, 'br'));
+        resizeHandleB.addEventListener('mousedown', (e) => startResize(e, 'b'));
+        resizeHandleR.addEventListener('mousedown', (e) => startResize(e, 'r'));
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+
+            const deltaX = e.clientX - resizeStartX;
+            const deltaY = e.clientY - resizeStartY;
+
+            let newWidth = resizeStartWidth;
+            let newHeight = resizeStartHeight;
+
+            if (resizeType === 'br') {
+                newWidth = Math.max(100, resizeStartWidth + deltaX);
+                newHeight = Math.max(100, resizeStartHeight + deltaY);
+            } else if (resizeType === 'b') {
+                newHeight = Math.max(100, resizeStartHeight + deltaY);
+            } else if (resizeType === 'r') {
+                newWidth = Math.max(100, resizeStartWidth + deltaX);
+            }
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            document.getElementById('canvasWidth').value = newWidth;
+            document.getElementById('canvasHeight').value = newHeight;
+            
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.putImageData(imageData, 0, 0);
+            
+            tempCanvas.width = newWidth;
+            tempCanvas.height = newHeight;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizeType = null;
+                saveState();
+            }
+        });
+
+        // 도구 선택
+        function selectTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.tool-btn').classList.add('active');
+            
+            // 도구 변경 시 선택 해제
+            if (tool !== 'select' && (selectedImage || selectionRect)) {
+                selectedImage = null;
+                selectionRect = null;
+                const t = i18n[currentLang];
+                updateStatus(t.statusDeselect);
+            }
+            
+            updateStatus(`Tool: ${tool}`);
+            
+            // 도구별 커서 변경
+            canvas.className = '';
+            if (tool === 'eraser') {
+                canvas.classList.add('eraser-cursor');
+            } else if (tool === 'select') {
+                canvas.classList.add('select-cursor');
+            } else if (tool === 'fill') {
+                canvas.classList.add('fill-cursor');
+            } else if (tool === 'text') {
+                canvas.classList.add('text-cursor');
+            }
+        }
+
+        // 색상/굵기 업데이트
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+            currentColor = e.target.value;
+        });
+
+        document.getElementById('lineWidth').addEventListener('input', (e) => {
+            currentWidth = e.target.value;
+            document.getElementById('lineWidthValue').textContent = currentWidth + 'px';
+        });
+
+        // 캔버스 크기 조절
+        function resizeCanvas() {
+            const newWidth = parseInt(document.getElementById('canvasWidth').value);
+            const newHeight = parseInt(document.getElementById('canvasHeight').value);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.putImageData(imageData, 0, 0);
+            tempCanvas.width = newWidth;
+            tempCanvas.height = newHeight;
+        }
+
+        // 선택 영역 점선 표시
+        function drawSelectionBox() {
+            if (selectionRect && !isMovingSelection) {
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#3498db';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
+                ctx.setLineDash([]);
+            }
+        }
+
+        // 마우스 이벤트
+        canvas.addEventListener('mousedown', startDrawingOrAction);
+        canvas.addEventListener('mousemove', (e) => {
+            const pos = getMousePos(e);
+            if (selectedImage && selectionRect && 
+                pos.x >= selectionRect.x && pos.x <= selectionRect.x + selectionRect.w &&
+                pos.y >= selectionRect.y && pos.y <= selectionRect.y + selectionRect.h &&
+                !isDrawing && !isMovingSelection) {
+                canvas.style.cursor = 'move';
+            } else if (!isDrawing && !isMovingSelection) {
+                canvas.className = '';
+                if (currentTool === 'eraser') {
+                    canvas.classList.add('eraser-cursor');
+                } else if (currentTool === 'select') {
+                    canvas.classList.add('select-cursor');
+                } else if (currentTool === 'fill') {
+                    canvas.classList.add('fill-cursor');
+                } else if (currentTool === 'text') {
+                    canvas.classList.add('text-cursor');
+                } else {
+                    canvas.style.cursor = 'crosshair';
+                }
+            }
+            
+            drawOrAction(e);
+            drawSelectionBox();
+        });
+        canvas.addEventListener('mouseup', stopDrawingOrAction);
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function startDrawingOrAction(e) {
+            isDrawing = true;
+            const pos = getMousePos(e);
+            startX = pos.x;
+            startY = pos.y;
+
+            if (selectedImage && selectionRect && 
+                pos.x >= selectionRect.x && pos.x <= selectionRect.x + selectionRect.w &&
+                pos.y >= selectionRect.y && pos.y <= selectionRect.y + selectionRect.h) {
+                isMovingSelection = true;
+                moveStartX = pos.x;
+                moveStartY = pos.y;
+                isDrawing = false;
+                
+                const bgColor = document.getElementById('bgColorPicker').value;
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
+                
+                const t = i18n[currentLang];
+                updateStatus(t.statusSelectionMove);
+                return;
+            }
+            
+            if (selectedImage && selectionRect && currentTool !== 'select') {
+                selectedImage = null;
+                selectionRect = null;
+                const t = i18n[currentLang];
+                updateStatus(t.statusDeselect);
+            }
+
+            if (currentTool === 'brush' || currentTool === 'pencil' || currentTool === 'eraser') {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+            } else if (['line', 'rect', 'circle', 'select'].includes(currentTool)) {
+                tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                tempCtx.drawImage(canvas, 0, 0);
+            } else if (currentTool === 'fill') {
+                floodFill(Math.floor(startX), Math.floor(startY), currentColor);
+                saveState();
+                isDrawing = false;
+            } else if (currentTool === 'text') {
+                const t = i18n[currentLang];
+                const text = prompt(t.promptText);
+                if (text) {
+                    ctx.font = `${currentWidth * 10}px Arial`;
+                    ctx.fillStyle = currentColor;
+                    ctx.fillText(text, startX, startY);
+                    saveState();
+                }
+                isDrawing = false;
+            }
+        }
+
+        function drawOrAction(e) {
+            const pos = getMousePos(e);
+            
+            if (isMovingSelection && selectedImage && selectionRect) {
+                const deltaX = pos.x - moveStartX;
+                const deltaY = pos.y - moveStartY;
+                const newX = selectionRect.x + deltaX;
+                const newY = selectionRect.y + deltaY;
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(tempCanvas, 0, 0);
+                ctx.putImageData(selectedImage, newX, newY);
+                
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#3498db';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(newX, newY, selectionRect.w, selectionRect.h);
+                ctx.setLineDash([]);
+                return;
+            }
+            
+            if (!isDrawing) return;
+
+            if (currentTool === 'brush') {
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = currentWidth;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            } else if (currentTool === 'pencil') {
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = 1;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            } else if (currentTool === 'eraser') {
+                const bgColor = document.getElementById('bgColorPicker').value;
+                ctx.strokeStyle = bgColor;
+                ctx.lineWidth = currentWidth;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            } else if (['line', 'rect', 'circle'].includes(currentTool)) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(tempCanvas, 0, 0);
+                drawShape(ctx, startX, startY, pos.x, pos.y);
+            } else if (currentTool === 'select') {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(tempCanvas, 0, 0);
+                
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#3498db';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(startX, startY, pos.x - startX, pos.y - startY);
+                ctx.setLineDash([]);
+            }
+        }
+
+        function stopDrawingOrAction(e) {
+            const pos = getMousePos(e);
+            
+            if (isMovingSelection && selectedImage && selectionRect) {
+                const deltaX = pos.x - moveStartX;
+                const deltaY = pos.y - moveStartY;
+                const newX = selectionRect.x + deltaX;
+                const newY = selectionRect.y + deltaY;
+                
+                ctx.putImageData(selectedImage, newX, newY);
+                selectionRect.x = newX;
+                selectionRect.y = newY;
+                
+                tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                tempCtx.drawImage(canvas, 0, 0);
+                
+                drawSelectionBox();
+                saveState();
+                
+                isMovingSelection = false;
+                updateStatus('Selection moved (ESC to confirm)');
+                return;
+            }
+            
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            if (currentTool === 'select') {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(tempCanvas, 0, 0);
+                captureSelection(startX, startY, pos.x, pos.y);
+                drawSelectionBox();
+            }
+            
+            ctx.beginPath();
+            
+            if (['brush', 'pencil', 'eraser', 'line', 'rect', 'circle'].includes(currentTool)) {
+                saveState();
+            }
+        }
+
+        function drawShape(context, x1, y1, x2, y2) {
+            const fillEnabled = document.getElementById('fillShape').checked;
+            
+            context.strokeStyle = currentColor;
+            context.fillStyle = currentColor;
+            context.lineWidth = currentWidth;
+
+            if (currentTool === 'line') {
+                context.beginPath();
+                context.moveTo(x1, y1);
+                context.lineTo(x2, y2);
+                context.stroke();
+            } else if (currentTool === 'rect') {
+                if (fillEnabled) {
+                    context.fillRect(x1, y1, x2 - x1, y2 - y1);
+                    context.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                } else {
+                    context.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                }
+            } else if (currentTool === 'circle') {
+                const radius = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                context.beginPath();
+                context.arc(x1, y1, radius, 0, 2 * Math.PI);
+                if (fillEnabled) {
+                    context.fill();
+                    context.stroke();
+                } else {
+                    context.stroke();
+                }
+            }
+        }
+
+        function captureSelection(x1, y1, x2, y2) {
+            const x = Math.min(x1, x2);
+            const y = Math.min(y1, y2);
+            const w = Math.abs(x2 - x1);
+            const h = Math.abs(y2 - y1);
+            
+            if (w > 0 && h > 0) {
+                selectedImage = ctx.getImageData(x, y, w, h);
+                selectionRect = { x, y, w, h };
+                
+                tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                tempCtx.drawImage(canvas, 0, 0);
+                
+                const t = i18n[currentLang];
+                updateStatus(t.statusSelectionComplete);
+            }
+        }
+
+        // 채우기
+        function floodFill(x, y, fillColor) {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const targetColor = getPixelColor(imageData, x, y);
+            const fillRGB = hexToRgb(fillColor);
+            
+            if (colorsMatch(targetColor, fillRGB)) return;
+            
+            const stack = [[x, y]];
+            
+            while (stack.length) {
+                const [cx, cy] = stack.pop();
+                if (cx < 0 || cx >= canvas.width || cy < 0 || cy >= canvas.height) continue;
+                
+                const currentColor = getPixelColor(imageData, cx, cy);
+                if (!colorsMatch(currentColor, targetColor)) continue;
+                
+                setPixelColor(imageData, cx, cy, fillRGB);
+                stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function getPixelColor(imageData, x, y) {
+            const index = (y * imageData.width + x) * 4;
+            return [
+                imageData.data[index],
+                imageData.data[index + 1],
+                imageData.data[index + 2],
+                imageData.data[index + 3]
+            ];
+        }
+
+        function setPixelColor(imageData, x, y, color) {
+            const index = (y * imageData.width + x) * 4;
+            imageData.data[index] = color[0];
+            imageData.data[index + 1] = color[1];
+            imageData.data[index + 2] = color[2];
+            imageData.data[index + 3] = 255;
+        }
+
+        function colorsMatch(c1, c2) {
+            return c1[0] === c2[0] && c1[1] === c2[1] && c1[2] === c2[2];
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [
+                parseInt(result[1], 16),
+                parseInt(result[2], 16),
+                parseInt(result[3], 16)
+            ] : [0, 0, 0];
+        }
+
+        // 복사/붙여넣기/잘라내기
+        document.addEventListener('keydown', (e) => {
+            const t = i18n[currentLang];
+            
+            if (e.key === 'Escape' && (selectedImage || selectionRect)) {
+                selectedImage = null;
+                selectionRect = null;
+                updateStatus(t.statusDeselect);
+                e.preventDefault();
+                return;
+            }
+            
+            if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                undo();
+            } else if (e.ctrlKey && e.key === 'y') {
+                e.preventDefault();
+                redo();
+            } else if (e.ctrlKey && e.shiftKey && e.key === 'Z') {
+                e.preventDefault();
+                redo();
+            }
+            else if (e.ctrlKey && e.key === 'c' && selectedImage) {
+                clipboard = selectedImage;
+                updateStatus(t.statusCopied);
+            } else if (e.ctrlKey && e.key === 'x' && selectedImage && selectionRect) {
+                clipboard = selectedImage;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(selectionRect.x, selectionRect.y, selectionRect.w, selectionRect.h);
+                selectedImage = null;
+                selectionRect = null;
+                saveState();
+                updateStatus(t.statusCut);
+            } else if (e.ctrlKey && e.key === 'v' && clipboard) {
+                ctx.putImageData(clipboard, 10, 10);
+                selectedImage = null;
+                selectionRect = null;
+                saveState();
+                updateStatus(t.statusPasted);
+            }
+        });
+
+        // 스크린샷 붙여넣기
+        document.addEventListener('paste', async (e) => {
+            const items = e.clipboardData.items;
+            const t = i18n[currentLang];
+            
+            for (let item of items) {
+                if (item.type.indexOf('image') !== -1) {
+                    e.preventDefault();
+                    const blob = item.getAsFile();
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        let scaleToFit = false;
+                        
+                        if (!hasAskedPasteResize) {
+                            scaleToFit = confirm(t.confirmResize);
+                            hasAskedPasteResize = true;
+                        }
+                        
+                        if (scaleToFit) {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            document.getElementById('canvasWidth').value = img.width;
+                            document.getElementById('canvasHeight').value = img.height;
+                            tempCanvas.width = img.width;
+                            tempCanvas.height = img.height;
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        }
+                        
+                        ctx.drawImage(img, 0, 0);
+                        saveState();
+                        updateStatus(t.statusPasteImage);
+                        URL.revokeObjectURL(img.src);
+                    };
+                    
+                    img.src = URL.createObjectURL(blob);
+                    break;
+                }
+            }
+        });
+
+        // 저장/불러오기
+        let adTimer = null;
+        let adCountdown = 3;
+
+        function saveImage() {
+            showSaveAd();
+        }
+
+        function showSaveAd() {
+            const t = i18n[currentLang];
+            const overlay = document.getElementById('saveAdOverlay');
+            const closeBtn = document.getElementById('adCloseBtn');
+            const timerText = document.getElementById('adTimerText');
+            
+            // 광고 오버레이 표시
+            overlay.classList.add('active');
+            closeBtn.disabled = true;
+            adCountdown = 3;
+            
+            // AdSense 광고 로드
+            try {
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            } catch (e) {
+                console.log('AdSense loading...');
+            }
+            
+            // 카운트다운 타이머
+            timerText.textContent = `(${adCountdown}${t.adTimerText})`;
+            adTimer = setInterval(() => {
+                adCountdown--;
+                if (adCountdown > 0) {
+                    timerText.textContent = `(${adCountdown}${t.adTimerText})`;
+                } else {
+                    clearInterval(adTimer);
+                    closeBtn.disabled = false;
+                    timerText.textContent = '';
+                }
+            }, 1000);
+        }
+
+        function closeSaveAd() {
+            // 광고 닫기
+            const overlay = document.getElementById('saveAdOverlay');
+            overlay.classList.remove('active');
+            clearInterval(adTimer);
+            
+            // 저장 실행
+            actualSave();
+        }
+
+        function actualSave() {
+            const t = i18n[currentLang];
+            let filename = prompt(t.promptFilename);
+            
+            if (filename) {
+                // 확장자 제거 (사용자가 입력한 경우)
+                filename = filename.replace(/\.png$/i, '');
+                
+                // 파일 다운로드
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                link.download = filename ? `${filename}.png` : `painting_${timestamp}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            }
+        }
+
+        function loadImage() {
+            document.getElementById('fileInput').click();
+        }
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0);
+                        saveState();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function clearCanvas() {
+            const t = i18n[currentLang];
+            if (confirm(t.confirmClear)) {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                saveState();
+            }
+        }
+
+        function newCanvas() {
+            const t = i18n[currentLang];
+            if (confirm(t.confirmNew)) {
+                initCanvas();
+            }
+        }
+
+        // 프레젠테이션 모드
+        let presentationActive = false;
+        let presentationDrawing = false;
+        let presentationTool = 'pen';
+        let annotationCanvas, annotationCtx;
+
+        function togglePresentation() {
+            presentationActive = !presentationActive;
+            const mode = document.getElementById('presentationMode');
+            
+            if (presentationActive) {
+                mode.classList.add('active');
+                presentationCanvas.width = window.innerWidth;
+                presentationCanvas.height = window.innerHeight;
+                
+                const scale = Math.min(
+                    presentationCanvas.width / canvas.width,
+                    presentationCanvas.height / canvas.height
+                );
+                const x = (presentationCanvas.width - canvas.width * scale) / 2;
+                const y = (presentationCanvas.height - canvas.height * scale) / 2;
+                
+                presentationCtx.fillStyle = 'black';
+                presentationCtx.fillRect(0, 0, presentationCanvas.width, presentationCanvas.height);
+                presentationCtx.drawImage(canvas, x, y, canvas.width * scale, canvas.height * scale);
+                
+                annotationCanvas = document.createElement('canvas');
+                annotationCanvas.width = presentationCanvas.width;
+                annotationCanvas.height = presentationCanvas.height;
+                annotationCtx = annotationCanvas.getContext('2d');
+                
+                document.body.style.overflow = 'hidden';
+            } else {
+                mode.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function setPresentationTool(tool) {
+            presentationTool = tool;
+            document.querySelectorAll('.presentation-toolbar button').forEach(btn => btn.classList.remove('active'));
+            if (tool === 'pen') document.getElementById('penBtn').classList.add('active');
+            if (tool === 'highlighter') document.getElementById('highlighterBtn').classList.add('active');
+        }
+
+        function clearAnnotations() {
+            annotationCtx.clearRect(0, 0, annotationCanvas.width, annotationCanvas.height);
+            redrawPresentation();
+        }
+
+        function redrawPresentation() {
+            const scale = Math.min(
+                presentationCanvas.width / canvas.width,
+                presentationCanvas.height / canvas.height
+            );
+            const x = (presentationCanvas.width - canvas.width * scale) / 2;
+            const y = (presentationCanvas.height - canvas.height * scale) / 2;
+            
+            presentationCtx.fillStyle = 'black';
+            presentationCtx.fillRect(0, 0, presentationCanvas.width, presentationCanvas.height);
+            presentationCtx.drawImage(canvas, x, y, canvas.width * scale, canvas.height * scale);
+            presentationCtx.drawImage(annotationCanvas, 0, 0);
+        }
+
+        presentationCanvas.addEventListener('mousedown', (e) => {
+            if (!presentationActive) return;
+            presentationDrawing = true;
+            const rect = presentationCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            annotationCtx.beginPath();
+            annotationCtx.moveTo(x, y);
+        });
+
+        presentationCanvas.addEventListener('mousemove', (e) => {
+            if (!presentationActive || !presentationDrawing) return;
+            const rect = presentationCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const color = document.getElementById('presentationColor').value;
+            const size = document.getElementById('presentationSize').value;
+            
+            if (presentationTool === 'pen') {
+                annotationCtx.strokeStyle = color;
+                annotationCtx.lineWidth = size;
+                annotationCtx.globalAlpha = 1;
+            } else if (presentationTool === 'highlighter') {
+                annotationCtx.strokeStyle = color;
+                annotationCtx.lineWidth = size * 3;
+                annotationCtx.globalAlpha = 0.3;
+            }
+            
+            annotationCtx.lineCap = 'round';
+            annotationCtx.lineJoin = 'round';
+            annotationCtx.lineTo(x, y);
+            annotationCtx.stroke();
+            
+            redrawPresentation();
+        });
+
+        presentationCanvas.addEventListener('mouseup', () => {
+            presentationDrawing = false;
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (presentationActive) {
+                if (e.key === 'Escape') {
+                    togglePresentation();
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    clearAnnotations();
+                }
+            }
+        });
+
+        function updateStatus(text) {
+            document.getElementById('statusBar').textContent = text;
+        }
+
+        // 초기 언어 설정
+        switchLanguage('ko');
+    </script>
+</body>
+</html>
