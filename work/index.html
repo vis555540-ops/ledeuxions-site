@@ -8,13 +8,18 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
 
+        * { box-sizing: border-box; }
+
         body {
             font-family: 'Noto Sans KR', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f4f5f7;
             color: #333;
+            overflow-x: hidden;
         }
+
+        img { max-width: 100%; height: auto; }
 
         .header {
             background-color: #fff;
@@ -41,11 +46,11 @@
 
         .project-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+            gap: 24px;
             max-width: 1200px;
-            margin: 50px auto;
-            padding: 0 30px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
 
         .project-card {
@@ -93,11 +98,14 @@
         }
 
         .card-footer .btn {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background-color: #333;
             color: #fff;
             text-align: center;
             padding: 12px 20px;
+            min-height: 44px;
             text-decoration: none;
             border-radius: 5px;
             font-weight: 500;
