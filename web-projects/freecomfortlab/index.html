@@ -31,7 +31,7 @@
     a{ text-decoration:none; color:inherit; }
 
     .page-wrap{
-      max-width:1120px;
+      max-width:1400px;
       margin:0 auto;
       padding:28px 18px 40px;
     }
@@ -312,6 +312,11 @@
       .nav{ display:none; }
       .hero-title{ font-size:22px; }
     }
+
+    /* 모바일 채팅 패널 숨김 */
+    @media(max-width:768px){
+      #global-chat, #country-chat { display:none !important; }
+    }
   </style>
 </head>
 
@@ -336,131 +341,181 @@
       </nav>
     </header>
 
-    <!-- 히어로 -->
-    <section class="hero">
-      <div>
-        <div class="hero-label">
-          <span class="hero-label-dot"></span>
-          설치 없이 바로 쓰는 변환 작업실
+    <!-- 상단 광고 -->
+    <div style="margin:0 0 16px;">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-2824624880449066"
+           data-ad-slot="7450540483"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <!-- 3단 레이아웃 -->
+    <div style="display:flex;gap:16px;align-items:flex-start;max-width:1400px;margin:0 auto;padding:16px;">
+
+      <!-- 왼쪽: 글로벌 채팅 -->
+      <div id="global-chat" style="width:25%;min-width:200px;height:500px;display:flex;flex-direction:column;border:1px solid #333;border-radius:8px;overflow:hidden;background:#1a1a1a;">
+        <div style="padding:8px 12px;background:#222;font-size:13px;color:#aaa;border-bottom:1px solid #333;">🌍 글로벌 채팅</div>
+        <div id="global-msg-list" style="flex:1;overflow-y:auto;padding:8px;font-size:12px;color:#ccc;"></div>
+        <div style="display:flex;border-top:1px solid #333;">
+          <input id="global-input" type="text" placeholder="메시지 입력..." style="flex:1;padding:6px 8px;background:#111;color:#fff;border:none;font-size:12px;outline:none;" maxlength="200">
+          <button onclick="sendGlobal()" style="padding:6px 10px;background:#444;color:#fff;border:none;cursor:pointer;font-size:12px;">전송</button>
         </div>
+      </div>
 
-        <h1 class="hero-title">FreeComfort Studio</h1>
+      <!-- 가운데: 기존 도구 카드 영역 -->
+      <div style="flex:1;min-width:0;">
 
-        <p class="hero-desc">
-          카카오톡 영상, 아이폰 사진(HEIC), 오디오 파일을<br />
-          <strong>별도 프로그램 설치 없이</strong> 브라우저에서 바로 변환할 수 있는
-          개인 실험용 웹 작업실입니다.
-        </p>
+        <!-- 히어로 -->
+        <section class="hero">
+          <div>
+            <div class="hero-label">
+              <span class="hero-label-dot"></span>
+              설치 없이 바로 쓰는 변환 작업실
+            </div>
 
-        <div class="hero-buttons">
-          <a href="#kakao-main" class="btn-main">카카오 영상 변환</a>
-          <a href="#iphone-photo" class="btn-sub">아이폰 사진 변환</a>
-          <a href="#tools" class="btn-sub">전체 도구 보기</a>
+            <h1 class="hero-title">FreeComfort Studio</h1>
+
+            <p class="hero-desc">
+              카카오톡 영상, 아이폰 사진(HEIC), 오디오 파일을<br />
+              <strong>별도 프로그램 설치 없이</strong> 브라우저에서 바로 변환할 수 있는
+              개인 실험용 웹 작업실입니다.
+            </p>
+
+            <div class="hero-buttons">
+              <a href="#kakao-main" class="btn-main">카카오 영상 변환</a>
+              <a href="#iphone-photo" class="btn-sub">아이폰 사진 변환</a>
+              <a href="#tools" class="btn-sub">전체 도구 보기</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEO / 체류용 설명 블록 -->
+        <section class="about">
+          <strong>이 사이트는 어떤 곳인가요?</strong><br /><br />
+          FreeComfort Studio는 일상에서 자주 반복되는
+          <strong>미디어 변환 작업을 빠르고 단순하게</strong> 처리하기 위해 만든
+          개인 실험 프로젝트입니다.<br /><br />
+          회원가입 없이 바로 사용할 수 있으며,
+          카카오톡 영상이 재생되지 않거나
+          아이폰 HEIC 사진이 열리지 않을 때
+          간단한 해결책으로 활용할 수 있습니다.
+        </section>
+
+        <!-- 주요 변환 도구 -->
+        <section id="tools">
+          <div class="section-title-row">
+            <div class="section-title">주요 변환 도구</div>
+            <div class="section-caption">자주 쓰는 기능 위주</div>
+          </div>
+
+          <div class="tool-grid">
+            <div class="tool-row">
+
+              <!-- 카카오톡 영상 -->
+              <article class="card" id="kakao-main">
+                <div class="card-badge card-badge--primary">가장 많이 쓰는 기능</div>
+                <h2 class="card-title">카카오톡 영상 변환</h2>
+                <p class="card-desc">
+                  카카오톡에서 받은 영상이
+                  저장되지 않거나 재생이 안 될 때,
+                  MP3 또는 MP4로 다시 변환합니다.
+                </p>
+                <div class="card-actions">
+                  <a href="/kakao-video-to-mp3.html" class="pill-link">MP3 / MP4 변환</a>
+                  <span class="card-hint">브라우저 즉시 실행</span>
+                </div>
+              </article>
+
+              <!-- 아이폰 사진 -->
+              <article class="card" id="iphone-photo">
+                <div class="card-badge">iPhone · HEIC</div>
+                <h2 class="card-title">아이폰 사진 (HEIC) 변환</h2>
+                <p class="card-desc">
+                  아이폰에서 촬영한 HEIC 사진을
+                  JPG 또는 PNG로 변환하여
+                  윈도우·웹에서도 바로 사용할 수 있습니다.
+                </p>
+                <div class="card-actions">
+                  <a href="/iphone-heic.html" class="pill-link">JPG / PNG 변환</a>
+                  <span class="card-hint">아이폰 사진 호환</span>
+                </div>
+              </article>
+
+              <!-- 오디오 -->
+              <article class="card" id="audio-mp3">
+                <div class="card-badge">오디오</div>
+                <h2 class="card-title">오디오 → MP3</h2>
+                <p class="card-desc">
+                  영상이나 녹음 파일에서
+                  필요한 소리만 추출해
+                  MP3 파일로 저장합니다.
+                </p>
+                <div class="card-actions">
+                  <a href="/audio-to-mp3.html" class="pill-link">MP3 추출</a>
+                  <span class="card-hint">강의·복습·정리용</span>
+                </div>
+              </article>
+
+            </div>
+
+            <!-- 기타 -->
+            <div class="tool-row second" id="other-tools">
+              <article class="card">
+                <div class="card-badge">실험 중</div>
+                <h2 class="card-title">다른 작업들 · 실험실</h2>
+                <p class="card-desc">
+                  PDF300, 이미지 도구 등
+                  개인 실험용 프로젝트들을 모아둔 공간입니다.
+                </p>
+                <div class="card-actions">
+                  <a href="/web-projects/" class="pill-link small">모아보기</a>
+                  <span class="card-hint">정리 중</span>
+                </div>
+              </article>
+
+              <article class="card">
+                <div class="card-badge">English</div>
+                <h2 class="card-title">영어 버전</h2>
+                <p class="card-desc">
+                  해외 유입을 위한 영어 인덱스 페이지입니다.
+                  간단한 소개와 도구 링크를 제공합니다.
+                </p>
+                <div class="card-actions">
+                  <a href="en/index.html" class="pill-link small">English Index</a>
+                  <span class="card-hint">EN</span>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /가운데 -->
+
+      <!-- 오른쪽: 내 나라 채팅 -->
+      <div id="country-chat" style="width:25%;min-width:200px;height:500px;display:flex;flex-direction:column;border:1px solid #333;border-radius:8px;overflow:hidden;background:#1a1a1a;">
+        <div id="country-label" style="padding:8px 12px;background:#222;font-size:13px;color:#aaa;border-bottom:1px solid #333;">🏳️ 내 나라 채팅</div>
+        <div id="country-msg-list" style="flex:1;overflow-y:auto;padding:8px;font-size:12px;color:#ccc;"></div>
+        <div style="display:flex;border-top:1px solid #333;">
+          <input id="country-input" type="text" placeholder="메시지 입력..." style="flex:1;padding:6px 8px;background:#111;color:#fff;border:none;font-size:12px;outline:none;" maxlength="200">
+          <button onclick="sendCountry()" style="padding:6px 10px;background:#444;color:#fff;border:none;cursor:pointer;font-size:12px;">전송</button>
         </div>
       </div>
 
+    </div><!-- /3단 레이아웃 -->
 
-    </section>
-
-    <!-- SEO / 체류용 설명 블록 -->
-    <section class="about">
-      <strong>이 사이트는 어떤 곳인가요?</strong><br /><br />
-      FreeComfort Studio는 일상에서 자주 반복되는
-      <strong>미디어 변환 작업을 빠르고 단순하게</strong> 처리하기 위해 만든
-      개인 실험 프로젝트입니다.<br /><br />
-      회원가입 없이 바로 사용할 수 있으며,
-      카카오톡 영상이 재생되지 않거나
-      아이폰 HEIC 사진이 열리지 않을 때
-      간단한 해결책으로 활용할 수 있습니다.
-    </section>
-
-    <!-- 주요 변환 도구 -->
-    <section id="tools">
-      <div class="section-title-row">
-        <div class="section-title">주요 변환 도구</div>
-        <div class="section-caption">자주 쓰는 기능 위주</div>
-      </div>
-
-      <div class="tool-grid">
-        <div class="tool-row">
-
-          <!-- 카카오톡 영상 -->
-          <article class="card" id="kakao-main">
-            <div class="card-badge card-badge--primary">가장 많이 쓰는 기능</div>
-            <h2 class="card-title">카카오톡 영상 변환</h2>
-            <p class="card-desc">
-              카카오톡에서 받은 영상이
-              저장되지 않거나 재생이 안 될 때,
-              MP3 또는 MP4로 다시 변환합니다.
-            </p>
-            <div class="card-actions">
-              <a href="/kakao-video-to-mp3.html" class="pill-link">MP3 / MP4 변환</a>
-              <span class="card-hint">브라우저 즉시 실행</span>
-            </div>
-          </article>
-
-          <!-- 아이폰 사진 -->
-          <article class="card" id="iphone-photo">
-            <div class="card-badge">iPhone · HEIC</div>
-            <h2 class="card-title">아이폰 사진 (HEIC) 변환</h2>
-            <p class="card-desc">
-              아이폰에서 촬영한 HEIC 사진을
-              JPG 또는 PNG로 변환하여
-              윈도우·웹에서도 바로 사용할 수 있습니다.
-            </p>
-            <div class="card-actions">
-              <a href="/iphone-heic.html" class="pill-link">JPG / PNG 변환</a>
-              <span class="card-hint">아이폰 사진 호환</span>
-            </div>
-          </article>
-
-          <!-- 오디오 -->
-          <article class="card" id="audio-mp3">
-            <div class="card-badge">오디오</div>
-            <h2 class="card-title">오디오 → MP3</h2>
-            <p class="card-desc">
-              영상이나 녹음 파일에서
-              필요한 소리만 추출해
-              MP3 파일로 저장합니다.
-            </p>
-            <div class="card-actions">
-              <a href="/audio-to-mp3.html" class="pill-link">MP3 추출</a>
-              <span class="card-hint">강의·복습·정리용</span>
-            </div>
-          </article>
-
-        </div>
-
-        <!-- 기타 -->
-        <div class="tool-row second" id="other-tools">
-          <article class="card">
-            <div class="card-badge">실험 중</div>
-            <h2 class="card-title">다른 작업들 · 실험실</h2>
-            <p class="card-desc">
-              PDF300, 이미지 도구 등
-              개인 실험용 프로젝트들을 모아둔 공간입니다.
-            </p>
-            <div class="card-actions">
-              <a href="/web-projects/" class="pill-link small">모아보기</a>
-              <span class="card-hint">정리 중</span>
-            </div>
-          </article>
-
-          <article class="card">
-            <div class="card-badge">English</div>
-            <h2 class="card-title">영어 버전</h2>
-            <p class="card-desc">
-              해외 유입을 위한 영어 인덱스 페이지입니다.
-              간단한 소개와 도구 링크를 제공합니다.
-            </p>
-            <div class="card-actions">
-              <a href="en/index.html" class="pill-link small">English Index</a>
-              <span class="card-hint">EN</span>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
+    <!-- 하단 광고 -->
+    <div style="margin:16px 0;">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-2824624880449066"
+           data-ad-slot="7450540483"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -472,5 +527,65 @@
     </footer>
 
   </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const CHAT_SERVER = "https://chat.freecomfortlab.com";
+    const socket = io(CHAT_SERVER, {transports:["websocket","polling"]});
+    let myCountry = "KR";
+    let myNick = "익명" + Math.floor(Math.random()*9000+1000);
+
+    // IP 기반 국가 감지
+    fetch("https://ipapi.co/json/")
+      .then(r=>r.json())
+      .then(d=>{
+        myCountry = d.country_code || "KR";
+        document.getElementById("country-label").textContent = "🏳️ " + (d.country_name || myCountry) + " 채팅";
+        socket.emit("join", myCountry);
+      })
+      .catch(()=>{
+        socket.emit("join", "KR");
+      });
+
+    socket.emit("join", "GLOBAL");
+
+    function appendMsg(listId, nick, msg, country) {
+      const el = document.getElementById(listId);
+      const div = document.createElement("div");
+      div.style.cssText = "margin-bottom:4px;word-break:break-all;";
+      div.innerHTML = '<span style="color:#888;font-size:11px;">[' + (country||"") + '] </span><span style="color:#4af;">' + nick + '</span>: ' + msg;
+      el.appendChild(div);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    socket.on("history", (msgs) => {
+      msgs.reverse().forEach(m => {
+        if(m.country === "GLOBAL") appendMsg("global-msg-list", m.nick, m.msg, "");
+        else appendMsg("country-msg-list", m.nick, m.msg, m.country);
+      });
+    });
+
+    socket.on("message", (m) => {
+      if(m.country === "GLOBAL") appendMsg("global-msg-list", m.nick, m.msg, "");
+      else if(m.country === myCountry) appendMsg("country-msg-list", m.nick, m.msg, m.country);
+    });
+
+    function sendGlobal() {
+      const input = document.getElementById("global-input");
+      if(!input.value.trim()) return;
+      socket.emit("message", {nick:myNick, msg:input.value.trim(), country:"GLOBAL", time:Date.now()});
+      input.value = "";
+    }
+
+    function sendCountry() {
+      const input = document.getElementById("country-input");
+      if(!input.value.trim()) return;
+      socket.emit("message", {nick:myNick, msg:input.value.trim(), country:myCountry, time:Date.now()});
+      input.value = "";
+    }
+
+    document.getElementById("global-input").addEventListener("keydown", e=>{ if(e.key==="Enter") sendGlobal(); });
+    document.getElementById("country-input").addEventListener("keydown", e=>{ if(e.key==="Enter") sendCountry(); });
+  </script>
 </body>
 </html>
