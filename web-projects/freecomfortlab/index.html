@@ -570,17 +570,47 @@
       else if(m.country === myCountry) appendMsg("country-msg-list", m.nick, m.msg, m.country);
     });
 
+    const AI_RESPONSES = [
+      "안녕하세요! FreeComfort Studio AI입니다. 무엇을 도와드릴까요?",
+      "카카오톡 영상 변환은 상단 '카카오 영상' 메뉴를 이용해 보세요.",
+      "아이폰 HEIC 사진 변환은 '아이폰 사진' 메뉴에서 바로 가능합니다.",
+      "오디오 MP3 추출은 설치 없이 브라우저에서 바로 됩니다.",
+      "변환된 파일은 서버에 저장되지 않습니다. 안심하고 사용하세요.",
+      "지원 포맷: MP4, AVI, MOV, MKV, M4A, WAV, OGG, AAC, HEIC 등입니다.",
+      "파일 크기는 무료 기준 100MB 이하를 권장합니다.",
+      "더 궁금한 점은 Contact 페이지에서 문의해 주세요!"
+    ];
+    function aiReply(listId, country, question) {
+      setTimeout(() => {
+        const q = question.toLowerCase();
+        let reply;
+        if(q.includes("카카오") || q.includes("영상")) reply = AI_RESPONSES[1];
+        else if(q.includes("heic") || q.includes("아이폰") || q.includes("사진")) reply = AI_RESPONSES[2];
+        else if(q.includes("오디오") || q.includes("mp3") || q.includes("음원")) reply = AI_RESPONSES[3];
+        else if(q.includes("저장") || q.includes("개인정보") || q.includes("보안")) reply = AI_RESPONSES[4];
+        else if(q.includes("포맷") || q.includes("형식") || q.includes("지원")) reply = AI_RESPONSES[5];
+        else if(q.includes("크기") || q.includes("용량") || q.includes("제한")) reply = AI_RESPONSES[6];
+        else if(q.includes("문의") || q.includes("연락") || q.includes("contact")) reply = AI_RESPONSES[7];
+        else reply = AI_RESPONSES[0];
+        appendMsg(listId, "🤖 AI봇", reply, country === "GLOBAL" ? "" : country);
+      }, 600);
+    }
+
     function sendGlobal() {
       const input = document.getElementById("global-input");
       if(!input.value.trim()) return;
-      socket.emit("message", {nick:myNick, msg:input.value.trim(), country:"GLOBAL", time:Date.now()});
+      const msg = input.value.trim();
+      socket.emit("message", {nick:myNick, msg:msg, country:"GLOBAL", time:Date.now()});
+      if(msg.startsWith("@AI") || msg.startsWith("@ai")) aiReply("global-msg-list", "GLOBAL", msg.slice(3).trim());
       input.value = "";
     }
 
     function sendCountry() {
       const input = document.getElementById("country-input");
       if(!input.value.trim()) return;
-      socket.emit("message", {nick:myNick, msg:input.value.trim(), country:myCountry, time:Date.now()});
+      const msg = input.value.trim();
+      socket.emit("message", {nick:myNick, msg:msg, country:myCountry, time:Date.now()});
+      if(msg.startsWith("@AI") || msg.startsWith("@ai")) aiReply("country-msg-list", myCountry, msg.slice(3).trim());
       input.value = "";
     }
 
