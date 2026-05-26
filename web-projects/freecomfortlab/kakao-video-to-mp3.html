@@ -1,90 +1,61 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>카카오톡 영상 MP3 변환 - FreeComfortLab</title>
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-      --card-bg: rgba(255, 255, 255, 0.95);
-      --text-main: #333;
-      --accent: #8e44ad;
-    }
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      margin: 0; padding: 20px;
-      min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-    }
-    .card {
-      background: var(--card-bg);
-      border-radius: 24px;
-      padding: 40px;
-      width: 100%; max-width: 520px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    h1 { margin: 0 0 10px; font-size: 24px; color: #2c3e50; }
-    p { margin-bottom: 30px; color: #666; font-size: 15px; line-height: 1.6; }
-    .upload-box {
-      border: 2px dashed #d1d5db; border-radius: 16px; padding: 32px;
-      margin-bottom: 24px; cursor: pointer; transition: 0.2s;
-      background: #f9fafb;
-    }
-    .upload-box:hover { border-color: var(--accent); background: #f3e8ff; }
-    .btn {
-      background: var(--accent); color: white; border: none;
-      padding: 16px; width: 100%; border-radius: 12px;
-      font-size: 16px; font-weight: bold; cursor: pointer;
-      box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
-      transition: 0.2s;
-    }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(142, 68, 173, 0.4); }
-    .home-link { margin-top: 20px; display: inline-block; color: #666; text-decoration: none; font-size: 14px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="카카오톡으로 받은 영상에서 오디오만 MP3로 추출하는 무료 도구.">
+<title>카카오 영상 → MP3 — FreeComfortLab</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<style>
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .info-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); margin-top: var(--space-5); }
+    .tip { padding: var(--space-3); background: var(--accent-soft); color: var(--accent-deep); border-radius: var(--radius-md); font-size: 0.88rem; margin-top: var(--space-3); }
+</style>
 </head>
 <body>
-  <div class="card">
-    <div style="font-size: 40px; margin-bottom: 10px;">🎵</div>
-    <h1>카톡 영상 소리 추출</h1>
-    <p>카카오톡에서 저장한 영상 파일을 선택하면<br>즉시 고음질 MP3로 변환해 드립니다.</p>
-    
-    <div class="upload-box" onclick="document.getElementById('file').click()">
-      <span style="font-size: 24px;">📂</span><br>
-      <span style="display:block; margin-top:8px; color:#555;">여기를 클릭해서 파일 선택</span>
-      <input type="file" id="file" accept="video/*" style="display:none">
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand"><span class="nav-brand-mark">L</span><span>LeDeuxions</span></a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
+            <a href="./" class="nav-link active">FreeComfortLab</a>
+        </div>
     </div>
-
-    <button class="btn">MP3로 변환하기</button>
-
-    <!-- AdSense Ad -->
-    <div style="margin: 20px 0; text-align: center;">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
-             crossorigin="anonymous"></script>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-2824624880449066"
-             data-ad-slot="7450540483"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+</nav>
+<header class="app-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Kakao Video → MP3</div>
+    <h1>카카오 영상 <em style="color:var(--accent);font-style:italic;">MP3</em>로</h1>
+    <p class="lead">카카오톡에서 받은 영상의 음성을 MP3로 추출합니다. 일반 비디오 변환기를 그대로 사용합니다.</p>
+</header>
+<main class="container-narrow" style="padding-bottom:var(--space-9);">
+    <div class="info-card">
+        <h3 style="margin-top:0;">사용 방법</h3>
+        <ol style="line-height:1.8;color:var(--text-secondary);">
+            <li>카카오톡에서 영상을 길게 눌러 <strong>"파일로 저장"</strong>을 선택합니다.</li>
+            <li>아래 버튼을 눌러 변환 도구로 이동합니다.</li>
+            <li>저장한 영상 파일을 업로드 후 MP3로 변환합니다.</li>
+        </ol>
+        <div class="tip">💡 카카오 영상은 일반 MP4 형식이므로 표준 비디오 → MP3 도구로 처리할 수 있습니다.</div>
+        <div style="margin-top:var(--space-5);display:flex;gap:var(--space-3);flex-wrap:wrap;">
+            <a href="video-to-mp3.html" class="btn btn-primary">비디오 → MP3 도구 열기 →</a>
+            <a href="./" class="btn btn-secondary">← FreeComfortLab</a>
+        </div>
     </div>
-
-    <a href="index.html" class="home-link">← 실험실 메인으로</a>
-  </div>
-<section style="max-width:800px;margin:40px auto;padding:20px;">
-  <h2>카카오톡 영상 MP3 변환 자주 묻는 질문</h2>
-  <p>카카오톡으로 받은 영상(.mp4)에서 음원만 추출해 MP3로 저장하는 방법입니다. 설치 없이 바로 사용 가능합니다.</p>
-  <details><summary>카카오톡 영상 파일 형식이 뭔가요?</summary><p>카카오톡 저장 영상은 대부분 .mp4 형식입니다. 그대로 업로드하시면 됩니다.</p></details>
-  <details><summary>아이폰 카카오톡 영상도 되나요?</summary><p>네, iOS와 Android 모두 동일하게 지원합니다.</p></details>
-  <details><summary>변환 후 파일은 어디에 저장되나요?</summary><p>브라우저 기본 다운로드 폴더에 저장됩니다.</p></details>
-  <ins class="adsbygoogle" style="display:block;margin-top:20px;" data-ad-client="ca-pub-2824624880449066" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</section>
+</main>
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions.</span>
+            <span><a href="./">← 미디어 도구</a></span>
+        </div>
+    </div>
+</footer>
+<script src="../../assets/js/common.js"></script>
 </body>
 </html>

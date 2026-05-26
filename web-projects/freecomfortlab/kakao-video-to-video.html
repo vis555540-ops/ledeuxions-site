@@ -1,324 +1,152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-
-  <script async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
-    crossorigin="anonymous"></script>
-
-  <meta charset="UTF-8" />
-  <title>카카오톡 영상 → MP4 영상 변환 | FreeComfortLab</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description"
-        content="카카오톡으로 받은 영상이 재생되지 않을 때, 설치 없이 MP4 영상으로 다시 변환하는 무료 온라인 도구입니다." />
-
-  <style>
-    :root {
-      --bg-dark: #050816;
-      --bg-panel: #0b1020;
-      --accent: #4c7dff;
-      --accent-soft: rgba(76, 125, 255, 0.25);
-      --text-main: #e5ecff;
-      --text-sub: #9aa4c6;
-      --border-soft: rgba(255, 255, 255, 0.08);
-      --radius-lg: 20px;
-      --radius-md: 14px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      min-height: 100vh;
-      background: radial-gradient(circle at top, #222c4f 0, #050816 50%, #01020a 100%);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      padding: 24px 12px 32px;
-    }
-    a { color: inherit; text-decoration: none; }
-
-    .page {
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    /* Header */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-mark {
-      width: 34px; height: 34px; border-radius: 12px;
-      background: radial-gradient(circle at 30% 20%, #78e3ff, #3150ff);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; color: #050816;
-    }
-    .logo-main { font-size: 16px; font-weight: 700; }
-    .logo-sub { font-size: 11px; color: var(--text-sub); }
-    .btn-back {
-      padding: 6px 12px; border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: rgba(5, 8, 22, 0.9);
-      font-size: 11px; color: var(--text-sub);
-    }
-
-    /* SEO / Ads friendly intro */
-    .intro-text {
-      font-size: 13px;
-      line-height: 1.7;
-      color: #cfd6ff;
-    }
-    .intro-text p { margin-bottom: 8px; }
-
-    /* Main card */
-    .card {
-      background: rgba(5, 8, 22, 0.96);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-soft);
-      padding: 20px 18px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-      gap: 18px;
-    }
-    @media (max-width: 800px) {
-      .card { grid-template-columns: 1fr; }
-    }
-
-    .card-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-    .card-desc { font-size: 13px; color: var(--text-sub); line-height: 1.7; margin-bottom: 16px; }
-
-    .badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .badge {
-      font-size: 10px; padding: 4px 9px; border-radius: 999px;
-      background: rgba(10, 17, 40, 0.9);
-      border: 1px solid var(--border-soft);
-      color: var(--text-sub);
-    }
-
-    .upload-panel {
-      background: radial-gradient(circle at top, #151b34, #070a16);
-      border-radius: var(--radius-md);
-      border: 1px dashed rgba(255, 255, 255, 0.14);
-      padding: 14px;
-      display: flex; flex-direction: column; gap: 10px;
-    }
-
-    .upload-label { font-size: 12px; color: var(--text-sub); }
-    .file-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .file-input { display: none; }
-    .btn-file {
-      padding: 8px 14px; border-radius: 999px; border: none;
-      background: linear-gradient(135deg, #4c7dff, #8f5bff);
-      color: #050816; font-size: 12px; font-weight: 600;
-    }
-    .file-name { font-size: 11px; color: var(--text-sub); }
-
-    .hint {
-      font-size: 11px; color: var(--text-sub); line-height: 1.5;
-    }
-
-    .btn-convert {
-      margin-top: 10px; padding: 9px 16px; border-radius: 999px;
-      border: none;
-      background: rgba(76, 125, 255, 0.12);
-      color: var(--accent);
-      font-size: 12px; font-weight: 600;
-    }
-    .btn-convert:disabled { opacity: 0.6; }
-
-    .status-box {
-      margin-top: 10px; padding: 10px 12px; border-radius: 10px;
-      background: rgba(3, 6, 18, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 11px; color: var(--text-sub);
-      white-space: pre-wrap; max-height: 170px; overflow-y: auto;
-    }
-    .status-ok { color: #8df3c3; }
-    .status-error { color: #ff9f9f; }
-
-    .howto { font-size: 12px; color: var(--text-sub); line-height: 1.7; }
-    .howto h2 { font-size: 13px; margin-bottom: 6px; color: var(--text-main); }
-
-    /* Ad-friendly bottom zone */
-    .ad-zone {
-      margin: 24px auto 12px;
-      padding: 16px;
-      border-radius: 14px;
-      background: rgba(5,8,22,0.9);
-      border: 1px dashed rgba(255,255,255,0.12);
-      text-align: center;
-      font-size: 12px;
-      color: #9aa4c6;
-    }
-
-    .footer {
-      font-size: 10px; color: var(--text-sub);
-      display: flex; justify-content: space-between;
-      gap: 8px; flex-wrap: wrap;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="카카오톡 영상의 파일명·메타데이터를 정리하는 도구. 브라우저에서 처리.">
+<title>카카오 영상 정리 — FreeComfortLab</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<style>
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .workbench { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+    @media (min-width: 920px) { .workbench { grid-template-columns: 1.6fr 1fr; align-items: start; } }
+    .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); }
+    .panel h3 { font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-3); }
+    .file-list { list-style: none; padding: 0; margin: var(--space-4) 0 0; display: flex; flex-direction: column; gap: var(--space-2); }
+    .file-item { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-3); background: var(--bg-sunken); border-radius: var(--radius-md); }
+    .file-item .ico { width: 36px; height: 36px; background: var(--accent-soft); color: var(--accent-deep); border-radius: var(--radius-sm); display: grid; place-items: center; }
+    .file-item .body { flex: 1; min-width: 0; }
+    .file-item .name { font-size: 0.92rem; font-weight: 500; word-break: break-all; }
+    .file-item .new { font-size: 0.85rem; color: var(--accent); margin-top: 4px; }
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }
+    .status { font-size: 0.86rem; margin-top: var(--space-3); padding: var(--space-3); background: var(--bg-sunken); border-radius: var(--radius-md); font-family: var(--font-mono); }
+    .status.ok { background: rgba(107,142,107,.12); color: #3F5C3F; }
+    .help { font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-2); }
+</style>
 </head>
-
 <body>
-<div class="page">
-
-  <!-- Header -->
-  <header class="header">
-    <div class="logo">
-      <div class="logo-mark">F</div>
-      <div>
-        <div class="logo-main">FreeComfortLab</div>
-        <div class="logo-sub">카카오톡 영상 → MP4 변환</div>
-      </div>
-    </div>
-    <a href="/"><button class="btn-back">← 메인으로</button></a>
-  </header>
-
-  <!-- SEO / 광고 친화 설명 -->
-  <section class="intro-text">
-    <p>
-      이 페이지는 <strong>카카오톡에서 받은 영상이 재생되지 않거나</strong>
-      다른 기기에서 열리지 않을 때, <strong>MP4 영상으로 다시 변환</strong>해주는
-      무료 온라인 도구입니다.
-    </p>
-    <p>
-      프로그램 설치 없이 브라우저에서 바로 사용할 수 있으며,
-      변환된 파일은 개인 기기에만 다운로드됩니다.
-    </p>
-  </section>
-
-  <!-- Main -->
-  <section class="card">
-    <div>
-      <div class="card-title">카카오톡 영상, 다시 MP4로 정리하기</div>
-      <p class="card-desc">
-        카카오톡으로 받은 <strong>3GP / MP4</strong> 영상을
-        재인코딩된 <strong>표준 MP4</strong>로 변환합니다.
-      </p>
-
-      <div class="badge-row">
-        <span class="badge">KakaoTalk → MP4</span>
-        <span class="badge">No Install</span>
-        <span class="badge">Free Tool</span>
-      </div>
-
-      <div class="upload-panel">
-        <div class="upload-label">1. 카카오톡에서 저장한 영상 선택</div>
-        <div class="file-row">
-          <button class="btn-file" id="btnPick">파일 선택</button>
-          <span class="file-name" id="fileName">선택된 파일 없음</span>
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand"><span class="nav-brand-mark">L</span><span>LeDeuxions</span></a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
+            <a href="./" class="nav-link active">FreeComfortLab</a>
         </div>
-        <input id="fileInput" class="file-input" type="file" accept="video/*,.mp4,.3gp,.mov" />
-
-        <p class="hint">
-          • 변환 후 파일은 MP4(H.264 + AAC) 형식으로 저장됩니다.
-        </p>
-
-        <button class="btn-convert" id="btnConvert">▶ MP4로 변환하기</button>
-        <div id="statusBox" class="status-box">아직 변환을 시작하지 않았습니다.</div>
-      </div>
     </div>
-
-    <aside class="howto">
-      <h2>사용 방법</h2>
-      <ol>
-        <li>카카오톡에서 영상을 저장합니다.</li>
-        <li>파일을 선택하고 변환을 누릅니다.</li>
-        <li>완료 후 MP4 파일을 다운로드합니다.</li>
-      </ol>
-
-
-    </aside>
-  </section>
-
-    <!-- AdSense Ad -->
-    <div style="margin: 40px 0; text-align: center;">
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-2824624880449066"
-             data-ad-slot="7450540483"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+</nav>
+<header class="app-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Kakao Video Cleanup</div>
+    <h1>카카오 영상 <em style="color:var(--accent);font-style:italic;">정리</em></h1>
+    <p class="lead">암호 같은 카카오톡 영상 파일명을 보기 좋게 일괄 변경합니다.</p>
+</header>
+<main class="container" style="padding-bottom:var(--space-9);">
+<div class="workbench">
+    <div>
+        <div class="dropzone" id="drop">
+            <div class="dropzone-icon">📹</div>
+            <div class="dropzone-text">
+                <strong>카카오톡 영상을 끌어 놓으세요</strong><br>
+                <small>여러 개 한 번에 가능</small>
+            </div>
+            <input type="file" id="files" multiple accept="video/*" hidden>
+        </div>
+        <ul class="file-list" id="list"></ul>
     </div>
-
-  <footer class="footer">
-    <span>© 2005–2026 Le Deuxions · FreeComfortLab</span>
-    <span>Cloudflare Pages</span>
-  </footer>
-
+    <div class="panel">
+        <h3>새 파일명 규칙</h3>
+        <div class="form-row">
+            <label class="label">접두사</label>
+            <input class="input" id="prefix" value="kakao_">
+        </div>
+        <div class="form-row">
+            <label class="label">번호 시작</label>
+            <input class="input" id="start" type="number" min="1" value="1">
+        </div>
+        <div class="form-row">
+            <label class="label">자릿수</label>
+            <select class="select" id="pad">
+                <option value="2">2자리 (01)</option>
+                <option value="3" selected>3자리 (001)</option>
+                <option value="4">4자리 (0001)</option>
+            </select>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>이름을 바꿔서 모두 저장</button>
+        <div class="status" id="status" hidden></div>
+        <p class="help">파일 내용은 변경되지 않습니다. 이름만 바꿔 다시 다운로드합니다.</p>
+    </div>
 </div>
-
-<!-- 기존 JS 그대로 -->
+</main>
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions.</span>
+            <span><a href="./">← 미디어 도구</a></span>
+        </div>
+    </div>
+</footer>
+<script src="../../assets/js/common.js"></script>
 <script>
-  const TYPE = "kakao-to-video";
-  const fileInput = document.getElementById("fileInput");
-  const btnPick = document.getElementById("btnPick");
-  const btnConvert = document.getElementById("btnConvert");
-  const fileNameSpan = document.getElementById("fileName");
-  const statusBox = document.getElementById("statusBox");
-  let selectedFile = null;
+(function () {
+    'use strict';
+    var items = [];
+    var elDrop = document.getElementById('drop');
+    var elInput = document.getElementById('files');
+    var elList = document.getElementById('list');
+    var elRun = document.getElementById('run');
 
-  btnPick.addEventListener("click", () => fileInput.click());
-  fileInput.addEventListener("change", () => {
-    if (fileInput.files && fileInput.files[0]) {
-      selectedFile = fileInput.files[0];
-      fileNameSpan.textContent = selectedFile.name;
+    elDrop.addEventListener('click', function () { elInput.click(); });
+    elDrop.addEventListener('dragover', function (e) { e.preventDefault(); elDrop.classList.add('is-active'); });
+    elDrop.addEventListener('dragleave', function () { elDrop.classList.remove('is-active'); });
+    elDrop.addEventListener('drop', function (e) {
+        e.preventDefault(); elDrop.classList.remove('is-active');
+        add(Array.from(e.dataTransfer.files));
+    });
+    elInput.addEventListener('change', function () { add(Array.from(elInput.files)); });
+
+    function add(files) {
+        files.forEach(function (f) { if (/^video\//.test(f.type)) items.push(f); });
+        render();
     }
-  });
 
-  function setStatus(text, type) {
-    statusBox.textContent = text;
-    statusBox.className = "status-box";
-    if (type) statusBox.classList.add(type === "ok" ? "status-ok" : "status-error");
-  }
-
-  btnConvert.addEventListener("click", async () => {
-    if (!selectedFile) {
-      setStatus("파일을 선택해 주세요.", "error");
-      return;
+    function newName(i) {
+        var prefix = document.getElementById('prefix').value || '';
+        var start = parseInt(document.getElementById('start').value, 10) || 1;
+        var pad = parseInt(document.getElementById('pad').value, 10);
+        var num = String(start + i).padStart(pad, '0');
+        var ext = items[i].name.split('.').pop();
+        return prefix + num + '.' + ext;
     }
-    btnConvert.disabled = true;
-    setStatus("변환 중입니다...");
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("type", TYPE);
 
-      const res = await fetch("/api/convert", { method: "POST", body: formData });
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "kakao-video.mp4";
-      a.click();
-      URL.revokeObjectURL(url);
-
-      setStatus("변환 완료! MP4 파일이 다운로드되었습니다.", "ok");
-    } catch (e) {
-      setStatus("변환 중 오류가 발생했습니다.", "error");
-    } finally {
-      btnConvert.disabled = false;
+    function render() {
+        elList.innerHTML = '';
+        items.forEach(function (f, i) {
+            var li = document.createElement('li');
+            li.className = 'file-item';
+            li.innerHTML = '<div class="ico">📹</div><div class="body"><div class="name"></div><div class="new"></div></div>';
+            li.querySelector('.name').textContent = f.name;
+            li.querySelector('.new').textContent = '→ ' + newName(i);
+            elList.appendChild(li);
+        });
+        elRun.disabled = items.length === 0;
     }
-  });
+    ['prefix','start','pad'].forEach(function (id) {
+        document.getElementById(id).addEventListener('input', render);
+    });
+
+    elRun.addEventListener('click', function () {
+        items.forEach(function (f, i) {
+            setTimeout(function () { LD.download(f, newName(i)); }, i * 200);
+        });
+        var s = document.getElementById('status');
+        s.hidden = false; s.textContent = items.length + '개 파일 다운로드 시작'; s.className = 'status ok';
+    });
+})();
 </script>
-
-<section style="max-width:800px;margin:40px auto;padding:20px;">
-  <h2>카카오톡 영상 MP4 변환 자주 묻는 질문</h2>
-  <p>카카오톡 영상이 재생이 안 되거나 다른 기기에서 열리지 않을 때 MP4로 변환해 해결할 수 있습니다.</p>
-  <details><summary>카카오톡 영상이 왜 다른 기기에서 안 열리나요?</summary><p>카카오톡 내부 포맷이 일부 플레이어와 호환되지 않을 수 있습니다. MP4로 변환하면 대부분 해결됩니다.</p></details>
-  <details><summary>변환 후 화질이 떨어지나요?</summary><p>원본 해상도를 유지하며 변환합니다.</p></details>
-  <details><summary>파일 크기 제한이 있나요?</summary><p>무료 기준 100MB 이하 파일을 지원합니다.</p></details>
-  <ins class="adsbygoogle" style="display:block;margin-top:20px;" data-ad-client="ca-pub-2824624880449066" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</section>
 </body>
 </html>

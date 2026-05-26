@@ -1,260 +1,235 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Audio to MP3 Converter — FreeComfort Studio</title>
-  <meta name="description" content="Convert any audio file to MP3 format instantly. Supports all common audio formats." />
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      color:#fff;
-      min-height:100vh;
-      padding: 24px;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 48px;
-    }
-    .brand {
-      font-size: 20px;
-      font-weight: 700;
-    }
-    .lang-btn {
-      background: rgba(255,255,255,0.2);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 14px;
-      cursor: pointer;
-      border: 1px solid rgba(255,255,255,0.3);
-      text-decoration: none;
-      color: inherit;
-    }
-    h1 {
-      font-size: 42px;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    .subtitle {
-      text-align: center;
-      opacity: 0.9;
-      margin-bottom: 48px;
-      font-size: 18px;
-    }
-    .converter-box {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 40px;
-      border: 1px solid rgba(255,255,255,0.2);
-      text-align: center;
-    }
-    .upload-area {
-      border: 2px dashed rgba(255,255,255,0.4);
-      border-radius: 12px;
-      padding: 60px 20px;
-      margin-bottom: 24px;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .upload-area:hover {
-      border-color: rgba(255,255,255,0.8);
-      background: rgba(255,255,255,0.05);
-    }
-    .upload-icon {
-      font-size: 64px;
-      margin-bottom: 16px;
-    }
-    input[type="file"] {
-      display: none;
-    }
-    .btn {
-      background: #fff;
-      color: #f5576c;
-      padding: 14px 32px;
-      border-radius: 12px;
-      border: none;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    }
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .progress-bar {
-      width: 100%;
-      height: 8px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 4px;
-      overflow: hidden;
-      margin: 24px 0;
-      display: none;
-    }
-    .progress-fill {
-      height: 100%;
-      background: #fff;
-      width: 0%;
-      transition: width 0.3s;
-    }
-    .result {
-      display: none;
-      margin-top: 24px;
-    }
-    .download-btn {
-      background: #4CAF50;
-      color: white;
-      padding: 16px 40px;
-      border-radius: 12px;
-      text-decoration: none;
-      display: inline-block;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-    .download-btn:hover {
-      background: #45a049;
-      transform: translateY(-2px);
-    }
-    .back-link {
-      text-align: center;
-      margin-top: 32px;
-      opacity: 0.8;
-    }
-    .back-link a {
-      color: white;
-      text-decoration: underline;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="Convert WAV, M4A, OGG, FLAC and more to MP3 — all in your browser.">
+<title>Audio → MP3 Converter — FreeComfortLab</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../../assets/css/claude-design.css">
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .workbench { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+    @media (min-width: 920px) { .workbench { grid-template-columns: 1.6fr 1fr; align-items: start; } }
+    .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); }
+    .panel h3 { font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-3); }
+    .file-list { list-style: none; padding: 0; margin: var(--space-4) 0 0; display: flex; flex-direction: column; gap: var(--space-2); }
+    .file-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--bg-sunken); border-radius: var(--radius-md); }
+    .file-item .ico { width: 36px; height: 36px; background: var(--accent-soft); color: var(--accent-deep); border-radius: var(--radius-sm); display: grid; place-items: center; }
+    .file-item .body { flex: 1; min-width: 0; }
+    .file-item .name { font-size: 0.92rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-item .meta { font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono); }
+    .file-item .progress { height: 4px; background: var(--border); border-radius: 999px; margin-top: 6px; overflow: hidden; }
+    .file-item .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .25s var(--ease-out); }
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }
+    .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; background: var(--bg-sunken); border-radius: var(--radius-md); }
+    .seg button { padding: 8px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); }
+    .seg button.on { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--shadow-xs); }
+    .status { font-size: 0.88rem; color: var(--text-secondary); margin-top: var(--space-3); padding: var(--space-3); background: var(--bg-sunken); border-radius: var(--radius-md); font-family: var(--font-mono); }
+    .status.ok { background: rgba(107,142,107,.12); color: #3F5C3F; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="brand">FreeComfort Studio</div>
-      <a href="../audio-to-mp3.html" class="lang-btn">🇰🇷 한국어</a>
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand"><span class="nav-brand-mark">L</span><span>LeDeuxions</span></a>
+        <div class="nav-links" data-nav-menu style="display:flex">
+            <a href="../" class="nav-link">KO</a>
+            <a href="./" class="nav-link active">FreeComfortLab</a>
+        </div>
     </div>
-
-    <h1>🎧 Audio to MP3</h1>
-    <p class="subtitle">Convert any audio file to MP3 format</p>
-
-    <div class="converter-box">
-      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-        <div class="upload-icon">🎵</div>
-        <p style="font-size:18px; margin-bottom:8px;">Click to select audio file</p>
-        <p style="opacity:0.7; font-size:14px;">WAV, FLAC, OGG, M4A, AAC and more</p>
-        <input type="file" id="fileInput" accept="audio/*" onchange="handleFile(this.files[0])">
-      </div>
-
-      <div id="fileName" style="margin-bottom:16px; display:none;"></div>
-
-      <button class="btn" id="convertBtn" onclick="convertFile()" disabled>
-        Convert to MP3
-      </button>
-
-      <div class="progress-bar" id="progressBar">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-
-      <div class="result" id="result">
-        <p style="margin-bottom:16px; font-size:18px;">✅ Conversion completed!</p>
-        <a href="#" class="download-btn" id="downloadBtn" download>
-          Download MP3
-        </a>
-      </div>
+</nav>
+<header class="app-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Audio → MP3</div>
+    <h1>Audio to <em style="color:var(--accent);font-style:italic;">MP3</em></h1>
+    <p class="lead">Any audio file, decoded and re-encoded as MP3 — right in your browser.</p>
+</header>
+<main class="container" style="padding-bottom:var(--space-9);">
+<div class="workbench">
+    <div>
+        <div class="dropzone" id="drop">
+            <div class="dropzone-icon">🎵</div>
+            <div class="dropzone-text">
+                <strong>Drop audio files or click</strong><br>
+                <small>WAV · M4A · AAC · OGG · FLAC · WMA · OPUS</small>
+            </div>
+            <input type="file" id="files" multiple accept="audio/*" hidden>
+        </div>
+        <ul class="file-list" id="list"></ul>
     </div>
-
-    <!-- AdSense Ad -->
-    <div style="margin: 40px auto; text-align: center; max-width: 800px;">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
-             crossorigin="anonymous"></script>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-2824624880449066"
-             data-ad-slot="7450540483"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+    <div class="panel">
+        <h3>Encoding</h3>
+        <div class="form-row">
+            <label class="label">Bitrate</label>
+            <div class="seg" id="seg-br">
+                <button data-br="96">96</button>
+                <button data-br="128">128</button>
+                <button class="on" data-br="192">192</button>
+                <button data-br="256">256</button>
+                <button data-br="320">320</button>
+            </div>
+        </div>
+        <div class="form-row">
+            <label class="label">Channels</label>
+            <div class="seg" id="seg-ch">
+                <button class="on" data-ch="auto">Original</button>
+                <button data-ch="2">Stereo</button>
+                <button data-ch="1">Mono</button>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>Convert to MP3</button>
+        <button class="btn btn-secondary btn-block" id="zip" disabled style="margin-top:var(--space-3);">Download all as ZIP</button>
+        <div class="status" id="status" hidden></div>
     </div>
-
-    <div class="back-link">
-      <a href="index.html">← Back to Home</a>
+</div>
+</main>
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions.</span>
+            <span><a href="./">← FreeComfortLab</a></span>
+        </div>
     </div>
-  </div>
+</footer>
+<script src="../../../assets/js/common.js"></script>
+<script>
+(function () {
+    'use strict';
+    var state = { items: [], bitrate: 192, channels: 'auto' };
+    var elDrop = document.getElementById('drop');
+    var elInput = document.getElementById('files');
+    var elList = document.getElementById('list');
+    var elRun = document.getElementById('run');
+    var elZip = document.getElementById('zip');
 
-  <script>
-    let selectedFile = null;
+    elDrop.addEventListener('click', function () { elInput.click(); });
+    elDrop.addEventListener('dragover', function (e) { e.preventDefault(); elDrop.classList.add('is-active'); });
+    elDrop.addEventListener('dragleave', function () { elDrop.classList.remove('is-active'); });
+    elDrop.addEventListener('drop', function (e) {
+        e.preventDefault(); elDrop.classList.remove('is-active');
+        addFiles(Array.from(e.dataTransfer.files));
+    });
+    elInput.addEventListener('change', function () { addFiles(Array.from(elInput.files)); });
 
-    function handleFile(file) {
-      if (!file) return;
-      selectedFile = file;
-      document.getElementById('fileName').textContent = `Selected: ${file.name}`;
-      document.getElementById('fileName').style.display = 'block';
-      document.getElementById('convertBtn').disabled = false;
-    }
-
-    async function convertFile() {
-      if (!selectedFile) return;
-
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      document.getElementById('convertBtn').disabled = true;
-      document.getElementById('progressBar').style.display = 'block';
-
-      try {
-        const response = await fetch('/api/convert-audio-to-mp3', {
-          method: 'POST',
-          body: formData
+    function addFiles(files) {
+        files.forEach(function (f) {
+            if (!/^audio\//.test(f.type) && !/\.(wav|m4a|aac|ogg|flac|opus|wma|mp3)$/i.test(f.name)) return;
+            state.items.push({ file: f, blob: null, progress: 0 });
         });
-
-        if (!response.ok) throw new Error('Conversion failed');
-
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        
-        document.getElementById('downloadBtn').href = url;
-        document.getElementById('downloadBtn').download = selectedFile.name.replace(/\.[^/.]+$/, '') + '.mp3';
-        document.getElementById('result').style.display = 'block';
-        document.getElementById('progressFill').style.width = '100%';
-      } catch (error) {
-        alert('Conversion failed. Please try again.');
-        console.error(error);
-      } finally {
-        document.getElementById('convertBtn').disabled = false;
-      }
+        render();
     }
 
-    // Drag and drop
-    const uploadArea = document.querySelector('.upload-area');
-    uploadArea.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadArea.style.borderColor = 'rgba(255,255,255,0.8)';
+    function render() {
+        elList.innerHTML = '';
+        state.items.forEach(function (it, i) {
+            var li = document.createElement('li');
+            li.className = 'file-item';
+            li.innerHTML = '<div class="ico">♪</div><div class="body"><div class="name"></div><div class="meta"></div><div class="progress"><div></div></div></div>';
+            li.querySelector('.name').textContent = it.file.name;
+            li.querySelector('.meta').textContent = LD.formatBytes(it.file.size) + (it.blob ? ' → ' + LD.formatBytes(it.blob.size) + ' MP3 ✓' : '');
+            li.querySelector('.progress > div').style.width = (it.progress || 0) + '%';
+            elList.appendChild(li);
+        });
+        elRun.disabled = state.items.length === 0;
+        elZip.disabled = !state.items.some(function (x) { return x.blob; });
+    }
+
+    document.getElementById('seg-br').addEventListener('click', function (e) {
+        if (e.target.tagName !== 'BUTTON') return;
+        document.querySelectorAll('#seg-br button').forEach(function (b) { b.classList.remove('on'); });
+        e.target.classList.add('on');
+        state.bitrate = parseInt(e.target.dataset.br, 10);
     });
-    uploadArea.addEventListener('dragleave', () => {
-      uploadArea.style.borderColor = 'rgba(255,255,255,0.4)';
+    document.getElementById('seg-ch').addEventListener('click', function (e) {
+        if (e.target.tagName !== 'BUTTON') return;
+        document.querySelectorAll('#seg-ch button').forEach(function (b) { b.classList.remove('on'); });
+        e.target.classList.add('on');
+        state.channels = e.target.dataset.ch;
     });
-    uploadArea.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadArea.style.borderColor = 'rgba(255,255,255,0.4)';
-      if (e.dataTransfer.files.length > 0) {
-        handleFile(e.dataTransfer.files[0]);
-      }
+
+    function setStatus(msg, kind) {
+        var s = document.getElementById('status');
+        s.textContent = msg; s.hidden = !msg; s.className = 'status' + (kind ? ' ' + kind : '');
+    }
+
+    async function decodeAudio(file) {
+        var ac = new (window.AudioContext || window.webkitAudioContext)();
+        try { return await ac.decodeAudioData(await file.arrayBuffer()); }
+        finally { ac.close && ac.close(); }
+    }
+
+    function encodeMp3(audioBuffer, bitrate, forceCh, progressCb) {
+        return new Promise(function (resolve) {
+            var sr = audioBuffer.sampleRate;
+            var srcCh = audioBuffer.numberOfChannels;
+            var ch = forceCh === 'auto' ? Math.min(2, srcCh) : parseInt(forceCh, 10);
+            var left = audioBuffer.getChannelData(0);
+            var right = srcCh > 1 ? audioBuffer.getChannelData(1) : left;
+            if (ch === 1 && srcCh > 1) {
+                var mono = new Float32Array(left.length);
+                for (var i = 0; i < left.length; i++) mono[i] = (left[i] + right[i]) / 2;
+                left = mono; right = mono;
+            }
+            var enc = new lamejs.Mp3Encoder(ch, sr, bitrate);
+            var BLOCK = 1152;
+            var out = [];
+            var l16 = new Int16Array(left.length);
+            var r16 = new Int16Array(left.length);
+            for (var j = 0; j < left.length; j++) {
+                l16[j] = Math.max(-32768, Math.min(32767, left[j] * 32767));
+                r16[j] = Math.max(-32768, Math.min(32767, right[j] * 32767));
+            }
+            function chunk(i) {
+                if (i >= l16.length) {
+                    var e = enc.flush();
+                    if (e.length) out.push(e);
+                    resolve(new Blob(out, { type: 'audio/mp3' }));
+                    return;
+                }
+                var lc = l16.subarray(i, i + BLOCK);
+                var e = ch === 1 ? enc.encodeBuffer(lc) : enc.encodeBuffer(lc, r16.subarray(i, i + BLOCK));
+                if (e.length) out.push(e);
+                progressCb && progressCb(Math.min(100, (i / l16.length) * 100));
+                setTimeout(function () { chunk(i + BLOCK); }, 0);
+            }
+            chunk(0);
+        });
+    }
+
+    elRun.addEventListener('click', async function () {
+        elRun.disabled = true;
+        for (var i = 0; i < state.items.length; i++) {
+            var it = state.items[i];
+            if (it.blob) continue;
+            setStatus('Encoding… (' + (i + 1) + '/' + state.items.length + ') ' + it.file.name);
+            try {
+                var audio = await decodeAudio(it.file);
+                var idx = i;
+                var blob = await encodeMp3(audio, state.bitrate, state.channels, function (p) {
+                    state.items[idx].progress = p;
+                    var li = elList.children[idx];
+                    if (li) li.querySelector('.progress > div').style.width = p + '%';
+                });
+                it.blob = blob; it.progress = 100;
+                render();
+                if (state.items.length === 1) LD.download(blob, it.file.name.replace(/\.[^.]+$/, '') + '.mp3');
+            } catch (e) { console.error(e); }
+        }
+        setStatus('Done', 'ok');
+        elRun.disabled = false;
     });
-  </script>
+    elZip.addEventListener('click', async function () {
+        var zip = new JSZip();
+        state.items.forEach(function (it) { if (it.blob) zip.file(it.file.name.replace(/\.[^.]+$/, '') + '.mp3', it.blob); });
+        var b = await zip.generateAsync({ type: 'blob' });
+        LD.download(b, 'mp3_converted.zip');
+    });
+})();
+</script>
 </body>
 </html>

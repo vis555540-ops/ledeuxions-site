@@ -1,43 +1,128 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Applications | LeDeuxions</title>
-<meta name="description" content="LeDeuxions에서 개발한 자동화 및 유틸리티 애플리케이션">
-<link href="https://fonts.googleapis.com/css2?family=Oswald&family=Noto+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="LeDeuxions의 설치형 애플리케이션 — 자동화 시스템과 PWA 도구 모음.">
+<title>Applications — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/css/claude-design.css">
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:'Noto Sans KR',sans-serif;background:#fafafa;color:#222;overflow-x:hidden}
-header{text-align:center;padding:60px 20px}
-section{max-width:900px;margin:0 auto;padding:0 20px}
-.app{background:#fff;border:1px solid #ddd;padding:24px;margin-bottom:24px;border-radius:8px}
-h1,h2{font-family:'Oswald'}
-p{line-height:1.7;color:#555}
-img{max-width:100%;height:auto}
-footer{text-align:center;padding:40px 20px;font-size:12px;color:#777}
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .apps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-5);
+    }
+    .app-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        display: flex; flex-direction: column;
+        gap: var(--space-3);
+        transition: all .25s var(--ease);
+    }
+    .app-card:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-3px);
+    }
+    .app-card .ico {
+        width: 56px; height: 56px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-md);
+        display: grid; place-items: center;
+        font-size: 1.5rem;
+    }
+    .app-card h2 {
+        font-family: var(--font-serif);
+        font-size: 1.4rem;
+        margin: 0;
+    }
+    .app-card p {
+        margin: 0;
+        flex: 1;
+        color: var(--text-secondary);
+    }
+    .meta-row { display: flex; gap: 6px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Applications</h1>
-  <p>업무 효율과 자동화를 위한 프로그램</p>
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
+            <a href="/applications/" class="nav-link active" data-nav-link>Applications</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="app-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Applications</div>
+    <h1>설치형 <em style="color:var(--accent);font-style:italic;">앱</em>들</h1>
+    <p class="lead">홈 화면에 추가해 오프라인에서도 동작하는 PWA, 그리고 로컬에서 동작하는 자동화 도구들.</p>
 </header>
 
-<section>
-  <div class="app">
-    <h2>AIDEUX Automation</h2>
-    <p>메일·파일·웹 작업을 자동 처리하는 개인 자동화 시스템.</p>
-  </div>
+<main class="container" style="padding-bottom:var(--space-9);">
 
-  <div class="app">
-    <h2>Document Utility Scripts</h2>
-    <p>PDF·이미지·오디오 파일을 빠르게 처리하는 로컬 도구.</p>
-  </div>
-</section>
+<div class="apps-grid">
 
-<footer>© LeDeuxions</footer>
+    <a href="iphoneheic/" class="app-card" style="text-decoration:none;color:inherit;">
+        <div class="ico">📱</div>
+        <h2>iPhone HEIC Converter (PWA)</h2>
+        <p>홈 화면에 추가해 오프라인에서도 HEIC를 JPG로 변환합니다. iOS 14+ 권장.</p>
+        <div class="meta-row">
+            <span class="badge">PWA</span>
+            <span class="badge badge-neutral">오프라인</span>
+        </div>
+    </a>
+
+    <div class="app-card">
+        <div class="ico">⚙️</div>
+        <h2>AIDEUX Automation</h2>
+        <p>메일·파일·웹 작업을 자동 처리하는 개인 자동화 시스템. 로컬 머신에서 실행됩니다.</p>
+        <div class="meta-row">
+            <span class="badge badge-neutral">Local</span>
+        </div>
+    </div>
+
+    <div class="app-card">
+        <div class="ico">📂</div>
+        <h2>Document Utility Scripts</h2>
+        <p>PDF·이미지·오디오 파일을 빠르게 처리하는 명령행 스크립트 묶음.</p>
+        <div class="meta-row">
+            <span class="badge badge-neutral">CLI</span>
+        </div>
+    </div>
+
+</div>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions.</span>
+            <span><a href="/web-projects/">웹 도구 →</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../assets/js/common.js"></script>
 </body>
 </html>

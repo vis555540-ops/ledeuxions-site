@@ -1,123 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>도장 PNG 자동 추출기 - FreeComfortLab</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            background: #f5f5f5;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .box {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            width: 420px;
-            margin: 0 auto;
-            box-shadow: 0px 3px 12px rgba(0,0,0,0.1);
-        }
-
-        input[type="file"] {
-            margin-top: 15px;
-        }
-
-        canvas {
-            margin-top: 20px;
-            background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 50% / 20px 20px;
-            border: 1px solid #ddd;
-        }
-
-        #downloadBtn {
-            margin-top: 18px;
-            padding: 10px 18px;
-        }
-
-        #loading {
-            display: none;
-            margin-top: 10px;
-            color: #555;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FAF9F5">
+<meta http-equiv="refresh" content="0; url=/web-projects/stamp/">
+<link rel="canonical" href="/web-projects/stamp/">
+<title>이동 중… — LeDeuxions</title>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<script>location.replace('/web-projects/stamp/');</script>
 </head>
 <body>
-    <div class="box">
-        <h2>🔻 도장 PNG 자동 추출기</h2>
-        <p>흰 종이에 도장을 찍고 사진을 업로드하세요.<br>도장 부분만 투명 PNG로 만들어드립니다.</p>
-
-        <input type="file" id="upload" accept="image/*" />
-
-        <div id="loading">처리 중입니다...</div>
-
-        <canvas id="preview" width="350" height="350"></canvas>
-
-        <br>
-        <button id="downloadBtn" disabled>📥 PNG 다운로드</button>
-    </div>
-
-    <!-- AdSense Ad -->
-    <div style="margin: 40px auto; text-align: center; max-width: 420px;">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
-             crossorigin="anonymous"></script>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-2824624880449066"
-             data-ad-slot="7450540483"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-    </div>
-
-    <script>
-        const upload = document.getElementById("upload");
-        const preview = document.getElementById("preview");
-        const ctx = preview.getContext("2d");
-        const loading = document.getElementById("loading");
-        const downloadBtn = document.getElementById("downloadBtn");
-        let outputBlob = null;
-
-        upload.addEventListener("change", async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            ctx.clearRect(0, 0, preview.width, preview.height);
-            loading.style.display = "block";
-
-            const formData = new FormData();
-            formData.append("image", file);
-
-            try {
-                const res = await fetch("/api/stamp-extract", {
-                    method: "POST",
-                    body: formData,
-                });
-
-                if (!res.ok) {
-                    alert("서버 처리 중 오류 발생 (" + res.status + ")");
-                    loading.style.display = "none";
-                    return;
-                }
-
-                const blob = await res.blob();
-                outputBlob = blob;
-
-                let img = new Image();
-                img.onload = () => {
-                    preview.width = img.width;
-
-<section style="max-width:800px;margin:40px auto;padding:20px;">
-  <h2>도장 PNG 추출 자주 묻는 질문</h2>
-  <p>스캔된 문서나 이미지에서 도장만 자동으로 추출해 투명 배경 PNG로 저장합니다. 계약서, 공문서 작업에 유용합니다.</p>
-  <details><summary>어떤 색상 도장이 인식되나요?</summary><p>빨간색 계열 도장이 가장 잘 인식됩니다. 파란색도 지원합니다.</p></details>
-  <details><summary>배경이 투명한 PNG로 저장되나요?</summary><p>네, 도장 외 배경은 모두 제거되고 투명 PNG로 저장됩니다.</p></details>
-  <details><summary>여러 개의 도장이 있으면 어떻게 되나요?</summary><p>각각 개별 PNG 파일로 분리되어 저장됩니다.</p></details>
-  <ins class="adsbygoogle" style="display:block;margin-top:20px;" data-ad-client="ca-pub-2824624880449066" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</section>
+<div style="min-height:100vh;display:grid;place-items:center;font-family:'Inter',sans-serif;color:#5C5B57;background:#FAF9F5;">
+  <div style="text-align:center;">
+    <p>이동 중… If not redirected, <a href="/web-projects/stamp/" style="color:#D97757;">click here</a>.</p>
+  </div>
+</div>
 </body>
 </html>

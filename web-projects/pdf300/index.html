@@ -4,53 +4,113 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FAF9F5">
-<meta name="description" content="PDF300 — 브라우저에서 끝나는 PDF 도구. 병합, 분할, 회전, 이미지 변환, 이미지→PDF, 워터마크.">
-<title>PDF300 · PDF 도구 모음 — LeDeuxions</title>
+<meta name="description" content="PDF300 — 브라우저에서 끝나는 PDF 풀 도구. 병합, 분할, 회전, 자르기, 페이지번호, 서명, 가림, 이미지/텍스트 변환, 압축까지 14개 기능.">
+<meta name="keywords" content="PDF 병합, PDF 분할, PDF 회전, PDF 자르기, PDF 워터마크, PDF 서명, PDF 페이지번호, PDF 이미지, PDF 텍스트, PDF 압축, ilovepdf 대안">
+<meta property="og:title" content="PDF300 — 무료 PDF 풀 도구">
+<meta property="og:description" content="14개 PDF 도구, 모두 브라우저에서. 파일은 업로드되지 않습니다.">
+<title>PDF300 · PDF 풀 도구 모음 — LeDeuxions</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../../assets/css/claude-design.css">
-<!-- PDF libs (no build, CDN only) -->
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';</script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
-    .app-hero {
-        padding: var(--space-7) 0 var(--space-5);
-        text-align: center;
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+
+    /* ========== Tool grid ========== */
+    .tool-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--space-4);
+        margin-bottom: var(--space-7);
     }
-    .tab-bar {
-        display: flex;
-        gap: var(--space-1);
-        background: var(--bg-sunken);
-        padding: 6px;
-        border-radius: var(--radius-lg);
-        margin-bottom: var(--space-6);
-        overflow-x: auto;
-        scrollbar-width: none;
-    }
-    .tab-bar::-webkit-scrollbar { display: none; }
-    .tab {
-        flex: 1;
-        min-width: 110px;
-        padding: 10px 14px;
-        border-radius: var(--radius-md);
-        font-size: 0.92rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-        text-align: center;
-        white-space: nowrap;
-        transition: all .15s var(--ease);
-        cursor: pointer;
-    }
-    .tab:hover { color: var(--text-primary); }
-    .tab.is-active {
+    .tool-tile {
         background: var(--bg-card);
-        color: var(--text-primary);
-        box-shadow: var(--shadow-xs);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5) var(--space-4);
+        text-align: center;
+        cursor: pointer;
+        transition: all .2s var(--ease);
+        text-decoration: none; color: inherit;
+        display: flex; flex-direction: column;
+        align-items: center; gap: var(--space-2);
     }
-    .pane { display: none; }
-    .pane.is-active { display: block; }
+    .tool-tile:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: inherit;
+    }
+    .tool-tile-icon {
+        width: 52px; height: 52px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-md);
+        display: grid; place-items: center;
+        font-size: 1.5rem;
+        transition: all .2s var(--ease);
+    }
+    .tool-tile:hover .tool-tile-icon {
+        background: var(--accent);
+        color: #fff;
+    }
+    .tool-tile h4 {
+        font-family: var(--font-sans);
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 4px 0 0;
+    }
+    .tool-tile p {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    /* ========== Tool workspace ========== */
+    .workspace { display: none; }
+    .workspace.is-active { display: block; }
+    .ws-header {
+        display: flex; align-items: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-5);
+        padding-bottom: var(--space-4);
+        border-bottom: 1px solid var(--border);
+    }
+    .ws-back {
+        width: 40px; height: 40px;
+        border-radius: var(--radius-md);
+        background: var(--bg-sunken);
+        display: grid; place-items: center;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+    }
+    .ws-back:hover { background: var(--accent); color: #fff; }
+    .ws-header h2 {
+        font-family: var(--font-serif);
+        font-size: 1.4rem;
+        margin: 0;
+    }
+    .ws-header .ico {
+        width: 44px; height: 44px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-md);
+        display: grid; place-items: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    .ws-header .ws-desc {
+        flex: 1;
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
 
     .workbench {
         display: grid;
@@ -71,9 +131,9 @@
         font-size: 1rem;
         font-weight: 600;
         margin: 0 0 var(--space-3);
-        color: var(--text-primary);
     }
 
+    /* ========== File list / items ========== */
     .file-list {
         list-style: none;
         padding: 0;
@@ -85,66 +145,64 @@
         overflow-y: auto;
     }
     .file-item {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
+        display: flex; align-items: center; gap: var(--space-3);
         padding: var(--space-3);
         background: var(--bg-sunken);
         border: 1px solid transparent;
         border-radius: var(--radius-md);
-        transition: all .15s var(--ease);
     }
-    .file-item:hover { border-color: var(--border-strong); }
     .file-item-icon {
-        flex: 0 0 36px;
-        height: 36px;
+        flex: 0 0 36px; height: 36px;
         background: var(--accent-soft);
         color: var(--accent-deep);
         border-radius: var(--radius-sm);
         display: grid; place-items: center;
-        font-size: 0.9rem;
-        font-weight: 600;
+        font-size: 0.85rem; font-weight: 600;
     }
     .file-item-body { flex: 1; min-width: 0; }
     .file-item-name {
-        font-size: 0.92rem;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: 0.92rem; font-weight: 500;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .file-item-meta {
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         color: var(--text-muted);
         font-family: var(--font-mono);
     }
     .file-item-actions { display: flex; gap: 4px; }
     .icon-btn {
-        width: 32px; height: 32px;
+        width: 30px; height: 30px;
         border-radius: var(--radius-sm);
         display: grid; place-items: center;
         color: var(--text-muted);
-        transition: all .15s var(--ease);
     }
     .icon-btn:hover { background: var(--bg-card); color: var(--accent); }
 
-    .form-row {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-bottom: var(--space-4);
+    /* ========== Form / Settings ========== */
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }
+    .form-row-inline { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .seg {
+        display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+        gap: 4px; padding: 4px;
+        background: var(--bg-sunken);
+        border-radius: var(--radius-md);
     }
-    .form-row-inline {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-3);
+    .seg button {
+        padding: 8px; border-radius: var(--radius-sm);
+        font-size: 0.85rem; font-weight: 500;
+        color: var(--text-secondary);
+    }
+    .seg button.on {
+        background: var(--bg-card); color: var(--text-primary);
+        box-shadow: var(--shadow-xs);
     }
 
+    /* ========== Preview grid (for page thumbnails) ========== */
     .preview-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: var(--space-3);
-        max-height: 480px;
+        max-height: 520px;
         overflow-y: auto;
         padding: var(--space-2);
     }
@@ -153,10 +211,9 @@
         border: 1px solid var(--border);
         border-radius: var(--radius-md);
         overflow: hidden;
-        cursor: grab;
         position: relative;
     }
-    .preview-thumb canvas { width: 100%; height: auto; display: block; background: #fff; }
+    .preview-thumb canvas { width: 100%; height: auto; display: block; background: #fff; transition: transform .2s var(--ease); }
     .preview-thumb-num {
         position: absolute; top: 6px; left: 6px;
         background: rgba(31,30,27,.85);
@@ -171,11 +228,11 @@
         display: flex; gap: 4px;
     }
     .preview-thumb-action {
-        width: 24px; height: 24px;
+        width: 22px; height: 22px;
         background: rgba(255,255,255,.95);
         border-radius: 4px;
         display: grid; place-items: center;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         color: var(--text-primary);
         cursor: pointer;
         border: 1px solid var(--border);
@@ -183,9 +240,11 @@
     .preview-thumb-action:hover { background: var(--accent); color: #fff; }
     .preview-thumb.removed { opacity: .35; }
     .preview-thumb.removed canvas { filter: grayscale(1); }
+    .preview-thumb.selected { outline: 2px solid var(--accent); outline-offset: -2px; }
 
+    /* ========== Status ========== */
     .status {
-        font-size: 0.88rem;
+        font-size: 0.86rem;
         color: var(--text-secondary);
         margin-top: var(--space-3);
         padding: var(--space-3);
@@ -195,18 +254,89 @@
     }
     .status.ok { background: rgba(107,142,107,.12); color: #3F5C3F; }
     .status.err { background: rgba(184,91,61,.12); color: var(--accent-deep); }
+    .help { font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-2); }
 
-    .empty {
-        padding: var(--space-7) var(--space-4);
-        text-align: center;
-        color: var(--text-muted);
+    /* ========== Stage for interactive tools (sign, redact, crop) ========== */
+    .stage {
+        background: var(--bg-sunken);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+        margin-top: var(--space-4);
+        position: relative;
+        overflow: hidden;
     }
-    .empty-icon { font-size: 2rem; margin-bottom: var(--space-2); }
+    .stage-canvas-wrap {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+    }
+    .stage canvas { max-width: 100%; display: block; background: #fff; }
+    .stage-overlay {
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        cursor: crosshair;
+    }
+    .stage-paginator {
+        display: flex; align-items: center; gap: var(--space-3);
+        margin-top: var(--space-3);
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+    .stage-paginator button {
+        width: 32px; height: 32px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+    }
+    .stage-paginator button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .stage-paginator button:disabled { opacity: .4; cursor: not-allowed; }
+
+    .sign-tray {
+        display: flex; gap: var(--space-3); flex-wrap: wrap;
+        margin-top: var(--space-3);
+    }
+    .sign-tray-item {
+        width: 90px; height: 60px;
+        background: var(--bg-sunken);
+        border: 1px dashed var(--border-strong);
+        border-radius: var(--radius-sm);
+        display: grid; place-items: center;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .sign-tray-item img { max-width: 100%; max-height: 100%; }
+    .sign-tray-item.add {
+        color: var(--text-muted);
+        font-size: 0.78rem;
+    }
+    .sign-tray-item .x {
+        position: absolute; top: 2px; right: 2px;
+        background: rgba(0,0,0,.7); color: #fff;
+        width: 18px; height: 18px;
+        border-radius: 50%;
+        font-size: 0.7rem;
+        display: none;
+        align-items: center; justify-content: center;
+    }
+    .sign-tray-item:hover .x { display: flex; }
+
+    .badge-info {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 8px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-pill);
+        font-size: 0.74rem;
+        font-weight: 500;
+    }
 </style>
 </head>
 <body>
 
-<!-- Navbar -->
 <nav class="nav">
     <div class="nav-inner">
         <a href="/" class="nav-brand">
@@ -225,33 +355,112 @@
     </div>
 </nav>
 
-<!-- Hero -->
-<header class="app-hero container-narrow">
-    <div class="eyebrow" style="margin-bottom:12px;">PDF Toolkit</div>
+<!-- Hero (visible on home) -->
+<header class="app-hero container-narrow" id="hero">
+    <div class="eyebrow" style="margin-bottom:12px;">PDF Toolkit · 14 tools</div>
     <h1>PDF <em style="color:var(--accent);font-style:italic;">300</em></h1>
-    <p class="lead">병합 · 분할 · 회전 · 이미지로/에서. 파일은 업로드되지 않습니다.</p>
+    <p class="lead">병합부터 압축까지 — 모든 PDF 작업을 브라우저 안에서. 파일은 절대 업로드되지 않습니다.</p>
 </header>
 
 <main class="container" style="padding-bottom:var(--space-9);">
 
-    <!-- Tab bar -->
-    <div class="tab-bar" role="tablist">
-        <button class="tab is-active" data-tab="merge" role="tab">📑 병합</button>
-        <button class="tab" data-tab="split" role="tab">✂️ 분할</button>
-        <button class="tab" data-tab="rotate" role="tab">🔄 회전/재정렬</button>
-        <button class="tab" data-tab="extract" role="tab">🖼 이미지로</button>
-        <button class="tab" data-tab="from-images" role="tab">📷 이미지에서</button>
-        <button class="tab" data-tab="watermark" role="tab">💧 워터마크</button>
-    </div>
+    <!-- ============================== TOOL GRID ============================== -->
+    <section id="tool-grid" class="tool-grid">
 
-    <!-- ========== MERGE ========== -->
-    <section class="pane is-active" data-pane="merge">
+        <a href="#merge" class="tool-tile" data-tool="merge">
+            <div class="tool-tile-icon">📑</div>
+            <h4>병합</h4>
+            <p>여러 PDF를 하나로</p>
+        </a>
+        <a href="#split" class="tool-tile" data-tool="split">
+            <div class="tool-tile-icon">✂️</div>
+            <h4>분할</h4>
+            <p>페이지 범위로 자르기</p>
+        </a>
+        <a href="#organize" class="tool-tile" data-tool="organize">
+            <div class="tool-tile-icon">🔄</div>
+            <h4>회전·재정렬</h4>
+            <p>페이지 순서·방향</p>
+        </a>
+        <a href="#crop" class="tool-tile" data-tool="crop">
+            <div class="tool-tile-icon">✂</div>
+            <h4>자르기</h4>
+            <p>여백 제거·트리밍</p>
+        </a>
+        <a href="#nup" class="tool-tile" data-tool="nup">
+            <div class="tool-tile-icon">📐</div>
+            <h4>N-up</h4>
+            <p>2장·4장 합치기</p>
+        </a>
+        <a href="#numbers" class="tool-tile" data-tool="numbers">
+            <div class="tool-tile-icon">🔢</div>
+            <h4>페이지 번호</h4>
+            <p>자동 페이지 번호</p>
+        </a>
+        <a href="#watermark" class="tool-tile" data-tool="watermark">
+            <div class="tool-tile-icon">💧</div>
+            <h4>워터마크</h4>
+            <p>텍스트 워터마크</p>
+        </a>
+        <a href="#sign" class="tool-tile" data-tool="sign">
+            <div class="tool-tile-icon">✍️</div>
+            <h4>서명·도장</h4>
+            <p>이미지를 PDF에 삽입</p>
+        </a>
+        <a href="#redact" class="tool-tile" data-tool="redact">
+            <div class="tool-tile-icon">⬛</div>
+            <h4>가림 (Redact)</h4>
+            <p>비밀 영역 검정 처리</p>
+        </a>
+        <a href="#pdf2img" class="tool-tile" data-tool="pdf2img">
+            <div class="tool-tile-icon">🖼</div>
+            <h4>PDF → 이미지</h4>
+            <p>페이지를 PNG/JPG로</p>
+        </a>
+        <a href="#img2pdf" class="tool-tile" data-tool="img2pdf">
+            <div class="tool-tile-icon">📷</div>
+            <h4>이미지 → PDF</h4>
+            <p>사진을 PDF로</p>
+        </a>
+        <a href="#pdf2txt" class="tool-tile" data-tool="pdf2txt">
+            <div class="tool-tile-icon">📝</div>
+            <h4>PDF → 텍스트</h4>
+            <p>본문만 추출</p>
+        </a>
+        <a href="#compress" class="tool-tile" data-tool="compress">
+            <div class="tool-tile-icon">🗜</div>
+            <h4>압축</h4>
+            <p>이미지 모드 재인코딩</p>
+        </a>
+        <a href="#meta" class="tool-tile" data-tool="meta">
+            <div class="tool-tile-icon">ℹ️</div>
+            <h4>메타데이터</h4>
+            <p>제목·저자 편집</p>
+        </a>
+
+    </section>
+
+
+    <!-- ============================== TOOL WORKSPACES ============================== -->
+
+    <!-- WORKSPACE TEMPLATE: each tool below uses the same `.workspace` pattern -->
+
+    <!-- ============ MERGE ============ -->
+    <section class="workspace" data-ws="merge">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📑</div>
+            <div>
+                <h2>PDF 병합</h2>
+                <p class="ws-desc">여러 PDF를 순서대로 하나로 합칩니다.</p>
+            </div>
+        </div>
         <div class="workbench">
             <div>
                 <div class="dropzone" id="merge-drop">
                     <div class="dropzone-icon">📑</div>
                     <div class="dropzone-text">
-                        <strong>PDF 파일을 끌어다 놓거나</strong> 클릭해서 선택<br>
+                        <strong>PDF 파일을 끌어 놓거나</strong> 클릭해 선택<br>
                         <small>여러 PDF를 순서대로 하나로 합칩니다.</small>
                     </div>
                     <input type="file" id="merge-files" multiple accept="application/pdf" hidden>
@@ -266,26 +475,29 @@
                 </div>
                 <button class="btn btn-primary btn-block" id="merge-run" disabled>병합하여 다운로드</button>
                 <div class="status" id="merge-status" hidden></div>
-                <p class="text-muted" style="font-size:.82rem;margin-top:var(--space-4);">
-                    💡 항목을 끌어 순서를 바꿀 수 있습니다.
-                </p>
+                <p class="help">💡 항목을 ▲▼ 버튼으로 순서를 바꿀 수 있습니다.</p>
             </div>
         </div>
     </section>
 
-    <!-- ========== SPLIT ========== -->
-    <section class="pane" data-pane="split">
+    <!-- ============ SPLIT ============ -->
+    <section class="workspace" data-ws="split">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">✂️</div>
+            <div>
+                <h2>PDF 분할</h2>
+                <p class="ws-desc">페이지 범위, 낱장, N장 묶음으로 분할합니다.</p>
+            </div>
+        </div>
         <div class="workbench">
             <div>
                 <div class="dropzone" id="split-drop">
                     <div class="dropzone-icon">✂️</div>
-                    <div class="dropzone-text">
-                        <strong>PDF 한 개를 선택</strong>해 페이지 범위로 자릅니다.<br>
-                        <small>각 범위는 별도 PDF로 저장됩니다.</small>
-                    </div>
+                    <div class="dropzone-text"><strong>PDF 한 개를 선택</strong>해 페이지 범위로 자릅니다.</div>
                     <input type="file" id="split-file" accept="application/pdf" hidden>
                 </div>
-                <div id="split-info" class="status" hidden></div>
+                <div class="status" id="split-info" hidden></div>
             </div>
             <div class="panel">
                 <h3>설정</h3>
@@ -311,50 +523,396 @@
         </div>
     </section>
 
-    <!-- ========== ROTATE / REORDER ========== -->
-    <section class="pane" data-pane="rotate">
+    <!-- ============ ORGANIZE (Rotate/Reorder/Remove) ============ -->
+    <section class="workspace" data-ws="organize">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔄</div>
+            <div>
+                <h2>회전·재정렬</h2>
+                <p class="ws-desc">페이지별로 회전, 제외, 순서를 정리합니다.</p>
+            </div>
+        </div>
         <div class="workbench">
             <div>
-                <div class="dropzone" id="rot-drop">
+                <div class="dropzone" id="org-drop">
                     <div class="dropzone-icon">🔄</div>
-                    <div class="dropzone-text">
-                        <strong>PDF를 선택하면 페이지 미리보기</strong>가 펼쳐집니다.<br>
-                        <small>각 페이지를 회전하거나 삭제, 순서 변경하세요.</small>
-                    </div>
-                    <input type="file" id="rot-file" accept="application/pdf" hidden>
+                    <div class="dropzone-text"><strong>PDF를 선택하면 페이지 미리보기</strong>가 펼쳐집니다.</div>
+                    <input type="file" id="org-file" accept="application/pdf" hidden>
                 </div>
-                <div class="preview-grid" id="rot-grid"></div>
+                <div class="preview-grid" id="org-grid"></div>
             </div>
             <div class="panel">
                 <h3>설정</h3>
                 <div class="form-row">
                     <label class="label">전체 회전</label>
-                    <div style="display:flex;gap:8px;">
-                        <button class="btn btn-secondary btn-sm" data-rotate-all="-90">↺ 90°</button>
-                        <button class="btn btn-secondary btn-sm" data-rotate-all="90">↻ 90°</button>
-                        <button class="btn btn-secondary btn-sm" data-rotate-all="180">180°</button>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-secondary btn-sm" data-org-rotate-all="-90">↺ 90°</button>
+                        <button class="btn btn-secondary btn-sm" data-org-rotate-all="90">↻ 90°</button>
+                        <button class="btn btn-secondary btn-sm" data-org-rotate-all="180">180°</button>
                     </div>
                 </div>
                 <div class="form-row">
                     <label class="label">출력 파일명</label>
-                    <input class="input" id="rot-name" value="edited.pdf">
+                    <input class="input" id="org-name" value="organized.pdf">
                 </div>
-                <button class="btn btn-primary btn-block" id="rot-run" disabled>저장하여 다운로드</button>
-                <div class="status" id="rot-status" hidden></div>
+                <button class="btn btn-primary btn-block" id="org-run" disabled>저장하여 다운로드</button>
+                <div class="status" id="org-status" hidden></div>
             </div>
         </div>
     </section>
 
-    <!-- ========== EXTRACT IMAGES ========== -->
-    <section class="pane" data-pane="extract">
+    <!-- ============ CROP ============ -->
+    <section class="workspace" data-ws="crop">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">✂</div>
+            <div>
+                <h2>여백 자르기</h2>
+                <p class="ws-desc">모든 페이지에 동일한 여백을 잘라냅니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="crop-drop">
+                    <div class="dropzone-icon">✂</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>해 미리보기를 확인하세요.</div>
+                    <input type="file" id="crop-file" accept="application/pdf" hidden>
+                </div>
+                <div class="stage" id="crop-stage" hidden>
+                    <div class="stage-canvas-wrap">
+                        <canvas id="crop-canvas"></canvas>
+                        <div class="stage-overlay" id="crop-overlay"></div>
+                    </div>
+                    <div class="stage-paginator" id="crop-paginator">
+                        <button data-crop-prev>‹</button>
+                        <span id="crop-pageinfo">— / —</span>
+                        <button data-crop-next>›</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>여백 (mm)</h3>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">상</label>
+                        <input class="input" id="crop-top" type="number" min="0" value="0">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">하</label>
+                        <input class="input" id="crop-bottom" type="number" min="0" value="0">
+                    </div>
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">좌</label>
+                        <input class="input" id="crop-left" type="number" min="0" value="0">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">우</label>
+                        <input class="input" id="crop-right" type="number" min="0" value="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 파일명</label>
+                    <input class="input" id="crop-name" value="cropped.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="crop-run" disabled>자르기 실행</button>
+                <div class="status" id="crop-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ N-UP ============ -->
+    <section class="workspace" data-ws="nup">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📐</div>
+            <div>
+                <h2>N-up · 페이지 합치기</h2>
+                <p class="ws-desc">두 페이지 또는 네 페이지를 한 장에 모아 인쇄용으로 만듭니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="nup-drop">
+                    <div class="dropzone-icon">📐</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="nup-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="nup-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">레이아웃</label>
+                    <div class="seg" id="nup-layout">
+                        <button class="on" data-n="2">2-up</button>
+                        <button data-n="4">4-up</button>
+                        <button data-n="6">6-up</button>
+                        <button data-n="9">9-up</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">방향</label>
+                    <div class="seg" id="nup-orient">
+                        <button class="on" data-o="auto">자동</button>
+                        <button data-o="landscape">가로</button>
+                        <button data-o="portrait">세로</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">여백 (pt)</label>
+                    <input class="input" id="nup-margin" type="number" min="0" value="20">
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 파일명</label>
+                    <input class="input" id="nup-name" value="nup.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="nup-run" disabled>N-up 만들기</button>
+                <div class="status" id="nup-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE NUMBERS ============ -->
+    <section class="workspace" data-ws="numbers">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔢</div>
+            <div>
+                <h2>페이지 번호 추가</h2>
+                <p class="ws-desc">자동으로 페이지 번호를 삽입합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="num-drop">
+                    <div class="dropzone-icon">🔢</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="num-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="num-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">위치</label>
+                    <div class="seg" id="num-pos">
+                        <button data-p="tl">↖</button>
+                        <button data-p="tc">↑</button>
+                        <button data-p="tr">↗</button>
+                        <button data-p="bl">↙</button>
+                        <button class="on" data-p="bc">↓</button>
+                        <button data-p="br">↘</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">형식</label>
+                    <select class="select" id="num-format">
+                        <option value="n">1, 2, 3 ...</option>
+                        <option value="n/N">1 / N, 2 / N ...</option>
+                        <option value="-n-">- 1 -, - 2 - ...</option>
+                        <option value="page n">Page 1, Page 2 ...</option>
+                        <option value="page n of N">Page 1 of N ...</option>
+                    </select>
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">크기 (pt)</label>
+                        <input class="input" id="num-size" type="number" min="6" max="40" value="12">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">시작 번호</label>
+                        <input class="input" id="num-start" type="number" min="1" value="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">색상</label>
+                    <input class="input" id="num-color" type="color" value="#1F1E1B" style="height:44px;padding:6px;">
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 파일명</label>
+                    <input class="input" id="num-name" value="numbered.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="num-run" disabled>페이지 번호 추가</button>
+                <div class="status" id="num-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ WATERMARK ============ -->
+    <section class="workspace" data-ws="watermark">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">💧</div>
+            <div>
+                <h2>워터마크 추가</h2>
+                <p class="ws-desc">전체 페이지에 텍스트 워터마크를 삽입합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="wm-drop">
+                    <div class="dropzone-icon">💧</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>해 워터마크를 추가합니다.</div>
+                    <input type="file" id="wm-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="wm-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">텍스트</label>
+                    <input class="input" id="wm-text" value="CONFIDENTIAL">
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">크기</label>
+                        <input class="input" id="wm-size" type="number" min="10" max="200" value="60">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">투명도(%)</label>
+                        <input class="input" id="wm-opacity" type="number" min="5" max="100" value="25">
+                    </div>
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">색상</label>
+                        <input class="input" id="wm-color" type="color" value="#D97757" style="height:44px;padding:6px;">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">각도</label>
+                        <input class="input" id="wm-angle" type="number" value="-30">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 파일명</label>
+                    <input class="input" id="wm-name" value="watermarked.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="wm-run" disabled>워터마크 추가</button>
+                <div class="status" id="wm-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SIGN ============ -->
+    <section class="workspace" data-ws="sign">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">✍️</div>
+            <div>
+                <h2>서명·도장 삽입</h2>
+                <p class="ws-desc">서명 또는 도장 이미지(PNG)를 원하는 페이지의 원하는 위치에 배치합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="sign-drop">
+                    <div class="dropzone-icon">✍️</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요. 그 다음 서명 이미지를 올리고 클릭해 배치합니다.</div>
+                    <input type="file" id="sign-file" accept="application/pdf" hidden>
+                </div>
+                <div class="stage" id="sign-stage" hidden>
+                    <div class="stage-canvas-wrap">
+                        <canvas id="sign-canvas"></canvas>
+                        <div class="stage-overlay" id="sign-overlay"></div>
+                    </div>
+                    <div class="stage-paginator">
+                        <button data-sign-prev>‹</button>
+                        <span id="sign-pageinfo">— / —</span>
+                        <button data-sign-next>›</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>서명 이미지</h3>
+                <p class="help" style="margin-top:0;margin-bottom:var(--space-3);">투명 PNG를 권장합니다. 도장 추출기로 만든 PNG를 그대로 쓸 수 있어요.</p>
+                <div class="sign-tray" id="sign-tray">
+                    <label class="sign-tray-item add" id="sign-add">
+                        + 추가
+                        <input type="file" id="sign-img-input" accept="image/png,image/jpeg" multiple hidden>
+                    </label>
+                </div>
+                <div class="form-row" style="margin-top:var(--space-4);">
+                    <label class="label">크기 (배율)</label>
+                    <input class="input" id="sign-scale" type="range" min="20" max="200" value="100">
+                    <span class="help mono" id="sign-scale-val">100%</span>
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 파일명</label>
+                    <input class="input" id="sign-name" value="signed.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="sign-run" disabled>저장</button>
+                <button class="btn btn-secondary btn-block" id="sign-undo" style="margin-top:var(--space-3);" disabled>마지막 배치 취소</button>
+                <div class="status" id="sign-status" hidden></div>
+                <p class="help">💡 트레이에서 서명을 선택한 뒤, 미리보기를 클릭하면 그 자리에 배치됩니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ REDACT ============ -->
+    <section class="workspace" data-ws="redact">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">⬛</div>
+            <div>
+                <h2>가림 (Redact)</h2>
+                <p class="ws-desc">검정 사각형으로 비밀 영역을 영구히 가립니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="rd-drop">
+                    <div class="dropzone-icon">⬛</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>한 뒤, 미리보기에서 드래그해 영역을 지정하세요.</div>
+                    <input type="file" id="rd-file" accept="application/pdf" hidden>
+                </div>
+                <div class="stage" id="rd-stage" hidden>
+                    <div class="stage-canvas-wrap">
+                        <canvas id="rd-canvas"></canvas>
+                        <div class="stage-overlay" id="rd-overlay"></div>
+                    </div>
+                    <div class="stage-paginator">
+                        <button data-rd-prev>‹</button>
+                        <span id="rd-pageinfo">— / —</span>
+                        <button data-rd-next>›</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">색상</label>
+                    <input class="input" id="rd-color" type="color" value="#000000" style="height:44px;padding:6px;">
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 파일명</label>
+                    <input class="input" id="rd-name" value="redacted.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="rd-run" disabled>저장</button>
+                <button class="btn btn-secondary btn-block" id="rd-clear" style="margin-top:var(--space-3);" disabled>현재 페이지 박스 모두 지우기</button>
+                <div class="status" id="rd-status" hidden></div>
+                <p class="help">💡 드래그로 사각 영역을 그립니다. 동일 위치에 검정 사각형이 영구 삽입됩니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PDF → IMAGES ============ -->
+    <section class="workspace" data-ws="pdf2img">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🖼</div>
+            <div>
+                <h2>PDF → 이미지</h2>
+                <p class="ws-desc">페이지별로 PNG/JPG/WebP로 추출합니다.</p>
+            </div>
+        </div>
         <div class="workbench">
             <div>
                 <div class="dropzone" id="ext-drop">
                     <div class="dropzone-icon">🖼</div>
-                    <div class="dropzone-text">
-                        <strong>PDF를 이미지로 추출</strong>합니다.<br>
-                        <small>페이지별 PNG/JPG로 저장됩니다.</small>
-                    </div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요.</div>
                     <input type="file" id="ext-file" accept="application/pdf" hidden>
                 </div>
                 <div class="preview-grid" id="ext-grid"></div>
@@ -366,23 +924,23 @@
                         <label class="label">형식</label>
                         <select class="select" id="ext-format">
                             <option value="image/png">PNG</option>
-                            <option value="image/jpeg">JPG</option>
+                            <option value="image/jpeg" selected>JPG</option>
                             <option value="image/webp">WebP</option>
                         </select>
                     </div>
                     <div class="form-row">
-                        <label class="label">해상도(DPI)</label>
+                        <label class="label">해상도</label>
                         <select class="select" id="ext-dpi">
-                            <option value="1">72</option>
-                            <option value="1.5">108</option>
-                            <option value="2" selected>144</option>
-                            <option value="3">216</option>
-                            <option value="4">288</option>
+                            <option value="1">72 DPI</option>
+                            <option value="1.5">108 DPI</option>
+                            <option value="2" selected>144 DPI</option>
+                            <option value="3">216 DPI</option>
+                            <option value="4">288 DPI</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-row">
-                    <label class="label">JPG 품질</label>
+                    <label class="label">JPG/WebP 품질</label>
                     <input class="input" id="ext-quality" type="range" min="50" max="100" value="92">
                 </div>
                 <button class="btn btn-primary btn-block" id="ext-run" disabled>이미지로 추출 (ZIP)</button>
@@ -391,16 +949,21 @@
         </div>
     </section>
 
-    <!-- ========== FROM IMAGES ========== -->
-    <section class="pane" data-pane="from-images">
+    <!-- ============ IMAGES → PDF ============ -->
+    <section class="workspace" data-ws="img2pdf">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📷</div>
+            <div>
+                <h2>이미지 → PDF</h2>
+                <p class="ws-desc">JPG/PNG를 한 PDF로 묶습니다.</p>
+            </div>
+        </div>
         <div class="workbench">
             <div>
                 <div class="dropzone" id="img-drop">
                     <div class="dropzone-icon">📷</div>
-                    <div class="dropzone-text">
-                        <strong>이미지로 PDF 만들기</strong> — JPG, PNG 지원<br>
-                        <small>드래그로 순서를 바꿀 수 있습니다.</small>
-                    </div>
+                    <div class="dropzone-text"><strong>이미지를 끌어 놓거나</strong> 클릭해 선택</div>
                     <input type="file" id="img-files" multiple accept="image/jpeg,image/png" hidden>
                 </div>
                 <ul class="file-list" id="img-list"></ul>
@@ -437,50 +1000,143 @@
         </div>
     </section>
 
-    <!-- ========== WATERMARK ========== -->
-    <section class="pane" data-pane="watermark">
+    <!-- ============ PDF → TEXT ============ -->
+    <section class="workspace" data-ws="pdf2txt">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📝</div>
+            <div>
+                <h2>PDF → 텍스트</h2>
+                <p class="ws-desc">본문 텍스트만 추출해서 .txt로 저장합니다. (스캔 이미지 PDF는 OCR 필요)</p>
+            </div>
+        </div>
         <div class="workbench">
             <div>
-                <div class="dropzone" id="wm-drop">
-                    <div class="dropzone-icon">💧</div>
-                    <div class="dropzone-text">
-                        <strong>PDF에 텍스트 워터마크</strong>를 추가합니다.<br>
-                        <small>회사명, 기밀 표기, 본인 서명 등에 활용하세요.</small>
-                    </div>
-                    <input type="file" id="wm-file" accept="application/pdf" hidden>
+                <div class="dropzone" id="txt-drop">
+                    <div class="dropzone-icon">📝</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하면 텍스트를 추출합니다.</div>
+                    <input type="file" id="txt-file" accept="application/pdf" hidden>
                 </div>
-                <div id="wm-info" class="status" hidden></div>
+                <textarea class="textarea" id="txt-output" rows="14" placeholder="추출된 텍스트가 여기에 표시됩니다…" style="margin-top:var(--space-4);font-family:var(--font-mono);font-size:.85rem;"></textarea>
             </div>
             <div class="panel">
                 <h3>설정</h3>
                 <div class="form-row">
-                    <label class="label">워터마크 텍스트</label>
-                    <input class="input" id="wm-text" placeholder="예: CONFIDENTIAL" value="CONFIDENTIAL">
-                </div>
-                <div class="form-row-inline">
-                    <div class="form-row">
-                        <label class="label">크기</label>
-                        <input class="input" id="wm-size" type="number" min="10" max="200" value="60">
-                    </div>
-                    <div class="form-row">
-                        <label class="label">투명도(%)</label>
-                        <input class="input" id="wm-opacity" type="number" min="5" max="100" value="25">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <label class="label">색상</label>
-                    <input class="input" id="wm-color" type="color" value="#D97757" style="height:44px;padding:6px;">
-                </div>
-                <div class="form-row">
-                    <label class="label">각도</label>
-                    <input class="input" id="wm-angle" type="number" value="-30">
+                    <label class="label">페이지 구분</label>
+                    <select class="select" id="txt-sep">
+                        <option value="form-feed">폼피드 (\\f)</option>
+                        <option value="header" selected>--- Page N ---</option>
+                        <option value="newline">빈 줄만</option>
+                    </select>
                 </div>
                 <div class="form-row">
                     <label class="label">출력 파일명</label>
-                    <input class="input" id="wm-name" value="watermarked.pdf">
+                    <input class="input" id="txt-name" value="extracted.txt">
                 </div>
-                <button class="btn btn-primary btn-block" id="wm-run" disabled>워터마크 추가</button>
-                <div class="status" id="wm-status" hidden></div>
+                <button class="btn btn-primary btn-block" id="txt-run" disabled>텍스트 추출</button>
+                <button class="btn btn-secondary btn-block" id="txt-download" disabled style="margin-top:var(--space-3);">.txt 다운로드</button>
+                <button class="btn btn-ghost btn-block" id="txt-copy" disabled style="margin-top:var(--space-3);">클립보드에 복사</button>
+                <div class="status" id="txt-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ COMPRESS ============ -->
+    <section class="workspace" data-ws="compress">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🗜</div>
+            <div>
+                <h2>압축 (이미지 모드)</h2>
+                <p class="ws-desc">각 페이지를 이미지로 다시 그려 JPG로 압축한 PDF를 만듭니다. 텍스트 검색은 불가능해지지만 크기가 크게 줄어듭니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="cmp-drop">
+                    <div class="dropzone-icon">🗜</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>해 압축합니다.</div>
+                    <input type="file" id="cmp-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="cmp-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">압축 강도</label>
+                    <div class="seg" id="cmp-level">
+                        <button data-l="low">낮음</button>
+                        <button class="on" data-l="med">중간</button>
+                        <button data-l="high">높음</button>
+                        <button data-l="extreme">극한</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">최대 페이지 폭 (px)</label>
+                    <input class="input" id="cmp-width" type="number" min="400" value="1280">
+                </div>
+                <div class="form-row">
+                    <label class="label">JPG 품질</label>
+                    <input class="input" id="cmp-quality" type="range" min="30" max="95" value="72">
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 파일명</label>
+                    <input class="input" id="cmp-name" value="compressed.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="cmp-run" disabled>압축 실행</button>
+                <div class="status" id="cmp-status" hidden></div>
+                <p class="help">⚠️ 압축 후에는 PDF가 이미지로 구성됩니다. 텍스트 선택·검색이 불가능합니다.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ METADATA ============ -->
+    <section class="workspace" data-ws="meta">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">ℹ️</div>
+            <div>
+                <h2>메타데이터 편집</h2>
+                <p class="ws-desc">PDF의 제목·저자·키워드 등 메타데이터를 보고 편집합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="meta-drop">
+                    <div class="dropzone-icon">ℹ️</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="meta-file" accept="application/pdf" hidden>
+                </div>
+                <div class="panel" id="meta-current" hidden style="margin-top:var(--space-4);">
+                    <h3>현재 메타데이터</h3>
+                    <div id="meta-list" style="font-family:var(--font-mono);font-size:.85rem;color:var(--text-secondary);line-height:1.8;"></div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>새 메타데이터</h3>
+                <div class="form-row">
+                    <label class="label">제목</label>
+                    <input class="input" id="meta-title">
+                </div>
+                <div class="form-row">
+                    <label class="label">저자</label>
+                    <input class="input" id="meta-author">
+                </div>
+                <div class="form-row">
+                    <label class="label">주제</label>
+                    <input class="input" id="meta-subject">
+                </div>
+                <div class="form-row">
+                    <label class="label">키워드 (쉼표 구분)</label>
+                    <input class="input" id="meta-keywords">
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 파일명</label>
+                    <input class="input" id="meta-name" value="meta-edited.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="meta-run" disabled>저장</button>
+                <button class="btn btn-secondary btn-block" id="meta-strip" disabled style="margin-top:var(--space-3);">모든 메타데이터 제거</button>
+                <div class="status" id="meta-status" hidden></div>
             </div>
         </div>
     </section>
@@ -490,14 +1146,12 @@
 <footer class="site-footer">
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
-            <span>© 2005–2026 LeDeuxions. PDF300 v2026.05</span>
+            <span>© 2005–2026 LeDeuxions. PDF300 v2026.05 · 14 tools</span>
             <span><a href="/web-projects/">← 다른 도구</a></span>
         </div>
     </div>
 </footer>
 
-<!-- JSZip for batch downloads -->
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="../../assets/js/common.js"></script>
 <script src="pdf300.js"></script>
 </body>
