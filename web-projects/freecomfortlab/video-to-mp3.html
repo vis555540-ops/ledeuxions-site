@@ -1,212 +1,225 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>일반 영상 MP3 변환 - FreeComfortLab</title>
-
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(120deg, #e0c3fc 0%, #c2e9fb 100%);
-      --glass-bg: rgba(255, 255, 255, 0.85);
-      --glass-border: 1px solid rgba(255, 255, 255, 0.9);
-      --text-main: #2c3e50;
-      --accent: #6c5ce7;
-    }
-
-    body {
-      font-family: system-ui, sans-serif;
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      border: var(--glass-border);
-      border-radius: 24px;
-      padding: 32px;
-      width: 100%;
-      max-width: 500px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-    }
-
-    h1 {
-      font-size: 20px;
-      margin-bottom: 8px;
-      color: #2d3436;
-    }
-
-    p.desc {
-      font-size: 14px;
-      color: #636e72;
-      margin-bottom: 24px;
-      line-height: 1.5;
-    }
-
-    .upload-box {
-      border: 2px dashed #b2bec3;
-      border-radius: 16px;
-      padding: 30px;
-      text-align: center;
-      margin-bottom: 20px;
-      cursor: pointer;
-      background: rgba(255,255,255,0.5);
-      transition: 0.2s;
-    }
-
-    .upload-box:hover {
-      border-color: var(--accent);
-      background: rgba(255,255,255,0.8);
-    }
-
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      background: var(--accent);
-      color: white;
-      font-weight: 700;
-      font-size: 15px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .btn:hover {
-      background: #5649c0;
-      transform: translateY(-2px);
-    }
-
-    .btn:disabled {
-      background: #b2bec3;
-      cursor: default;
-      transform: none;
-    }
-
-    .status {
-      margin-top: 16px;
-      font-size: 13px;
-      text-align: center;
-    }
-
-    .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 20px;
-      font-size: 13px;
-      color: #636e72;
-      text-decoration: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="비디오 파일에서 오디오만 추출해 MP3로 변환. MP4, MOV, WebM 지원. 브라우저에서 처리.">
+<title>비디오 → MP3 변환기 — FreeComfortLab</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<style>
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .workbench { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+    @media (min-width: 920px) { .workbench { grid-template-columns: 1.6fr 1fr; align-items: start; } }
+    .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); }
+    .panel h3 { font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-3); }
+    .video-stage { background: var(--bg-sunken); border-radius: var(--radius-lg); padding: var(--space-5); text-align: center; margin-top: var(--space-4); }
+    .video-stage video { max-width: 100%; max-height: 320px; border-radius: var(--radius-md); }
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }
+    .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; background: var(--bg-sunken); border-radius: var(--radius-md); }
+    .seg button { padding: 8px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); }
+    .seg button.on { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--shadow-xs); }
+    .progress-bar { height: 6px; background: var(--bg-sunken); border-radius: 999px; overflow: hidden; margin-top: var(--space-3); }
+    .progress-bar > div { height: 100%; background: var(--accent); width: 0; transition: width .25s var(--ease-out); }
+    .status { font-size: 0.88rem; color: var(--text-secondary); margin-top: var(--space-3); padding: var(--space-3); background: var(--bg-sunken); border-radius: var(--radius-md); font-family: var(--font-mono); }
+    .status.ok { background: rgba(107,142,107,.12); color: #3F5C3F; }
+    .status.err { background: rgba(184,91,61,.12); color: var(--accent-deep); }
+    .help { font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-2); }
+</style>
 </head>
-
 <body>
-  <div class="card">
-    <h1>📹 일반 영상 → MP3 변환</h1>
-    <p class="desc">
-      영화, 유튜브 다운로드 영상 등 모든 동영상 파일에서<br>
-      오디오만 추출하여 MP3로 저장합니다.
-    </p>
 
-    <div class="upload-box" id="dropArea">
-      <div style="font-size:32px;margin-bottom:10px;">📀</div>
-      <p id="fileName" style="font-size:14px;color:#636e72;">
-        클릭해서 동영상 파일 선택
-      </p>
-      <input type="file" id="fileInput" accept="video/*" hidden>
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
+            <a href="./" class="nav-link active">FreeComfortLab</a>
+        </div>
+    </div>
+</nav>
+
+<header class="app-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Video → MP3</div>
+    <h1>영상에서 <em style="color:var(--accent);font-style:italic;">소리</em>만</h1>
+    <p class="lead">브라우저가 디코드한 영상의 오디오 트랙을 MP3로 추출합니다.</p>
+</header>
+
+<main class="container" style="padding-bottom:var(--space-9);">
+
+<div class="workbench">
+
+    <div>
+        <div class="dropzone" id="drop">
+            <div class="dropzone-icon">🎬</div>
+            <div class="dropzone-text">
+                <strong>비디오 파일을 끌어 놓거나</strong> 클릭해 선택<br>
+                <small>MP4 · MOV · WebM · MKV (브라우저 호환 코덱)</small>
+            </div>
+            <input type="file" id="file" accept="video/*" hidden>
+        </div>
+        <div class="video-stage" id="stage" hidden>
+            <video id="video" controls></video>
+        </div>
     </div>
 
-    <button id="btnConvert" class="btn">오디오 추출하기</button>
-    <div id="statusBox" class="status"></div>
+    <div class="panel">
+        <h3>설정</h3>
+        <div class="form-row">
+            <label class="label">MP3 비트레이트</label>
+            <div class="seg" id="seg-br">
+                <button data-br="96">96</button>
+                <button data-br="128">128</button>
+                <button class="on" data-br="192">192</button>
+                <button data-br="256">256</button>
+                <button data-br="320">320</button>
+            </div>
+        </div>
+        <div class="form-row">
+            <label class="label">시작 (초)</label>
+            <input class="input" id="start" type="number" min="0" value="0" step="0.1">
+        </div>
+        <div class="form-row">
+            <label class="label">끝 (초, 0 = 전체)</label>
+            <input class="input" id="end" type="number" min="0" value="0" step="0.1">
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>오디오 추출 → MP3</button>
+        <div class="progress-bar" id="bar" hidden><div></div></div>
+        <div class="status" id="status" hidden></div>
+        <p class="help" style="margin-top:var(--space-4);">
+            ⚠️ 브라우저가 디코드 가능한 영상이어야 합니다. iPhone HEVC/H.265는 Safari에서 가장 잘 작동합니다.
+        </p>
+    </div>
 
-    <a href="index.html" class="back-link">← 메인으로 돌아가기</a>
-  </div>
+</div>
 
-  <!-- ffmpeg.wasm -->
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
-  <script src="https://unpkg.com/@ffmpeg/util@0.12.6/dist/util.min.js"></script>
+</main>
 
-  <script>
-    const { FFmpeg } = FFmpegWASM;
-    const { fetchFile } = FFmpegUtil;
-    const ffmpeg = new FFmpeg();
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions. Video→MP3 v2026.05</span>
+            <span><a href="./">← FreeComfortLab</a></span>
+        </div>
+    </div>
+</footer>
 
-    const fileInput = document.getElementById("fileInput");
-    const dropArea  = document.getElementById("dropArea");
-    const fileName  = document.getElementById("fileName");
-    const btn       = document.getElementById("btnConvert");
-    const status    = document.getElementById("statusBox");
+<script src="../../assets/js/common.js"></script>
+<script>
+(function () {
+    'use strict';
+    var state = { file: null, bitrate: 192 };
 
-    let selectedFile = null;
+    var elDrop = document.getElementById('drop');
+    var elFile = document.getElementById('file');
+    var elVideo = document.getElementById('video');
+    var elStage = document.getElementById('stage');
+    var elRun = document.getElementById('run');
+    var elBar = document.getElementById('bar');
 
-    dropArea.addEventListener("click", () => fileInput.click());
+    elDrop.addEventListener('click', function () { elFile.click(); });
+    elDrop.addEventListener('dragover', function (e) { e.preventDefault(); elDrop.classList.add('is-active'); });
+    elDrop.addEventListener('dragleave', function () { elDrop.classList.remove('is-active'); });
+    elDrop.addEventListener('drop', function (e) {
+        e.preventDefault(); elDrop.classList.remove('is-active');
+        useFile(e.dataTransfer.files[0]);
+    });
+    elFile.addEventListener('change', function () { useFile(elFile.files[0]); });
 
-    fileInput.addEventListener("change", e => {
-      if (!e.target.files[0]) return;
-      selectedFile = e.target.files[0];
-      fileName.textContent = "✅ " + selectedFile.name;
-      fileName.style.color = "#2d3436";
-      fileName.style.fontWeight = "bold";
+    function useFile(f) {
+        if (!f) return;
+        state.file = f;
+        elVideo.src = URL.createObjectURL(f);
+        elStage.hidden = false;
+        elRun.disabled = false;
+    }
+
+    document.getElementById('seg-br').addEventListener('click', function (e) {
+        if (e.target.tagName !== 'BUTTON') return;
+        document.querySelectorAll('#seg-br button').forEach(function (b) { b.classList.remove('on'); });
+        e.target.classList.add('on');
+        state.bitrate = parseInt(e.target.dataset.br, 10);
     });
 
-    btn.addEventListener("click", async () => {
-      if (!selectedFile) {
-        alert("파일을 먼저 선택해주세요!");
-        return;
-      }
+    function setStatus(msg, kind) {
+        var s = document.getElementById('status');
+        s.textContent = msg; s.hidden = !msg;
+        s.className = 'status' + (kind ? ' ' + kind : '');
+    }
 
-      btn.disabled = true;
-      btn.textContent = "변환 중...";
-      status.textContent = "브라우저에서 오디오를 추출 중입니다...";
+    elRun.addEventListener('click', async function () {
+        if (!state.file) return;
+        elRun.disabled = true;
+        elBar.hidden = false;
+        var bar = elBar.firstElementChild;
+        bar.style.width = '0%';
+        setStatus('영상 디코딩 중…');
+        try {
+            var ac = new (window.AudioContext || window.webkitAudioContext)();
+            var buf = await state.file.arrayBuffer();
+            var audio = await ac.decodeAudioData(buf);
+            ac.close && ac.close();
 
-      try {
-        if (!ffmpeg.loaded) {
-          await ffmpeg.load({
-            coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/ffmpeg-core.js",
-            wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/ffmpeg-core.wasm"
-          });
+            var startSec = parseFloat(document.getElementById('start').value) || 0;
+            var endSec = parseFloat(document.getElementById('end').value) || 0;
+            var sr = audio.sampleRate;
+            var startSample = Math.max(0, Math.floor(startSec * sr));
+            var endSample = endSec > 0 ? Math.min(audio.length, Math.floor(endSec * sr)) : audio.length;
+            if (endSample <= startSample) throw new Error('구간이 잘못되었습니다.');
+
+            var channels = Math.min(2, audio.numberOfChannels);
+            var left = audio.getChannelData(0).subarray(startSample, endSample);
+            var right = audio.numberOfChannels > 1
+                ? audio.getChannelData(1).subarray(startSample, endSample)
+                : left;
+
+            setStatus('MP3 인코딩 중…');
+            var mp3enc = new lamejs.Mp3Encoder(channels, sr, state.bitrate);
+            var BLOCK = 1152;
+            var mp3Data = [];
+            var l16 = new Int16Array(left.length);
+            var r16 = new Int16Array(left.length);
+            for (var i = 0; i < left.length; i++) {
+                l16[i] = Math.max(-32768, Math.min(32767, left[i] * 32767));
+                r16[i] = Math.max(-32768, Math.min(32767, right[i] * 32767));
+            }
+
+            for (var p = 0; p < l16.length; p += BLOCK) {
+                var lc = l16.subarray(p, p + BLOCK);
+                var enc = channels === 1
+                    ? mp3enc.encodeBuffer(lc)
+                    : mp3enc.encodeBuffer(lc, r16.subarray(p, p + BLOCK));
+                if (enc.length > 0) mp3Data.push(enc);
+                if (p % (BLOCK * 50) === 0) {
+                    bar.style.width = (p / l16.length * 100) + '%';
+                    await new Promise(function (r) { setTimeout(r, 0); });
+                }
+            }
+            var endBuf = mp3enc.flush();
+            if (endBuf.length > 0) mp3Data.push(endBuf);
+            bar.style.width = '100%';
+
+            var blob = new Blob(mp3Data, { type: 'audio/mp3' });
+            LD.download(blob, state.file.name.replace(/\.[^.]+$/, '') + '.mp3');
+            setStatus('완료 · ' + LD.formatBytes(blob.size), 'ok');
+        } catch (e) {
+            console.error(e);
+            setStatus('오류: ' + e.message, 'err');
         }
-
-        await ffmpeg.writeFile("input", await fetchFile(selectedFile));
-        await ffmpeg.exec(["-i", "input", "-vn", "-ab", "192k", "output.mp3"]);
-
-        const data = await ffmpeg.readFile("output.mp3");
-        const blob = new Blob([data.buffer], { type: "audio/mpeg" });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "converted.mp3";
-        a.click();
-
-        status.textContent = "🎉 완료! MP3가 저장되었습니다.";
-        status.style.color = "#00b894";
-        btn.textContent = "완료";
-      } catch (err) {
-        console.error(err);
-        status.textContent = "❌ 변환 실패: 브라우저 성능 또는 파일 문제";
-        status.style.color = "#d63031";
-        btn.disabled = false;
-        btn.textContent = "다시 시도";
-      }
+        elRun.disabled = false;
     });
-  </script>
-<section style="max-width:800px;margin:40px auto;padding:20px;">
-  <h2>영상에서 MP3 음원 추출 자주 묻는 질문</h2>
-  <p>MP4, AVI, MOV 등 영상 파일에서 음원만 추출해 MP3로 저장할 수 있습니다. 설치 불필요.</p>
-  <details><summary>유튜브 영상도 변환되나요?</summary><p>직접 URL은 지원하지 않습니다. 파일을 다운로드 후 업로드해 주세요.</p></details>
-  <details><summary>MP4 말고 다른 영상 포맷도 되나요?</summary><p>AVI, MOV, MKV 등 주요 포맷을 지원합니다.</p></details>
-  <details><summary>음원 추출 시간이 얼마나 걸리나요?</summary><p>1분짜리 영상 기준 약 10~20초 내외입니다.</p></details>
-  <ins class="adsbygoogle" style="display:block;margin-top:20px;" data-ad-client="ca-pub-2824624880449066" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</section>
+})();
+</script>
 </body>
 </html>
-

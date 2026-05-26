@@ -1,108 +1,161 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact - LeDeuxions.com</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f8f9fa; color: #333; overflow-x: hidden; }
-        img { max-width: 100%; height: auto; }
-        .container { max-width: 800px; margin: 40px auto; padding: 30px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        
-        /* 네비게이션 */
-        nav { background-color: #343a40; padding: 0.5rem 0; margin-bottom: 2rem; }
-        nav .container { margin: 0 auto; padding: 0 20px; display: flex; flex-wrap: wrap; gap: 4px; box-shadow: none; background: none; }
-        nav a { color: rgba(255,255,255,0.8); padding: 0 1rem; text-decoration: none; font-weight: 500; transition: color 0.2s; min-height: 44px; display: flex; align-items: center; }
-        nav a:hover { color: #fff; background-color: rgba(255,255,255,0.1); border-radius: 4px; }
-        
-        h1 { font-size: 2rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #eee; color: #212529; }
-        h2 { font-size: 1.25rem; margin-top: 2rem; margin-bottom: 1rem; color: #495057; font-weight: 600; }
-        
-        p { margin-bottom: 1rem; color: #555; }
-        
-        /* 연락처 정보 스타일 */
-        .contact-info { margin-top: 1.5rem; padding: 20px; background-color: #f8f9fa; border-radius: 8px; }
-        .contact-item { margin-bottom: 15px; }
-        .contact-label { font-weight: bold; color: #333; display: block; margin-bottom: 4px; }
-        .contact-value { color: #555; }
-        
-        a.link { color: #007bff; text-decoration: none; }
-        a.link:hover { text-decoration: underline; }
-
-        /* 캘린더 반응형 처리 */
-        .calendar-wrapper { position: relative; padding-bottom: 75%; height: 0; overflow: hidden; max-width: 100%; border-radius: 8px; border: 1px solid #ddd; }
-        .calendar-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-        footer { text-align: center; padding: 2rem 0; margin-top: 3rem; border-top: 1px solid #dee2e6; color: #868e96; font-size: 0.9rem; }
-        footer a { color: #868e96; text-decoration: none; margin: 0 5px; }
-        footer a:hover { color: #495057; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="LeDeuxions 연락처. 일정 예약, 이메일, 작업 문의.">
+<title>연락 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/css/claude-design.css">
+<style>
+    .contact-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-5);
+    }
+    @media (min-width: 920px) {
+        .contact-grid { grid-template-columns: 1fr 1.4fr; align-items: start; }
+    }
+    .contact-info { display: flex; flex-direction: column; gap: var(--space-3); }
+    .info-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        display: flex;
+        gap: var(--space-3);
+        align-items: flex-start;
+    }
+    .info-card .ico {
+        width: 44px; height: 44px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-md);
+        display: grid; place-items: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    .info-card h4 {
+        font-family: var(--font-sans);
+        font-size: 0.92rem;
+        font-weight: 600;
+        margin: 0 0 4px;
+    }
+    .info-card p {
+        margin: 0;
+        font-size: 0.92rem;
+        color: var(--text-secondary);
+    }
+    .info-card a { color: var(--accent); font-weight: 500; }
+    .calendar-frame {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        min-height: 600px;
+    }
+    .calendar-frame iframe {
+        width: 100%;
+        height: 600px;
+        border: 0;
+    }
+</style>
 </head>
 <body>
 
-    <nav>
-        <div class="container">
-            <a href="/">Home</a>
-            <a href="/web-projects/">Web Projects</a>
-            <a href="/contact/">Contact</a>
-        </div>
-    </nav>
-
-    <div class="container">
-        <h1>Contact & Schedule</h1>
-        
-        <p>LeDeuxions.com은 더 나은 서비스를 제공하기 위해 사용자의 피드백을 소중하게 생각합니다. 프로젝트 제안이나 문의 사항이 있으시면 언제든지 연락해 주세요.</p>
-
-        <h2>LeDeuxions' Schedule</h2>
-        <div class="calendar-wrapper">
-             <iframe src="https://calendar.google.com/calendar/embed?height=300&wkst=1&ctz=Asia%2FSeoul&showPrint=0&title=LeDeuxions'%20Schedule&mode=MONTH&showCalendars=0&showTabs=0&showNav=0&showTitle=0&showDate=0&src=bGVkZXV4aW9uc0BnbWFpbC5jb20&src=NDdjZGYzOTgzZmJmYWZlMzIyMDlkZTZjMDc3MzFmZWQ2MGNhMDk5OTYwZDJhNzMyNTZmODNhNDE5MTI1YTVkOEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=a28uc291dGhfa29yZWEjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23039be5&color=%234285f4&color=%230b8043" style="border-width:0" width="100%" height="600" frameborder="0" scrolling="no"></iframe>
-        </div>
-
-        <h2>Contact Info</h2>
-        <div class="contact-info">
-            
-            <div class="contact-item">
-                <span class="contact-label">Address</span>
-                <div class="contact-value">
-                    Room 613, ChangeUp Ground, Nam-gu, Pohang-si, Gyeongsangbuk-do, Republic of Korea<br>
-                    <small>(경북 포항시 남구 체인지업 613호)</small>
-                </div>
-            </div>
-
-            <div class="contact-item">
-                <span class="contact-label">Phone</span>
-                <div class="contact-value">
-                    <a href="tel:+8250713499370" class="link">+82-507-1349-9370</a>
-                </div>
-            </div>
-
-            <div class="contact-item">
-                <span class="contact-label">Email</span>
-                <div class="contact-value">
-                    <a href="mailto:ledeuxions@gmail.com" class="link">ledeuxions@gmail.com</a>
-                </div>
-            </div>
-
-            <div class="contact-item">
-                <span class="contact-label">Social</span>
-                <div class="contact-value">
-                    Message via <a href="https://instagram.com/ledeuxions" target="_blank" class="link">Instagram (@ledeuxions)</a> or 
-                    <a href="https://facebook.com/ledeuxions" target="_blank" class="link">Facebook</a>
-                </div>
-            </div>
-
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
+            <a href="/work/" class="nav-link" data-nav-link>작품</a>
+            <a href="/history/" class="nav-link" data-nav-link>이야기</a>
+            <a href="/contact/" class="nav-link active" data-nav-link>연락</a>
         </div>
     </div>
+</nav>
 
-    <footer>
-      <p>© 2005–2026 LeDeuxions</p>
-      <p>
-        <a href="/privacy/">Privacy</a> |
-        <a href="/terms/">Terms</a> |
-        <a href="/contact/">Contact</a>
-      </p>
-    </footer>
+<header class="contact-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Contact</div>
+    <h1>이야기를 <em style="color:var(--accent);font-style:italic;">시작</em>해요</h1>
+    <p class="lead">작업 의뢰, 협업 제안, 그리고 그저 안부까지. 어떤 메시지든 환영입니다.</p>
+</header>
 
+<main class="container" style="padding-bottom:var(--space-9);">
+
+<div class="contact-grid">
+
+    <div class="contact-info">
+
+        <div class="info-card">
+            <div class="ico">✉️</div>
+            <div>
+                <h4>이메일</h4>
+                <p><a href="mailto:vis555540@gmail.com">vis555540@gmail.com</a></p>
+                <p style="font-size:.8rem;color:var(--text-muted);margin-top:6px;">평일 48시간 내 답신.</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="ico">🏠</div>
+            <div>
+                <h4>스튜디오</h4>
+                <p>대한민국, 서울</p>
+                <p style="font-size:.8rem;color:var(--text-muted);margin-top:6px;">방문은 사전 예약제.</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="ico">📅</div>
+            <div>
+                <h4>미팅 예약</h4>
+                <p>오른쪽 캘린더에서 직접 선택하세요.</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="ico">🔗</div>
+            <div>
+                <h4>외부 채널</h4>
+                <p>
+                    <a href="https://ledeuxions.blogspot.com/" target="_blank" rel="noopener">Portfolio</a> ·
+                    <a href="https://ledeuxions-column.blogspot.com/" target="_blank" rel="noopener">Column</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="calendar-frame">
+        <iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23FAF9F5&ctz=Asia%2FSeoul&showTitle=0&showPrint=0&showCalendars=0&mode=AGENDA"
+                title="LeDeuxions Calendar"
+                loading="lazy"></iframe>
+    </div>
+
+</div>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions.</span>
+            <span class="mono" style="font-size:.78rem;">v2026.05</span>
+        </div>
+    </div>
+</footer>
+
+<script src="../assets/js/common.js"></script>
 </body>
 </html>

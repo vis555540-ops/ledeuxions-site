@@ -1,301 +1,373 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>음원 파일 → MP3 변환 – FreeComfortLab</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta
-    name="description"
-    content="m4a, wav, aac, ogg 등의 음원 파일을 고음질 MP3로 변환하는 작은 실험실입니다."
-  />
-  <style>
-    :root {
-      --bg-dark: #050816;
-      --accent: #4c7dff;
-      --accent-soft: rgba(76, 125, 255, 0.25);
-      --text-main: #e5ecff;
-      --text-sub: #9aa4c6;
-      --border-soft: rgba(255, 255, 255, 0.08);
-      --radius-lg: 20px;
-      --radius-md: 14px;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="WAV, M4A, OGG, FLAC 등 어떤 오디오라도 MP3로 변환. 비트레이트 조절, 일괄 처리, 업로드 없음.">
+<title>오디오 → MP3 변환기 — FreeComfortLab</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .workbench {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-5);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      min-height: 100vh;
-      background: radial-gradient(circle at top, #222c4f 0, #050816 50%, #01020a 100%);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      padding: 24px 12px 32px;
+    @media (min-width: 920px) {
+        .workbench { grid-template-columns: 1.6fr 1fr; align-items: start; }
     }
-    a { color: inherit; text-decoration: none; }
-    .page {
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
+    .panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
     }
-    .header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-mark {
-      width: 34px; height: 34px; border-radius: 12px;
-      background: radial-gradient(circle at 30% 20%, #78e3ff, #3150ff);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; color: #050816;
+    .panel h3 { font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-3); font-family: var(--font-sans); }
+    .file-list {
+        list-style: none;
+        padding: 0;
+        margin: var(--space-4) 0 0;
+        display: flex; flex-direction: column;
+        gap: var(--space-2);
     }
-    .logo-main { font-size: 16px; font-weight: 700; }
-    .logo-sub { font-size: 11px; color: var(--text-sub); }
-    .btn-back {
-      padding: 6px 12px; border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: rgba(5, 8, 22, 0.9);
-      font-size: 11px; color: var(--text-sub); cursor: pointer;
+    .file-item {
+        display: flex; align-items: center; gap: var(--space-3);
+        padding: var(--space-3);
+        background: var(--bg-sunken);
+        border-radius: var(--radius-md);
     }
-    .card {
-      background: rgba(5, 8, 22, 0.96);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-soft);
-      padding: 20px 18px 18px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-      gap: 18px;
+    .file-item .ico {
+        width: 36px; height: 36px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-sm);
+        display: grid; place-items: center;
     }
-    @media (max-width: 800px) {
-      .card { grid-template-columns: minmax(0, 1fr); }
+    .file-item .body { flex: 1; min-width: 0; }
+    .file-item .name {
+        font-size: 0.92rem; font-weight: 500;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .card-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-    .card-desc { font-size: 13px; color: var(--text-sub); line-height: 1.7; margin-bottom: 16px; }
-    .badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .badge {
-      font-size: 10px; padding: 4px 9px; border-radius: 999px;
-      background: rgba(10, 17, 40, 0.9); border: 1px solid var(--border-soft);
-      color: var(--text-sub);
+    .file-item .meta {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
     }
-    .upload-panel {
-      background: radial-gradient(circle at top, #151b34, #070a16);
-      border-radius: var(--radius-md);
-      border: 1px dashed rgba(255, 255, 255, 0.14);
-      padding: 14px 14px 12px;
-      display: flex; flex-direction: column; gap: 10px;
+    .file-item .progress {
+        height: 4px; background: var(--border);
+        border-radius: 999px;
+        margin-top: 6px;
+        overflow: hidden;
     }
-    .upload-label { font-size: 12px; color: var(--text-sub); }
-    .file-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .file-input { display: none; }
-    .btn-file {
-      padding: 8px 14px; border-radius: 999px; border: none;
-      background: linear-gradient(135deg, #4c7dff, #8f5bff);
-      color: #050816; font-size: 12px; font-weight: 600; cursor: pointer;
+    .file-item .progress > div {
+        height: 100%; background: var(--accent);
+        width: 0; transition: width .25s var(--ease-out);
     }
-    .file-name { font-size: 11px; color: var(--text-sub); }
-    .hint { font-size: 11px; color: var(--text-sub); line-height: 1.5; }
-    .hint strong { color: #ffffff; }
-    .btn-convert {
-      margin-top: 10px; padding: 9px 16px; border-radius: 999px; border: none;
-      background: rgba(76, 125, 255, 0.12); color: var(--accent);
-      font-size: 12px; font-weight: 600; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 6px;
+    .file-item .rm {
+        width: 28px; height: 28px;
+        border-radius: var(--radius-sm);
+        color: var(--text-muted);
+        display: grid; place-items: center;
     }
-    .btn-convert:disabled { opacity: 0.6; cursor: default; }
-    .status-box {
-      margin-top: 10px; padding: 10px 12px; border-radius: 10px;
-      background: rgba(3, 6, 18, 0.95); border: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 11px; color: var(--text-sub); white-space: pre-wrap;
-      word-break: break-all; max-height: 170px; overflow-y: auto;
+    .file-item .rm:hover { background: var(--bg-card); color: var(--accent); }
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }
+    .seg {
+        display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+        gap: 4px; padding: 4px;
+        background: var(--bg-sunken);
+        border-radius: var(--radius-md);
     }
-    .status-ok { color: #8df3c3; }
-    .status-error { color: #ff9f9f; }
-    .howto { font-size: 12px; color: var(--text-sub); line-height: 1.7; }
-    .howto h2 { font-size: 13px; margin-bottom: 6px; color: var(--text-main); }
-    .howto ol { padding-left: 18px; margin-bottom: 10px; }
-    .howto li { margin-bottom: 4px; }
-    .howto ul { padding-left: 16px; }
-    .howto li::marker { color: var(--accent); }
-    .footer {
-      margin-top: 8px; font-size: 10px; color: var(--text-sub);
-      display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    .seg button {
+        padding: 8px; border-radius: var(--radius-sm);
+        font-size: 0.85rem; font-weight: 500;
+        color: var(--text-secondary);
     }
-  </style>
+    .seg button.on {
+        background: var(--bg-card); color: var(--text-primary);
+        box-shadow: var(--shadow-xs);
+    }
+    .help { font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-2); }
+    .status {
+        font-size: 0.88rem; color: var(--text-secondary);
+        margin-top: var(--space-3); padding: var(--space-3);
+        background: var(--bg-sunken); border-radius: var(--radius-md);
+        font-family: var(--font-mono);
+    }
+    .status.ok { background: rgba(107,142,107,.12); color: #3F5C3F; }
+    .status.err { background: rgba(184,91,61,.12); color: var(--accent-deep); }
+</style>
 </head>
 <body>
-  <div class="page">
-    <header class="header">
-      <div class="logo">
-        <div class="logo-mark">F</div>
-        <div>
-          <div class="logo-main">FreeComfortLab</div>
-          <div class="logo-sub">음원 파일 → MP3 변환</div>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
+            <a href="./" class="nav-link active">FreeComfortLab</a>
         </div>
-      </div>
-      <a href="/">
-        <button class="btn-back" type="button">← 메인으로 돌아가기</button>
-      </a>
-    </header>
+    </div>
+</nav>
 
-    <section class="card">
-      <div>
-        <div class="card-title">흩어진 음원, MP3로 한 번에 정리</div>
-        <p class="card-desc">
-          녹음 앱에서 나온 <strong>m4a</strong>, 소프트웨어에서 내보낸 <strong>wav</strong>,
-          기타 음원 파일을 고음질 <strong>MP3(192kbps)</strong>로 통일하는 실험용 도구입니다.
-        </p>
+<header class="app-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Audio → MP3</div>
+    <h1>오디오 <em style="color:var(--accent);font-style:italic;">MP3</em>로</h1>
+    <p class="lead">어떤 오디오 파일이든 브라우저가 디코딩하고, MP3로 다시 만듭니다.</p>
+</header>
 
-        <div class="badge-row">
-          <span class="badge">m4a · wav · aac · ogg</span>
-          <span class="badge">MP3 192kbps</span>
-          <span class="badge">개인 기록 용도</span>
+<main class="container" style="padding-bottom:var(--space-9);">
+
+<div class="workbench">
+
+    <div>
+        <div class="dropzone" id="drop">
+            <div class="dropzone-icon">🎵</div>
+            <div class="dropzone-text">
+                <strong>오디오 파일을 끌어 놓거나</strong> 클릭해 선택<br>
+                <small>WAV · M4A · AAC · OGG · FLAC · WMA · OPUS 등</small>
+            </div>
+            <input type="file" id="files" multiple accept="audio/*" hidden>
         </div>
-
-        <div class="upload-panel">
-          <div class="upload-label">1. 변환할 음원 파일 선택</div>
-          <div class="file-row">
-            <button class="btn-file" type="button" id="btnPick">파일 선택</button>
-            <span class="file-name" id="fileName">선택된 파일 없음</span>
-          </div>
-          <input
-            id="fileInput"
-            class="file-input"
-            type="file"
-            accept="audio/*,.m4a,.aac,.wav,.ogg,.flac,.mp3"
-          />
-
-          <p class="hint">
-            • 강의 녹음, 회의 녹음 등 개인 기록용 음원을 정리할 때 사용해 주세요.<br />
-            • 저작권이 있는 상업 음원은 업로드하지 않는 것을 권장합니다.
-          </p>
-
-          <button class="btn-convert" id="btnConvert" type="button">
-            ▶ 2. MP3로 변환하기
-          </button>
-
-          <div id="statusBox" class="status-box">
-            아직 변환을 시작하지 않았습니다.
-          </div>
-        </div>
-      </div>
-
-      <aside class="howto">
-        <h2>사용 방법</h2>
-        <ol>
-          <li>스마트폰 또는 PC에서 음원 파일을 이 기기로 옮깁니다.</li>
-          <li>왼쪽에서 파일을 선택하고 “MP3로 변환하기” 버튼을 누릅니다.</li>
-          <li>완료 후 브라우저에서 MP3 파일이 자동으로 다운로드됩니다.</li>
-        </ol>
-
-        <h2>이용 전 안내</h2>
-        <ul>
-          <li>서버는 변환이 끝난 뒤 일정 시간 내에 임시 파일을 삭제하도록 설계되어 있습니다.</li>
-          <li>광고가 표시될 수 있으며, 서비스 운영을 위한 최소한의 로그만 남습니다.</li>
-        </ul>
-      </aside>
-    </section>
-
-    <!-- AdSense Ad -->
-    <div style="margin: 40px 0; text-align: center;">
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066"
-             crossorigin="anonymous"></script>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-2824624880449066"
-             data-ad-slot="7450540483"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+        <ul class="file-list" id="list"></ul>
     </div>
 
-    <footer class="footer">
-      <span>© 2005–2026 Le Deuxions · freecomfortlab.com</span>
-      <span>개인 기록용 파일 정리를 돕는 실험실입니다.</span>
-    </footer>
-  </div>
+    <div class="panel">
+        <h3>인코딩 설정</h3>
 
-  <script>
-    const TYPE = "audio-to-mp3";
-    const fileInput = document.getElementById("fileInput");
-    const btnPick = document.getElementById("btnPick");
-    const btnConvert = document.getElementById("btnConvert");
-    const fileNameSpan = document.getElementById("fileName");
-    const statusBox = document.getElementById("statusBox");
-    let selectedFile = null;
+        <div class="form-row">
+            <label class="label">비트레이트</label>
+            <div class="seg" id="seg-br">
+                <button data-br="96">96</button>
+                <button data-br="128">128</button>
+                <button class="on" data-br="192">192</button>
+                <button data-br="256">256</button>
+                <button data-br="320">320</button>
+            </div>
+            <p class="help">단위 kbps. 192 이상이면 음악 감상에 충분합니다.</p>
+        </div>
 
-    btnPick.addEventListener("click", () => fileInput.click());
+        <div class="form-row">
+            <label class="label">채널</label>
+            <div class="seg" id="seg-ch">
+                <button class="on" data-ch="auto">원본</button>
+                <button data-ch="2">스테레오</button>
+                <button data-ch="1">모노</button>
+            </div>
+        </div>
 
-    fileInput.addEventListener("change", () => {
-      if (fileInput.files && fileInput.files[0]) {
-        selectedFile = fileInput.files[0];
-        fileNameSpan.textContent = selectedFile.name;
-      } else {
-        selectedFile = null;
-        fileNameSpan.textContent = "선택된 파일 없음";
-      }
+        <button class="btn btn-primary btn-block" id="run" disabled>MP3로 변환</button>
+        <button class="btn btn-secondary btn-block" id="zip" disabled style="margin-top:var(--space-3);">
+            ZIP으로 묶어 다운로드
+        </button>
+
+        <div class="status" id="status" hidden></div>
+
+        <p class="help" style="margin-top:var(--space-4);">
+            🔒 모든 처리는 브라우저 안에서 끝납니다. 파일이 외부로 전송되지 않습니다.
+        </p>
+    </div>
+
+</div>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions. Audio→MP3 v2026.05</span>
+            <span><a href="./">← FreeComfortLab</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../../assets/js/common.js"></script>
+<script>
+(function () {
+    'use strict';
+    var state = { items: [], bitrate: 192, channels: 'auto' };
+
+    var elDrop = document.getElementById('drop');
+    var elInput = document.getElementById('files');
+    var elList = document.getElementById('list');
+    var elRun = document.getElementById('run');
+    var elZip = document.getElementById('zip');
+
+    elDrop.addEventListener('click', function () { elInput.click(); });
+    elDrop.addEventListener('dragover', function (e) { e.preventDefault(); elDrop.classList.add('is-active'); });
+    elDrop.addEventListener('dragleave', function () { elDrop.classList.remove('is-active'); });
+    elDrop.addEventListener('drop', function (e) {
+        e.preventDefault(); elDrop.classList.remove('is-active');
+        addFiles(Array.from(e.dataTransfer.files));
     });
+    elInput.addEventListener('change', function () { addFiles(Array.from(elInput.files)); });
 
-    function setStatus(text, type) {
-      statusBox.textContent = text;
-      statusBox.classList.remove("status-ok", "status-error");
-      if (type === "ok") statusBox.classList.add("status-ok");
-      if (type === "error") statusBox.classList.add("status-error");
+    function addFiles(files) {
+        files.forEach(function (f) {
+            if (!/^audio\//.test(f.type) && !/\.(wav|m4a|aac|ogg|flac|opus|wma|mp3)$/i.test(f.name)) return;
+            state.items.push({ file: f, blob: null, name: f.name, size: f.size, progress: 0 });
+        });
+        render();
     }
 
-    btnConvert.addEventListener("click", async () => {
-      if (!selectedFile) {
-        setStatus("먼저 변환할 음원 파일을 선택해 주세요.", "error");
-        return;
-      }
+    function render() {
+        elList.innerHTML = '';
+        state.items.forEach(function (it, i) {
+            var li = document.createElement('li');
+            li.className = 'file-item';
+            li.innerHTML =
+                '<div class="ico">♪</div>' +
+                '<div class="body">' +
+                    '<div class="name"></div>' +
+                    '<div class="meta"></div>' +
+                    '<div class="progress"><div></div></div>' +
+                '</div>' +
+                '<button class="rm" data-i="' + i + '">✕</button>';
+            li.querySelector('.name').textContent = it.file.name;
+            li.querySelector('.meta').textContent = LD.formatBytes(it.size) +
+                (it.blob ? ' → ' + LD.formatBytes(it.blob.size) + ' MP3 ✓' : '');
+            li.querySelector('.progress > div').style.width = (it.progress || 0) + '%';
+            li.querySelector('.rm').onclick = function () {
+                state.items.splice(i, 1); render();
+            };
+            elList.appendChild(li);
+        });
+        elRun.disabled = state.items.length === 0;
+        elZip.disabled = !state.items.some(function (x) { return x.blob; });
+    }
 
-      btnConvert.disabled = true;
-      setStatus("서버로 파일을 전송하고 있습니다...", null);
-
-      try {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("type", TYPE);
-
-        const res = await fetch("/api/convert", { method: "POST", body: formData });
-        const contentType = res.headers.get("content-type") || "";
-
-        if (contentType.includes("application/json")) {
-          const data = await res.json();
-          const msg = (data && (data.message || data.error)) || "알 수 없는 오류가 발생했습니다.";
-          setStatus("변환 실패: " + msg, "error");
-          return;
-        }
-
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-
-        let filename = "audio.mp3";
-        const cd = res.headers.get("content-disposition") || "";
-        const match = cd.match(/filename="?([^"]+)"?/);
-        if (match && match[1]) filename = decodeURIComponent(match[1]);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-
-        setStatus("변환 완료! 브라우저에서 MP3 파일이 다운로드되었습니다.", "ok");
-      } catch (err) {
-        setStatus("네트워크 또는 서버 오류가 발생했습니다: " + err, "error");
-      } finally {
-        btnConvert.disabled = false;
-      }
+    document.getElementById('seg-br').addEventListener('click', function (e) {
+        if (e.target.tagName !== 'BUTTON') return;
+        document.querySelectorAll('#seg-br button').forEach(function (b) { b.classList.remove('on'); });
+        e.target.classList.add('on');
+        state.bitrate = parseInt(e.target.dataset.br, 10);
     });
-  </script>
-<section style="max-width:800px;margin:40px auto;padding:20px;">
-  <h2>음원 MP3 변환 자주 묻는 질문</h2>
-  <p>설치 없이 브라우저에서 바로 음원을 MP3로 변환할 수 있습니다. WAV, OGG, M4A 등 다양한 포맷을 지원합니다.</p>
-  <details><summary>변환 후 음질이 떨어지나요?</summary><p>기본 설정(192kbps)에서는 원본과 거의 차이가 없습니다.</p></details>
-  <details><summary>파일 크기 제한이 있나요?</summary><p>무료 기준 100MB 이하 파일을 지원합니다.</p></details>
-  <details><summary>변환된 파일이 서버에 저장되나요?</summary><p>아니요. 변환 즉시 삭제되며 개인정보는 수집하지 않습니다.</p></details>
-  <ins class="adsbygoogle" style="display:block;margin-top:20px;" data-ad-client="ca-pub-2824624880449066" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</section>
+    document.getElementById('seg-ch').addEventListener('click', function (e) {
+        if (e.target.tagName !== 'BUTTON') return;
+        document.querySelectorAll('#seg-ch button').forEach(function (b) { b.classList.remove('on'); });
+        e.target.classList.add('on');
+        state.channels = e.target.dataset.ch;
+    });
+
+    function setStatus(msg, kind) {
+        var s = document.getElementById('status');
+        s.textContent = msg; s.hidden = !msg;
+        s.className = 'status' + (kind ? ' ' + kind : '');
+    }
+
+    async function decodeAudio(file) {
+        var ac = new (window.AudioContext || window.webkitAudioContext)();
+        try {
+            var buf = await file.arrayBuffer();
+            var audio = await ac.decodeAudioData(buf);
+            return audio;
+        } finally {
+            ac.close && ac.close();
+        }
+    }
+
+    function encodeMp3(audioBuffer, bitrate, forceChannels, progressCb) {
+        return new Promise(function (resolve) {
+            var sampleRate = audioBuffer.sampleRate;
+            var srcChannels = audioBuffer.numberOfChannels;
+            var channels = forceChannels === 'auto' ? Math.min(2, srcChannels) : parseInt(forceChannels, 10);
+
+            var left = audioBuffer.getChannelData(0);
+            var right = srcChannels > 1 ? audioBuffer.getChannelData(1) : left;
+
+            // To mono if needed
+            if (channels === 1 && srcChannels > 1) {
+                var mono = new Float32Array(left.length);
+                for (var i = 0; i < left.length; i++) mono[i] = (left[i] + right[i]) / 2;
+                left = mono; right = mono;
+            }
+
+            var mp3enc = new lamejs.Mp3Encoder(channels, sampleRate, bitrate);
+            var sampleBlockSize = 1152;
+            var mp3Data = [];
+            var l16 = new Int16Array(left.length);
+            var r16 = new Int16Array(left.length);
+            for (var j = 0; j < left.length; j++) {
+                l16[j] = Math.max(-32768, Math.min(32767, left[j] * 32767));
+                r16[j] = Math.max(-32768, Math.min(32767, right[j] * 32767));
+            }
+
+            function chunk(i) {
+                if (i >= l16.length) {
+                    var end = mp3enc.flush();
+                    if (end.length > 0) mp3Data.push(end);
+                    resolve(new Blob(mp3Data, { type: 'audio/mp3' }));
+                    return;
+                }
+                var lEnd = i + sampleBlockSize;
+                var lChunk = l16.subarray(i, lEnd);
+                var enc;
+                if (channels === 1) {
+                    enc = mp3enc.encodeBuffer(lChunk);
+                } else {
+                    var rChunk = r16.subarray(i, lEnd);
+                    enc = mp3enc.encodeBuffer(lChunk, rChunk);
+                }
+                if (enc.length > 0) mp3Data.push(enc);
+                progressCb && progressCb(Math.min(100, (i / l16.length) * 100));
+                // yield
+                setTimeout(function () { chunk(i + sampleBlockSize); }, 0);
+            }
+            chunk(0);
+        });
+    }
+
+    elRun.addEventListener('click', async function () {
+        if (!window.lamejs) { setStatus('lamejs 라이브러리를 불러오지 못했습니다.', 'err'); return; }
+        elRun.disabled = true;
+        var done = 0, errs = 0;
+        for (var i = 0; i < state.items.length; i++) {
+            var it = state.items[i];
+            if (it.blob) { done++; continue; }
+            setStatus('변환 중… (' + (i + 1) + '/' + state.items.length + ') ' + it.file.name);
+            try {
+                var audio = await decodeAudio(it.file);
+                var idx = i;
+                var blob = await encodeMp3(audio, state.bitrate, state.channels, function (p) {
+                    state.items[idx].progress = p;
+                    var li = elList.children[idx];
+                    if (li) li.querySelector('.progress > div').style.width = p + '%';
+                });
+                it.blob = blob;
+                it.progress = 100;
+                done++;
+                render();
+                // auto-download single
+                if (state.items.length === 1) LD.download(blob, it.file.name.replace(/\.[^.]+$/, '') + '.mp3');
+            } catch (e) {
+                console.error(e); errs++;
+            }
+        }
+        elRun.disabled = false;
+        setStatus(errs ? '완료 (오류 ' + errs + ')' : '변환 완료 · ' + done + '개', errs ? 'err' : 'ok');
+    });
+
+    elZip.addEventListener('click', async function () {
+        var zip = new JSZip();
+        state.items.forEach(function (it) {
+            if (it.blob) zip.file(it.file.name.replace(/\.[^.]+$/, '') + '.mp3', it.blob);
+        });
+        var b = await zip.generateAsync({ type: 'blob' });
+        LD.download(b, 'mp3_converted.zip');
+    });
+})();
+</script>
 </body>
 </html>

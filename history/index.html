@@ -1,163 +1,242 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>History | LeDeuxions</title>
-<meta name="description" content="LeDeuxions의 선택과 질문의 기록">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Noto+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="LeDeuxions의 이야기. 속도를 늦춘 선택들에 대하여.">
+<title>이야기 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/css/claude-design.css">
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:'Noto Sans KR',sans-serif;background:#fff;color:#222;overflow-x:hidden}
-img{max-width:100%;height:auto}
-header{text-align:center;padding:100px 20px}
-h1{font-family:'Cinzel';letter-spacing:2px;margin-bottom:10px}
-header p{color:#666}
-
-.timeline, .section{max-width:860px;margin:0 auto;padding:0 20px}
-
-.item{border-left:2px solid #000;padding-left:22px;margin-bottom:52px}
-.item h3{margin:0 0 10px 0;font-weight:600}
-.item p{margin:0;color:#555;line-height:1.9}
-
-.section{margin-top:100px}
-.section h2{font-family:'Cinzel';letter-spacing:1px;font-size:22px;margin-bottom:24px}
-.section p{color:#444;line-height:2;margin-bottom:18px}
-
-.fr{font-style:italic;color:#333}
-.fr small{display:block;color:#777;margin-top:6px}
-
-footer{text-align:center;padding:70px 20px;font-size:12px;color:#777}
+    .story-hero { padding: var(--space-8) 0 var(--space-6); text-align: center; }
+    .timeline {
+        position: relative;
+        padding-left: var(--space-5);
+        margin-bottom: var(--space-8);
+    }
+    .timeline::before {
+        content: "";
+        position: absolute;
+        left: 6px; top: 8px; bottom: 8px;
+        width: 2px;
+        background: var(--border);
+    }
+    .item {
+        position: relative;
+        padding-bottom: var(--space-6);
+    }
+    .item:last-child { padding-bottom: 0; }
+    .item::before {
+        content: "";
+        position: absolute;
+        left: -23px; top: 8px;
+        width: 12px; height: 12px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 4px var(--bg-canvas);
+    }
+    .item h3 {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--accent);
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        margin: 0 0 6px;
+        text-transform: uppercase;
+    }
+    .item p {
+        font-family: var(--font-serif);
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: var(--text-primary);
+        margin: 0;
+        white-space: pre-line;
+    }
+    .section-block {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        margin-bottom: var(--space-5);
+    }
+    .section-block h2 {
+        font-family: var(--font-serif);
+        font-size: 1.6rem;
+        font-style: italic;
+        margin: 0 0 var(--space-4);
+    }
+    .fr {
+        font-family: var(--font-serif);
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: var(--text-primary);
+        margin-bottom: var(--space-5);
+    }
+    .fr strong {
+        font-style: italic;
+        color: var(--accent);
+        font-weight: 500;
+    }
+    .fr small {
+        display: block;
+        margin-top: var(--space-2);
+        font-family: var(--font-sans);
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-style: normal;
+    }
+    .philosophy p {
+        font-family: var(--font-serif);
+        font-size: 1.08rem;
+        line-height: 1.75;
+        color: var(--text-primary);
+    }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>History</h1>
-  <p>속도를 늦춘 선택들에 대하여</p>
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
+            <a href="/work/" class="nav-link" data-nav-link>작품</a>
+            <a href="/history/" class="nav-link active" data-nav-link>이야기</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="story-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">History</div>
+    <h1>속도를 늦춘 <em style="color:var(--accent);font-style:italic;">선택</em>들</h1>
+    <p class="lead">계획보다 질문이 많았던 시기들, 그리고 그 질문에서 자란 일들.</p>
 </header>
 
-<!-- KR HISTORY -->
-<div class="timeline">
+<main class="container-narrow" style="padding-bottom:var(--space-9);">
 
-  <div class="item">
-    <h3>2008</h3>
-    <p>
-      건축대학에 입학했지만, 곧바로 속도를 줄였다.  
-      계획보다 질문이 많았던 시기였고,  
-      이후의 선택들은 이 질문들에서 시작되었다.
+<!-- Timeline -->
+<section class="timeline">
+
+    <div class="item">
+        <h3>2008 — Beginning</h3>
+        <p>건축대학에 입학했지만, 곧바로 속도를 줄였다.
+계획보다 질문이 많았던 시기였고,
+이후의 선택들은 이 질문들에서 시작되었다.</p>
+    </div>
+
+    <div class="item">
+        <h3>군 복무 전후</h3>
+        <p>행정적 문제와 긴 대기 시간 속에서
+삶은 언제든 개인의 계획을 벗어날 수 있음을 배웠다.
+결국 정해진 시간을 받아들이고 복무를 마쳤다.</p>
+    </div>
+
+    <div class="item">
+        <h3>제대 이후</h3>
+        <p>바로 복학하지 않고 인천에 머물며 프랑스어를 공부했다.
+빠르게 돌아가기보다,
+다시 어디로 가고 싶은지를 묻는 시간이 필요했다.</p>
+    </div>
+
+    <div class="item">
+        <h3>2010–2011 — Paris</h3>
+        <p>약 1년간 프랑스에 체류했다.
+경력이나 성과를 위한 선택이 아니었다.
+'아름다움이란 무엇인가'를 스스로에게 묻기 위한 체류였다.</p>
+    </div>
+
+    <div class="item">
+        <h3>Return</h3>
+        <p>복학과 졸업을 거쳐 건축 실무를 시작했다.
+건축은 직업 이전에
+세계를 이해하는 하나의 언어가 되었다.</p>
+    </div>
+
+    <div class="item">
+        <h3>2017 — LeDeuxions</h3>
+        <p>설계사무소와 여러 프로젝트를 거치며
+기술과 자동화가 전문가의 영역을 빠르게 바꾸고 있음을 체감했다.
+이 시기부터 <strong>LeDeuxions</strong>라는 이름으로
+직업이 아닌 사고 방식과 선택을 기록하기 시작했다.</p>
+    </div>
+
+    <div class="item">
+        <h3>Now</h3>
+        <p>자동화와 시스템, AI를 다룬다.
+목적은 효율이 아니라
+개인과 조직이 스스로 판단할 수 있는 구조를 만드는 일이다.</p>
+    </div>
+
+</section>
+
+<!-- French regard -->
+<div class="section-block">
+    <h2>Deux regards</h2>
+
+    <p class="fr">
+        <strong>Temps</strong><br>
+        Ce temps n'était pas destiné à devenir une carrière.
+        Il servait à ralentir.
+        À comprendre que certaines réponses
+        n'apparaissent qu'à faible vitesse.
+        <small>시간 — 커리어가 아니라, 속도를 늦추기 위한 시간</small>
     </p>
-  </div>
 
-  <div class="item">
-    <h3>군 복무 이전과 이후</h3>
-    <p>
-      군 복무를 둘러싼 행정적 문제와 긴 대기 시간 속에서  
-      삶은 언제든 개인의 계획을 벗어날 수 있음을 배웠다.  
-      결국 정해진 시간을 받아들이고 군 복무를 마쳤다.
+    <p class="fr">
+        <strong>Beauté</strong><br>
+        Observer comment une forme existe sans expliquer son utilité.
+        Comment le beau survit
+        sans justification ni rendement.
+        <small>아름다움 — 효용 없이도 존재하는 것</small>
     </p>
-  </div>
 
-  <div class="item">
-    <h3>제대 이후</h3>
-    <p>
-      바로 복학하지 않고 인천에 머물며 프랑스어를 공부했다.  
-      빠르게 돌아가기보다,  
-      다시 어디로 가고 싶은지를 묻는 시간이 필요했다.
+    <p class="fr">
+        <strong>Décision</strong><br>
+        Depuis, je ne cherche plus la bonne méthode.
+        Je m'interroge plutôt sur le bon critère.
+        La décision précède toujours la technique.
+        <small>선택 — 방법보다 먼저 와야 할 기준</small>
     </p>
-  </div>
-
-  <div class="item">
-    <h3>2010–2011</h3>
-    <p>
-      약 1년간 프랑스에 체류했다.  
-      이 시간은 경력이나 성과를 위한 선택이 아니었다.  
-      ‘아름다움이란 무엇인가’를 스스로에게 묻기 위한 체류였다.
-    </p>
-  </div>
-
-  <div class="item">
-    <h3>이후</h3>
-    <p>
-      복학과 졸업을 거쳐 건축 실무를 시작했다.  
-      건축은 직업 이전에  
-      세계를 이해하는 하나의 언어가 되었다.
-    </p>
-  </div>
-
-  <div class="item">
-    <h3>2017 이후</h3>
-    <p>
-      설계사무소와 여러 프로젝트를 거치며  
-      기술과 자동화가 전문가의 영역을 빠르게 바꾸고 있음을 체감했다.  
-      이 시기부터 <strong>LeDeuxions</strong>라는 이름으로  
-      직업이 아닌 사고 방식과 선택을 기록하기 시작했다.
-    </p>
-  </div>
-
-  <div class="item">
-    <h3>현재</h3>
-    <p>
-      자동화와 시스템, AI를 다룬다.  
-      목적은 효율이 아니라  
-      개인과 조직이 스스로 판단할 수 있는 구조를 만드는 일이다.
-    </p>
-  </div>
-
 </div>
 
-<!-- FR REGARD -->
-<div class="section">
-  <h2>Deux regards</h2>
-
-  <p class="fr">
-    <strong>Temps</strong><br>
-    Ce temps n’était pas destiné à devenir une carrière.  
-    Il servait à ralentir.  
-    À comprendre que certaines réponses  
-    n’apparaissent qu’à faible vitesse.
-    <small>시간 — 커리어가 아니라, 속도를 늦추기 위한 시간</small>
-  </p>
-
-  <p class="fr">
-    <strong>Beauté</strong><br>
-    Observer comment une forme existe sans expliquer son utilité.  
-    Comment le beau survit  
-    sans justification ni rendement.
-    <small>아름다움 — 효용 없이도 존재하는 것</small>
-  </p>
-
-  <p class="fr">
-    <strong>Décision</strong><br>
-    Depuis, je ne cherche plus la bonne méthode.  
-    Je m’interroge plutôt sur le bon critère.  
-    La décision précède toujours la technique.
-    <small>선택 — 방법보다 먼저 와야 할 기준</small>
-  </p>
+<!-- Philosophy -->
+<div class="section-block philosophy">
+    <h2>Thinking together, not teaching</h2>
+    <p>나는 정답을 알려줄 위치에 있다고 생각하지 않는다.
+        내가 가진 것은 완성된 방법이 아니라,
+        선택의 순간마다 무엇을 기준으로 판단해왔는지에 대한 기록이다.</p>
+    <p>그래서 "이렇게 하세요"보다
+        "왜 이렇게 생각하게 되었는지"를 먼저 이야기하고 싶다.
+        각자의 상황이 다르다는 사실을
+        가장 정직하게 받아들이는 방식이기 때문이다.</p>
+    <p>이 지식 공유는
+        가르치는 시간이 아니라
+        질문을 테이블 위에 올려두고
+        판단의 기준을 함께 다듬는 과정에 가깝다.</p>
 </div>
 
-<!-- PHILOSOPHY -->
-<div class="section">
-  <h2>Why Not Teaching, But Thinking Together</h2>
-  <p>
-    나는 정답을 알려줄 위치에 있다고 생각하지 않는다.  
-    내가 가진 것은 완성된 방법이 아니라,  
-    선택의 순간마다 무엇을 기준으로 판단해왔는지에 대한 기록이다.
-  </p>
-  <p>
-    그래서 “이렇게 하세요”보다  
-    “왜 이렇게 생각하게 되었는지”를 먼저 이야기하고 싶다.  
-    각자의 상황이 다르다는 사실을  
-    가장 정직하게 받아들이는 방식이기 때문이다.
-  </p>
-  <p>
-    이 지식 공유는  
-    가르치는 시간이 아니라  
-    질문을 테이블 위에 올려두고  
-    판단의 기준을 함께 다듬는 과정에 가깝다.
-  </p>
-</div>
+</main>
 
-<footer>© LeDeuxions</footer>
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions.</span>
+            <span><a href="/contact/">연락하기</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../assets/js/common.js"></script>
 </body>
 </html>

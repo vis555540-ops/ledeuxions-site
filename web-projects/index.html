@@ -1,294 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
-
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Web Projects | LeDeuxions</title>
-
-  <style>
-    :root {
-      --bg: #f6f8fb;
-      --card: #ffffff;
-      --primary: #2563eb;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --border: #e5e7eb;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="LeDeuxions의 정적 웹 유틸리티 모음. PDF, HEIC, 도장, 미디어 변환 등 브라우저에서 끝나는 도구들.">
+<meta property="og:title" content="LeDeuxions Web Tools">
+<meta property="og:description" content="브라우저에서 끝나는 정적 유틸리티 모음.">
+<title>웹 도구 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/css/claude-design.css">
+<style>
+    .hub-hero {
+        padding: var(--space-8) 0 var(--space-7);
+        text-align: center;
     }
-
-    * {
-      box-sizing: border-box;
+    .hub-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-5);
+        margin-bottom: var(--space-7);
     }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.7;
-    }
-
-    /* ---------- NAV ---------- */
-    nav {
-      background: #ffffff;
-      border-bottom: 1px solid var(--border);
-    }
-
-    nav .nav-inner {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 14px 20px;
-      display: flex;
-      gap: 16px;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: var(--text);
-      font-weight: 600;
-      padding: 0 10px;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      border-radius: 6px;
-    }
-
-    nav a:hover {
-      background-color: #f1f5f9;
-    }
-
-    /* ---------- LAYOUT ---------- */
-    .container {
-      max-width: 960px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-
-    header {
-      margin-bottom: 32px;
-    }
-
-    header h1 {
-      font-size: 2.2rem;
-      margin-bottom: 10px;
-    }
-
-    header p {
-      color: var(--muted);
-      font-size: 1.05rem;
-      max-width: 720px;
-    }
-
-    /* ---------- GRID ---------- */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-    }
-
-    .card h2 {
-      font-size: 1.3rem;
-      margin: 0 0 8px 0;
-    }
-
-    .card p {
-      font-size: 0.95rem;
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
-
-    .card a {
-      text-decoration: none;
-      color: var(--primary);
-      font-weight: 600;
-    }
-
-    /* ---------- SECTION ---------- */
-    .section {
-      margin-top: 48px;
-    }
-
-    .section h3 {
-      font-size: 1.4rem;
-      margin-bottom: 16px;
-    }
-
-    /* ---------- FOOTER ---------- */
-    footer {
-      margin-top: 80px;
-      padding: 30px 20px;
-      border-top: 1px solid var(--border);
-      text-align: center;
-      font-size: 0.9rem;
-      color: var(--muted);
-    }
-
-    footer a {
-      color: var(--muted);
-      text-decoration: none;
-      margin: 0 6px;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* ---------- SIDEBAR ---------- */
-    html {
-      scroll-behavior: smooth;
-    }
-
-    .sidebar {
-      display: none;
-    }
-
-    .sidebar h4 {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin: 0 0 12px 0;
-      letter-spacing: 0.3px;
-    }
-
-    .sidebar a {
-      display: block;
-      text-decoration: none;
-      color: var(--text);
-      font-size: 0.88rem;
-      padding: 8px 10px;
-      border-radius: 8px;
-      transition: background 0.15s ease, color 0.15s ease;
-      margin-bottom: 2px;
-    }
-
-    .sidebar a:hover {
-      background: #f1f5f9;
-      color: var(--primary);
-    }
-
-    .sidebar a.active {
-      background: #eff6ff;
-      color: var(--primary);
-      font-weight: 600;
-    }
-
-    @media (min-width: 768px) {
-      body {
-        padding-left: 210px;
-      }
-
-      .sidebar {
-        display: block;
-        position: fixed;
-        top: 70px;
-        left: 16px;
-        width: 180px;
-        background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+    .tool-card {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        padding: var(--space-6);
+        background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-        padding: 18px 14px;
-        z-index: 100;
-      }
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        color: inherit;
+        transition: all .25s var(--ease);
+        position: relative;
+        overflow: hidden;
     }
-  </style>
+    .tool-card:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-3px);
+        color: inherit;
+    }
+    .tool-card-icon {
+        width: 56px; height: 56px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-md);
+        display: grid; place-items: center;
+        font-size: 1.6rem;
+    }
+    .tool-card h3 {
+        font-family: var(--font-serif);
+        font-size: 1.35rem;
+        margin: 0;
+        color: var(--text-primary);
+    }
+    .tool-card p {
+        color: var(--text-secondary);
+        font-size: 0.93rem;
+        margin: 0 0 var(--space-2);
+        line-height: 1.55;
+    }
+    .tool-card-meta {
+        display: flex;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+        margin-top: auto;
+        padding-top: var(--space-3);
+    }
+    .tool-card-arrow {
+        position: absolute;
+        top: var(--space-5); right: var(--space-5);
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        transition: transform .2s var(--ease), color .2s var(--ease);
+    }
+    .tool-card:hover .tool-card-arrow {
+        color: var(--accent);
+        transform: translate(3px, -3px);
+    }
+    .feature-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--space-5);
+        padding: var(--space-6);
+        background: var(--bg-sunken);
+        border-radius: var(--radius-lg);
+        margin: var(--space-7) 0;
+    }
+    .feature-strip-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .feature-strip-item .ico {
+        width: 36px; height: 36px;
+        background: var(--bg-card);
+        border-radius: var(--radius-sm);
+        display: grid; place-items: center;
+        margin-bottom: var(--space-2);
+        color: var(--accent);
+    }
+    .feature-strip-item h4 {
+        font-family: var(--font-sans);
+        font-size: 0.95rem;
+        margin: 0;
+        font-weight: 600;
+    }
+    .feature-strip-item p {
+        font-size: 0.83rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+</style>
 </head>
-
 <body>
-  <!-- NAV -->
-  <nav>
+
+<!-- Navbar -->
+<nav class="nav">
     <div class="nav-inner">
-      <a href="/">Home</a>
-      <a href="/web-projects/">Web Projects</a>
-      <a href="/contact/">Contact</a>
-    </div>
-  </nav>
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <h4>📌 빠른 이동</h4>
-    <a href="/">🏠 Home</a>
-    <a href="/web-projects/paintcomfortfro/">🎨 PaintComfortFRO</a>
-    <a href="/web-projects/pdf300/">📄 PDF300</a>
-    <a href="/web-projects/stamp/">🖼️ Stamp Maker</a>
-    <a href="/web-projects/freecomfortlab/">🛠️ FreeComfortLab</a>
-    <a href="/web-projects/iphone-heic/">📱 iPhone HEIC</a>
-  </aside>
-
-  <div class="container">
-    <!-- HEADER -->
-    <header>
-      <h1>Web Projects</h1>
-      <p>
-        LeDeuxions에서 제작한 웹 기반 유틸리티와 실험적 도구들을 모아둔 공간입니다.
-        설치 없이 바로 사용할 수 있는 실용적인 프로젝트들을 중심으로 구성되어 있습니다.
-      </p>
-    </header>
-
-    <!-- MAIN PROJECTS -->
-    <div class="grid">
-      <div class="card">
-        <h2>PDF300</h2>
-        <p>PDF 변환, 분리, 이미지 추출 등 실무에서 바로 쓰는 PDF 도구 모음</p>
-        <a href="/web-projects/pdf300/">바로가기 →</a>
-      </div>
-
-      <div class="card">
-        <h2>Stamp Maker</h2>
-        <p>도장 이미지를 빠르게 생성하고 투명 PNG로 추출하는 웹 도구</p>
-        <a href="/web-projects/stamp/">바로가기 →</a>
-      </div>
-
-      <div class="card">
-        <h2>FreeComfortLab</h2>
-        <p>생활과 작업을 편하게 만드는 작은 실험실 같은 유틸리티 모음</p>
-        <a href="/web-projects/freecomfortlab/">바로가기 →</a>
-      </div>
-
-      <div class="card">
-        <h2>PaintComfortFRO</h2>
-        <p>6개 언어 지원 웹 기반 그림판 + 프레젠테이션 도구</p>
-        <a href="/web-projects/paintcomfortfro/">바로가기 →</a>
-      </div>
-    </div>
-
-    <!-- OTHER -->
-    <div class="section">
-      <h3>Work & Experiments</h3>
-
-      <div class="grid">
-        <div class="card">
-          <h2>Work</h2>
-          <p>개인 작업, 실험적 프로젝트, 구조 테스트용 페이지 모음</p>
-          <a href="/work/">바로가기 →</a>
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
+            <a href="/work/" class="nav-link" data-nav-link>작품</a>
+            <a href="/history/" class="nav-link" data-nav-link>이야기</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
         </div>
-      </div>
     </div>
-  </div>
+</nav>
 
-  <footer>
-    <p>© 2005–2026 LeDeuxions</p>
-    <p>
-      <a href="/privacy/">Privacy</a> |
-      <a href="/terms/">Terms</a> |
-      <a href="/contact/">Contact</a>
+<header class="hub-hero container">
+    <div class="eyebrow" style="margin-bottom:12px;">Web Toolkit</div>
+    <h1>브라우저에서 <em style="font-style:italic;color:var(--accent);">끝나는</em> 도구들</h1>
+    <p class="lead" style="max-width:640px;margin:0 auto;">
+        설치, 회원가입, 업로드 모두 없습니다.<br>
+        파일은 당신의 기기를 떠나지 않고, 처리는 즉시 끝납니다.
     </p>
-  </footer>
+</header>
+
+<main class="container">
+
+    <!-- Tool cards -->
+    <div class="hub-grid">
+
+        <a href="pdf300/" class="tool-card">
+            <span class="tool-card-arrow">↗</span>
+            <div class="tool-card-icon">📄</div>
+            <h3>PDF 도구 모음</h3>
+            <p>병합 · 분할 · 회전 · 이미지로 추출 · 이미지를 PDF로. 한 페이지에 모은 PDF 워크플로.</p>
+            <div class="tool-card-meta">
+                <span class="badge">완전 정적</span>
+                <span class="badge badge-neutral">PDF-lib.js</span>
+            </div>
+        </a>
+
+        <a href="stamp/" class="tool-card">
+            <span class="tool-card-arrow">↗</span>
+            <div class="tool-card-icon">🔖</div>
+            <h3>도장 추출기</h3>
+            <p>스캔본에서 도장 배경을 자동으로 제거하고, 깨끗한 투명 PNG로 저장합니다.</p>
+            <div class="tool-card-meta">
+                <span class="badge">배경 제거</span>
+                <span class="badge badge-neutral">PNG · PDF</span>
+            </div>
+        </a>
+
+        <a href="iphone-heic/" class="tool-card">
+            <span class="tool-card-arrow">↗</span>
+            <div class="tool-card-icon">🖼️</div>
+            <h3>HEIC → JPG/PNG</h3>
+            <p>아이폰 사진 일괄 변환, 품질·크기·포맷 조절, ZIP 묶음 다운로드까지.</p>
+            <div class="tool-card-meta">
+                <span class="badge">일괄 변환</span>
+                <span class="badge badge-neutral">JPG · PNG · WebP</span>
+            </div>
+        </a>
+
+        <a href="freecomfortlab/" class="tool-card">
+            <span class="tool-card-arrow">↗</span>
+            <div class="tool-card-icon">🎧</div>
+            <h3>미디어 변환 랩</h3>
+            <p>오디오 → MP3, 비디오 → MP3, 카카오톡 영상 처리. 클라이언트 측 미디어 도구 모음.</p>
+            <div class="tool-card-meta">
+                <span class="badge">FFmpeg.wasm</span>
+                <span class="badge badge-neutral">오프라인 가능</span>
+            </div>
+        </a>
+
+        <a href="paintcomfortfro/" class="tool-card">
+            <span class="tool-card-arrow">↗</span>
+            <div class="tool-card-icon">🎨</div>
+            <h3>Paint & Present</h3>
+            <p>그리고, 발표하고, 저장합니다. 6개 언어 지원의 캔버스 + 프레젠테이션 도구.</p>
+            <div class="tool-card-meta">
+                <span class="badge">Canvas</span>
+                <span class="badge badge-neutral">다국어</span>
+            </div>
+        </a>
+
+        <a href="/applications/" class="tool-card">
+            <span class="tool-card-arrow">↗</span>
+            <div class="tool-card-icon">📱</div>
+            <h3>Applications</h3>
+            <p>설치형 앱 버전 모음. PWA로 홈 화면에 추가해 오프라인에서도 쓸 수 있습니다.</p>
+            <div class="tool-card-meta">
+                <span class="badge">PWA</span>
+                <span class="badge badge-neutral">오프라인</span>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- Feature strip -->
+    <section class="feature-strip">
+        <div class="feature-strip-item">
+            <div class="ico">🔒</div>
+            <h4>업로드 없음</h4>
+            <p>모든 처리는 브라우저 안에서 끝납니다.</p>
+        </div>
+        <div class="feature-strip-item">
+            <div class="ico">⚡</div>
+            <h4>설치 불필요</h4>
+            <p>탭만 열면 바로 작업 시작.</p>
+        </div>
+        <div class="feature-strip-item">
+            <div class="ico">📐</div>
+            <h4>일관된 디자인</h4>
+            <p>모든 도구가 같은 시각 언어를 씁니다.</p>
+        </div>
+        <div class="feature-strip-item">
+            <div class="ico">🌍</div>
+            <h4>다국어</h4>
+            <p>한국어 · 영어 자동 감지.</p>
+        </div>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-grid">
+            <div>
+                <div class="nav-brand" style="margin-bottom:12px;">
+                    <span class="nav-brand-mark">L</span>
+                    <span>LeDeuxions</span>
+                </div>
+                <p style="font-size:.9rem;color:var(--text-muted);max-width:300px;">
+                    건축가의 시선으로 일상의 도구를 짓습니다.
+                </p>
+            </div>
+            <div>
+                <h4>도구</h4>
+                <ul>
+                    <li><a href="pdf300/">PDF 도구</a></li>
+                    <li><a href="stamp/">도장 추출기</a></li>
+                    <li><a href="iphone-heic/">HEIC 변환</a></li>
+                    <li><a href="freecomfortlab/">미디어 변환</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>둘러보기</h4>
+                <ul>
+                    <li><a href="/">홈</a></li>
+                    <li><a href="/work/">작품</a></li>
+                    <li><a href="/history/">이야기</a></li>
+                    <li><a href="/contact/">연락</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>약관</h4>
+                <ul>
+                    <li><a href="/privacy/">개인정보</a></li>
+                    <li><a href="/terms/">이용약관</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions.</span>
+            <span class="mono" style="font-size:.78rem;">v2026.05</span>
+        </div>
+    </div>
+</footer>
+
+<script src="../assets/js/common.js"></script>
 </body>
 </html>

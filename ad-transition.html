@@ -1,113 +1,94 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>페이지 이동 중...</title>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
-        
-        .container {
-            text-align: center;
-            width: 90%;
-            max-width: 1200px;
-        }
-        
-        .message {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        
-        .countdown {
-            font-size: 72px;
-            font-weight: 800;
-            margin: 20px 0;
-            color: #ffd700;
-        }
-        
-        .subtitle {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 40px;
-        }
-        
-
-        
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .skip-link {
-            margin-top: 20px;
-            color: white;
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 14px;
-            opacity: 0.8;
-        }
-        
-        .skip-link:hover {
-            opacity: 1;
-        }
-
-        @media (max-width: 768px) {
-            .message {
-                font-size: 20px;
-            }
-            .countdown {
-                font-size: 48px;
-            }
-            .ad-container {
-                min-height: 200px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="robots" content="noindex,nofollow">
+<title>이동 중…</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="assets/css/claude-design.css">
+<style>
+    body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: var(--bg-canvas);
+        padding: var(--space-5);
+    }
+    .panel {
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: var(--space-7) var(--space-6);
+        box-shadow: var(--shadow-md);
+    }
+    .ring {
+        width: 72px; height: 72px;
+        border-radius: 50%;
+        margin: 0 auto var(--space-5);
+        position: relative;
+        background: conic-gradient(var(--accent) var(--p, 0%), var(--bg-sunken) 0);
+        display: grid; place-items: center;
+        transition: background .4s linear;
+    }
+    .ring::before {
+        content: "";
+        position: absolute; inset: 8px;
+        background: var(--bg-card);
+        border-radius: 50%;
+    }
+    .ring span {
+        position: relative;
+        font-family: var(--font-serif);
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .panel h1 { font-size: 1.5rem; margin: 0 0 var(--space-3); }
+    .panel p { color: var(--text-secondary); margin: 0 0 var(--space-4); }
+    .panel a { font-size: .9rem; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="message">잠시만 기다려주세요...</div>
 
-        
-        <div class="spinner"></div>
-        
-        <!-- 전면 광고 (Interstitial) -->
+<div class="panel">
+    <div class="ring" id="ring"><span id="count">3</span></div>
+    <h1>잠시만요</h1>
+    <p>요청하신 페이지로 이동합니다.<br>광고 로딩이 끝나면 자동으로 넘어갑니다.</p>
+    <a href="#" id="skip" class="btn btn-ghost btn-sm">바로 이동 →</a>
+</div>
 
-        
+<script>
+(function () {
+    var params = new URLSearchParams(location.search);
+    var to = params.get('to') || '/';
+    if (to.indexOf('http') !== 0 && to[0] !== '/') {
+        to = '/' + to;
+    }
+    document.getElementById('skip').href = to;
 
-    </div>
+    var total = 3, elapsed = 0, step = 50;
+    var ring = document.getElementById('ring');
+    var count = document.getElementById('count');
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const destination = urlParams.get('to') || '/';
-        window.location.href = destination;
-    </script>
+    var timer = setInterval(function () {
+        elapsed += step;
+        var pct = Math.min(100, (elapsed / (total * 1000)) * 100);
+        ring.style.setProperty('--p', pct + '%');
+        count.textContent = Math.max(0, Math.ceil(total - elapsed / 1000));
+        if (elapsed >= total * 1000) {
+            clearInterval(timer);
+            location.href = to;
+        }
+    }, step);
+})();
+</script>
+
 </body>
 </html>

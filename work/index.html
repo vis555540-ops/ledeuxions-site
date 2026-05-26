@@ -1,194 +1,181 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Projects - LeDeuxions.com</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
-
-        * { box-sizing: border-box; }
-
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f5f7;
-            color: #333;
-            overflow-x: hidden;
-        }
-
-        img { max-width: 100%; height: auto; }
-
-        .header {
-            background-color: #fff;
-            padding: 40px 20px;
-            text-align: center;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .header h1 {
-            font-family: 'Oswald', sans-serif;
-            font-size: 3rem;
-            margin: 0;
-            color: #222;
-            letter-spacing: 1px;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            color: #666;
-            max-width: 700px;
-            margin: 10px auto 0;
-            line-height: 1.7;
-        }
-
-        .project-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-            gap: 24px;
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .project-card {
-            background-color: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        .card-content {
-            padding: 25px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card-content h2 {
-            font-family: 'Oswald', sans-serif;
-            font-size: 1.8rem;
-            margin: 0 0 10px 0;
-            color: #111;
-        }
-
-        .card-content p {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: #555;
-            flex-grow: 1;
-            margin-bottom: 20px;
-        }
-
-        .card-footer {
-            padding: 25px;
-            background-color: #fcfcfc;
-            border-top: 1px solid #f0f0f0;
-        }
-
-        .card-footer .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 12px 20px;
-            min-height: 44px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-
-        .card-footer .btn:hover {
-            background-color: #000;
-        }
-
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 50px;
-            font-size: 0.9em;
-            color: #888;
-            border-top: 1px solid #e0e0e0;
-        }
-        footer a {
-            color: #555;
-            text-decoration: none;
-        }
-
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="LeDeuxions의 작품과 작업 — 건축, 글쓰기, 웹 프로젝트.">
+<title>작품 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../assets/css/claude-design.css">
+<style>
+    .work-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .work-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-5);
+        margin-bottom: var(--space-7);
+    }
+    .work-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        display: flex; flex-direction: column;
+        transition: all .25s var(--ease);
+    }
+    .work-card:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-3px);
+    }
+    .work-card .body {
+        padding: var(--space-5);
+        flex: 1;
+        display: flex; flex-direction: column;
+    }
+    .work-card .tag {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--accent);
+        margin-bottom: var(--space-2);
+    }
+    .work-card h2 {
+        font-family: var(--font-serif);
+        font-size: 1.5rem;
+        margin: 0 0 var(--space-3);
+        color: var(--text-primary);
+    }
+    .work-card p {
+        margin: 0;
+        flex: 1;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    .work-card .foot {
+        padding: var(--space-4) var(--space-5);
+        background: var(--bg-sunken);
+        border-top: 1px solid var(--border);
+    }
+    .work-card.coming { opacity: .6; }
+    .work-card.coming .foot .btn { background: var(--bg-card); color: var(--text-muted); cursor: not-allowed; }
+</style>
 </head>
 <body>
 
-
-
-    <header class="header">
-        <h1>Web Projects & Utilities</h1>
-        <p>일상의 필요와 업무의 효율을 위해 만든 실용적인 웹 도구 모음입니다. 각 카드를 클릭하여 해당 서비스로 이동할 수 있습니다.</p>
-    </header>
-
-    <main class="project-grid">
-        <div class="project-card">
-            <div class="card-content">
-                <h2>PDF 300 Service</h2>
-                <p>다양한 PDF 관련 작업을 웹에서 간편하게 처리하는 서비스입니다. PDF 파일 압축, 변환, 병합 등의 기능을 제공합니다.</p>
-            </div>
-            <div class="card-footer">
-                <a href="/web-projects/pdf300/" class="btn">서비스 바로가기</a>
-            </div>
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
+            <a href="/work/" class="nav-link active" data-nav-link>작품</a>
+            <a href="/history/" class="nav-link" data-nav-link>이야기</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
         </div>
+    </div>
+</nav>
 
-        <div class="project-card">
-            <div class="card-content">
-                <h2>Stamp Maker</h2>
-                <p>개인 또는 법인용 디지털 도장을 생성하는 도구입니다. 다양한 스타일의 도장을 간편하게 만들고 다운로드할 수 있습니다.</p>
-            </div>
-            <div class="card-footer">
-                <a href="/web-projects/stamp/" class="btn">서비스 바로가기</a>
-            </div>
+<header class="work-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Work & Utilities</div>
+    <h1>매일을 다듬는 <em style="color:var(--accent);font-style:italic;">도구들</em></h1>
+    <p class="lead">일상의 필요에서 시작해, 실제로 쓰일 만한 형태로 다듬은 작은 프로젝트들.</p>
+</header>
+
+<main class="container" style="padding-bottom:var(--space-9);">
+
+<div class="work-grid">
+
+    <article class="work-card">
+        <div class="body">
+            <div class="tag">Document</div>
+            <h2>PDF 300</h2>
+            <p>병합, 분할, 회전, 이미지 변환까지. PDF에 필요한 거의 모든 정적 처리를 하나의 페이지에서.</p>
         </div>
-
-        <div class="project-card">
-            <div class="card-content">
-                <h2>Free Comfort Lab</h2>
-                <p>오디오 및 비디오 파일 변환 등 일상에서 필요한 미디어 관련 유틸리티를 제공하는 실험적인 프로젝트입니다.</p>
-            </div>
-            <div class="card-footer">
-                <a href="/web-projects/freecomfortlab/" class="btn">서비스 바로가기</a>
-            </div>
+        <div class="foot">
+            <a href="/web-projects/pdf300/" class="btn btn-dark btn-block">바로가기 →</a>
         </div>
-        
-        <!-- 향후 프로젝트 추가를 위한 예시 카드 -->
-        <div class="project-card">
-            <div class="card-content">
-                <h2>More Projects</h2>
-                <p>더 많은 유용한 도구들이 준비 중입니다. 지속적으로 업데이트될 예정이니 기대해주세요.</p>
-            </div>
-            <div class="card-footer">
-                <a href="#" class="btn" style="background-color: #888; cursor: not-allowed;">준비 중</a>
-            </div>
+    </article>
+
+    <article class="work-card">
+        <div class="body">
+            <div class="tag">Identity</div>
+            <h2>Stamp Maker</h2>
+            <p>이름만 입력해 즉시 만드는 도장. 또는 찍힌 사진에서 깨끗하게 추출하는 투명 PNG.</p>
         </div>
-    </main>
+        <div class="foot">
+            <a href="/web-projects/stamp/" class="btn btn-dark btn-block">바로가기 →</a>
+        </div>
+    </article>
 
-    <footer>
-        <p><a href="/">© 2005–2026 LeDeuxions</a></p>
-    </footer>
+    <article class="work-card">
+        <div class="body">
+            <div class="tag">Photo</div>
+            <h2>HEIC Converter</h2>
+            <p>아이폰 사진을 JPG/PNG/WebP로 일괄 변환. 크기·품질·접미사까지 세밀하게.</p>
+        </div>
+        <div class="foot">
+            <a href="/web-projects/iphone-heic/" class="btn btn-dark btn-block">바로가기 →</a>
+        </div>
+    </article>
 
+    <article class="work-card">
+        <div class="body">
+            <div class="tag">Media</div>
+            <h2>FreeComfortLab</h2>
+            <p>오디오 → MP3, 비디오 → MP3 등 미디어 변환 도구의 실험실.</p>
+        </div>
+        <div class="foot">
+            <a href="/web-projects/freecomfortlab/" class="btn btn-dark btn-block">바로가기 →</a>
+        </div>
+    </article>
 
+    <article class="work-card">
+        <div class="body">
+            <div class="tag">Creative</div>
+            <h2>Paint & Present</h2>
+            <p>그리고, 발표하고, 저장합니다. 다국어 캔버스 + 프레젠테이션 도구.</p>
+        </div>
+        <div class="foot">
+            <a href="/web-projects/paintcomfortfro/" class="btn btn-dark btn-block">바로가기 →</a>
+        </div>
+    </article>
 
+    <article class="work-card coming">
+        <div class="body">
+            <div class="tag">Soon</div>
+            <h2>다음 프로젝트</h2>
+            <p>더 많은 유용한 도구가 준비 중입니다. 도구는 결국 누군가의 하루를 가볍게 만드는 일.</p>
+        </div>
+        <div class="foot">
+            <button class="btn btn-block" disabled>준비 중</button>
+        </div>
+    </article>
+
+</div>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions.</span>
+            <span><a href="/contact/">함께 만들기 →</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../assets/js/common.js"></script>
 </body>
 </html>
