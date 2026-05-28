@@ -17,16 +17,26 @@
     // ==========================================================
     function showTool(name) {
         var hero = document.getElementById('hero');
-        var grid = document.getElementById('tool-grid');
         var workspaces = document.querySelectorAll('.workspace');
+        // Everything that belongs to the "home" view (hidden while a tool is open)
+        var homeEls = [
+            document.getElementById('hero'),
+            document.getElementById('tool-grid'),
+            document.getElementById('server-grid')
+        ].concat(
+            Array.prototype.slice.call(document.querySelectorAll('.grid-section-head, .server-head'))
+        );
+        var offlineNote = document.getElementById('server-offline-note');
+
         if (!name) {
-            hero.style.display = '';
-            grid.style.display = '';
+            homeEls.forEach(function (el) { if (el) el.style.display = ''; });
+            // offline note visibility is controlled by the server module; restore if it was meant to show
+            if (offlineNote) offlineNote.style.display = '';
             workspaces.forEach(function (w) { w.classList.remove('is-active'); });
             return;
         }
-        hero.style.display = 'none';
-        grid.style.display = 'none';
+        homeEls.forEach(function (el) { if (el) el.style.display = 'none'; });
+        if (offlineNote) offlineNote.style.display = 'none';
         workspaces.forEach(function (w) {
             w.classList.toggle('is-active', w.dataset.ws === name);
         });

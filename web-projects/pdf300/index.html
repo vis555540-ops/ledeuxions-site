@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FAF9F5">
-<meta name="description" content="PDF300 — 브라우저에서 끝나는 PDF 풀 도구. 병합, 분할, 회전, 자르기, 페이지번호, 서명, 가림, 이미지/텍스트 변환, 압축까지 14개 기능.">
+<meta name="theme-color" content="#14110F">
+<meta name="description" content="PDF300 — 브라우저에서 끝나는 PDF 풀 도구. 병합, 분할, 회전, 자르기, 페이지번호, 서명, 가림, 이미지/텍스트 변환, 압축까지 14개 기능. 서버 고급 도구(OCR·암호화·복구)도 지원.">
 <meta name="keywords" content="PDF 병합, PDF 분할, PDF 회전, PDF 자르기, PDF 워터마크, PDF 서명, PDF 페이지번호, PDF 이미지, PDF 텍스트, PDF 압축, ilovepdf 대안">
 <meta property="og:title" content="PDF300 — 무료 PDF 풀 도구">
 <meta property="og:description" content="14개 PDF 도구, 모두 브라우저에서. 파일은 업로드되지 않습니다.">
@@ -12,6 +12,8 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="../../assets/css/claude-design.css">
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
@@ -19,7 +21,86 @@
 <script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';</script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
-    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    /* ============================================================
+       PDF300 — Dark premium theme (overrides claude-design.css vars)
+       ============================================================ */
+    :root {
+        --bg-canvas: #14110F;
+        --bg-canvas-soft: #1A1613;
+        --bg-card: #1E1A16;
+        --bg-sunken: #16120F;
+        --bg-inverse: #FAF9F5;
+
+        --text-primary: #F6F2EA;
+        --text-secondary: #B7B0A4;
+        --text-muted: #837C70;
+        --text-inverse: #14110F;
+
+        --accent: #E8895F;
+        --accent-hover: #F1A07E;
+        --accent-soft: rgba(232,137,95,0.15);
+        --accent-deep: #F3AE8E;
+
+        --border: #2C2722;
+        --border-strong: #3C352D;
+
+        --shadow-xs: 0 1px 2px rgba(0,0,0,0.4);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.45);
+        --shadow-md: 0 12px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.4);
+        --shadow-lg: 0 28px 60px rgba(0,0,0,0.55);
+
+        --font-sans: 'Pretendard', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+
+        --grad: linear-gradient(135deg, #E8895F 0%, #D9576B 55%, #B5489E 100%);
+        --grad-soft: linear-gradient(135deg, rgba(232,137,95,.16), rgba(181,72,158,.12));
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+        background:
+            radial-gradient(1200px 600px at 80% -10%, rgba(232,137,95,.10), transparent 60%),
+            radial-gradient(900px 500px at -10% 10%, rgba(181,72,158,.08), transparent 55%),
+            var(--bg-canvas);
+        background-attachment: fixed;
+    }
+
+    /* Headings use Pretendard (sans) in this page for the modern look */
+    h1, h2, h3, h4 { font-family: var(--font-sans); letter-spacing: -0.02em; }
+
+    /* Navbar — dark glass */
+    .nav {
+        background: rgba(20,17,15,0.72) !important;
+        border-bottom: 1px solid var(--border);
+        -webkit-backdrop-filter: saturate(160%) blur(14px);
+        backdrop-filter: saturate(160%) blur(14px);
+    }
+    .nav-brand-mark { background: var(--grad); box-shadow: 0 4px 14px rgba(217,87,107,.4); }
+
+    /* Hero */
+    .app-hero { padding: var(--space-8) 0 var(--space-6); text-align: center; position: relative; }
+    .app-hero h1 {
+        font-size: clamp(2.6rem, 7vw, 4.4rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 6px 0 var(--space-4);
+    }
+    .app-hero h1 em {
+        font-style: normal;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent !important;
+    }
+    .app-hero .eyebrow {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: var(--radius-pill);
+        background: var(--grad-soft);
+        border: 1px solid var(--border-strong);
+        color: var(--accent-deep);
+    }
+    .app-hero .lead { color: var(--text-secondary); max-width: 580px; margin: 0 auto; }
 
     /* ========== Tool grid ========== */
     .tool-grid {
@@ -29,47 +110,278 @@
         margin-bottom: var(--space-7);
     }
     .tool-tile {
+        position: relative;
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius-lg);
-        padding: var(--space-5) var(--space-4);
+        padding: var(--space-6) var(--space-4) var(--space-5);
         text-align: center;
         cursor: pointer;
-        transition: all .2s var(--ease);
+        transition: transform .28s var(--ease), box-shadow .28s var(--ease), border-color .28s var(--ease);
         text-decoration: none; color: inherit;
         display: flex; flex-direction: column;
         align-items: center; gap: var(--space-2);
+        overflow: hidden;
+        isolation: isolate;
+    }
+    /* gradient sheen on hover */
+    .tool-tile::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--grad-soft);
+        opacity: 0;
+        transition: opacity .28s var(--ease);
+        z-index: -1;
+    }
+    .tool-tile::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: var(--grad);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity .28s var(--ease);
+        z-index: -1;
     }
     .tool-tile:hover {
-        border-color: var(--accent);
-        transform: translateY(-2px);
+        transform: translateY(-5px);
         box-shadow: var(--shadow-md);
         color: inherit;
     }
+    .tool-tile:hover::before { opacity: 1; }
+    .tool-tile:hover::after { opacity: 1; }
     .tool-tile-icon {
-        width: 52px; height: 52px;
+        width: 56px; height: 56px;
         background: var(--accent-soft);
         color: var(--accent-deep);
-        border-radius: var(--radius-md);
+        border-radius: 16px;
         display: grid; place-items: center;
-        font-size: 1.5rem;
-        transition: all .2s var(--ease);
+        font-size: 1.6rem;
+        transition: transform .28s var(--ease), background .28s var(--ease), color .28s var(--ease), box-shadow .28s var(--ease);
     }
     .tool-tile:hover .tool-tile-icon {
-        background: var(--accent);
+        background: var(--grad);
         color: #fff;
+        transform: scale(1.08) translateY(-2px);
+        box-shadow: 0 10px 24px rgba(217,87,107,.35);
     }
     .tool-tile h4 {
         font-family: var(--font-sans);
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin: 4px 0 0;
+        font-size: 0.98rem;
+        font-weight: 700;
+        margin: 6px 0 0;
+        letter-spacing: -0.01em;
     }
     .tool-tile p {
         font-size: 0.78rem;
         color: var(--text-muted);
         margin: 0;
         line-height: 1.4;
+    }
+
+    /* ========== Premium polish ========== */
+    .grid-section-head {
+        display: flex; align-items: center; gap: var(--space-3);
+        margin: 0 0 var(--space-5);
+    }
+    .grid-section-head h2 {
+        font-size: 1.25rem; font-weight: 700; margin: 0;
+        letter-spacing: -0.02em;
+    }
+    .grid-section-head .line {
+        flex: 1; height: 1px;
+        background: linear-gradient(90deg, var(--border), transparent);
+    }
+    .grid-section-head .count {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        padding: 3px 9px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-pill);
+    }
+
+    /* Primary buttons get the brand gradient */
+    .btn-primary {
+        background: var(--grad) !important;
+        border: none;
+        box-shadow: 0 6px 18px rgba(217,87,107,.28);
+    }
+    .btn-primary:hover {
+        filter: brightness(1.06);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 26px rgba(217,87,107,.38);
+    }
+    .btn-primary:disabled, .btn-primary[disabled] {
+        background: var(--bg-sunken) !important;
+        color: var(--text-muted) !important;
+        box-shadow: none;
+        border: 1px solid var(--border);
+    }
+    .btn-secondary {
+        background: var(--bg-card);
+        border-color: var(--border-strong);
+        color: var(--text-primary);
+    }
+    .btn-secondary:hover { background: var(--bg-canvas-soft); border-color: var(--accent); }
+
+    /* Workspace header */
+    .ws-header { border-bottom-color: var(--border); }
+    .ws-header .ico {
+        background: var(--grad-soft);
+        border: 1px solid var(--border-strong);
+        color: var(--accent-deep);
+    }
+    .ws-back { background: var(--bg-card); border: 1px solid var(--border); }
+    .ws-back:hover { background: var(--grad); color: #fff; border-color: transparent; }
+
+    /* Panels & cards */
+    .panel {
+        background: linear-gradient(180deg, var(--bg-card), var(--bg-canvas-soft));
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Dropzone glow */
+    .dropzone {
+        background: var(--bg-canvas-soft);
+        border-color: var(--border-strong);
+        transition: border-color .25s var(--ease), background .25s var(--ease), box-shadow .25s var(--ease);
+    }
+    .dropzone:hover, .dropzone.is-active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        box-shadow: 0 0 0 4px rgba(232,137,95,.08), var(--shadow-sm);
+    }
+    .dropzone-icon { color: var(--accent); }
+
+    /* Inputs in dark */
+    .input, .select, .textarea {
+        background: var(--bg-sunken);
+        border-color: var(--border-strong);
+        color: var(--text-primary);
+    }
+    .input:focus, .select:focus, .textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .seg { background: var(--bg-sunken); }
+    .seg button.on { background: var(--bg-card); color: var(--text-primary); }
+
+    /* Footer */
+    .site-footer { background: var(--bg-canvas-soft); border-top-color: var(--border); }
+
+    /* Reveal animation for workspaces & tiles */
+    .workspace.is-active { animation: ws-in .35s var(--ease-out) both; }
+    @keyframes ws-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .tool-grid .tool-tile { animation: tile-in .4s var(--ease-out) both; }
+    .tool-grid .tool-tile:nth-child(2) { animation-delay: .03s; }
+    .tool-grid .tool-tile:nth-child(3) { animation-delay: .06s; }
+    .tool-grid .tool-tile:nth-child(4) { animation-delay: .09s; }
+    .tool-grid .tool-tile:nth-child(5) { animation-delay: .12s; }
+    .tool-grid .tool-tile:nth-child(6) { animation-delay: .15s; }
+    .tool-grid .tool-tile:nth-child(7) { animation-delay: .18s; }
+    .tool-grid .tool-tile:nth-child(n+8) { animation-delay: .21s; }
+    @keyframes tile-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) {
+        .workspace.is-active, .tool-grid .tool-tile { animation: none; }
+    }
+
+    /* ========== Server section ========== */
+    .server-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        margin: var(--space-7) 0 var(--space-4);
+        padding-top: var(--space-6);
+        border-top: 1px solid var(--border);
+    }
+    .server-head h2 {
+        font-size: 1.4rem;
+        margin: 0 0 4px;
+        display: flex; align-items: center; gap: var(--space-2);
+    }
+    .server-head .server-sub {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+    .server-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 14px;
+        border-radius: var(--radius-pill);
+        font-size: 0.85rem;
+        font-weight: 500;
+        background: var(--bg-sunken);
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+    .server-badge .dot {
+        width: 9px; height: 9px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        flex-shrink: 0;
+    }
+    .server-badge[data-state="checking"] .dot { animation: pulse 1s ease-in-out infinite; }
+    .server-badge[data-state="online"] { background: rgba(107,142,107,.14); color: #3F5C3F; }
+    .server-badge[data-state="online"] .dot { background: #3FA34D; box-shadow: 0 0 0 3px rgba(63,163,77,.2); }
+    .server-badge[data-state="offline"] { background: rgba(184,91,61,.12); color: var(--accent-deep); }
+    .server-badge[data-state="offline"] .dot { background: #C0392B; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    #server-grid { position: relative; }
+    #server-grid.offline { opacity: .55; }
+    .tool-tile .server-tag {
+        position: absolute;
+        top: 10px; right: 10px;
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        letter-spacing: .05em;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+    .tool-tile { position: relative; }
+    .offline-note {
+        margin: var(--space-3) 0 0;
+        padding: var(--space-3);
+        background: rgba(184,91,61,.08);
+        border: 1px solid rgba(184,91,61,.2);
+        border-radius: var(--radius-md);
+        font-size: 0.82rem;
+        color: var(--accent-deep);
+    }
+    .ws-server-tag {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        letter-spacing: .05em;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        padding: 2px 7px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        vertical-align: middle;
+        margin-left: 6px;
+    }
+    .ocr-output {
+        width: 100%;
+        min-height: 280px;
+        margin-top: var(--space-4);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        line-height: 1.6;
+        resize: vertical;
     }
 
     /* ========== Tool workspace ========== */
@@ -252,8 +564,8 @@
         border-radius: var(--radius-md);
         font-family: var(--font-mono);
     }
-    .status.ok { background: rgba(107,142,107,.12); color: #3F5C3F; }
-    .status.err { background: rgba(184,91,61,.12); color: var(--accent-deep); }
+    .status.ok { background: rgba(99,178,118,.16); color: #8FD9A4; }
+    .status.err { background: rgba(224,108,90,.16); color: #F0A08E; }
     .help { font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-2); }
 
     /* ========== Stage for interactive tools (sign, redact, crop) ========== */
@@ -357,14 +669,19 @@
 
 <!-- Hero (visible on home) -->
 <header class="app-hero container-narrow" id="hero">
-    <div class="eyebrow" style="margin-bottom:12px;">PDF Toolkit · 14 tools</div>
-    <h1>PDF <em style="color:var(--accent);font-style:italic;">300</em></h1>
-    <p class="lead">병합부터 압축까지 — 모든 PDF 작업을 브라우저 안에서. 파일은 절대 업로드되지 않습니다.</p>
+    <div class="eyebrow" style="margin-bottom:14px;">PDF Toolkit · 14 + 10 tools</div>
+    <h1>PDF <em>300</em></h1>
+    <p class="lead">병합부터 OCR·암호화까지 — 가벼운 작업은 브라우저에서, 무거운 작업은 서버에서. 기본 도구는 파일을 절대 업로드하지 않습니다.</p>
 </header>
 
 <main class="container" style="padding-bottom:var(--space-9);">
 
-    <!-- ============================== TOOL GRID ============================== -->
+    <!-- ============================== LOCAL TOOL GRID ============================== -->
+    <div class="grid-section-head">
+        <h2>🔒 브라우저 도구</h2>
+        <span class="line"></span>
+        <span class="count">14 · 오프라인</span>
+    </div>
     <section id="tool-grid" class="tool-grid">
 
         <a href="#merge" class="tool-tile" data-tool="merge">
@@ -439,6 +756,84 @@
         </a>
 
     </section>
+
+    <!-- ============================== SERVER ADVANCED TOOLS ============================== -->
+    <div class="server-head">
+        <div>
+            <h2>⚡ 고급 도구 <span class="ws-server-tag">서버</span></h2>
+            <p class="server-sub">OCR·암호화·복구처럼 무거운 작업은 pdf.ledeuxions.com 서버에서 처리합니다.</p>
+        </div>
+        <div id="server-status" class="server-badge" data-state="checking">
+            <span class="dot"></span><span class="txt">서버 확인 중…</span>
+        </div>
+    </div>
+
+    <section id="server-grid" class="tool-grid">
+        <a href="#srv-compress" class="tool-tile" data-tool="srv-compress">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🗜️</div>
+            <h4>고화질 압축</h4>
+            <p>화질 유지하며 용량 축소</p>
+        </a>
+        <a href="#srv-ocr" class="tool-tile" data-tool="srv-ocr">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🔍</div>
+            <h4>OCR 텍스트 추출</h4>
+            <p>스캔 PDF에서 글자 인식</p>
+        </a>
+        <a href="#srv-protect" class="tool-tile" data-tool="srv-protect">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🔒</div>
+            <h4>비밀번호 설정</h4>
+            <p>PDF 암호화 보호</p>
+        </a>
+        <a href="#srv-unlock" class="tool-tile" data-tool="srv-unlock">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🔓</div>
+            <h4>비밀번호 해제</h4>
+            <p>암호 제거</p>
+        </a>
+        <a href="#srv-strip" class="tool-tile" data-tool="srv-strip">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🧹</div>
+            <h4>메타데이터 제거</h4>
+            <p>개인정보 완전 삭제</p>
+        </a>
+        <a href="#srv-repair" class="tool-tile" data-tool="srv-repair">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🛠️</div>
+            <h4>PDF 복구</h4>
+            <p>손상된 파일 복원</p>
+        </a>
+        <a href="#srv-numbers" class="tool-tile" data-tool="srv-numbers">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🔢</div>
+            <h4>페이지 번호</h4>
+            <p>서버 정밀 삽입</p>
+        </a>
+        <a href="#srv-nup" class="tool-tile" data-tool="srv-nup">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">📐</div>
+            <h4>N-up 모아찍기</h4>
+            <p>행·열 자유 배치</p>
+        </a>
+        <a href="#srv-office" class="tool-tile" data-tool="srv-office">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">📄</div>
+            <h4>오피스 → PDF</h4>
+            <p>Word·Excel·PPT 변환</p>
+        </a>
+        <a href="#srv-watermark" class="tool-tile" data-tool="srv-watermark">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">💧</div>
+            <h4>워터마크</h4>
+            <p>서버 워터마크 삽입</p>
+        </a>
+    </section>
+
+    <div id="server-offline-note" class="offline-note" hidden>
+        🔴 현재 서버에 연결할 수 없어 고급 도구를 사용할 수 없습니다. 위쪽 <strong>브라우저 도구</strong>는 평소처럼 정상 작동합니다.
+    </div>
 
 
     <!-- ============================== TOOL WORKSPACES ============================== -->
@@ -1141,12 +1536,345 @@
         </div>
     </section>
 
+    <!-- ============================================================
+         SERVER ADVANCED WORKSPACES
+         ============================================================ -->
+
+    <!-- ============ SERVER: COMPRESS ============ -->
+    <section class="workspace" data-ws="srv-compress">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🗜️</div>
+            <div>
+                <h2>고화질 압축 <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">서버에서 이미지를 재최적화해 화질 손실을 최소화하며 용량을 줄입니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-compress-drop">
+                    <div class="dropzone-icon">🗜️</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>해 서버 압축을 실행합니다.</div>
+                    <input type="file" id="srv-compress-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-compress-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>실행</h3>
+                <p class="help" style="margin-top:0;">파일이 서버로 전송되어 처리 후 즉시 반환됩니다.</p>
+                <button class="btn btn-primary btn-block" id="srv-compress-run" disabled style="margin-top:var(--space-4);">압축 실행</button>
+                <div class="status" id="srv-compress-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: OCR ============ -->
+    <section class="workspace" data-ws="srv-ocr">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔍</div>
+            <div>
+                <h2>OCR 텍스트 추출 <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">스캔되거나 이미지로 된 PDF에서 글자를 인식해 텍스트로 변환합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-ocr-drop">
+                    <div class="dropzone-icon">🔍</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>해 글자를 인식합니다.</div>
+                    <input type="file" id="srv-ocr-file" accept="application/pdf" hidden>
+                </div>
+                <textarea class="textarea ocr-output" id="srv-ocr-output" readonly placeholder="인식된 텍스트가 여기에 표시됩니다…"></textarea>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">인식 언어</label>
+                    <select class="select" id="srv-ocr-lang">
+                        <option value="kor+eng" selected>한국어 + 영어</option>
+                        <option value="kor">한국어</option>
+                        <option value="eng">영어</option>
+                        <option value="jpn">일본어</option>
+                        <option value="chi_sim">중국어(간체)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-ocr-run" disabled>텍스트 추출</button>
+                <button class="btn btn-secondary btn-block" id="srv-ocr-copy" disabled style="margin-top:var(--space-3);">📋 클립보드에 복사</button>
+                <button class="btn btn-secondary btn-block" id="srv-ocr-download" disabled style="margin-top:var(--space-3);">.txt 다운로드</button>
+                <div class="status" id="srv-ocr-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: PROTECT ============ -->
+    <section class="workspace" data-ws="srv-protect">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔒</div>
+            <div>
+                <h2>비밀번호 설정 <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">PDF를 열 때 비밀번호를 요구하도록 암호화합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-protect-drop">
+                    <div class="dropzone-icon">🔒</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="srv-protect-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-protect-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">비밀번호</label>
+                    <input class="input" id="srv-protect-pw" type="password" placeholder="설정할 비밀번호">
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-protect-run" disabled>암호화하여 다운로드</button>
+                <div class="status" id="srv-protect-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: UNLOCK ============ -->
+    <section class="workspace" data-ws="srv-unlock">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔓</div>
+            <div>
+                <h2>비밀번호 해제 <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">비밀번호를 알고 있는 PDF의 암호를 제거합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-unlock-drop">
+                    <div class="dropzone-icon">🔓</div>
+                    <div class="dropzone-text"><strong>암호화된 PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="srv-unlock-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-unlock-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">현재 비밀번호</label>
+                    <input class="input" id="srv-unlock-pw" type="password" placeholder="PDF 비밀번호">
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-unlock-run" disabled>암호 제거하여 다운로드</button>
+                <div class="status" id="srv-unlock-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: STRIP METADATA ============ -->
+    <section class="workspace" data-ws="srv-strip">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🧹</div>
+            <div>
+                <h2>메타데이터 제거 <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">제목·저자·생성도구 등 숨은 정보를 서버에서 완전히 제거합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-strip-drop">
+                    <div class="dropzone-icon">🧹</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="srv-strip-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-strip-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>실행</h3>
+                <button class="btn btn-primary btn-block" id="srv-strip-run" disabled style="margin-top:var(--space-2);">메타데이터 제거</button>
+                <div class="status" id="srv-strip-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: REPAIR ============ -->
+    <section class="workspace" data-ws="srv-repair">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🛠️</div>
+            <div>
+                <h2>PDF 복구 <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">열리지 않거나 손상된 PDF의 구조를 재구성해 복원을 시도합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-repair-drop">
+                    <div class="dropzone-icon">🛠️</div>
+                    <div class="dropzone-text"><strong>손상된 PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="srv-repair-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-repair-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>실행</h3>
+                <button class="btn btn-primary btn-block" id="srv-repair-run" disabled style="margin-top:var(--space-2);">복구 시도</button>
+                <div class="status" id="srv-repair-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: PAGE NUMBERS ============ -->
+    <section class="workspace" data-ws="srv-numbers">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔢</div>
+            <div>
+                <h2>페이지 번호 <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">서버에서 페이지 번호를 정밀하게 삽입합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-numbers-drop">
+                    <div class="dropzone-icon">🔢</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="srv-numbers-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-numbers-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">위치</label>
+                    <select class="select" id="srv-numbers-pos">
+                        <option value="bottom-center" selected>하단 중앙</option>
+                        <option value="bottom-right">하단 우측</option>
+                        <option value="bottom-left">하단 좌측</option>
+                        <option value="top-center">상단 중앙</option>
+                        <option value="top-right">상단 우측</option>
+                        <option value="top-left">상단 좌측</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label class="label">형식</label>
+                    <select class="select" id="srv-numbers-fmt">
+                        <option value="{n}" selected>1, 2, 3 …</option>
+                        <option value="{n}/{total}">1/N, 2/N …</option>
+                        <option value="- {n} -">- 1 -, - 2 - …</option>
+                        <option value="Page {n}">Page 1 …</option>
+                        <option value="Page {n} of {total}">Page 1 of N …</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-numbers-run" disabled>페이지 번호 추가</button>
+                <div class="status" id="srv-numbers-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: N-UP ============ -->
+    <section class="workspace" data-ws="srv-nup">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📐</div>
+            <div>
+                <h2>N-up 모아찍기 <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">여러 페이지를 한 장에 행·열로 배치합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-nup-drop">
+                    <div class="dropzone-icon">📐</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="srv-nup-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-nup-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">행 (rows)</label>
+                        <input class="input" id="srv-nup-rows" type="number" min="1" max="6" value="2">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">열 (cols)</label>
+                        <input class="input" id="srv-nup-cols" type="number" min="1" max="6" value="2">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-nup-run" disabled>N-up 만들기</button>
+                <div class="status" id="srv-nup-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: OFFICE → PDF ============ -->
+    <section class="workspace" data-ws="srv-office">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📄</div>
+            <div>
+                <h2>오피스 → PDF <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">Word·Excel·PowerPoint·HWP 문서를 PDF로 변환합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-office-drop">
+                    <div class="dropzone-icon">📄</div>
+                    <div class="dropzone-text">
+                        <strong>문서를 선택</strong>하세요.<br>
+                        <small>.docx · .xlsx · .pptx · .doc · .hwp · .odt 등</small>
+                    </div>
+                    <input type="file" id="srv-office-file" accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.odt,.ods,.odp,.rtf,.txt" hidden>
+                </div>
+                <div class="status" id="srv-office-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>실행</h3>
+                <button class="btn btn-primary btn-block" id="srv-office-run" disabled style="margin-top:var(--space-2);">PDF로 변환</button>
+                <div class="status" id="srv-office-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: WATERMARK ============ -->
+    <section class="workspace" data-ws="srv-watermark">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">💧</div>
+            <div>
+                <h2>워터마크 <span class="ws-server-tag">서버</span></h2>
+                <p class="ws-desc">서버에서 전체 페이지에 텍스트 워터마크를 삽입합니다.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-watermark-drop">
+                    <div class="dropzone-icon">💧</div>
+                    <div class="dropzone-text"><strong>PDF를 선택</strong>하세요.</div>
+                    <input type="file" id="srv-watermark-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-watermark-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">워터마크 텍스트</label>
+                    <input class="input" id="srv-watermark-text" value="CONFIDENTIAL">
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-watermark-run" disabled>워터마크 추가</button>
+                <div class="status" id="srv-watermark-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
 </main>
 
 <footer class="site-footer">
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
-            <span>© 2005–2026 LeDeuxions. PDF300 v2026.05 · 14 tools</span>
+            <span>© 2005–2026 LeDeuxions. PDF300 v2026.05 · 14 브라우저 + 10 서버 도구</span>
             <span><a href="/web-projects/">← 다른 도구</a></span>
         </div>
     </div>
@@ -1154,5 +1882,6 @@
 
 <script src="../../assets/js/common.js"></script>
 <script src="pdf300.js"></script>
+<script src="pdf300-server.js"></script>
 </body>
 </html>
