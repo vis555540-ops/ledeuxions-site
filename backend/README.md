@@ -5,7 +5,9 @@ Apple Silicon Mac mini에서 동작하는 FastAPI 서버. **Whisper(받아쓰기
 ## 요구사항
 
 - macOS 13+
-- Python 3.10 ~ 3.12
+- **Python 3.10 ~ 3.12 필수** ⚠️
+  - Python 3.13/3.14는 torch/easyocr 휠 미배포 → 설치 실패
+  - `brew install python@3.12` 권장
 - ffmpeg (Whisper 디코딩에 사용)
   ```bash
   brew install ffmpeg
@@ -18,9 +20,11 @@ Apple Silicon Mac mini에서 동작하는 FastAPI 서버. **Whisper(받아쓰기
 ```bash
 cd backend
 
-# 가상환경
-python3 -m venv .venv
+# 가상환경 — 반드시 python3.12로 명시!
+# (python3가 3.14를 가리키면 torch 휠 못 찾음)
+python3.12 -m venv .venv
 source .venv/bin/activate
+python --version    # Python 3.12.x 확인
 
 # 의존성 설치
 pip install -r requirements.txt
@@ -89,23 +93,36 @@ cloudflared tunnel login
 
 # 3) 터널 생성 (한 번만)
 cloudflared tunnel create ledeuxions-ai
+# → 출력에서 Tunnel UUID 메모해두기 (예: 3f4a8...).
+#   같은 계정에 다른 터널들이 있으면 이름 기반 명령이 엉뚱한 터널을
+#   잡을 수 있음. 가급적 UUID로 지정하는 게 안전.
 
-# 4) 도메인 연결
-cloudflared tunnel route dns ledeuxions-ai pdf.ledeuxions.com
+# 4) DNS 라우팅 — 이름 대신 UUID 권장
+#    이름으로 했다가 다른 터널(예: neko-api)에 잘못 잡히면:
+#      cloudflared tunnel route dns --overwrite-dns <UUID> ai.ledeuxions.com
+#    로 강제 교정 가능.
+cloudflared tunnel route dns <UUID> ai.ledeuxions.com
 
-# 5) ~/.cloudflared/config.yml 작성
-#   tunnel: <터널-id>
-#   credentials-file: /Users/YOU/.cloudflared/<터널-id>.json
-#   ingress:
-#     - hostname: pdf.ledeuxions.com
-#       service: http://localhost:5000
-#     - service: http_status:404
+# 5) config 파일은 기존 게 있다면 건드리지 말고 별도 파일로!
+#    ~/.cloudflared/ai-config.yml
+#      tunnel: <UUID>
+#      credentials-file: /Users/YOU/.cloudflared/<UUID>.json
+#      ingress:
+#        - hostname: ai.ledeuxions.com
+#          service: http://localhost:5000
+#        - service: http_status:404
 
-# 6) 백그라운드 실행
-cloudflared tunnel run ledeuxions-ai
+# 6) 실행 (config 파일 명시)
+cloudflared tunnel --config ~/.cloudflared/ai-config.yml run <UUID>
 ```
 
-이렇게 하면 외부에서 `https://pdf.ledeuxions.com`이 맥미니의 5000 포트로 안전하게 연결됩니다 (포트포워딩 X).
+이렇게 하면 외부에서 `https://ai.ledeuxions.com`이 맥미니의 5000 포트로 안전하게 연결됩니다 (포트포워딩 X). **기존 터널/도메인은 그대로 보존됩니다.**
+
+### 운영 팁
+
+- launchd로 백엔드+터널 둘 다 등록하면 재부팅·crash 시 자동 복구
+- `launchctl list | grep ledeuxions` 으로 양쪽 상태 확인
+- 로그: `tail -f /tmp/ledeuxions-*.log`
 
 ## API
 
