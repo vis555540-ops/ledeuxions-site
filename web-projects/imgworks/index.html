@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14110F">
+<meta name="description" content="ImgWorks — 브라우저에서 끝나는 이미지 도구. 변환·압축·리사이즈·자르기·회전·워터마크·필터·EXIF 제거까지 8개 기능. 업로드 없음.">
+<meta name="keywords" content="이미지 변환, JPG PNG WebP, 이미지 압축, 이미지 리사이즈, 이미지 자르기, 워터마크, EXIF 제거, iloveimg 대안">
+<meta property="og:title" content="ImgWorks — 무료 이미지 풀 도구">
+<meta property="og:description" content="8개 이미지 도구, 모두 브라우저에서. 파일은 업로드되지 않습니다.">
+<title>ImgWorks · 이미지 풀 도구 모음 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+    /* ============================================================
+       Shared dark premium theme (matches PDF300)
+       ============================================================ */
+    :root {
+        --bg-canvas: #14110F; --bg-canvas-soft: #1A1613; --bg-card: #1E1A16;
+        --bg-sunken: #16120F; --bg-inverse: #FAF9F5;
+        --text-primary: #F6F2EA; --text-secondary: #B7B0A4; --text-muted: #837C70;
+        --text-inverse: #14110F;
+        --accent: #E8895F; --accent-hover: #F1A07E;
+        --accent-soft: rgba(232,137,95,0.15); --accent-deep: #F3AE8E;
+        --border: #2C2722; --border-strong: #3C352D;
+        --shadow-xs: 0 1px 2px rgba(0,0,0,0.4);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.45);
+        --shadow-md: 0 12px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.4);
+        --shadow-lg: 0 28px 60px rgba(0,0,0,0.55);
+        --font-sans: 'Pretendard', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+        --grad: linear-gradient(135deg, #E8895F 0%, #D9576B 55%, #B5489E 100%);
+        --grad-soft: linear-gradient(135deg, rgba(232,137,95,.16), rgba(181,72,158,.12));
+    }
+    html { scroll-behavior: smooth; }
+    body {
+        background:
+            radial-gradient(1200px 600px at 80% -10%, rgba(232,137,95,.10), transparent 60%),
+            radial-gradient(900px 500px at -10% 10%, rgba(181,72,158,.08), transparent 55%),
+            var(--bg-canvas);
+        background-attachment: fixed;
+    }
+    h1, h2, h3, h4 { font-family: var(--font-sans); letter-spacing: -0.02em; }
+    .nav {
+        background: rgba(20,17,15,0.72) !important;
+        border-bottom: 1px solid var(--border);
+        -webkit-backdrop-filter: saturate(160%) blur(14px);
+        backdrop-filter: saturate(160%) blur(14px);
+    }
+    .nav-brand-mark { background: var(--grad); box-shadow: 0 4px 14px rgba(217,87,107,.4); }
+
+    .app-hero { padding: var(--space-8) 0 var(--space-6); text-align: center; position: relative; }
+    .app-hero h1 {
+        font-size: clamp(2.6rem, 7vw, 4.4rem); font-weight: 800;
+        letter-spacing: -0.04em; margin: 6px 0 var(--space-4);
+    }
+    .app-hero h1 em {
+        font-style: normal;
+        background: var(--grad);
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent !important;
+    }
+    .app-hero .eyebrow {
+        display: inline-block; padding: 6px 14px;
+        border-radius: var(--radius-pill);
+        background: var(--grad-soft); border: 1px solid var(--border-strong);
+        color: var(--accent-deep);
+    }
+    .app-hero .lead { color: var(--text-secondary); max-width: 580px; margin: 0 auto; }
+
+    .grid-section-head {
+        display: flex; align-items: center; gap: var(--space-3);
+        margin: 0 0 var(--space-5);
+    }
+    .grid-section-head h2 {
+        font-size: 1.25rem; font-weight: 700; margin: 0;
+        letter-spacing: -0.02em;
+    }
+    .grid-section-head .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+    .grid-section-head .count {
+        font-family: var(--font-mono); font-size: 0.72rem;
+        color: var(--text-muted);
+        padding: 3px 9px; border: 1px solid var(--border-strong);
+        border-radius: var(--radius-pill);
+    }
+
+    .tool-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--space-4);
+        margin-bottom: var(--space-7);
+    }
+    .tool-tile {
+        position: relative;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6) var(--space-4) var(--space-5);
+        text-align: center; cursor: pointer;
+        transition: transform .28s var(--ease), box-shadow .28s var(--ease);
+        text-decoration: none; color: inherit;
+        display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+        overflow: hidden; isolation: isolate;
+    }
+    .tool-tile::before, .tool-tile::after {
+        content: ""; position: absolute; inset: 0;
+        transition: opacity .28s var(--ease);
+        opacity: 0; z-index: -1;
+    }
+    .tool-tile::before { background: var(--grad-soft); }
+    .tool-tile::after {
+        border-radius: inherit; padding: 1px;
+        background: var(--grad);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+    }
+    .tool-tile:hover {
+        transform: translateY(-5px); box-shadow: var(--shadow-md); color: inherit;
+    }
+    .tool-tile:hover::before, .tool-tile:hover::after { opacity: 1; }
+    .tool-tile-icon {
+        width: 56px; height: 56px;
+        background: var(--accent-soft); color: var(--accent-deep);
+        border-radius: 16px;
+        display: grid; place-items: center; font-size: 1.6rem;
+        transition: transform .28s var(--ease), background .28s var(--ease), color .28s var(--ease), box-shadow .28s var(--ease);
+    }
+    .tool-tile:hover .tool-tile-icon {
+        background: var(--grad); color: #fff;
+        transform: scale(1.08) translateY(-2px);
+        box-shadow: 0 10px 24px rgba(217,87,107,.35);
+    }
+    .tool-tile h4 {
+        font-size: 0.98rem; font-weight: 700;
+        margin: 6px 0 0; letter-spacing: -0.01em;
+    }
+    .tool-tile p {
+        font-size: 0.78rem; color: var(--text-muted);
+        margin: 0; line-height: 1.4;
+    }
+
+    /* Buttons */
+    .btn-primary {
+        background: var(--grad) !important; border: none;
+        box-shadow: 0 6px 18px rgba(217,87,107,.28);
+    }
+    .btn-primary:hover {
+        filter: brightness(1.06); transform: translateY(-2px);
+        box-shadow: 0 10px 26px rgba(217,87,107,.38);
+    }
+    .btn-primary:disabled, .btn-primary[disabled] {
+        background: var(--bg-sunken) !important; color: var(--text-muted) !important;
+        box-shadow: none; border: 1px solid var(--border);
+    }
+    .btn-secondary {
+        background: var(--bg-card); border-color: var(--border-strong); color: var(--text-primary);
+    }
+    .btn-secondary:hover { background: var(--bg-canvas-soft); border-color: var(--accent); }
+
+    .panel {
+        background: linear-gradient(180deg, var(--bg-card), var(--bg-canvas-soft));
+        border: 1px solid var(--border); border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        box-shadow: var(--shadow-sm);
+    }
+    .panel h3 {
+        font-family: var(--font-sans); font-size: 1rem; font-weight: 600;
+        margin: 0 0 var(--space-3);
+    }
+
+    /* Workspace router */
+    .workspace { display: none; }
+    .workspace.is-active { display: block; animation: ws-in .35s var(--ease-out) both; }
+    @keyframes ws-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+    .ws-header {
+        display: flex; align-items: center; gap: var(--space-3);
+        margin-bottom: var(--space-5);
+        padding-bottom: var(--space-4);
+        border-bottom: 1px solid var(--border);
+    }
+    .ws-back {
+        width: 40px; height: 40px;
+        border-radius: var(--radius-md);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        display: grid; place-items: center;
+        color: var(--text-secondary); flex-shrink: 0;
+    }
+    .ws-back:hover { background: var(--grad); color: #fff; border-color: transparent; }
+    .ws-header .ico {
+        width: 44px; height: 44px;
+        background: var(--grad-soft); color: var(--accent-deep);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-md);
+        display: grid; place-items: center; font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    .ws-header h2 {
+        font-size: 1.4rem; margin: 0;
+        display: flex; align-items: center; gap: var(--space-2);
+    }
+    .ws-header .ws-desc {
+        font-size: 0.88rem; color: var(--text-muted); margin: 0;
+    }
+
+    .workbench {
+        display: grid; grid-template-columns: 1fr; gap: var(--space-5);
+    }
+    @media (min-width: 920px) {
+        .workbench { grid-template-columns: 1.6fr 1fr; align-items: start; }
+    }
+
+    /* Dropzone */
+    .dropzone {
+        background: var(--bg-canvas-soft);
+        border-color: var(--border-strong);
+        transition: border-color .25s var(--ease), background .25s var(--ease), box-shadow .25s var(--ease);
+    }
+    .dropzone:hover, .dropzone.is-active {
+        border-color: var(--accent); background: var(--accent-soft);
+        box-shadow: 0 0 0 4px rgba(232,137,95,.08), var(--shadow-sm);
+    }
+    .dropzone-icon { color: var(--accent); }
+
+    /* Inputs in dark */
+    .input, .select, .textarea {
+        background: var(--bg-sunken);
+        border-color: var(--border-strong);
+        color: var(--text-primary);
+    }
+    .input:focus, .select:focus, .textarea:focus {
+        border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .seg {
+        display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+        gap: 4px; padding: 4px;
+        background: var(--bg-sunken); border-radius: var(--radius-md);
+    }
+    .seg button {
+        padding: 8px; border-radius: var(--radius-sm);
+        font-size: 0.85rem; font-weight: 500; color: var(--text-secondary);
+    }
+    .seg button.on {
+        background: var(--bg-card); color: var(--text-primary);
+        box-shadow: var(--shadow-xs);
+    }
+
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }
+    .form-row-inline { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+
+    /* Status */
+    .status {
+        font-size: 0.86rem; color: var(--text-secondary);
+        margin-top: var(--space-3); padding: var(--space-3);
+        background: var(--bg-sunken); border-radius: var(--radius-md);
+        font-family: var(--font-mono);
+    }
+    .status.ok { background: rgba(99,178,118,.16); color: #8FD9A4; }
+    .status.err { background: rgba(224,108,90,.16); color: #F0A08E; }
+    .help { font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-2); }
+
+    /* Image preview grid */
+    .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--space-3);
+        max-height: 480px; overflow-y: auto;
+        padding: var(--space-2);
+    }
+    .preview-card {
+        background: var(--bg-card); border: 1px solid var(--border);
+        border-radius: var(--radius-md); overflow: hidden;
+        position: relative;
+    }
+    .preview-card .thumb {
+        width: 100%; aspect-ratio: 1/1;
+        background: var(--bg-sunken);
+        display: grid; place-items: center; overflow: hidden;
+    }
+    .preview-card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .preview-card .meta {
+        padding: 6px 9px;
+        font-size: 0.74rem; color: var(--text-secondary);
+        border-top: 1px solid var(--border);
+    }
+    .preview-card .meta .name {
+        font-weight: 500; color: var(--text-primary);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .preview-card .meta .size {
+        font-family: var(--font-mono); font-size: 0.68rem;
+        color: var(--text-muted); margin-top: 2px;
+    }
+    .preview-card .x {
+        position: absolute; top: 6px; right: 6px;
+        width: 22px; height: 22px;
+        background: rgba(20,17,15,.85); color: #fff;
+        border-radius: 4px;
+        display: grid; place-items: center;
+        font-size: 0.75rem; cursor: pointer;
+        opacity: 0; transition: opacity .15s;
+    }
+    .preview-card:hover .x { opacity: 1; }
+    .preview-card.done .thumb::after {
+        content: "✓"; position: absolute;
+        bottom: 6px; right: 6px;
+        background: #6B8E6B; color: #fff;
+        width: 22px; height: 22px; border-radius: 50%;
+        display: grid; place-items: center;
+        font-size: 0.8rem; font-weight: 600;
+    }
+
+    /* Single image stage */
+    .stage {
+        background: var(--bg-sunken); border-radius: var(--radius-lg);
+        padding: var(--space-4); margin-top: var(--space-4);
+        text-align: center; position: relative;
+    }
+    .stage canvas, .stage img {
+        max-width: 100%; max-height: 420px;
+        display: inline-block;
+        border-radius: var(--radius-md);
+        background: #fff;
+    }
+    .stage-canvas-wrap {
+        position: relative; display: inline-block;
+        max-width: 100%;
+    }
+    .stage-overlay {
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        cursor: crosshair;
+    }
+
+    /* Footer */
+    .site-footer {
+        background: var(--bg-canvas-soft);
+        border-top: 1px solid var(--border);
+    }
+
+    /* Animations */
+    .tool-grid .tool-tile { animation: tile-in .4s var(--ease-out) both; }
+    .tool-grid .tool-tile:nth-child(2) { animation-delay: .03s; }
+    .tool-grid .tool-tile:nth-child(3) { animation-delay: .06s; }
+    .tool-grid .tool-tile:nth-child(4) { animation-delay: .09s; }
+    .tool-grid .tool-tile:nth-child(5) { animation-delay: .12s; }
+    .tool-grid .tool-tile:nth-child(6) { animation-delay: .15s; }
+    .tool-grid .tool-tile:nth-child(7) { animation-delay: .18s; }
+    .tool-grid .tool-tile:nth-child(n+8) { animation-delay: .21s; }
+    @keyframes tile-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) {
+        .workspace.is-active, .tool-grid .tool-tile { animation: none; }
+    }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="app-hero container-narrow" id="hero">
+    <div class="eyebrow" style="margin-bottom:14px;">Image Toolkit · 8 tools</div>
+    <h1>Img<em>Works</em></h1>
+    <p class="lead">변환·압축·리사이즈·자르기·회전·워터마크·필터·EXIF 제거 — 모두 브라우저 안에서. 파일은 절대 업로드되지 않습니다.</p>
+</header>
+
+<main class="container" style="padding-bottom:var(--space-9);">
+
+    <div class="grid-section-head">
+        <h2>🖼️ 이미지 도구</h2>
+        <span class="line"></span>
+        <span class="count">8 · 오프라인</span>
+    </div>
+
+    <section id="tool-grid" class="tool-grid">
+        <a href="#convert" class="tool-tile"><div class="tool-tile-icon">🔄</div><h4>포맷 변환</h4><p>JPG·PNG·WebP·BMP</p></a>
+        <a href="#compress" class="tool-tile"><div class="tool-tile-icon">🗜</div><h4>압축</h4><p>품질 조절·일괄</p></a>
+        <a href="#resize" class="tool-tile"><div class="tool-tile-icon">📏</div><h4>크기 조정</h4><p>픽셀·% · 비율 유지</p></a>
+        <a href="#crop" class="tool-tile"><div class="tool-tile-icon">✂️</div><h4>자르기</h4><p>드래그로 영역 선택</p></a>
+        <a href="#rotate" class="tool-tile"><div class="tool-tile-icon">🔁</div><h4>회전·뒤집기</h4><p>각도·좌우·상하</p></a>
+        <a href="#watermark" class="tool-tile"><div class="tool-tile-icon">💧</div><h4>워터마크</h4><p>텍스트 워터마크</p></a>
+        <a href="#filter" class="tool-tile"><div class="tool-tile-icon">🎨</div><h4>필터·보정</h4><p>밝기·대비·세피아</p></a>
+        <a href="#exif" class="tool-tile"><div class="tool-tile-icon">🧹</div><h4>EXIF 제거</h4><p>위치·기기 정보 삭제</p></a>
+    </section>
+
+
+    <!-- ============ CONVERT ============ -->
+    <section class="workspace" data-ws="convert">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔄</div>
+            <div><h2>포맷 변환</h2><p class="ws-desc">JPG · PNG · WebP · BMP 간 일괄 변환. HEIC도 지원.</p></div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="cv-drop">
+                    <div class="dropzone-icon">🔄</div>
+                    <div class="dropzone-text"><strong>이미지를 끌어 놓거나</strong> 클릭해 선택<br><small>여러 장 한 번에</small></div>
+                    <input type="file" id="cv-files" multiple accept="image/*" hidden>
+                </div>
+                <div class="preview-grid" id="cv-grid"></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">출력 형식</label>
+                    <div class="seg" id="cv-fmt">
+                        <button class="on" data-fmt="image/jpeg">JPG</button>
+                        <button data-fmt="image/png">PNG</button>
+                        <button data-fmt="image/webp">WebP</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">품질 <span id="cv-q-val" class="mono" style="float:right;color:var(--text-muted);">92</span></label>
+                    <input class="input" id="cv-quality" type="range" min="50" max="100" value="92">
+                </div>
+                <button class="btn btn-primary btn-block" id="cv-run" disabled>변환 시작</button>
+                <button class="btn btn-secondary btn-block" id="cv-zip" disabled style="margin-top:var(--space-3);">ZIP으로 묶어 다운로드</button>
+                <div class="status" id="cv-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ COMPRESS ============ -->
+    <section class="workspace" data-ws="compress">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🗜</div>
+            <div><h2>이미지 압축</h2><p class="ws-desc">JPG/WebP 품질 조절로 용량을 줄입니다.</p></div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="cp-drop">
+                    <div class="dropzone-icon">🗜</div>
+                    <div class="dropzone-text"><strong>이미지를 선택</strong>하세요.</div>
+                    <input type="file" id="cp-files" multiple accept="image/*" hidden>
+                </div>
+                <div class="preview-grid" id="cp-grid"></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">강도</label>
+                    <div class="seg" id="cp-level">
+                        <button data-l="light">약함</button>
+                        <button class="on" data-l="med">중간</button>
+                        <button data-l="strong">강함</button>
+                        <button data-l="extreme">극한</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">품질 <span id="cp-q-val" class="mono" style="float:right;color:var(--text-muted);">75</span></label>
+                    <input class="input" id="cp-quality" type="range" min="20" max="95" value="75">
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 형식</label>
+                    <div class="seg" id="cp-fmt">
+                        <button class="on" data-fmt="image/jpeg">JPG</button>
+                        <button data-fmt="image/webp">WebP</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" id="cp-run" disabled>압축 시작</button>
+                <button class="btn btn-secondary btn-block" id="cp-zip" disabled style="margin-top:var(--space-3);">ZIP 다운로드</button>
+                <div class="status" id="cp-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ RESIZE ============ -->
+    <section class="workspace" data-ws="resize">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📏</div>
+            <div><h2>크기 조정</h2><p class="ws-desc">픽셀 또는 비율로 일괄 리사이즈. 가로세로 비율 자동 유지.</p></div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="rs-drop">
+                    <div class="dropzone-icon">📏</div>
+                    <div class="dropzone-text"><strong>이미지를 선택</strong>하세요.</div>
+                    <input type="file" id="rs-files" multiple accept="image/*" hidden>
+                </div>
+                <div class="preview-grid" id="rs-grid"></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">방식</label>
+                    <div class="seg" id="rs-mode">
+                        <button class="on" data-m="long">긴 변 기준</button>
+                        <button data-m="width">너비 기준</button>
+                        <button data-m="height">높이 기준</button>
+                        <button data-m="percent">% 기준</button>
+                    </div>
+                </div>
+                <div class="form-row" id="rs-px-row">
+                    <label class="label">픽셀</label>
+                    <input class="input" id="rs-px" type="number" min="50" value="1280">
+                </div>
+                <div class="form-row hidden" id="rs-pct-row">
+                    <label class="label">비율 (%)</label>
+                    <input class="input" id="rs-pct" type="number" min="5" max="200" value="50">
+                </div>
+                <div class="form-row">
+                    <label class="label">출력 형식</label>
+                    <select class="select" id="rs-fmt">
+                        <option value="keep">원본 유지</option>
+                        <option value="image/jpeg">JPG</option>
+                        <option value="image/png">PNG</option>
+                        <option value="image/webp">WebP</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" id="rs-run" disabled>리사이즈 시작</button>
+                <button class="btn btn-secondary btn-block" id="rs-zip" disabled style="margin-top:var(--space-3);">ZIP 다운로드</button>
+                <div class="status" id="rs-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ CROP ============ -->
+    <section class="workspace" data-ws="crop">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">✂️</div>
+            <div><h2>자르기</h2><p class="ws-desc">미리보기에서 드래그해 영역을 선택하세요.</p></div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="cr-drop">
+                    <div class="dropzone-icon">✂️</div>
+                    <div class="dropzone-text"><strong>이미지를 선택</strong>하세요.</div>
+                    <input type="file" id="cr-file" accept="image/*" hidden>
+                </div>
+                <div class="stage" id="cr-stage" hidden>
+                    <div class="stage-canvas-wrap">
+                        <canvas id="cr-canvas"></canvas>
+                        <div class="stage-overlay" id="cr-overlay"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">고정 비율</label>
+                    <select class="select" id="cr-ratio">
+                        <option value="free" selected>자유</option>
+                        <option value="1:1">1 : 1 (정사각)</option>
+                        <option value="4:3">4 : 3</option>
+                        <option value="16:9">16 : 9</option>
+                        <option value="3:4">3 : 4 (세로)</option>
+                        <option value="9:16">9 : 16 (세로)</option>
+                        <option value="2:3">2 : 3 (인스타)</option>
+                    </select>
+                </div>
+                <div class="form-row" id="cr-info" style="font-size:.85rem;color:var(--text-muted);"></div>
+                <button class="btn btn-primary btn-block" id="cr-run" disabled>자르기 적용</button>
+                <button class="btn btn-secondary btn-block" id="cr-reset" disabled style="margin-top:var(--space-3);">선택 초기화</button>
+                <div class="status" id="cr-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ ROTATE / FLIP ============ -->
+    <section class="workspace" data-ws="rotate">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔁</div>
+            <div><h2>회전·뒤집기</h2><p class="ws-desc">90도 회전, 좌우/상하 반전을 일괄 적용합니다.</p></div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="rt-drop">
+                    <div class="dropzone-icon">🔁</div>
+                    <div class="dropzone-text"><strong>이미지를 선택</strong>하세요.</div>
+                    <input type="file" id="rt-files" multiple accept="image/*" hidden>
+                </div>
+                <div class="preview-grid" id="rt-grid"></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">회전</label>
+                    <div class="seg" id="rt-deg">
+                        <button class="on" data-d="0">0°</button>
+                        <button data-d="90">↻ 90°</button>
+                        <button data-d="180">180°</button>
+                        <button data-d="270">↺ 90°</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">뒤집기</label>
+                    <div class="seg" id="rt-flip">
+                        <button class="on" data-f="none">없음</button>
+                        <button data-f="h">좌우</button>
+                        <button data-f="v">상하</button>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" id="rt-run" disabled>적용</button>
+                <button class="btn btn-secondary btn-block" id="rt-zip" disabled style="margin-top:var(--space-3);">ZIP 다운로드</button>
+                <div class="status" id="rt-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ WATERMARK ============ -->
+    <section class="workspace" data-ws="watermark">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">💧</div>
+            <div><h2>워터마크</h2><p class="ws-desc">전체 이미지에 텍스트 워터마크를 삽입합니다.</p></div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="wm-drop">
+                    <div class="dropzone-icon">💧</div>
+                    <div class="dropzone-text"><strong>이미지를 선택</strong>하세요.</div>
+                    <input type="file" id="wm-files" multiple accept="image/*" hidden>
+                </div>
+                <div class="preview-grid" id="wm-grid"></div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">텍스트</label>
+                    <input class="input" id="wm-text" value="© LeDeuxions">
+                </div>
+                <div class="form-row">
+                    <label class="label">위치</label>
+                    <div class="seg" id="wm-pos">
+                        <button data-p="tl">↖</button>
+                        <button data-p="tc">↑</button>
+                        <button data-p="tr">↗</button>
+                        <button data-p="bl">↙</button>
+                        <button data-p="bc">↓</button>
+                        <button class="on" data-p="br">↘</button>
+                        <button data-p="center">●</button>
+                    </div>
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">크기(%)</label>
+                        <input class="input" id="wm-size" type="number" min="1" max="20" value="4">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">투명도(%)</label>
+                        <input class="input" id="wm-opacity" type="number" min="10" max="100" value="60">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">색상</label>
+                    <input class="input" id="wm-color" type="color" value="#FFFFFF" style="height:44px;padding:6px;">
+                </div>
+                <button class="btn btn-primary btn-block" id="wm-run" disabled>워터마크 추가</button>
+                <button class="btn btn-secondary btn-block" id="wm-zip" disabled style="margin-top:var(--space-3);">ZIP 다운로드</button>
+                <div class="status" id="wm-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ FILTER ============ -->
+    <section class="workspace" data-ws="filter">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🎨</div>
+            <div><h2>필터·보정</h2><p class="ws-desc">밝기, 대비, 채도, 흑백, 세피아 등을 적용합니다.</p></div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="ft-drop">
+                    <div class="dropzone-icon">🎨</div>
+                    <div class="dropzone-text"><strong>이미지를 선택</strong>하세요.</div>
+                    <input type="file" id="ft-file" accept="image/*" hidden>
+                </div>
+                <div class="stage" id="ft-stage" hidden>
+                    <canvas id="ft-canvas"></canvas>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>설정</h3>
+                <div class="form-row">
+                    <label class="label">프리셋</label>
+                    <select class="select" id="ft-preset">
+                        <option value="none" selected>없음</option>
+                        <option value="gray">흑백</option>
+                        <option value="sepia">세피아</option>
+                        <option value="vivid">선명</option>
+                        <option value="vintage">빈티지</option>
+                        <option value="cool">차가운</option>
+                        <option value="warm">따뜻한</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label class="label">밝기 <span id="ft-b-val" class="mono" style="float:right;color:var(--text-muted);">100%</span></label>
+                    <input class="input" id="ft-bright" type="range" min="50" max="200" value="100">
+                </div>
+                <div class="form-row">
+                    <label class="label">대비 <span id="ft-c-val" class="mono" style="float:right;color:var(--text-muted);">100%</span></label>
+                    <input class="input" id="ft-contrast" type="range" min="50" max="200" value="100">
+                </div>
+                <div class="form-row">
+                    <label class="label">채도 <span id="ft-s-val" class="mono" style="float:right;color:var(--text-muted);">100%</span></label>
+                    <input class="input" id="ft-sat" type="range" min="0" max="200" value="100">
+                </div>
+                <div class="form-row">
+                    <label class="label">블러 <span id="ft-bl-val" class="mono" style="float:right;color:var(--text-muted);">0px</span></label>
+                    <input class="input" id="ft-blur" type="range" min="0" max="10" value="0">
+                </div>
+                <button class="btn btn-primary btn-block" id="ft-run" disabled>저장</button>
+                <button class="btn btn-secondary btn-block" id="ft-reset" style="margin-top:var(--space-3);">초기화</button>
+                <div class="status" id="ft-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ EXIF STRIP ============ -->
+    <section class="workspace" data-ws="exif">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🧹</div>
+            <div><h2>EXIF 제거</h2><p class="ws-desc">사진의 GPS 위치, 카메라 모델, 촬영 시각 등 모든 메타데이터를 제거합니다.</p></div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="ex-drop">
+                    <div class="dropzone-icon">🧹</div>
+                    <div class="dropzone-text"><strong>이미지를 선택</strong>하세요.<br><small>JPG/PNG/WebP</small></div>
+                    <input type="file" id="ex-files" multiple accept="image/*" hidden>
+                </div>
+                <div class="preview-grid" id="ex-grid"></div>
+            </div>
+            <div class="panel">
+                <h3>실행</h3>
+                <p class="help" style="margin-top:0;">이미지를 Canvas로 다시 그려 모든 EXIF·XMP·IPTC 메타데이터를 제거합니다. 픽셀 데이터는 동일하게 유지됩니다.</p>
+                <div class="form-row" style="margin-top:var(--space-4);">
+                    <label class="label">출력 형식</label>
+                    <select class="select" id="ex-fmt">
+                        <option value="keep">원본 유지</option>
+                        <option value="image/jpeg">JPG</option>
+                        <option value="image/png">PNG</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" id="ex-run" disabled>메타데이터 제거</button>
+                <button class="btn btn-secondary btn-block" id="ex-zip" disabled style="margin-top:var(--space-3);">ZIP 다운로드</button>
+                <div class="status" id="ex-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions. ImgWorks v2026.06 · 8 brwoser tools</span>
+            <span><a href="/web-projects/">← 다른 도구</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../../assets/js/common.js"></script>
+<script src="imgworks.js"></script>
+</body>
+</html>
