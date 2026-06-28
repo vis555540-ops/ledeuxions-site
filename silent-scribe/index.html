@@ -1,0 +1,1336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F8F7F3">
+<meta name="description" content="Silent Scribe — Privacy-first transcription for lawyers, therapists, doctors, and journalists. Your audio is processed on a single server we own, then deleted. No OpenAI, no Google, no third-party clouds.">
+<meta name="keywords" content="private transcription, lawyer transcription, therapist transcription, HIPAA, attorney-client, journalist source protection, whisper api, self-hosted whisper">
+<meta property="og:title" content="Silent Scribe — Your voice. Your server. Period.">
+<meta property="og:description" content="Whisper-grade transcription that never touches OpenAI or Google. Built for people whose audio cannot leak.">
+<meta property="og:type" content="website">
+<title>Silent Scribe — Private transcription, never to the cloud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+    /* =====================================================
+       Silent Scribe — Trust-first light theme
+       Different from PDF300/ImgWorks: navy + paper, not coral.
+       ===================================================== */
+    :root {
+        /* Surface */
+        --bg-canvas: #F7F5EF;       /* warm paper */
+        --bg-card: #FFFFFF;
+        --bg-sunken: #F0EDE4;
+        --bg-inverse: #161B26;
+
+        /* Text */
+        --text-primary: #161B26;     /* near-black navy */
+        --text-secondary: #565B68;
+        --text-muted: #8B8F99;
+
+        /* Trust accent — deep blue, not coral */
+        --accent: #2D5F8B;
+        --accent-hover: #1E4A70;
+        --accent-soft: #E5EDF5;
+        --accent-deep: #0F2A45;
+
+        /* Highlight (warm amber for warmth) */
+        --warm: #B68343;
+        --warm-soft: #F5EBD9;
+
+        /* Borders */
+        --border: #E2DED1;
+        --border-strong: #C7C2B3;
+
+        /* Shadows — paper-soft */
+        --shadow-xs: 0 1px 1px rgba(22, 27, 38, 0.04);
+        --shadow-sm: 0 1px 3px rgba(22, 27, 38, 0.06), 0 1px 2px rgba(22, 27, 38, 0.03);
+        --shadow-md: 0 8px 20px rgba(22, 27, 38, 0.08), 0 2px 6px rgba(22, 27, 38, 0.04);
+        --shadow-lg: 0 20px 40px rgba(22, 27, 38, 0.12);
+
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 14px;
+        --radius-xl: 20px;
+        --radius-pill: 999px;
+
+        --font-serif: 'Fraunces', 'Iowan Old Style', 'Charter', Georgia, serif;
+        --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+        --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+        --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px; --space-9: 96px;
+
+        --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    body {
+        margin: 0;
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--text-primary);
+        background: var(--bg-canvas);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+    img, svg { max-width: 100%; display: block; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; padding: 0; color: inherit; }
+    a { color: var(--accent); text-decoration: none; transition: color .15s var(--ease); }
+    a:hover { color: var(--accent-hover); }
+
+    /* Typography */
+    h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 500; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 var(--space-4); color: var(--text-primary); }
+    h1 { font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 500; }
+    h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
+    h2 { font-size: clamp(1.7rem, 3vw, 2.2rem); }
+    h3 { font-size: 1.25rem; font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.01em; }
+    p { margin: 0 0 var(--space-4); color: var(--text-secondary); }
+    .eyebrow {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-family: var(--font-mono);
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--accent);
+        font-weight: 500;
+        padding: 5px 12px;
+        background: var(--accent-soft);
+        border-radius: var(--radius-pill);
+    }
+    .eyebrow::before { content: "●"; font-size: 0.6rem; }
+
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 var(--space-5); }
+    .container-narrow { max-width: 760px; margin: 0 auto; padding: 0 var(--space-5); }
+
+    /* =====================================================
+       Navigation
+       ===================================================== */
+    .nav {
+        position: sticky; top: 0; z-index: 50;
+        background: rgba(247, 245, 239, 0.88);
+        backdrop-filter: saturate(180%) blur(14px);
+        -webkit-backdrop-filter: saturate(180%) blur(14px);
+        border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+        max-width: 1180px; margin: 0 auto;
+        padding: var(--space-3) var(--space-5);
+        display: flex; align-items: center; justify-content: space-between;
+        gap: var(--space-4);
+    }
+    .brand {
+        display: flex; align-items: center; gap: 10px;
+        color: var(--text-primary);
+        font-family: var(--font-serif);
+        font-size: 1.2rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+    }
+    .brand-mark {
+        width: 30px; height: 30px;
+        background: var(--text-primary);
+        color: var(--bg-canvas);
+        display: grid; place-items: center;
+        border-radius: 6px;
+        font-family: var(--font-serif);
+        font-weight: 700;
+        font-style: italic;
+        font-size: 1.05rem;
+    }
+    .nav-links {
+        display: flex; gap: var(--space-2); align-items: center;
+        font-size: 0.92rem;
+    }
+    .nav-links a {
+        color: var(--text-secondary);
+        padding: 6px 10px;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        transition: all .15s var(--ease);
+    }
+    .nav-links a:hover { color: var(--text-primary); background: var(--bg-sunken); }
+
+    .auth-pill {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 7px 14px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        transition: all .15s var(--ease);
+    }
+    .auth-pill:hover { border-color: var(--accent); color: var(--text-primary); }
+    .auth-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
+    .auth-pill[data-state="loggedin"] .dot { background: #4A8E5F; box-shadow: 0 0 0 3px rgba(74,142,95,.18); }
+
+    @media (max-width: 720px) {
+        .nav-links a:not(.auth-pill) { display: none; }
+    }
+
+    /* =====================================================
+       Buttons
+       ===================================================== */
+    .btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        gap: 8px;
+        padding: 12px 22px;
+        border-radius: var(--radius-md);
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-size: 0.95rem;
+        line-height: 1;
+        transition: all .18s var(--ease);
+        border: 1px solid transparent;
+        text-decoration: none;
+        white-space: nowrap;
+        min-height: 44px;
+    }
+    .btn-primary {
+        background: var(--accent); color: #fff;
+        box-shadow: 0 1px 2px rgba(45, 95, 139, .25);
+    }
+    .btn-primary:hover {
+        background: var(--accent-hover); color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(45, 95, 139, .3);
+    }
+    .btn-secondary {
+        background: var(--bg-card); color: var(--text-primary);
+        border-color: var(--border-strong);
+    }
+    .btn-secondary:hover { background: var(--bg-sunken); }
+    .btn-ghost { background: transparent; color: var(--text-secondary); }
+    .btn-ghost:hover { color: var(--text-primary); background: var(--bg-sunken); }
+    .btn-lg { padding: 16px 30px; font-size: 1.02rem; min-height: 54px; }
+    .btn-block { width: 100%; }
+    .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+
+    /* =====================================================
+       Hero
+       ===================================================== */
+    .hero {
+        padding: var(--space-8) 0 var(--space-7);
+        text-align: center;
+        position: relative;
+    }
+    .hero h1 {
+        max-width: 800px; margin: var(--space-4) auto var(--space-4);
+        line-height: 1.05;
+    }
+    .hero p.lead {
+        max-width: 580px; margin: 0 auto var(--space-6);
+        font-size: 1.12rem; line-height: 1.6;
+        color: var(--text-secondary);
+    }
+    .hero-cta { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
+    .hero-meta {
+        margin-top: var(--space-5);
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        letter-spacing: 0.04em;
+    }
+    .hero-meta span { margin: 0 6px; color: var(--accent); }
+
+    /* =====================================================
+       App — drop + transcript
+       ===================================================== */
+    .app-card {
+        max-width: 920px; margin: 0 auto;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: var(--space-6);
+        box-shadow: var(--shadow-md);
+    }
+    .dropzone {
+        border: 2px dashed var(--border-strong);
+        border-radius: var(--radius-lg);
+        padding: var(--space-7) var(--space-5);
+        text-align: center;
+        background: var(--bg-canvas);
+        cursor: pointer;
+        transition: all .2s var(--ease);
+    }
+    .dropzone:hover, .dropzone.is-active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+    }
+    .dropzone-icon {
+        width: 56px; height: 56px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        border-radius: 50%;
+        margin: 0 auto var(--space-4);
+        display: grid; place-items: center;
+        font-size: 1.4rem;
+    }
+    .dropzone-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+    .dropzone-help {
+        color: var(--text-muted);
+        font-size: 0.88rem;
+    }
+
+    .app-options {
+        display: flex; gap: var(--space-3); flex-wrap: wrap;
+        align-items: center; justify-content: space-between;
+        margin-top: var(--space-4);
+        padding: var(--space-3) var(--space-4);
+        background: var(--bg-sunken);
+        border-radius: var(--radius-md);
+        font-size: 0.88rem;
+        color: var(--text-secondary);
+    }
+    .app-options label { display: inline-flex; align-items: center; gap: 8px; }
+    .app-options select {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 5px 10px;
+        font-size: 0.88rem;
+        color: var(--text-primary);
+    }
+    .quota-tag {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--text-muted);
+    }
+
+    /* Progress */
+    .progress-card {
+        margin-top: var(--space-5);
+        padding: var(--space-5);
+        background: var(--bg-canvas);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        text-align: center;
+    }
+    .progress-card .label {
+        font-size: 0.92rem;
+        color: var(--text-secondary);
+        margin-bottom: var(--space-3);
+    }
+    .progress-bar { height: 4px; background: var(--bg-sunken); border-radius: 999px; overflow: hidden; }
+    .progress-bar > div {
+        height: 100%;
+        background: var(--accent);
+        width: 0;
+        transition: width .25s var(--ease-out);
+    }
+    .progress-card.is-error { background: #FAE9E5; border-color: #E2A99C; }
+    .progress-card.is-error .label { color: #8B3A1C; }
+
+    /* Transcript */
+    .transcript-card {
+        margin-top: var(--space-5);
+        padding: var(--space-5);
+        background: var(--bg-canvas);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+    }
+    .transcript-head {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: var(--space-4);
+        padding-bottom: var(--space-3);
+        border-bottom: 1px solid var(--border);
+    }
+    .transcript-meta {
+        display: flex; gap: var(--space-4); flex-wrap: wrap;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--text-muted);
+    }
+    .transcript-meta span strong { color: var(--text-primary); }
+    .transcript-actions { display: flex; gap: var(--space-2); }
+    .transcript-actions button {
+        padding: 6px 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    .transcript-actions button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .transcript-body {
+        font-family: var(--font-serif);
+        font-size: 1.05rem;
+        line-height: 1.75;
+        color: var(--text-primary);
+        white-space: pre-wrap;
+        max-height: 480px;
+        overflow-y: auto;
+        padding-right: var(--space-3);
+    }
+    .transcript-body .seg-time {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        margin-right: 8px;
+    }
+
+    /* =====================================================
+       Sections
+       ===================================================== */
+    section { padding: var(--space-9) 0; }
+    .section-header { text-align: center; max-width: 640px; margin: 0 auto var(--space-7); }
+    .section-header p { font-size: 1.05rem; }
+
+    .three-steps {
+        display: grid; gap: var(--space-5);
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    .step {
+        padding: var(--space-5);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+    }
+    .step-num {
+        font-family: var(--font-serif);
+        font-size: 2rem;
+        font-style: italic;
+        color: var(--accent);
+        font-weight: 500;
+        line-height: 1;
+        margin-bottom: var(--space-3);
+    }
+    .step h3 { margin-bottom: var(--space-2); }
+    .step p { margin: 0; font-size: 0.95rem; }
+
+    .who {
+        background: var(--bg-inverse);
+        color: #E7EBF2;
+    }
+    .who h2 { color: #FFFFFF; }
+    .who .section-header p { color: #B0B7C5; }
+    .who-grid {
+        display: grid; gap: var(--space-4);
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .who-card {
+        padding: var(--space-5);
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: var(--radius-lg);
+    }
+    .who-card h4 {
+        font-family: var(--font-serif);
+        font-size: 1.15rem;
+        font-weight: 500;
+        margin: 0 0 var(--space-2);
+        color: #FFFFFF;
+    }
+    .who-card p { color: #B0B7C5; font-size: 0.92rem; margin: 0; }
+    .who-card .tag {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #C99846;
+        margin-bottom: 10px;
+    }
+
+    /* Pricing */
+    .pricing-grid {
+        display: grid; gap: var(--space-4);
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    .price-card {
+        padding: var(--space-6) var(--space-5);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        display: flex; flex-direction: column;
+        position: relative;
+    }
+    .price-card.is-featured {
+        border-color: var(--accent);
+        box-shadow: 0 12px 30px rgba(45, 95, 139, 0.18);
+    }
+    .price-card.is-featured::before {
+        content: "Most popular";
+        position: absolute;
+        top: -10px; left: 50%;
+        transform: translateX(-50%);
+        background: var(--accent);
+        color: #fff;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 4px 12px;
+        border-radius: var(--radius-pill);
+        font-weight: 500;
+    }
+    .price-tier {
+        font-family: var(--font-sans);
+        font-size: 0.88rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin-bottom: var(--space-3);
+    }
+    .price-tag {
+        font-family: var(--font-serif);
+        font-size: 2.4rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    .price-tag .unit { font-size: 1rem; color: var(--text-muted); font-family: var(--font-sans); }
+    .price-strike { text-decoration: line-through; color: var(--text-muted); font-size: 0.85rem; margin-left: 6px; }
+    .price-desc { font-size: 0.88rem; color: var(--text-muted); margin: 0 0 var(--space-5); }
+    .price-features { list-style: none; padding: 0; margin: 0 0 var(--space-5); flex: 1; }
+    .price-features li {
+        padding: 7px 0 7px 22px;
+        position: relative;
+        font-size: 0.92rem;
+        color: var(--text-secondary);
+    }
+    .price-features li::before {
+        content: "✓"; position: absolute; left: 0; top: 7px;
+        color: var(--accent); font-weight: 700;
+    }
+
+    /* FAQ */
+    .faq-grid { display: grid; gap: var(--space-3); }
+    .faq-item {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+    }
+    .faq-item summary {
+        padding: var(--space-4) var(--space-5);
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        list-style: none;
+        display: flex; justify-content: space-between; align-items: center;
+        gap: var(--space-4);
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+        content: "+";
+        font-family: var(--font-serif); font-size: 1.4rem;
+        color: var(--accent);
+        font-weight: 400;
+        transition: transform .2s var(--ease);
+    }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-body {
+        padding: 0 var(--space-5) var(--space-5);
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    /* Footer */
+    footer.site-footer {
+        background: var(--bg-sunken);
+        border-top: 1px solid var(--border);
+        padding: var(--space-7) 0 var(--space-5);
+        margin-top: 0;
+        color: var(--text-secondary);
+    }
+    .footer-grid {
+        display: grid; gap: var(--space-5);
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+        margin-bottom: var(--space-6);
+    }
+    .footer-grid h5 {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-muted);
+        margin: 0 0 var(--space-3);
+        font-family: var(--font-sans);
+        font-weight: 600;
+    }
+    .footer-grid ul { list-style: none; padding: 0; margin: 0; }
+    .footer-grid li { margin-bottom: 8px; }
+    .footer-grid a { color: var(--text-secondary); font-size: 0.92rem; }
+    .footer-bottom {
+        padding-top: var(--space-4);
+        border-top: 1px solid var(--border);
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);
+    }
+    @media (max-width: 720px) {
+        .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* =====================================================
+       Modal
+       ===================================================== */
+    .modal-overlay {
+        position: fixed; inset: 0;
+        background: rgba(22, 27, 38, 0.45);
+        z-index: 100;
+        display: none;
+        align-items: center; justify-content: center;
+        padding: var(--space-4);
+        animation: fade-in .2s var(--ease-out);
+    }
+    .modal-overlay.is-open { display: flex; }
+    .modal {
+        background: var(--bg-card);
+        border-radius: var(--radius-xl);
+        padding: var(--space-6);
+        max-width: 460px; width: 100%;
+        box-shadow: var(--shadow-lg);
+        animation: pop-in .25s var(--ease-out);
+    }
+    @keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes pop-in {
+        from { opacity: 0; transform: translateY(8px) scale(.98); }
+        to { opacity: 1; transform: none; }
+    }
+    .modal h3 { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 500; margin-bottom: var(--space-3); }
+    .modal p { font-size: 0.95rem; }
+    .modal-form { display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-4); }
+    .modal-form input[type="email"] {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--border-strong);
+        background: var(--bg-card);
+        border-radius: var(--radius-md);
+        font-size: 1rem; font-family: inherit;
+        color: var(--text-primary);
+    }
+    .modal-form input[type="email"]:focus {
+        outline: none; border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .modal-fine {
+        font-size: 0.8rem; color: var(--text-muted);
+        margin-top: var(--space-3);
+    }
+    .modal-close {
+        position: absolute; top: var(--space-3); right: var(--space-3);
+        width: 32px; height: 32px; border-radius: 50%;
+        color: var(--text-muted);
+        display: grid; place-items: center;
+    }
+    .modal-close:hover { background: var(--bg-sunken); color: var(--text-primary); }
+
+    /* Quota menu */
+    .quota-menu {
+        position: fixed;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        min-width: 240px;
+        padding: var(--space-3);
+        z-index: 60;
+        display: none;
+    }
+    .quota-menu.is-open { display: block; }
+    .quota-menu .row {
+        padding: 6px 8px;
+        font-size: 0.88rem;
+    }
+    .quota-menu .row.email {
+        font-weight: 600; color: var(--text-primary);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 8px; margin-bottom: 4px;
+    }
+    .quota-menu .row.label { color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .quota-menu .row.stat { display: flex; justify-content: space-between; }
+    .quota-menu .row.stat .val { font-family: var(--font-mono); color: var(--text-primary); }
+    .quota-menu .row.action {
+        display: block;
+        margin-top: 6px;
+        padding: 8px;
+        text-align: center;
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        cursor: pointer;
+    }
+    .quota-menu .row.action:hover { background: var(--bg-sunken); color: var(--text-primary); }
+    .quota-menu .row.action.primary {
+        background: var(--accent); color: #fff; font-weight: 500;
+    }
+    .quota-menu .row.action.primary:hover { background: var(--accent-hover); color: #fff; }
+
+    /* Toasts */
+    .toast {
+        position: fixed; bottom: var(--space-5); left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--text-primary); color: var(--bg-canvas);
+        padding: 10px 18px; border-radius: var(--radius-pill);
+        font-size: 0.9rem; font-weight: 500;
+        box-shadow: var(--shadow-lg);
+        opacity: 0; transition: opacity .25s, transform .25s;
+        z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Subtle utility */
+    .text-mono { font-family: var(--font-mono); }
+    .text-muted { color: var(--text-muted); }
+    .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- =====================================================
+     NAVIGATION
+     ===================================================== -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/silent-scribe/" class="brand">
+            <span class="brand-mark">S</span>
+            <span>Silent Scribe</span>
+        </a>
+        <div class="nav-links">
+            <a href="#how">How it works</a>
+            <a href="#who">Who it's for</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faq">FAQ</a>
+            <button class="auth-pill" id="auth-btn" data-state="loggedout">
+                <span class="dot"></span>
+                <span class="txt">Sign in</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- =====================================================
+     HERO
+     ===================================================== -->
+<header class="hero">
+    <div class="container-narrow">
+        <span class="eyebrow">Private transcription · Your server only</span>
+        <h1>Your voice. Your server. <em>Period.</em></h1>
+        <p class="lead">
+            Whisper-grade accuracy for people whose audio cannot leak.
+            Processed on a single server we own. Deleted the moment we're done.
+            <strong>No OpenAI. No Google. No third-party clouds.</strong>
+        </p>
+        <div class="hero-cta">
+            <a href="#app" class="btn btn-primary btn-lg">Try free →</a>
+            <a href="#how" class="btn btn-ghost btn-lg">How it works</a>
+        </div>
+        <div class="hero-meta">
+            <span>●</span> 99 languages · Whisper large-v3
+            <span>●</span> No file size cap on paid tiers
+            <span>●</span> Built for lawyers, therapists, doctors, journalists
+        </div>
+    </div>
+</header>
+
+<!-- =====================================================
+     APP — drop & transcribe
+     ===================================================== -->
+<section id="app" style="padding-top:0;">
+    <div class="container">
+        <div class="app-card">
+            <div class="dropzone" id="drop">
+                <div class="dropzone-icon">🎙</div>
+                <div class="dropzone-title">Drop an audio file, or click to choose</div>
+                <div class="dropzone-help">MP3 · M4A · WAV · OGG · FLAC · WebM · MP4 (audio track) — up to 200 MB</div>
+                <input type="file" id="file-input" accept="audio/*,video/mp4" hidden>
+            </div>
+            <div class="app-options">
+                <label>
+                    Language
+                    <select id="lang">
+                        <option value="auto">Auto-detect</option>
+                        <option value="en" selected>English</option>
+                        <option value="ko">Korean</option>
+                        <option value="ja">Japanese</option>
+                        <option value="zh">Chinese</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="ru">Russian</option>
+                    </select>
+                </label>
+                <div class="quota-tag" id="quota-tag">Sign in to start</div>
+            </div>
+
+            <div class="progress-card hidden" id="progress">
+                <div class="label" id="progress-label">Uploading…</div>
+                <div class="progress-bar"><div id="progress-bar"></div></div>
+            </div>
+
+            <div class="transcript-card hidden" id="transcript-card">
+                <div class="transcript-head">
+                    <div class="transcript-meta" id="transcript-meta"></div>
+                    <div class="transcript-actions">
+                        <button id="copy-btn">Copy</button>
+                        <button id="download-btn">.txt</button>
+                        <button id="srt-btn">.srt</button>
+                    </div>
+                </div>
+                <div class="transcript-body" id="transcript-body"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =====================================================
+     HOW IT WORKS
+     ===================================================== -->
+<section id="how">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow">How it works</span>
+            <h2>Three steps. No detours.</h2>
+            <p>Most transcription services route your audio through OpenAI, Google, or Azure. We don't. Here's exactly what happens.</p>
+        </div>
+        <div class="three-steps">
+            <div class="step">
+                <div class="step-num">1.</div>
+                <h3>You upload</h3>
+                <p>Your file travels straight from your browser to our single server over TLS. We never hand it to a third party.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2.</div>
+                <h3>We transcribe locally</h3>
+                <p>OpenAI Whisper large-v3 runs on hardware we own. The model is on-disk; nothing is sent to any AI API.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3.</div>
+                <h3>We delete</h3>
+                <p>The moment your transcript is returned, the audio and the transcript are deleted from disk. We keep usage counts, not content.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =====================================================
+     WHO IT'S FOR
+     ===================================================== -->
+<section id="who" class="who">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow" style="background:rgba(201,152,70,.18);color:#E0B679;">Built for</span>
+            <h2>People whose audio can't leak</h2>
+            <p>You already know cloud transcription isn't an option. Here's a tool that respects that.</p>
+        </div>
+        <div class="who-grid">
+            <div class="who-card">
+                <div class="tag">Lawyers</div>
+                <h4>Client calls. Depositions.</h4>
+                <p>Privilege survives only if the audio doesn't leave a server you trust. Run drafts here, edit elsewhere.</p>
+            </div>
+            <div class="who-card">
+                <div class="tag">Therapists · Counselors</div>
+                <h4>Session notes.</h4>
+                <p>SOAP notes from your recorder. No PHI in OpenAI's training set. Yes, we'll sign your DPA.</p>
+            </div>
+            <div class="who-card">
+                <div class="tag">Doctors · Clinicians</div>
+                <h4>Dictation.</h4>
+                <p>Chart faster without trusting Big Tech with patient voices. A single server, single key, single tenant on paid plans.</p>
+            </div>
+            <div class="who-card">
+                <div class="tag">Journalists</div>
+                <h4>Source interviews.</h4>
+                <p>Protect your source the same way you protect your notes. Their voice doesn't go to ChatGPT.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =====================================================
+     PRICING
+     ===================================================== -->
+<section id="pricing">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow">Pricing</span>
+            <h2>Honest tiers. No surprise fees.</h2>
+            <p>You can try it free, no card. Upgrade when it becomes part of your workflow.</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="price-tier">Free</div>
+                <div class="price-tag">$0</div>
+                <p class="price-desc">For trying it out today.</p>
+                <ul class="price-features">
+                    <li>3 transcriptions per day</li>
+                    <li>Up to 25 minutes per file</li>
+                    <li>All 99 languages</li>
+                    <li>.txt and .srt download</li>
+                </ul>
+                <a href="#app" class="btn btn-secondary btn-block">Try free</a>
+            </div>
+            <div class="price-card is-featured">
+                <div class="price-tier">Solo</div>
+                <div class="price-tag">$7<span class="unit"> / month</span></div>
+                <p class="price-desc">For one practitioner. Cancel anytime.</p>
+                <ul class="price-features">
+                    <li>10 hours of audio per month</li>
+                    <li>Files up to 2 hours each</li>
+                    <li>Speaker labels (coming soon)</li>
+                    <li>Priority queue</li>
+                    <li>Email support</li>
+                </ul>
+                <a href="mailto:vis555540@gmail.com?subject=Silent%20Scribe%20Solo%20waitlist" class="btn btn-primary btn-block" id="solo-cta">Get notified at launch</a>
+            </div>
+            <div class="price-card">
+                <div class="price-tier">Lifetime</div>
+                <div class="price-tag">$69<span class="price-strike">$129</span></div>
+                <p class="price-desc">Pay once. Use forever. First 50 only.</p>
+                <ul class="price-features">
+                    <li>Everything in Solo, forever</li>
+                    <li>All future features included</li>
+                    <li>Locked-in privacy promise</li>
+                    <li>Founding member badge</li>
+                </ul>
+                <a href="mailto:vis555540@gmail.com?subject=Silent%20Scribe%20Lifetime%20waitlist" class="btn btn-secondary btn-block" id="lifetime-cta">Reserve a seat</a>
+            </div>
+        </div>
+        <p style="text-align:center;font-size:0.85rem;color:var(--text-muted);margin-top:var(--space-5);">
+            Team plans (3-10 seats, single-tenant server) — <a href="mailto:vis555540@gmail.com?subject=Silent%20Scribe%20Team%20inquiry">contact us</a>.
+        </p>
+    </div>
+</section>
+
+<!-- =====================================================
+     FAQ
+     ===================================================== -->
+<section id="faq" style="background: var(--bg-sunken);">
+    <div class="container-narrow">
+        <div class="section-header">
+            <span class="eyebrow">FAQ</span>
+            <h2>Straight answers.</h2>
+        </div>
+        <div class="faq-grid">
+            <details class="faq-item">
+                <summary>Where exactly is "our server"?</summary>
+                <div class="faq-body">
+                    A dedicated machine we own, located in South Korea, fronted by Cloudflare TLS termination. Your file travels in over HTTPS, goes through Whisper large-v3 in-process, and the file plus transcript are removed from disk before the response is sent. We log timestamps and file sizes for billing, not content.
+                </div>
+            </details>
+            <details class="faq-item">
+                <summary>What model does the transcription?</summary>
+                <div class="faq-body">
+                    OpenAI Whisper large-v3, run via the open-source faster-whisper engine. The model weights live on our disk; we never call the OpenAI API.
+                </div>
+            </details>
+            <details class="faq-item">
+                <summary>How does this compare to MacWhisper (on-device)?</summary>
+                <div class="faq-body">
+                    MacWhisper is excellent for single-user Mac workflows: the model runs on your laptop and your audio never leaves. Silent Scribe is the alternative when you want the same privacy posture but need a hosted endpoint your team can hit from any device — phone, browser, automation. We're explicit about the trade-off: your audio still travels to a server, just one we control end-to-end.
+                </div>
+            </details>
+            <details class="faq-item">
+                <summary>Are you HIPAA / GDPR compliant?</summary>
+                <div class="faq-body">
+                    We are not currently advertising HIPAA Business Associate or GDPR Article 28 contracts — formal compliance is a paperwork milestone we'll reach when there's clear demand. What we can offer today is a documented data flow, immediate-deletion policy, and a DPA on request for Team plans. If you need a signed BAA today, MacWhisper on-device or an enterprise vendor is the safer fit.
+                </div>
+            </details>
+            <details class="faq-item">
+                <summary>How many people can use it at once?</summary>
+                <div class="faq-body">
+                    Free and Solo plans share a single processing queue. Most files take 8-15 seconds per minute of audio. Team plans get a dedicated single-tenant machine on request.
+                </div>
+            </details>
+            <details class="faq-item">
+                <summary>Can I run this on my own hardware?</summary>
+                <div class="faq-body">
+                    Yes — the backend stack (FastAPI + faster-whisper + Cloudflare Worker gateway) is open at <a href="https://github.com/vis555540-ops/ledeuxions-site">github.com/vis555540-ops/ledeuxions-site</a>. Self-hosted licensing is available for organizations on request.
+                </div>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- =====================================================
+     FOOTER
+     ===================================================== -->
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <div class="brand" style="margin-bottom:var(--space-3);">
+                    <span class="brand-mark">S</span>
+                    <span>Silent Scribe</span>
+                </div>
+                <p style="font-size:0.9rem;color:var(--text-muted);max-width:280px;">
+                    Private transcription for people whose audio cannot leak. Built by <a href="/">LeDeuxions</a>.
+                </p>
+            </div>
+            <div>
+                <h5>Product</h5>
+                <ul>
+                    <li><a href="#how">How it works</a></li>
+                    <li><a href="#who">Who it's for</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5>Legal</h5>
+                <ul>
+                    <li><a href="/privacy/">Privacy</a></li>
+                    <li><a href="/terms/">Terms</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5>Contact</h5>
+                <ul>
+                    <li><a href="mailto:vis555540@gmail.com">Email</a></li>
+                    <li><a href="https://x.com/" target="_blank" rel="noopener">X (build log)</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 LeDeuxions. Silent Scribe is a service of LeDeuxions.</span>
+            <span class="text-mono">v0.1 · early access</span>
+        </div>
+    </div>
+</footer>
+
+<!-- =====================================================
+     MODAL — sign in / sign up
+     ===================================================== -->
+<div class="modal-overlay" id="modal">
+    <div class="modal" style="position:relative;">
+        <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+        <h3>Start your free trial</h3>
+        <p>Just an email. No card. <strong>3 transcriptions per day, free.</strong></p>
+        <form class="modal-form" id="signup-form">
+            <input type="email" id="signup-email" placeholder="you@firm.com" required autocomplete="email">
+            <button class="btn btn-primary btn-block" type="submit" id="signup-submit">Get started →</button>
+            <div class="modal-fine">
+                By continuing you agree to our <a href="/terms/">terms</a> and <a href="/privacy/">privacy policy</a>. We send no marketing emails.
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quota menu (mounted dynamically) -->
+<div class="quota-menu" id="quota-menu"></div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- =====================================================
+     JS — auth + transcription
+     ===================================================== -->
+<script>
+(function () {
+    'use strict';
+
+    var API = 'https://api.ledeuxions.com';
+    var STORAGE_KEY = 'ss_apikey';
+    var EMAIL_KEY = 'ss_email';
+
+    // -------- helpers --------
+    var $ = function (id) { return document.getElementById(id); };
+    var fmtBytes = function (b) {
+        if (!b) return '0 B';
+        var k = 1024, sz = ['B','KB','MB','GB'];
+        var i = Math.floor(Math.log(b) / Math.log(k));
+        return parseFloat((b / Math.pow(k, i)).toFixed(1)) + ' ' + sz[i];
+    };
+    var fmtTime = function (s) {
+        var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = Math.floor(s % 60);
+        return (h ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
+    };
+    var toast = function (msg) {
+        var t = $('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(function () { t.classList.remove('show'); }, 2400);
+    };
+
+    function getKey() { return localStorage.getItem(STORAGE_KEY); }
+    function setKey(k, email) {
+        localStorage.setItem(STORAGE_KEY, k);
+        if (email) localStorage.setItem(EMAIL_KEY, email);
+    }
+    function clearKey() {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(EMAIL_KEY);
+    }
+
+    // -------- modal --------
+    var modal = $('modal');
+    function openModal() { modal.classList.add('is-open'); setTimeout(function(){ $('signup-email').focus(); }, 100); }
+    function closeModal() { modal.classList.remove('is-open'); }
+    $('modal-close').addEventListener('click', closeModal);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+    // -------- signup --------
+    $('signup-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var email = $('signup-email').value.trim().toLowerCase();
+        if (!email) return;
+        var btn = $('signup-submit');
+        btn.disabled = true; btn.textContent = 'Setting up…';
+        try {
+            var r = await fetch(API + '/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            });
+            if (!r.ok) throw new Error('Sign-up failed (' + r.status + ')');
+            var data = await r.json();
+            setKey(data.apiKey, email);
+            closeModal();
+            toast(data.existing ? 'Welcome back.' : 'You\'re in. 3 transcriptions today.');
+            await refreshMe();
+        } catch (err) {
+            toast(err.message || 'Sign-up failed');
+        } finally {
+            btn.disabled = false; btn.textContent = 'Get started →';
+        }
+    });
+
+    // -------- auth pill + quota --------
+    var authBtn = $('auth-btn');
+    var quotaMenu = $('quota-menu');
+    authBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (authBtn.dataset.state === 'loggedin') {
+            toggleQuotaMenu();
+        } else {
+            openModal();
+        }
+    });
+    document.addEventListener('click', function (e) {
+        if (!quotaMenu.contains(e.target) && e.target !== authBtn) {
+            quotaMenu.classList.remove('is-open');
+        }
+    });
+
+    function toggleQuotaMenu() {
+        if (quotaMenu.classList.contains('is-open')) {
+            quotaMenu.classList.remove('is-open'); return;
+        }
+        var rect = authBtn.getBoundingClientRect();
+        quotaMenu.style.top = (rect.bottom + 8) + 'px';
+        quotaMenu.style.right = (window.innerWidth - rect.right) + 'px';
+        quotaMenu.classList.add('is-open');
+    }
+
+    async function refreshMe() {
+        var key = getKey();
+        if (!key) { renderLoggedOut(); return; }
+        try {
+            var r = await fetch(API + '/me', { headers: { 'Authorization': 'Bearer ' + key } });
+            if (!r.ok) {
+                if (r.status === 401) { clearKey(); renderLoggedOut(); return; }
+                throw new Error('me failed');
+            }
+            var me = await r.json();
+            renderLoggedIn(me);
+        } catch (e) {
+            renderLoggedOut();
+        }
+    }
+
+    function renderLoggedOut() {
+        authBtn.dataset.state = 'loggedout';
+        authBtn.querySelector('.txt').textContent = 'Sign in';
+        $('quota-tag').textContent = 'Sign in to start';
+    }
+
+    function renderLoggedIn(me) {
+        authBtn.dataset.state = 'loggedin';
+        var t = (me.quotas && me.quotas.transcribe) || {used: 0, limit: 3};
+        authBtn.querySelector('.txt').textContent = t.used + '/' + t.limit + ' today';
+        $('quota-tag').textContent = (t.limit - t.used) + ' free transcriptions left today';
+        // build menu
+        quotaMenu.innerHTML =
+            '<div class="row email">' + (me.email || 'You') + '</div>' +
+            '<div class="row label">Plan</div>' +
+            '<div class="row stat"><span>' + (me.plan || 'free').toUpperCase() + '</span><span class="val">' + (t.used) + '/' + (t.limit) + ' today</span></div>' +
+            '<a class="row action primary" href="#pricing">Upgrade for unlimited →</a>' +
+            '<button class="row action" id="logout">Sign out</button>';
+        var lo = $('logout');
+        if (lo) lo.onclick = function () {
+            clearKey();
+            renderLoggedOut();
+            quotaMenu.classList.remove('is-open');
+            toast('Signed out');
+        };
+    }
+
+    // -------- transcription --------
+    var elDrop = $('drop');
+    var elInput = $('file-input');
+
+    elDrop.addEventListener('click', function () { elInput.click(); });
+    elDrop.addEventListener('dragover', function (e) { e.preventDefault(); elDrop.classList.add('is-active'); });
+    elDrop.addEventListener('dragleave', function () { elDrop.classList.remove('is-active'); });
+    elDrop.addEventListener('drop', function (e) {
+        e.preventDefault(); elDrop.classList.remove('is-active');
+        if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+    elInput.addEventListener('change', function () {
+        if (elInput.files[0]) handleFile(elInput.files[0]);
+    });
+
+    async function handleFile(file) {
+        if (!file) return;
+        if (!/^audio\//.test(file.type) && !/\.(mp3|m4a|wav|ogg|flac|webm|mp4|aac|opus)$/i.test(file.name)) {
+            toast('Audio files only'); return;
+        }
+        var key = getKey();
+        if (!key) { openModal(); return; }
+
+        var lang = $('lang').value;
+        $('progress').classList.remove('hidden', 'is-error');
+        $('transcript-card').classList.add('hidden');
+        $('progress-label').textContent = 'Uploading ' + file.name + ' (' + fmtBytes(file.size) + ')…';
+        var bar = $('progress-bar'); bar.style.width = '0%';
+
+        try {
+            var fd = new FormData();
+            fd.append('file', file);
+            fd.append('lang', lang);
+
+            // upload with progress via XHR
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', API + '/v1/transcribe');
+            xhr.setRequestHeader('Authorization', 'Bearer ' + key);
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    bar.style.width = (e.loaded / e.total * 70) + '%';
+                }
+            };
+            xhr.onload = function () {
+                if (xhr.status === 401) {
+                    fail('Your session expired. Please sign in again.');
+                    clearKey(); renderLoggedOut(); openModal(); return;
+                }
+                if (xhr.status === 429) {
+                    var info = JSON.parse(xhr.responseText || '{}');
+                    fail('Daily limit reached (' + (info.limit || 3) + '/day). Upgrade for unlimited →');
+                    return;
+                }
+                if (xhr.status < 200 || xhr.status >= 300) {
+                    fail('Server returned ' + xhr.status);
+                    return;
+                }
+                $('progress-label').textContent = 'Transcribing…';
+                bar.style.width = '95%';
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    bar.style.width = '100%';
+                    setTimeout(function () { showTranscript(file, data); }, 200);
+                } catch (e) { fail('Bad response from server'); }
+                refreshMe();
+            };
+            xhr.onerror = function () { fail('Network error. Check your connection.'); };
+            xhr.send(fd);
+        } catch (e) {
+            fail(e.message || 'Failed');
+        }
+    }
+
+    function fail(msg) {
+        var p = $('progress');
+        p.classList.add('is-error');
+        $('progress-label').textContent = msg;
+        $('progress-bar').style.width = '100%';
+    }
+
+    var lastTranscript = null;
+    function showTranscript(file, data) {
+        $('progress').classList.add('hidden');
+        $('transcript-card').classList.remove('hidden');
+        lastTranscript = { file: file, data: data };
+
+        var meta = $('transcript-meta');
+        meta.innerHTML =
+            '<span><strong>' + file.name + '</strong></span>' +
+            '<span>' + fmtBytes(file.size) + '</span>' +
+            '<span>' + fmtTime(data.duration || 0) + '</span>' +
+            '<span>' + (data.language || '?').toUpperCase() + '</span>' +
+            '<span>' + (data.elapsed || 0) + 's</span>';
+
+        var body = $('transcript-body');
+        if (data.segments && data.segments.length) {
+            body.innerHTML = data.segments.map(function (s) {
+                return '<span class="seg-time">[' + fmtTime(s.start) + ']</span>' + escapeHtml(s.text) + ' ';
+            }).join('\n');
+        } else {
+            body.textContent = data.text || '';
+        }
+        $('transcript-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+            return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c];
+        });
+    }
+
+    // -------- transcript actions --------
+    $('copy-btn').addEventListener('click', function () {
+        if (!lastTranscript) return;
+        navigator.clipboard.writeText(lastTranscript.data.text || '').then(function () {
+            toast('Copied to clipboard');
+        });
+    });
+
+    $('download-btn').addEventListener('click', function () {
+        if (!lastTranscript) return;
+        var base = lastTranscript.file.name.replace(/\.[^.]+$/, '');
+        download(lastTranscript.data.text || '', base + '.txt', 'text/plain;charset=utf-8');
+    });
+
+    $('srt-btn').addEventListener('click', function () {
+        if (!lastTranscript || !lastTranscript.data.segments) {
+            toast('No timestamps available'); return;
+        }
+        var srt = lastTranscript.data.segments.map(function (s, i) {
+            return (i + 1) + '\n' + toSrtTime(s.start) + ' --> ' + toSrtTime(s.end) + '\n' + (s.text || '').trim() + '\n';
+        }).join('\n');
+        var base = lastTranscript.file.name.replace(/\.[^.]+$/, '');
+        download(srt, base + '.srt', 'text/srt;charset=utf-8');
+    });
+
+    function toSrtTime(s) {
+        var h = Math.floor(s / 3600);
+        var m = Math.floor((s % 3600) / 60);
+        var sec = Math.floor(s % 60);
+        var ms = Math.floor((s - Math.floor(s)) * 1000);
+        return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' +
+               String(sec).padStart(2, '0') + ',' + String(ms).padStart(3, '0');
+    }
+
+    function download(content, name, type) {
+        var blob = new Blob([content], { type: type });
+        var url = URL.createObjectURL(blob), a = document.createElement('a');
+        a.href = url; a.download = name; document.body.appendChild(a); a.click();
+        setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 100);
+    }
+
+    // -------- init --------
+    refreshMe();
+})();
+</script>
+
+</body>
+</html>
