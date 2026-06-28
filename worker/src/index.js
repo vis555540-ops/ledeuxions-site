@@ -15,7 +15,10 @@
  *   LEMON_WEBHOOK_SECRET Lemon Squeezy webhook 검증용
  */
 
-const BACKEND = "https://pdf.ledeuxions.com";  // 맥미니의 Cloudflare Tunnel 주소
+// 맥미니 백엔드 주소. wrangler.toml의 [vars]에서 BACKEND_URL로 오버라이드 가능.
+// 기본값은 새 AI 서브도메인 (기존 pdf.ledeuxions.com과 분리해 운영)
+const DEFAULT_BACKEND = "https://ai.ledeuxions.com";
+const backendOf = (env) => env.BACKEND_URL || DEFAULT_BACKEND;
 
 // 티어별 1일 호출 제한
 const TIERS = {
@@ -76,15 +79,16 @@ async function saveUser(env, user) {
 
 async function handleHealth(env, origin) {
     let backendOk = false;
+    const backend = backendOf(env);
     try {
-        const r = await fetch(BACKEND + "/health", {
+        const r = await fetch(backend + "/health", {
             headers: { "X-API-Key": env.INTERNAL_API_KEY || "" },
             cf: { cacheTtl: 0 },
         });
         backendOk = r.ok;
     } catch (e) {}
     return json(
-        { gateway: "ok", backend: backendOk ? "ok" : "offline", tools: ALLOWED_TOOLS },
+        { gateway: "ok", backend: backendOk ? "ok" : "offline", backend_url: backend, tools: ALLOWED_TOOLS },
         200, corsHeaders(origin)
     );
 }
@@ -197,7 +201,7 @@ async function handleApiCall(tool, req, env, origin) {
 
     let upstream;
     try {
-        upstream = await fetch(BACKEND + "/v1/" + tool, {
+        upstream = await fetch(backendOf(env) + "/v1/" + tool, {
             method: "POST",
             headers: upstreamHeaders,
             body: req.body,

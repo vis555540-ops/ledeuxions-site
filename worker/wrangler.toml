@@ -7,6 +7,11 @@ compatibility_date = "2025-05-01"
 #   { pattern = "api.ledeuxions.com/*", custom_domain = true }
 # ]
 
+# 백엔드 URL 오버라이드 (기본값은 코드의 DEFAULT_BACKEND = https://ai.ledeuxions.com)
+# 다른 주소로 바꾸려면 아래 주석 풀고 값 변경
+# [vars]
+# BACKEND_URL = "https://ai.ledeuxions.com"
+
 # KV namespace 바인딩
 # 1) 먼저 만들기: wrangler kv:namespace create LEDEUXIONS_KV
 # 2) 출력된 id를 아래에 붙여넣기
