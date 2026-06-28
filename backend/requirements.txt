@@ -1,0 +1,23 @@
+# LeDeuxions AI Backend — Mac mini (Apple Silicon)
+# Python 3.10+ 권장
+
+# Web
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+
+# Whisper (faster-whisper: CTranslate2 기반, Mac에서 안정적)
+# 더 빠른 옵션을 원하면 mlx-whisper로 교체 가능
+faster-whisper>=1.0.3
+
+# 배경 제거 (rembg)
+# CPU 모드. Apple Silicon에서 onnxruntime이 CoreML 자동 사용
+rembg>=2.0.50
+onnxruntime>=1.17
+
+# 한국어 OCR (Mac M-series 친화)
+easyocr>=1.7.1
+
+# 이미지 처리
+pillow>=10.0
+numpy>=1.26

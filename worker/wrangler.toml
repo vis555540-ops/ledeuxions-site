@@ -1,0 +1,20 @@
+name = "ledeuxions-api"
+main = "src/index.js"
+compatibility_date = "2025-05-01"
+
+# 라우트 — Cloudflare 대시보드에서 api.ledeuxions.com을 이 Worker로 연결하거나 아래 사용
+# routes = [
+#   { pattern = "api.ledeuxions.com/*", custom_domain = true }
+# ]
+
+# KV namespace 바인딩
+# 1) 먼저 만들기: wrangler kv:namespace create LEDEUXIONS_KV
+# 2) 출력된 id를 아래에 붙여넣기
+[[kv_namespaces]]
+binding = "KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+# preview_id = "REPLACE_WITH_PREVIEW_ID"  # wrangler dev 사용시
+
+# 비밀 값은 wrangler secret put으로 설정 (코드에 직접 쓰지 말 것)
+# wrangler secret put INTERNAL_API_KEY
+# wrangler secret put LEMON_WEBHOOK_SECRET
