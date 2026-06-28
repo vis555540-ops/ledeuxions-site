@@ -32,6 +32,27 @@ wrangler kv:namespace create LEDEUXIONS_KV
 # → wrangler.toml의 id 필드에 붙여넣기
 ```
 
+## ⚠️ wrangler.toml 함정 — routes는 반드시 top-level
+
+```toml
+# ❌ 잘못된 예 — routes가 무시됨 (TOML 파서가 [[kv_namespaces]]의 키로 인식)
+[[kv_namespaces]]
+binding = "KV"
+id = "..."
+routes = [ ... ]
+
+# ✅ 올바른 예 — routes는 파일 상단에
+routes = [
+  { pattern = "api.ledeuxions.com", custom_domain = true }
+]
+
+[[kv_namespaces]]
+binding = "KV"
+id = "..."
+```
+
+배포 후 커스텀 도메인이 안 잡힌다면 99% 이 문제입니다.
+
 ## 비밀 값 설정
 
 ```bash

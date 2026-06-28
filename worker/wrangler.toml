@@ -2,10 +2,12 @@ name = "ledeuxions-api"
 main = "src/index.js"
 compatibility_date = "2025-05-01"
 
-# 라우트 — Cloudflare 대시보드에서 api.ledeuxions.com을 이 Worker로 연결하거나 아래 사용
-# routes = [
-#   { pattern = "api.ledeuxions.com/*", custom_domain = true }
-# ]
+# ⚠️ routes는 반드시 top-level. [[kv_namespaces]] 같은 테이블 헤더 아래에 두면
+#    TOML 파서가 해당 테이블의 키로 인식해서 라우트가 무시됩니다.
+#    (실전에서 한 번 당한 적 있음 → 항상 top-level에 두기)
+routes = [
+  { pattern = "api.ledeuxions.com", custom_domain = true }
+]
 
 # 백엔드 URL 오버라이드 (기본값은 코드의 DEFAULT_BACKEND = https://ai.ledeuxions.com)
 # 다른 주소로 바꾸려면 아래 주석 풀고 값 변경
@@ -13,13 +15,13 @@ compatibility_date = "2025-05-01"
 # BACKEND_URL = "https://ai.ledeuxions.com"
 
 # KV namespace 바인딩
-# 1) 먼저 만들기: wrangler kv:namespace create LEDEUXIONS_KV
-# 2) 출력된 id를 아래에 붙여넣기
+# 새로 만들 때: wrangler kv:namespace create LEDEUXIONS_KV
+# 출력된 id를 아래에 붙여넣기
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "ecebfc2302714cff9866233841e21620"
 # preview_id = "REPLACE_WITH_PREVIEW_ID"  # wrangler dev 사용시
 
 # 비밀 값은 wrangler secret put으로 설정 (코드에 직접 쓰지 말 것)
-# wrangler secret put INTERNAL_API_KEY
-# wrangler secret put LEMON_WEBHOOK_SECRET
+# wrangler secret put INTERNAL_API_KEY        (이미 설정 완료)
+# wrangler secret put LEMON_WEBHOOK_SECRET    (Lemon Squeezy 연동 시)
