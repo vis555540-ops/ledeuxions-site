@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="사진 배경을 무료로 자동 제거하고 투명 PNG로 저장. 누끼 따기, 설치 없이 브라우저에서 바로 처리. 이미지가 서버로 전송되지 않아 안전하고 사용량 제한이 없습니다.">
+<title>무료 배경 제거 · 누끼 따기 — LeDeuxions</title>
+<link rel="canonical" href="https://ledeuxions.com/web-projects/nukki/">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<style>
+  .container{ max-width:760px; margin:0 auto; padding:28px 18px 72px; }
+  .head{ text-align:center; margin-bottom:22px; }
+  .head h1{ font-size:26px; margin:0 0 8px; }
+  .head p{ color:var(--txt-muted,#6b6b6b); font-size:14px; margin:0; }
+  .panel{ background:var(--bg-card); border:1px solid var(--border,#e7e4da); border-radius:18px; padding:22px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .drop{ border:2px dashed #d6d1c4; border-radius:14px; padding:40px 16px; text-align:center; cursor:pointer; transition:.15s; }
+  .drop:hover,.drop.drag{ border-color:var(--accent); background:var(--accent-soft); }
+  .drop .emoji{ font-size:38px; }
+  .drop strong{ display:block; margin-top:8px; font-size:15px; }
+  .drop small{ color:var(--txt-muted,#8a8578); }
+  .bar{ height:7px; background:var(--bg-sunken,#f0eee5); border-radius:99px; overflow:hidden; margin-top:14px; display:none; }
+  .bar i{ display:block; height:100%; width:0; background:var(--accent); transition:width .3s; }
+  .status{ text-align:center; color:var(--txt-muted,#6b6b6b); font-size:14px; margin-top:12px; min-height:20px; }
+  .result{ display:none; margin-top:18px; }
+  .checker{ background-image:linear-gradient(45deg,#e2ddd0 25%,transparent 25%),linear-gradient(-45deg,#e2ddd0 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e2ddd0 75%),linear-gradient(-45deg,transparent 75%,#e2ddd0 75%); background-size:22px 22px; background-position:0 0,0 11px,11px -11px,-11px 0; border-radius:14px; padding:12px; }
+  .checker img{ max-width:100%; display:block; margin:0 auto; border-radius:8px; }
+  .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+  .btn{ display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; border:none; border-radius:11px; padding:12px 24px; font-size:15px; font-weight:600; cursor:pointer; text-decoration:none; }
+  .btn:hover{ background:var(--accent-hover); }
+  .btn.ghost{ background:#fff; color:var(--accent); border:1px solid var(--accent); }
+  .ad{ min-height:100px; border:1px dashed var(--border,#e7e4da); border-radius:14px; display:flex; align-items:center; justify-content:center; color:#c3beb2; font-size:12px; margin:18px 0; }
+  .note{ color:var(--txt-muted,#8a8578); font-size:12.5px; text-align:center; margin-top:22px; line-height:1.7; }
+  .back{ display:inline-block; margin-bottom:16px; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a class="back" href="/web-projects/">← 웹 도구 모음</a>
+
+  <div class="head">
+    <h1>🪄 무료 배경 제거 · 누끼 따기</h1>
+    <p>사진을 올리면 배경이 자동으로 지워집니다 · 설치 불필요 · 브라우저에서 바로</p>
+  </div>
+
+  <!-- 광고 -->
+  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2824624880449066" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+
+  <div class="panel">
+    <div class="drop" id="drop">
+      <div class="emoji">🖼️</div>
+      <strong>이미지를 끌어놓거나 눌러서 선택</strong>
+      <small>JPG · PNG · WEBP</small>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+    <div class="bar" id="bar"><i id="barfill"></i></div>
+    <div class="status" id="status"></div>
+
+    <div class="result" id="result">
+      <div class="checker"><img id="out" alt="배경 제거 결과"></div>
+      <div class="row">
+        <a class="btn" id="download" download="누끼_배경제거.png">⬇️ PNG 저장</a>
+        <button class="btn ghost" id="reset">다른 사진</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    🔒 이미지는 서버로 전송되지 않고 브라우저 안에서만 처리됩니다. 안전하고, 사용량 제한이 없습니다.<br>
+    처음 한 번 AI 모델(약 40MB)을 내려받은 뒤로는 빠르게 동작합니다.
+  </p>
+</div>
+
+<script type="module">
+  import { removeBackground } from 'https://esm.sh/@imgly/background-removal@1.7.0';
+  const $ = id => document.getElementById(id);
+  const drop=$('drop'), file=$('file'), status=$('status'), bar=$('bar'), barfill=$('barfill');
+  const result=$('result'), out=$('out'), download=$('download'), reset=$('reset');
+
+  drop.onclick = () => file.click();
+  ['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('drag');}));
+  ['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('drag');}));
+  drop.addEventListener('drop', ev=>{ const f=ev.dataTransfer.files[0]; if(f) handle(f); });
+  file.onchange = () => { if(file.files[0]) handle(file.files[0]); };
+  reset.onclick = () => { result.style.display='none'; drop.style.display='block'; status.textContent=''; file.value=''; };
+
+  async function handle(f){
+    if(!f.type.startsWith('image/')){ status.textContent='이미지 파일만 올려주세요.'; return; }
+    drop.style.display='none'; result.style.display='none';
+    bar.style.display='block'; barfill.style.width='8%';
+    status.textContent='배경 지우는 중… (처음엔 모델 다운로드로 조금 걸려요)';
+    try{
+      const blob = await removeBackground(f, {
+        progress:(key,cur,tot)=>{ const p=tot?Math.round(cur/tot*100):0; barfill.style.width=Math.max(8,p)+'%'; }
+      });
+      const url = URL.createObjectURL(blob);
+      out.src=url; download.href=url;
+      bar.style.display='none'; status.textContent='✅ 완료! 저장하세요.'; result.style.display='block';
+    }catch(err){
+      bar.style.display='none'; drop.style.display='block';
+      status.textContent='앗, 처리 중 문제가 생겼어요. 다른 사진으로 다시 해보세요.';
+      console.error(err);
+    }
+  }
+</script>
+</body>
+</html>
