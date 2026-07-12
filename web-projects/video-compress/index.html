@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="동영상 압축기 — MP4·MOV·WebM 용량을 브라우저에서 바로 줄입니다. 업로드 없음, 서버 안 거침. 화질·해상도 조절, H.264 출력.">
+<meta property="og:title" content="동영상 압축기 — LeDeuxions">
+<meta property="og:description" content="브라우저에서 끝나는 동영상 압축. 업로드 없이 용량 줄이기.">
+<title>동영상 압축기 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<style>
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .workbench { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+    @media (min-width: 920px) {
+        .workbench { grid-template-columns: 1.6fr 1fr; align-items: start; }
+    }
+    .panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+    }
+    .panel h3 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-3); }
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }
+    .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; background: var(--bg-sunken); border-radius: var(--radius-md); }
+    .seg button { padding: 10px 6px; border-radius: var(--radius-sm); font-size: 0.86rem; font-weight: 500; color: var(--text-secondary); line-height: 1.3; }
+    .seg button small { display:block; font-size:0.68rem; color: var(--text-muted); font-weight:400; }
+    .seg button.on { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--shadow-xs); }
+    .seg button.on small { color: var(--text-secondary); }
+    .progress-bar { height: 8px; background: var(--bg-sunken); border-radius: 999px; overflow: hidden; margin-top: var(--space-3); }
+    .progress-bar > div { height: 100%; background: var(--accent); width: 0; transition: width .25s var(--ease-out); }
+    .stat-row { display: flex; justify-content: space-between; padding: var(--space-2) 0; font-size: 0.9rem; }
+    .stat-row + .stat-row { border-top: 1px solid var(--border); }
+    .stat-row .k { color: var(--text-muted); }
+    .stat-row .v { font-family: var(--font-mono); color: var(--text-primary); }
+    .stat-row .v.good { color: #4b7a4b; }
+    .file-meta { font-size: 0.85rem; color: var(--text-secondary); margin-top: var(--space-3); }
+    .file-meta .name { font-weight: 500; color: var(--text-primary); word-break: break-all; }
+    .status { font-size: 0.85rem; color: var(--text-muted); margin-top: var(--space-2); min-height: 1.2em; }
+    .help { font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-2); }
+    video.preview { width: 100%; border-radius: var(--radius-md); margin-top: var(--space-3); background:#000; max-height: 320px; }
+    .notice { background: var(--accent-soft); color: var(--accent-deep); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: 0.83rem; margin-bottom: var(--space-4); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="app-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Video Compressor</div>
+    <h1>동영상 <em style="color:var(--accent);font-style:italic;">압축기</em></h1>
+    <p class="lead">MP4 · MOV · WebM 용량을 브라우저에서 바로 줄입니다. 영상은 업로드되지 않고, 서버를 거치지 않습니다.</p>
+</header>
+
+<main class="container" style="padding-bottom:var(--space-9);">
+
+<div class="workbench">
+
+    <!-- LEFT: drop & preview -->
+    <div>
+        <div class="dropzone" id="drop">
+            <div class="dropzone-icon">🎬</div>
+            <div class="dropzone-text">
+                <strong>동영상을 끌어 놓거나</strong> 클릭해 선택<br>
+                <small>MP4 · MOV · WebM · MKV · AVI — 브라우저에서만 처리</small>
+            </div>
+            <input type="file" id="file" accept="video/*" hidden>
+        </div>
+        <div id="file-info" class="hidden">
+            <video class="preview" id="preview" controls muted playsinline></video>
+            <div class="file-meta">
+                <div class="name" id="f-name"></div>
+                <div class="mono" id="f-detail" style="color:var(--text-muted);font-size:0.78rem;margin-top:4px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: settings -->
+    <div class="panel">
+        <div class="notice" id="engine-note">
+            ⚙️ 처음 실행 때 압축 엔진(약 30MB)을 한 번 내려받습니다. 그 뒤엔 즉시 시작돼요.
+        </div>
+
+        <h3>압축 강도</h3>
+        <div class="form-row">
+            <div class="seg" id="seg-quality">
+                <button data-crf="23">화질 우선<small>덜 줄임</small></button>
+                <button class="on" data-crf="28">균형<small>추천</small></button>
+                <button data-crf="32">용량 우선<small>많이 줄임</small></button>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="label">최대 해상도</label>
+            <select class="select" id="resolution">
+                <option value="0">원본 유지</option>
+                <option value="1080">1080p 까지</option>
+                <option value="720" selected>720p 까지</option>
+                <option value="480">480p 까지</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label class="label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" id="keep-audio" checked style="width:auto;">
+                소리 유지
+            </label>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="run" disabled>압축 시작</button>
+
+        <div class="progress-bar" id="bar" hidden><div></div></div>
+        <div class="status" id="status"></div>
+
+        <div style="margin-top:var(--space-5);">
+            <div class="stat-row"><span class="k">원본 용량</span><span class="v" id="s-orig">—</span></div>
+            <div class="stat-row"><span class="k">압축 후</span><span class="v" id="s-out">—</span></div>
+            <div class="stat-row"><span class="k">절감</span><span class="v" id="s-save">—</span></div>
+        </div>
+
+        <button class="btn btn-secondary btn-block" id="download" style="margin-top:var(--space-4);" disabled>압축본 저장</button>
+
+        <p class="help">🔒 압축은 100% 브라우저에서 수행됩니다. 단일 스레드로 동작하여 긴 영상은 시간이 걸릴 수 있어요. 짧은 클립부터 권장합니다.</p>
+    </div>
+
+</div>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions. Video Compressor v2026.07</span>
+            <span><a href="/web-projects/">← 다른 도구</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../../assets/js/common.js"></script>
+<script type="module">
+import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js';
+import { fetchFile, toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js';
+
+const CORE_BASE = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+
+const el = {
+    drop: document.getElementById('drop'),
+    file: document.getElementById('file'),
+    fileInfo: document.getElementById('file-info'),
+    preview: document.getElementById('preview'),
+    fName: document.getElementById('f-name'),
+    fDetail: document.getElementById('f-detail'),
+    segQ: document.getElementById('seg-quality'),
+    resolution: document.getElementById('resolution'),
+    keepAudio: document.getElementById('keep-audio'),
+    run: document.getElementById('run'),
+    bar: document.getElementById('bar'),
+    status: document.getElementById('status'),
+    sOrig: document.getElementById('s-orig'),
+    sOut: document.getElementById('s-out'),
+    sSave: document.getElementById('s-save'),
+    download: document.getElementById('download'),
+    engineNote: document.getElementById('engine-note'),
+};
+
+const state = { file: null, crf: 28, width: 0, height: 0, duration: 0, outBlob: null, busy: false };
+let ffmpeg = null;
+
+function setStatus(t) { el.status.textContent = t || ''; }
+function setProgress(p) {
+    el.bar.hidden = false;
+    el.bar.firstElementChild.style.width = Math.max(0, Math.min(100, p * 100)).toFixed(1) + '%';
+}
+
+el.drop.addEventListener('click', () => el.file.click());
+el.drop.addEventListener('dragover', (e) => { e.preventDefault(); el.drop.classList.add('is-active'); });
+el.drop.addEventListener('dragleave', () => el.drop.classList.remove('is-active'));
+el.drop.addEventListener('drop', (e) => {
+    e.preventDefault(); el.drop.classList.remove('is-active');
+    if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+el.file.addEventListener('change', () => { if (el.file.files[0]) loadFile(el.file.files[0]); });
+
+function loadFile(f) {
+    if (!f.type.startsWith('video/') && !/\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(f.name)) {
+        LD.toast('동영상 파일을 선택해주세요', 'error');
+        return;
+    }
+    state.file = f;
+    state.outBlob = null;
+    el.download.disabled = true;
+    el.sOut.textContent = '—';
+    el.sSave.textContent = '—';
+    el.sOut.classList.remove('good');
+    el.sSave.classList.remove('good');
+    el.fileInfo.classList.remove('hidden');
+    el.fName.textContent = f.name;
+    el.sOrig.textContent = LD.formatBytes(f.size);
+    const url = URL.createObjectURL(f);
+    el.preview.src = url;
+    el.preview.onloadedmetadata = () => {
+        state.width = el.preview.videoWidth;
+        state.height = el.preview.videoHeight;
+        state.duration = el.preview.duration || 0;
+        el.fDetail.textContent = state.width + '×' + state.height +
+            (state.duration ? ' · ' + Math.round(state.duration) + '초' : '');
+        el.run.disabled = false;
+    };
+    setStatus('');
+    el.bar.hidden = true;
+}
+
+el.segQ.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    el.segQ.querySelectorAll('button').forEach((x) => x.classList.remove('on'));
+    b.classList.add('on');
+    state.crf = parseInt(b.dataset.crf, 10);
+});
+
+async function ensureEngine() {
+    if (ffmpeg) return ffmpeg;
+    setStatus('압축 엔진 불러오는 중…');
+    ffmpeg = new FFmpeg();
+    ffmpeg.on('progress', ({ progress }) => {
+        if (state.busy && progress >= 0 && progress <= 1) {
+            setProgress(progress);
+            setStatus('압축 중… ' + (progress * 100).toFixed(0) + '%');
+        }
+    });
+    await ffmpeg.load({
+        coreURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${CORE_BASE}/ffmpeg-core.wasm`, 'application/wasm'),
+    });
+    el.engineNote.style.display = 'none';
+    return ffmpeg;
+}
+
+function buildArgs(inName, outName) {
+    const args = ['-i', inName, '-c:v', 'libx264', '-preset', 'veryfast', '-crf', String(state.crf), '-pix_fmt', 'yuv420p'];
+    const cap = parseInt(el.resolution.value, 10);
+    if (cap && state.height && state.height > cap) {
+        args.push('-vf', `scale=-2:${cap}`);
+    }
+    if (el.keepAudio.checked) {
+        args.push('-c:a', 'aac', '-b:a', '128k');
+    } else {
+        args.push('-an');
+    }
+    args.push('-movflags', '+faststart', outName);
+    return args;
+}
+
+el.run.addEventListener('click', async () => {
+    if (!state.file || state.busy) return;
+    state.busy = true;
+    el.run.disabled = true;
+    el.download.disabled = true;
+    el.bar.hidden = false;
+    setProgress(0);
+    try {
+        const ff = await ensureEngine();
+        setStatus('파일 준비 중…');
+        const inName = 'input' + (state.file.name.match(/\.[^.]+$/) || ['.mp4'])[0];
+        const outName = 'output.mp4';
+        await ff.writeFile(inName, await fetchFile(state.file));
+        setStatus('압축 중… 0%');
+        await ff.exec(buildArgs(inName, outName));
+        const data = await ff.readFile(outName);
+        const blob = new Blob([data.buffer], { type: 'video/mp4' });
+        state.outBlob = blob;
+        // cleanup memfs
+        try { await ff.deleteFile(inName); await ff.deleteFile(outName); } catch (e) {}
+
+        el.sOut.textContent = LD.formatBytes(blob.size);
+        const diff = state.file.size - blob.size;
+        const pct = state.file.size ? Math.round(diff / state.file.size * 100) : 0;
+        if (diff > 0) {
+            el.sSave.textContent = '−' + LD.formatBytes(diff) + ' (' + pct + '%)';
+            el.sSave.classList.add('good');
+            el.sOut.classList.add('good');
+        } else {
+            el.sSave.textContent = '변화 거의 없음';
+        }
+        setProgress(1);
+        setStatus('완료!');
+        el.download.disabled = false;
+        el.preview.src = URL.createObjectURL(blob);
+        LD.toast(diff > 0 ? '압축 완료 · ' + pct + '% 절감' : '완료 (이미 최적화된 영상)', 'ok');
+    } catch (err) {
+        console.error(err);
+        setStatus('오류: ' + (err && err.message ? err.message : '압축 실패'));
+        LD.toast('압축 실패 — 파일이 너무 크거나 지원 안 되는 형식일 수 있어요', 'error');
+    } finally {
+        state.busy = false;
+        el.run.disabled = false;
+    }
+});
+
+el.download.addEventListener('click', () => {
+    if (!state.outBlob) return;
+    const base = state.file.name.replace(/\.[^.]+$/, '');
+    LD.download(state.outBlob, base + '_compressed.mp4');
+});
+</script>
+</body>
+</html>

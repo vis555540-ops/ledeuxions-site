@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="QR 코드 생성기 — URL, 텍스트, WiFi, 전화번호를 QR로. 색·여백·오류복원 조절, 고해상도 PNG·SVG 저장. 업로드 없이 브라우저에서만 처리.">
+<meta property="og:title" content="QR 코드 생성기 — LeDeuxions">
+<meta property="og:description" content="브라우저에서 끝나는 QR 코드 생성기. 고해상도 PNG·SVG 저장.">
+<title>QR 코드 생성기 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .workbench {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-5);
+    }
+    @media (min-width: 920px) {
+        .workbench { grid-template-columns: 1.1fr 1fr; align-items: start; }
+    }
+    .panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+    }
+    .panel h3 {
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 var(--space-3);
+    }
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }
+    .form-row-inline { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .seg {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+        padding: 4px;
+        background: var(--bg-sunken);
+        border-radius: var(--radius-md);
+    }
+    .seg button {
+        padding: 8px 4px;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+    .seg button.on {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        box-shadow: var(--shadow-xs);
+    }
+    .qr-stage {
+        display: grid;
+        place-items: center;
+        padding: var(--space-6);
+        background: var(--bg-sunken);
+        border-radius: var(--radius-md);
+        min-height: 300px;
+    }
+    .qr-stage canvas {
+        width: 260px; height: 260px;
+        max-width: 100%;
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-sm);
+        background: #fff;
+    }
+    .qr-empty { color: var(--text-muted); font-size: 0.9rem; text-align: center; }
+    .swatch-row { display: flex; align-items: center; gap: var(--space-3); }
+    .swatch-row input[type=color] {
+        width: 44px; height: 36px; padding: 0; border: 1px solid var(--border);
+        border-radius: var(--radius-sm); background: none; cursor: pointer;
+    }
+    .help { font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-2); }
+    .dl-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-top: var(--space-4); }
+    .color-swatches { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .color-swatches span {
+        width:22px; height:22px; border-radius:5px; cursor:pointer;
+        border:1px solid var(--border);
+    }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="app-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">QR Code Generator</div>
+    <h1>QR <em style="color:var(--accent);font-style:italic;">코드</em> 생성기</h1>
+    <p class="lead">URL · 텍스트 · WiFi · 전화번호를 QR로. 색·여백·오류복원 조절, 고해상도 PNG·SVG 저장. 아무것도 업로드되지 않습니다.</p>
+</header>
+
+<main class="container" style="padding-bottom:var(--space-9);">
+
+<div class="workbench">
+
+    <!-- LEFT: content + settings -->
+    <div class="panel">
+        <h3>내용</h3>
+
+        <div class="form-row">
+            <label class="label">종류</label>
+            <div class="seg" id="seg-type">
+                <button class="on" data-type="text">텍스트</button>
+                <button data-type="url">URL</button>
+                <button data-type="wifi">WiFi</button>
+                <button data-type="tel">전화</button>
+            </div>
+        </div>
+
+        <!-- text / url / tel single input -->
+        <div class="form-row" id="row-single">
+            <label class="label" id="single-label">텍스트</label>
+            <textarea class="input" id="content" rows="3" placeholder="여기에 입력하세요"></textarea>
+        </div>
+
+        <!-- wifi fields -->
+        <div id="row-wifi" class="hidden">
+            <div class="form-row">
+                <label class="label">네트워크 이름 (SSID)</label>
+                <input class="input" id="wifi-ssid" placeholder="MyWiFi">
+            </div>
+            <div class="form-row">
+                <label class="label">비밀번호</label>
+                <input class="input" id="wifi-pass" placeholder="••••••••">
+            </div>
+            <div class="form-row">
+                <label class="label">보안</label>
+                <select class="select" id="wifi-enc">
+                    <option value="WPA">WPA/WPA2</option>
+                    <option value="WEP">WEP</option>
+                    <option value="nopass">비밀번호 없음</option>
+                </select>
+            </div>
+        </div>
+
+        <h3 style="margin-top:var(--space-5);">모양</h3>
+
+        <div class="form-row-inline">
+            <div class="form-row">
+                <label class="label">오류 복원</label>
+                <select class="select" id="ecc">
+                    <option value="L">낮음 (L)</option>
+                    <option value="M" selected>보통 (M)</option>
+                    <option value="Q">높음 (Q)</option>
+                    <option value="H">최고 (H)</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label class="label">여백 <span id="m-val" class="mono" style="float:right;color:var(--text-muted);">4</span></label>
+                <input class="input" id="margin" type="range" min="0" max="8" value="4">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="label">색상</label>
+            <div class="swatch-row">
+                <input type="color" id="fg" value="#1f1e1b" title="전경색">
+                <span class="help" style="margin:0;">전경</span>
+                <input type="color" id="bg" value="#ffffff" title="배경색">
+                <span class="help" style="margin:0;">배경</span>
+            </div>
+            <div class="color-swatches" id="swatches"></div>
+        </div>
+
+        <p class="help">🔒 QR 생성은 100% 브라우저에서 수행됩니다. 입력한 내용은 외부로 전송되지 않습니다.</p>
+    </div>
+
+    <!-- RIGHT: preview + download -->
+    <div class="panel">
+        <h3>미리보기</h3>
+        <div class="qr-stage">
+            <canvas id="qr" width="260" height="260"></canvas>
+            <div class="qr-empty hidden" id="empty">내용을 입력하면 QR이 나타납니다</div>
+        </div>
+
+        <div class="form-row" style="margin-top:var(--space-4);">
+            <label class="label">저장 해상도 <span id="px-val" class="mono" style="float:right;color:var(--text-muted);">1024px</span></label>
+            <input class="input" id="scale" type="range" min="256" max="2048" step="128" value="1024">
+        </div>
+
+        <div class="dl-row">
+            <button class="btn btn-primary btn-block" id="dl-png" disabled>PNG 저장</button>
+            <button class="btn btn-secondary btn-block" id="dl-svg" disabled>SVG 저장</button>
+        </div>
+    </div>
+
+</div>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions. QR Generator v2026.07</span>
+            <span><a href="/web-projects/">← 다른 도구</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../../assets/js/common.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var state = { type: 'text' };
+
+    var el = {
+        segType: document.getElementById('seg-type'),
+        rowSingle: document.getElementById('row-single'),
+        singleLabel: document.getElementById('single-label'),
+        content: document.getElementById('content'),
+        rowWifi: document.getElementById('row-wifi'),
+        ssid: document.getElementById('wifi-ssid'),
+        pass: document.getElementById('wifi-pass'),
+        enc: document.getElementById('wifi-enc'),
+        ecc: document.getElementById('ecc'),
+        margin: document.getElementById('margin'),
+        mVal: document.getElementById('m-val'),
+        fg: document.getElementById('fg'),
+        bg: document.getElementById('bg'),
+        canvas: document.getElementById('qr'),
+        empty: document.getElementById('empty'),
+        scale: document.getElementById('scale'),
+        pxVal: document.getElementById('px-val'),
+        dlPng: document.getElementById('dl-png'),
+        dlSvg: document.getElementById('dl-svg'),
+        swatches: document.getElementById('swatches')
+    };
+
+    var PLACEHOLDERS = {
+        text: '여기에 텍스트를 입력하세요',
+        url: 'https://example.com',
+        tel: '010-1234-5678'
+    };
+    var LABELS = { text: '텍스트', url: 'URL 주소', tel: '전화번호' };
+
+    // UTF-8 support (한글 등 멀티바이트)
+    if (window.qrcode && qrcode.stringToBytesFuncs && qrcode.stringToBytesFuncs['UTF-8']) {
+        qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+    }
+
+    function makeQR(payload, ecc) {
+        var qr = qrcode(0, ecc); // 0 = 자동 크기
+        qr.addData(payload, 'Byte');
+        qr.make();
+        return qr;
+    }
+
+    function drawToCanvas(canvas, qr, targetPx, marginModules, fg, bg) {
+        var count = qr.getModuleCount();
+        var total = count + marginModules * 2;
+        var cell = Math.max(1, Math.floor(targetPx / total));
+        var dim = cell * total;
+        canvas.width = dim;
+        canvas.height = dim;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, dim, dim);
+        ctx.fillStyle = fg;
+        for (var r = 0; r < count; r++) {
+            for (var c = 0; c < count; c++) {
+                if (qr.isDark(r, c)) {
+                    ctx.fillRect((c + marginModules) * cell, (r + marginModules) * cell, cell, cell);
+                }
+            }
+        }
+    }
+
+    function toSVG(qr, marginModules, fg, bg) {
+        var count = qr.getModuleCount();
+        var total = count + marginModules * 2;
+        var d = '';
+        for (var r = 0; r < count; r++) {
+            for (var c = 0; c < count; c++) {
+                if (qr.isDark(r, c)) {
+                    d += 'M' + (c + marginModules) + ' ' + (r + marginModules) + 'h1v1h-1z';
+                }
+            }
+        }
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + total + ' ' + total +
+            '" shape-rendering="crispEdges">' +
+            '<rect width="' + total + '" height="' + total + '" fill="' + bg + '"/>' +
+            '<path d="' + d + '" fill="' + fg + '"/></svg>';
+    }
+
+    // quick foreground swatches
+    ['#1f1e1b', '#c15f3c', '#2d6a4f', '#1d4e89', '#7b2d8e', '#b3123b'].forEach(function (c) {
+        var s = document.createElement('span');
+        s.style.background = c;
+        s.title = c;
+        s.onclick = function () { el.fg.value = c; render(); };
+        el.swatches.appendChild(s);
+    });
+
+    function escWifi(s) {
+        return String(s).replace(/([\\;,:"])/g, '\\$1');
+    }
+
+    function buildPayload() {
+        if (state.type === 'wifi') {
+            var ssid = el.ssid.value.trim();
+            if (!ssid) return '';
+            var enc = el.enc.value;
+            if (enc === 'nopass') {
+                return 'WIFI:T:nopass;S:' + escWifi(ssid) + ';;';
+            }
+            return 'WIFI:T:' + enc + ';S:' + escWifi(ssid) + ';P:' + escWifi(el.pass.value) + ';;';
+        }
+        if (state.type === 'tel') {
+            var t = el.content.value.trim();
+            return t ? 'tel:' + t.replace(/[^\d+]/g, '') : '';
+        }
+        if (state.type === 'url') {
+            var u = el.content.value.trim();
+            if (!u) return '';
+            return /^[a-z][a-z0-9+.-]*:/i.test(u) ? u : 'https://' + u;
+        }
+        return el.content.value;
+    }
+
+    function render() {
+        var payload = buildPayload();
+        var has = payload && payload.length > 0;
+        el.canvas.classList.toggle('hidden', !has);
+        el.empty.classList.toggle('hidden', !!has);
+        el.dlPng.disabled = !has;
+        el.dlSvg.disabled = !has;
+        if (!has) return;
+
+        try {
+            var qr = makeQR(payload, el.ecc.value);
+            drawToCanvas(el.canvas, qr, 520, parseInt(el.margin.value, 10), el.fg.value, el.bg.value);
+        } catch (e) {
+            console.error(e);
+            LD.toast('QR 생성 실패 — 내용이 너무 길 수 있어요', 'error');
+        }
+    }
+
+    // type switching
+    el.segType.addEventListener('click', function (e) {
+        if (e.target.tagName !== 'BUTTON') return;
+        document.querySelectorAll('#seg-type button').forEach(function (b) { b.classList.remove('on'); });
+        e.target.classList.add('on');
+        state.type = e.target.dataset.type;
+        var isWifi = state.type === 'wifi';
+        el.rowWifi.classList.toggle('hidden', !isWifi);
+        el.rowSingle.classList.toggle('hidden', isWifi);
+        if (!isWifi) {
+            el.singleLabel.textContent = LABELS[state.type];
+            el.content.placeholder = PLACEHOLDERS[state.type];
+            el.content.rows = state.type === 'text' ? 3 : 1;
+        }
+        render();
+    });
+
+    // live bindings
+    ['input', 'change'].forEach(function (ev) {
+        [el.content, el.ssid, el.pass, el.enc, el.ecc, el.fg, el.bg].forEach(function (node) {
+            node.addEventListener(ev, render);
+        });
+    });
+    el.margin.addEventListener('input', function () { el.mVal.textContent = this.value; render(); });
+    el.scale.addEventListener('input', function () { el.pxVal.textContent = this.value + 'px'; });
+
+    // downloads
+    el.dlPng.addEventListener('click', function () {
+        var payload = buildPayload();
+        if (!payload) return;
+        try {
+            var size = parseInt(el.scale.value, 10);
+            var qr = makeQR(payload, el.ecc.value);
+            var tmp = document.createElement('canvas');
+            drawToCanvas(tmp, qr, size, parseInt(el.margin.value, 10), el.fg.value, el.bg.value);
+            tmp.toBlob(function (blob) {
+                LD.download(blob, 'qrcode_' + tmp.width + '.png');
+                LD.toast('PNG 저장 완료', 'ok');
+            }, 'image/png');
+        } catch (e) { console.error(e); LD.toast('저장 실패', 'error'); }
+    });
+
+    el.dlSvg.addEventListener('click', function () {
+        var payload = buildPayload();
+        if (!payload) return;
+        try {
+            var qr = makeQR(payload, el.ecc.value);
+            var svg = toSVG(qr, parseInt(el.margin.value, 10), el.fg.value, el.bg.value);
+            var blob = new Blob([svg], { type: 'image/svg+xml' });
+            LD.download(blob, 'qrcode.svg');
+            LD.toast('SVG 저장 완료', 'ok');
+        } catch (e) { console.error(e); LD.toast('저장 실패', 'error'); }
+    });
+
+    render();
+})();
+</script>
+</body>
+</html>
