@@ -23,6 +23,13 @@ from services.transcribe import transcribe, warmup as warm_whisper
 from services.rembg_svc import remove_background, warmup as warm_rembg
 from services.ocr import ocr_image, warmup as warm_ocr
 
+# 얼굴 복원은 선택 기능 — gfpgan 미설치 환경에서도 서버는 뜨게
+try:
+    from services.restore_face import restore_face
+    HAS_RESTORE = True
+except ImportError:
+    HAS_RESTORE = False
+
 
 INTERNAL_API_KEY = os.environ.get("INTERNAL_API_KEY", "")
 ALLOWED_ORIGINS = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
@@ -32,6 +39,7 @@ MAX_SIZES = {
     "transcribe": 200 * 1024 * 1024,  # 200MB (긴 음성 허용)
     "remove-bg":   25 * 1024 * 1024,   # 25MB
     "ocr":         25 * 1024 * 1024,
+    "restore-face": 25 * 1024 * 1024,
 }
 
 
@@ -93,9 +101,12 @@ def require_api_key(x_api_key: str = Header(None)) -> str:
 
 @app.get("/health")
 def health():
+    services = ["whisper", "rembg", "ocr"]
+    if HAS_RESTORE:
+        services.append("restore-face")
     return {
         "status": "ok",
-        "services": ["whisper", "rembg", "ocr"],
+        "services": services,
         "ts": int(time.time()),
     }
 
@@ -141,6 +152,32 @@ async def ep_remove_bg(
     return Response(
         content=png,
         media_type="image/png",
+        headers={"Content-Disposition": f'attachment; filename="{out_name}"'},
+    )
+
+
+@app.post("/v1/restore-face")
+async def ep_restore_face(
+    file: UploadFile = File(...),
+    _key: str = Depends(require_api_key),
+):
+    if not HAS_RESTORE:
+        raise HTTPException(503, "restore-face not installed on this server (pip install gfpgan)")
+    data = await file.read()
+    if len(data) > MAX_SIZES["restore-face"]:
+        raise HTTPException(413, f"file too large (max {MAX_SIZES['restore-face']} bytes)")
+    if not data:
+        raise HTTPException(400, "empty file")
+    try:
+        jpg = restore_face(data)
+    except Exception as e:
+        raise HTTPException(500, f"restore-face failed: {e}")
+
+    base = (file.filename or "photo").rsplit(".", 1)[0]
+    out_name = f"{base}_restored.jpg"
+    return Response(
+        content=jpg,
+        media_type="image/jpeg",
         headers={"Content-Disposition": f'attachment; filename="{out_name}"'},
     )
 
