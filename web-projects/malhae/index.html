@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>말해요 — 말 대신 눌러서 소리내기 (베타)</title>
+<meta name="description" content="루게릭·발화 어려운 분을 위한 의사소통 도우미. 버튼을 누르면 소리내어 말합니다. LeDeuxions.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1565c0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  :root{--pri:#1565c0;--bg:#0e1116;--card:#1b2029;--txt:#f2f4f7;--mut:#9aa4b2;--big:clamp(20px,5.5vw,30px);}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;overscroll-behavior:none}
+  body{display:flex;flex-direction:column}
+  header{padding:10px 12px;display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  header h1{font-size:18px;margin:0;font-weight:800}
+  header .sub{font-size:11px;color:var(--mut)}
+  #say{flex:1;min-height:64px;margin:6px 12px;background:#101722;border:2px solid #24405f;border-radius:14px;color:var(--txt);font-size:var(--big);padding:14px;resize:none}
+  .row{display:flex;gap:8px;padding:0 12px}
+  .btn{flex:1;padding:16px;border:0;border-radius:14px;font-size:var(--big);font-weight:800;color:#fff;background:var(--pri)}
+  .btn.g{background:#2e7d32}.btn.r{background:#546e7a}
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 12px;flex:0 0 auto}
+  .tab{white-space:nowrap;padding:10px 16px;border-radius:999px;background:var(--card);color:var(--txt);font-size:16px;font-weight:700;border:2px solid transparent}
+  .tab.on{border-color:var(--pri);background:#12233a;color:#8ec5ff}
+  main{flex:1;overflow-y:auto;padding:6px 12px 20px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;align-content:start}
+  .phrase{min-height:88px;border:0;border-radius:16px;background:var(--card);color:var(--txt);font-size:var(--big);font-weight:800;padding:12px;line-height:1.25;box-shadow:0 2px 0 #0006;transition:transform .06s}
+  .phrase:active{transform:scale(.96);background:#24405f}
+  .phrase.wide{grid-column:1/-1}
+</style>
+</head>
+<body>
+<header>
+  <h1>🗣️ 말해요</h1>
+  <span class="sub">눌러서 소리내기 · 베타</span>
+</header>
+
+<textarea id="say" placeholder="여기에 직접 쓰거나, 아래 버튼을 누르세요" inputmode="text"></textarea>
+<div class="row">
+  <button class="btn" id="speakBtn">🔊 말하기</button>
+  <button class="btn g" id="clearBtn" style="flex:.5">지우기</button>
+</div>
+
+<nav class="tabs" id="tabs"></nav>
+<main id="grid"></main>
+
+<script>
+// ── 문구 세트 v0.1 (이음 작성: 위관로·석션·신앙 반영, 8카테고리 89문구. 나중에 서버 동기화='빌드업 통로') ──
+const PHRASES = {
+  "즉시": ["네", "아니오", "아파요", "잠깐만요", "괜찮아요", "고마워요", "미안해요", "좀 쉬고 싶어요"],
+  "몸·통증": ["머리 아파요", "목 아파요", "어깨 아파요", "허리 아파요", "다리 아파요", "배 아파요", "위관 부위 아파요", "가슴 답답해요", "숨쉬기 힘들어요", "어지러워요", "메스꺼워요", "춥다", "덥다", "열이 있는 것 같아요"],
+  "위관·영양": ["영양 주입 시작해도 돼요", "영양 주입 멈춰주세요", "천천히 주입해주세요", "속이 안 편해요", "위관 위치 확인해주세요", "위관이 아파요", "가래가 있어요", "석션(가래 뽑기) 해주세요", "입 안이 마릅니다", "구강 케어 해주세요", "이 닦고 싶어요", "물 한 모금 (허용된 만큼)"],
+  "돌봄·자세": ["자세 바꿔주세요", "일으켜 앉혀주세요", "눕혀주세요", "머리 좀 올려주세요", "베개 조정해주세요", "이불 덮어주세요", "이불 벗겨주세요", "몸 씻고 싶어요", "화장실 도와주세요", "기저귀 확인해주세요", "다리 저림 풀어주세요", "발 마사지 해주세요", "손발 따뜻하게 해주세요"],
+  "가족·마음": ["사랑해요", "고맙습니다", "미안합니다", "손 잡고 싶어요", "옆에 있어주세요", "혼자 있고 싶어요", "이야기 나누고 싶어요", "손자 손녀 보고 싶어요", "가족 사진 보여주세요", "잠깐 눈물이 나요", "지금 힘들어요", "괜찮아요, 걱정 마세요"],
+  "신앙": ["기도해주세요", "성경 읽어주세요", "찬송 듣고 싶어요", "하나님께 감사합니다", "목사님 오셨으면 좋겠어요", "함께 기도합시다"],
+  "부탁·요청": ["물 좀 (허용 안에서)", "TV 켜주세요", "TV 꺼주세요", "라디오 켜주세요", "조용히 해주세요", "불 밝게", "불 어둡게", "커튼 열어주세요", "커튼 닫아주세요", "창문 열어주세요", "창문 닫아주세요", "선풍기·에어컨", "난방 켜주세요", "안경 주세요"],
+  "의료·응급": ["간호사 불러주세요", "의사 선생님 불러주세요", "약 시간 됐어요", "혈압 재주세요", "산소포화도 확인", "체온 재주세요", "통증 심해요 (10점 중 8 이상)", "숨쉬기 매우 힘들어요", "지금 응급 상황 같아요", "가족한테 연락해주세요"]
+};
+
+let voice=null;
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  voice = vs.find(v=>/ko(-|_)?KR/i.test(v.lang)) || vs.find(v=>/ko/i.test(v.lang)) || null;
+}
+pickVoice(); speechSynthesis.onvoiceschanged=pickVoice;
+function speak(t){
+  if(!t.trim())return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t);
+  u.lang='ko-KR'; if(voice)u.voice=voice; u.rate=.95; u.pitch=1;
+  speechSynthesis.speak(u);
+}
+const say=document.getElementById('say');
+document.getElementById('speakBtn').onclick=()=>speak(say.value);
+document.getElementById('clearBtn').onclick=()=>{say.value='';say.focus();};
+
+const tabs=document.getElementById('tabs'), grid=document.getElementById('grid');
+let cur=Object.keys(PHRASES)[0];
+function renderTabs(){
+  tabs.innerHTML='';
+  Object.keys(PHRASES).forEach(k=>{
+    const b=document.createElement('button'); b.className='tab'+(k===cur?' on':''); b.textContent=k;
+    b.onclick=()=>{cur=k;renderTabs();renderGrid();}; tabs.appendChild(b);
+  });
+}
+function renderGrid(){
+  grid.innerHTML='';
+  PHRASES[cur].forEach(p=>{
+    const b=document.createElement('button'); b.className='phrase'; b.textContent=p;
+    b.onclick=()=>{ say.value=p; speak(p); }; // 누르면 말하고 창에도 표시
+    grid.appendChild(b);
+  });
+}
+renderTabs(); renderGrid();
+
+// PWA 서비스워커 (오프라인/홈화면)
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+</script>
+</body>
+</html>

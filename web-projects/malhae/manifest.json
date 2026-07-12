@@ -1,0 +1,12 @@
+{
+  "name": "말해요 — 말 대신 눌러서 소리내기",
+  "short_name": "말해요",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0e1116",
+  "theme_color": "#1565c0",
+  "orientation": "portrait",
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ]
+}

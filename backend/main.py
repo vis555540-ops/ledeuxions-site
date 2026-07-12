@@ -22,6 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from services.transcribe import transcribe, warmup as warm_whisper
 from services.rembg_svc import remove_background, warmup as warm_rembg
 from services.ocr import ocr_image, warmup as warm_ocr
+from services.pdf_compress import compress_to_target, warmup as warm_pdf
 
 # 얼굴 복원은 선택 기능 — gfpgan 미설치 환경에서도 서버는 뜨게
 try:
@@ -40,6 +41,7 @@ MAX_SIZES = {
     "remove-bg":   25 * 1024 * 1024,   # 25MB
     "ocr":         25 * 1024 * 1024,
     "restore-face": 25 * 1024 * 1024,
+    "pdf-compress": 100 * 1024 * 1024,  # 100MB (큰 PDF 허용)
 }
 
 
@@ -67,6 +69,13 @@ async def lifespan(app: FastAPI):
         print("[warmup] OCR OK")
     except Exception as e:
         print(f"[warmup] OCR 실패: {e}")
+
+    print("[warmup] PDF 압축 로딩…")
+    try:
+        warm_pdf()
+        print("[warmup] PDF OK")
+    except Exception as e:
+        print(f"[warmup] PDF 실패: {e}")
 
     yield
 
@@ -101,7 +110,7 @@ def require_api_key(x_api_key: str = Header(None)) -> str:
 
 @app.get("/health")
 def health():
-    services = ["whisper", "rembg", "ocr"]
+    services = ["whisper", "rembg", "ocr", "pdf-compress"]
     if HAS_RESTORE:
         services.append("restore-face")
     return {
@@ -109,6 +118,43 @@ def health():
         "services": services,
         "ts": int(time.time()),
     }
+
+
+@app.post("/v1/pdf-compress")
+async def ep_pdf_compress(
+    file: UploadFile = File(...),
+    target_kb: int = Form(...),
+    _key: str = Depends(require_api_key),
+):
+    """PDF를 목표 용량(target_kb) 이하로 압축해 PDF 바이트로 반환.
+    결과 메타는 응답 헤더(X-Result-KB, X-Hit-Target, X-DPI 등)로 전달."""
+    data = await file.read()
+    if len(data) > MAX_SIZES["pdf-compress"]:
+        raise HTTPException(413, f"file too large (max {MAX_SIZES['pdf-compress']} bytes)")
+    if not data:
+        raise HTTPException(400, "empty file")
+    if target_kb <= 0:
+        raise HTTPException(400, "target_kb must be > 0")
+    t0 = time.time()
+    try:
+        out, meta = compress_to_target(data, target_kb)
+    except Exception as e:
+        raise HTTPException(500, f"pdf-compress failed: {e}")
+    base = (file.filename or "document").rsplit(".", 1)[0]
+    out_name = f"{base}_{target_kb}KB.pdf"
+    return Response(
+        content=out,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{out_name}"',
+            "X-Result-KB": str(meta["out_kb"]),
+            "X-Orig-KB": str(meta["orig_kb"]),
+            "X-Hit-Target": "1" if meta["hit_target"] else "0",
+            "X-DPI": str(meta["dpi"]),
+            "X-Quality": str(meta["quality"]),
+            "X-Elapsed": str(round(time.time() - t0, 2)),
+        },
+    )
 
 
 @app.post("/v1/transcribe")
