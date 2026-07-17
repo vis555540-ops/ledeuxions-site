@@ -253,7 +253,7 @@ async function handleMe(req, env, origin) {
 
 // ---------- Entry ----------
 // ---------- Leaderboard (게임월드 전세계 랭킹) ----------
-const ARCADE_GAMES = ["tower", "simon", "snake"];
+const ARCADE_GAMES = ["tower", "simon", "snake", "jump"];
 const LB_MAX = 100;          // 게임별 저장 상위 인원 수
 const LB_NAME_MAX = 16;
 

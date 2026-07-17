@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a2036">
+<meta name="description" content="이음 픽셀 그림판 — 8·16·32 격자에 콕콕 찍어 픽셀 아트를 그리고 투명배경 PNG로 저장. 게임 캐릭터·아이템 스프라이트 만들기에 딱.">
+<meta property="og:title" content="🎨 이음 픽셀 그림판 — LeDeuxions 게임월드">
+<meta property="og:description" content="픽셀 아트를 그려서 투명 PNG로 저장. 게임 캐릭터 만들기!">
+<title>🎨 이음 픽셀 그림판 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; touch-action:none; }
+  body { min-height:100vh; font-family:-apple-system,'Malgun Gothic',sans-serif;
+    background:linear-gradient(160deg,#1a2036,#2b2350); color:#fff;
+    display:flex; flex-direction:column; align-items:center; padding:14px; }
+  a.back { position:fixed; top:14px; left:16px; color:#fff; opacity:.6; text-decoration:none; font-size:15px; z-index:5; }
+  h1 { font-size:20px; font-weight:800; margin:4px 0 10px; }
+  #tools { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-bottom:8px; align-items:center; }
+  .sz { padding:6px 12px; font-size:13px; font-weight:700; background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.15); border-radius:10px; color:#fff; cursor:pointer; }
+  .sz.on { background:#ffc247; color:#1a2036; }
+  #palette { display:grid; grid-template-columns:repeat(9,1fr); gap:5px; max-width:340px; margin-bottom:10px; }
+  .sw { width:100%; aspect-ratio:1; border-radius:6px; cursor:pointer; border:2px solid transparent; }
+  .sw.on { border-color:#fff; transform:scale(1.1); }
+  .sw.eraser { background:repeating-conic-gradient(#bbb 0% 25%, #fff 0% 50%) 50%/10px 10px; position:relative; }
+  #wrap { background:#fff; border-radius:8px; padding:6px; box-shadow:0 8px 24px rgba(0,0,0,.35); }
+  canvas { display:block; image-rendering:pixelated; background:
+    repeating-conic-gradient(#d8d8d8 0% 25%, #fff 0% 50%) 50%/16px 16px; cursor:crosshair; }
+  #btns { display:flex; gap:8px; margin-top:12px; }
+  .b { padding:11px 20px; font-size:15px; font-weight:800; border:none; border-radius:30px; cursor:pointer; }
+  .b.save { background:linear-gradient(180deg,#a9f5c8,#5fe08e); color:#16241c; }
+  .b.clear { background:rgba(255,255,255,.12); color:#fff; }
+  .b:active { transform:translateY(2px); }
+  #hint { font-size:12px; opacity:.55; margin-top:10px; text-align:center; line-height:1.5; }
+</style>
+</head>
+<body>
+  <a class="back" href="../">← 게임월드</a>
+  <h1>🎨 이음 픽셀 그림판</h1>
+  <div id="tools">
+    <span class="sz on" data-n="16">16×16</span>
+    <span class="sz" data-n="32">32×32</span>
+    <span class="sz" data-n="8">8×8</span>
+  </div>
+  <div id="palette"></div>
+  <div id="wrap"><canvas id="c"></canvas></div>
+  <div id="btns">
+    <button class="b clear" id="clear">전체 지우기</button>
+    <button class="b save" id="save">PNG 저장</button>
+  </div>
+  <div id="hint">색 고르고 그림 그려요 · 저장하면 투명배경 PNG로 나와요<br>게임 캐릭터·아이템 그려서 삼촌한테 주면 게임에 넣어줄게요 🐟</div>
+<script>
+const COLORS=['#000000','#ffffff','#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6',
+  '#e84393','#fd79a8','#a0522d','#7f8c8d','#bdc3c7','#2c3e50','#27ae60','#c0392b','__ERASE__'];
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+const pal=document.getElementById('palette');
+let N=16, DISP=Math.min(window.innerWidth-44,352), cell, grid, color='#000000', drawing=false;
+
+// 팔레트
+COLORS.forEach((col,i)=>{ const s=document.createElement('div'); s.className='sw'+(i===0?' on':'');
+  if(col==='__ERASE__'){ s.className+=' eraser'; s.title='지우개'; } else s.style.background=col;
+  s.addEventListener('click',()=>{ document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));
+    s.classList.add('on'); color=col; }); pal.appendChild(s); });
+
+function setup(n){
+  N=n; cell=Math.floor(DISP/N); const size=cell*N;
+  cv.width=size; cv.height=size; cv.style.width=size+'px'; cv.style.height=size+'px';
+  grid=Array.from({length:N},()=>Array(N).fill(null));
+  render();
+}
+function render(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){ if(grid[y][x]){ ctx.fillStyle=grid[y][x];
+    ctx.fillRect(x*cell,y*cell,cell,cell); } }
+  // 격자선
+  ctx.strokeStyle='rgba(0,0,0,.08)'; ctx.lineWidth=1;
+  for(let i=0;i<=N;i++){ ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell,cv.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(cv.width,i*cell); ctx.stroke(); }
+}
+function paint(e){
+  const r=cv.getBoundingClientRect();
+  const px=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+  const py=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+  const x=Math.floor(px/cell), y=Math.floor(py/cell);
+  if(x<0||y<0||x>=N||y>=N) return;
+  grid[y][x] = color==='__ERASE__'? null : color;
+  render();
+}
+cv.addEventListener('pointerdown',e=>{ drawing=true; paint(e); });
+cv.addEventListener('pointermove',e=>{ if(drawing) paint(e); });
+window.addEventListener('pointerup',()=>drawing=false);
+
+document.querySelectorAll('.sz').forEach(b=> b.addEventListener('click',()=>{
+  document.querySelectorAll('.sz').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  setup(+b.dataset.n); }));
+document.getElementById('clear').addEventListener('click',()=>{ if(confirm('전체 지울까요?')){ setup(N); } });
+document.getElementById('save').addEventListener('click',()=>{
+  // 실제 픽셀 크기(N×N) 투명 PNG로 저장
+  const o=document.createElement('canvas'); o.width=N; o.height=N; const octx=o.getContext('2d');
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){ if(grid[y][x]){ octx.fillStyle=grid[y][x]; octx.fillRect(x,y,1,1); } }
+  const a=document.createElement('a'); a.download='픽셀그림_'+N+'x'+N+'.png'; a.href=o.toDataURL('image/png'); a.click();
+});
+setup(16);
+</script>
+<div style="text-align:center;font-size:12px;opacity:.45;margin:16px 0 22px;">🎨 이음 제작 — LeDeuxions 게임월드</div>
+</body>
+</html>
