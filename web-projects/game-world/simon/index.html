@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a2036">
+<meta name="description" content="색깔 기억 — 점점 길어지는 색·소리 순서를 따라 누르는 기억력 미니게임. 설치 없이 브라우저에서 바로, 모바일도 OK.">
+<meta property="og:title" content="색깔 기억 — LeDeuxions 게임월드">
+<meta property="og:description" content="색과 소리의 순서를 기억해 따라 누르세요. 몇 단계까지?">
+<title>🎨 색깔 기억 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+  body { min-height:100vh; font-family:-apple-system,'Malgun Gothic',sans-serif;
+    background:linear-gradient(160deg,#1a2036,#2b2350); color:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
+  h1 { font-size:26px; font-weight:800; margin-bottom:4px; }
+  #msg { font-size:15px; opacity:.8; height:22px; margin-bottom:18px; }
+  #lv { font-size:14px; color:#ffd479; font-weight:700; margin-bottom:14px; }
+  .pad { display:grid; grid-template-columns:1fr 1fr; gap:14px;
+    width:min(84vw,320px); aspect-ratio:1/1; }
+  .btn { border-radius:18px; cursor:pointer; opacity:.5; transition:opacity .12s, transform .08s;
+    box-shadow:inset 0 -6px 12px rgba(0,0,0,.2); }
+  .btn:active { transform:scale(.97); }
+  .btn.on { opacity:1; box-shadow:inset 0 -6px 12px rgba(0,0,0,.2), 0 0 26px currentColor; }
+  #g{ background:#2ecc71; color:#2ecc71; } #r{ background:#e74c3c; color:#e74c3c; }
+  #y{ background:#f1c40f; color:#f1c40f; } #b{ background:#3498db; color:#3498db; }
+  #start { margin-top:26px; padding:14px 40px; font-size:18px; font-weight:800; color:#1a2036;
+    background:linear-gradient(180deg,#ffe08a,#ffc247); border:none; border-radius:40px;
+    box-shadow:0 6px 18px rgba(255,190,71,.4); cursor:pointer; }
+  #start:active{ transform:translateY(2px); }
+  a.back { position:fixed; top:16px; left:18px; color:#fff; opacity:.6; text-decoration:none; font-size:15px; }
+  .credit { position:fixed; bottom:14px; left:0; right:0; text-align:center;
+    font-size:12px; opacity:.45; }
+</style>
+</head>
+<body>
+  <a class="back" href="../">← 게임월드</a>
+  <h1>🎨 색깔 기억</h1>
+  <div id="lv">레벨 0 · 최고 0</div>
+  <div id="msg">시작을 눌러</div>
+  <div class="pad">
+    <div class="btn" id="g"></div><div class="btn" id="r"></div>
+    <div class="btn" id="y"></div><div class="btn" id="b"></div>
+  </div>
+  <button id="start">시작</button>
+  <div class="credit">🎨 이음 제작 — LeDeuxions 게임월드</div>
+<script>
+const pads=['g','r','y','b'];
+const el=id=>document.getElementById(id);
+const msg=el('msg'), lvEl=el('lv'), startBtn=el('start');
+let seq=[], input=[], playing=false, best=+(localStorage.getItem('simon_best')||0);
+lvEl.textContent='레벨 0 · 최고 '+best;
+
+function flash(id,ms=380){ return new Promise(res=>{ const b=el(id); b.classList.add('on');
+  beep(id); setTimeout(()=>{ b.classList.remove('on'); setTimeout(res,140); }, ms); }); }
+let actx;
+function beep(id){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  const f={g:330,r:262,y:392,b:494}[id]; const o=actx.createOscillator(), g=actx.createGain();
+  o.frequency.value=f; o.connect(g); g.connect(actx.destination); g.gain.value=.15;
+  o.start(); o.stop(actx.currentTime+.18);}catch(e){} }
+
+async function play(){ playing=false; msg.textContent='잘 봐...';
+  for(const id of seq){ await flash(id); } msg.textContent='따라 눌러!'; input=[]; playing=true; }
+function next(){ seq.push(pads[Math.floor(Math.random()*4)]);
+  lvEl.textContent='레벨 '+seq.length+' · 최고 '+best; setTimeout(play,600); }
+function start(){ seq=[]; input=[]; startBtn.style.display='none'; msg.textContent=''; next(); }
+
+pads.forEach(id=> el(id).addEventListener('pointerdown',()=>{ if(!playing) return;
+  el(id).classList.add('on'); beep(id); setTimeout(()=>el(id).classList.remove('on'),140);
+  input.push(id); const i=input.length-1;
+  if(input[i]!==seq[i]){ // 틀림
+    playing=false; if(seq.length-1>best){ best=seq.length-1; localStorage.setItem('simon_best',best);}
+    msg.textContent='땡! '+(seq.length-1)+'단계까지 갔어';
+    lvEl.textContent='레벨 '+(seq.length-1)+' · 최고 '+best;
+    startBtn.textContent='다시'; startBtn.style.display='block'; return; }
+  if(input.length===seq.length){ playing=false; msg.textContent='좋아! 다음 ↑'; next(); }
+}));
+startBtn.addEventListener('click',start);
+</script>
+</body>
+</html>
