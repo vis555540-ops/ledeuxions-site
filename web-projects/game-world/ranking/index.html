@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="게임월드 세계 랭킹 — 건축 타워 빌더·색깔 기억·이음 스네이크의 전세계 TOP 10 기록. 내 순위를 확인하세요.">
+<meta property="og:title" content="🏆 게임월드 랭킹 — LeDeuxions">
+<meta property="og:description" content="게임월드 전세계 TOP 10 순위표.">
+<title>🏆 게임월드 랭킹 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../../assets/css/claude-design.css">
+<style>
+    .hub-hero { padding: var(--space-7) 0 var(--space-4); text-align: center; }
+    .rank-actions { display:flex; justify-content:center; gap:var(--space-3); margin-bottom:var(--space-5); }
+    .btn-soft {
+        padding: 9px 18px; border-radius: var(--radius-md);
+        background: var(--bg-card); border: 1px solid var(--border);
+        color: var(--text-secondary); font-family: var(--font-sans); font-size: .9rem;
+        cursor: pointer; text-decoration:none;
+    }
+    .btn-soft:hover { border-color: var(--accent); color: var(--text-primary); }
+    .boards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-5);
+        margin-bottom: var(--space-7);
+    }
+    .board {
+        background: var(--bg-card); border: 1px solid var(--border);
+        border-radius: var(--radius-lg); padding: var(--space-5);
+    }
+    .board h3 { font-family: var(--font-serif); font-size: 1.2rem; margin: 0 0 2px; color: var(--text-primary); }
+    .board .cnt { font-size: .8rem; color: var(--text-muted); margin-bottom: var(--space-3); }
+    .list { list-style: none; margin: 0; padding: 0; }
+    .row {
+        display: grid; grid-template-columns: 40px 1fr auto; align-items: center;
+        gap: 10px; padding: 9px 10px; border-radius: var(--radius-sm);
+        border-bottom: 1px solid var(--border-subtle, var(--border));
+    }
+    .row:last-child { border-bottom: none; }
+    .row .rk { font-weight: 700; color: var(--text-secondary); font-size: .95rem; text-align:center; }
+    .row .nm { color: var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .row .sc { font-family: var(--font-sans); font-weight: 600; color: var(--accent-deep, var(--accent)); }
+    .row.mine { background: var(--accent-soft); }
+    .row.mine .nm { font-weight: 700; }
+    .row.mine .nm::after { content: " (나)"; color: var(--accent); font-size: .8rem; font-weight:600; }
+    .empty { padding: 18px 10px; color: var(--text-muted); font-size: .9rem; text-align: center; }
+    .loading { padding: 18px 10px; color: var(--text-muted); font-size: .9rem; text-align:center; }
+    .gap { text-align:center; color: var(--text-muted); padding: 2px 0 4px; letter-spacing: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
+            <a href="/work/" class="nav-link" data-nav-link>작품</a>
+            <a href="/history/" class="nav-link" data-nav-link>이야기</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="hub-hero container">
+    <div class="eyebrow" style="margin-bottom:12px;">Game World</div>
+    <h1>🏆 게임월드 랭킹</h1>
+    <p class="lead" style="max-width:600px;margin:0 auto;">전세계 TOP 10. 내 이름이 몇 등에 있나 확인해보세요.</p>
+</header>
+
+<main class="container">
+    <div class="rank-actions">
+        <a href="../" class="btn-soft">← 게임월드</a>
+        <button class="btn-soft" id="nameBtn">✏️ 이름: <b id="curName">-</b></button>
+        <button class="btn-soft" id="refresh">↻ 새로고침</button>
+    </div>
+    <div class="boards" id="boards"></div>
+</main>
+
+<script src="../arcade.js"></script>
+<script>
+(function () {
+    const GAMES = [
+        { key: 'tower', name: '🏗️ 건축 타워 빌더', unit: '층' },
+        { key: 'simon', name: '🎨 색깔 기억',       unit: '단계' },
+        { key: 'snake', name: '🐍 이음 스네이크',   unit: '점' },
+    ];
+
+    function myName() { return (window.Arcade && Arcade.name && Arcade.name()) || ''; }
+    function esc(s) {
+        return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+    function rankMark(i) { return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '위'; }
+
+    // list = 전체 정렬된 배열, i = 0-based 인덱스
+    function rowHtml(e, i, unit, me) {
+        const mine = (me && e.n === me) ? ' mine' : '';
+        return '<li class="row' + mine + '"><span class="rk">' + rankMark(i) + '</span>'
+            + '<span class="nm">' + esc(e.n) + '</span>'
+            + '<span class="sc">' + e.s + unit + '</span></li>';
+    }
+
+    async function render() {
+        const me = myName();
+        document.getElementById('curName').textContent = me || '미설정';
+        const wrap = document.getElementById('boards');
+        wrap.innerHTML = '';
+        for (const g of GAMES) {
+            const card = document.createElement('div');
+            card.className = 'board';
+            card.innerHTML = '<h3>' + g.name + '</h3><div class="cnt"></div><ol class="list"><li class="loading">불러오는 중…</li></ol>';
+            wrap.appendChild(card);
+
+            const res = window.Arcade ? await Arcade.top(g.key, 100) : null;   // 전체(최대 100) 받아 내 위치 계산
+            const cnt = card.querySelector('.cnt');
+            const list = card.querySelector('.list');
+            const all = (res && res.top) ? res.top : [];
+            if (!all.length) {
+                cnt.textContent = '전체 0명';
+                list.innerHTML = '<li class="empty">아직 기록이 없어요 —<br>첫 주인공이 되어보세요! 🎮</li>';
+                continue;
+            }
+            cnt.textContent = '전체 ' + res.total + '명';
+            const myIdx = me ? all.findIndex(e => e.n === me) : -1;
+
+            let html = all.slice(0, 10).map((e, i) => rowHtml(e, i, g.unit, me)).join('');
+            // 내가 TOP10 밖이면 내 순위 주변(위·나·아래) 추가
+            if (myIdx >= 10) {
+                html += '<li class="gap">⋯</li>';
+                for (let i = myIdx - 1; i <= myIdx + 1; i++) {
+                    if (i >= 0 && i < all.length) html += rowHtml(all[i], i, g.unit, me);
+                }
+            }
+            list.innerHTML = html;
+        }
+    }
+
+    document.getElementById('refresh').addEventListener('click', render);
+    document.getElementById('nameBtn').addEventListener('click', function () {
+        const cur = myName();
+        const v = window.prompt('게임에 쓸 이름을 정해줘! 🌍\n(아빠·아이 번갈아 할 때 바꿔가며 하세요)', cur || '');
+        if (v === null) return;                 // 취소
+        const n = (v || '').trim().slice(0, 16);
+        if (!n) return;
+        if (window.Arcade) Arcade.setName(n);
+        render();
+    });
+    render();
+})();
+</script>
+<script src="../../../assets/js/common.js"></script>
+</body>
+</html>
