@@ -22,12 +22,12 @@ const backendOf = (env) => env.BACKEND_URL || DEFAULT_BACKEND;
 
 // 티어별 1일 호출 제한
 const TIERS = {
-    free:     { transcribe: 3,   "remove-bg": 5,    ocr: 5,    "pdf-compress": 10   },
-    pro:      { transcribe: 200, "remove-bg": 500,  ocr: 500,  "pdf-compress": 1000 },
-    business: { transcribe: 1000,"remove-bg": 5000, ocr: 5000, "pdf-compress": 10000},
+    free:     { transcribe: 3,   "remove-bg": 5,    ocr: 5,    "pdf-compress": 10,    "restore-face": 2   },
+    pro:      { transcribe: 200, "remove-bg": 500,  ocr: 500,  "pdf-compress": 1000,  "restore-face": 100 },
+    business: { transcribe: 1000,"remove-bg": 5000, ocr: 5000, "pdf-compress": 10000, "restore-face": 500 },
 };
 
-const ALLOWED_TOOLS = ["transcribe", "remove-bg", "ocr", "pdf-compress"];
+const ALLOWED_TOOLS = ["transcribe", "remove-bg", "ocr", "pdf-compress", "restore-face"];
 
 // ---------- Helpers ----------
 const todayKey = () => new Date().toISOString().slice(0, 10);

@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="글자수 세기 — 공백 포함/제외, 바이트, 원고지 매수, 단어수, 문장수를 실시간으로. 자기소개서·리포트·트위터 글자 제한 확인.">
+<meta name="keywords" content="글자수 세기, 글자수 계산기, 공백 제외 글자수, 원고지 계산, 바이트 계산, 자소서 글자수, 자기소개서 글자수">
+<meta property="og:title" content="글자수 세기 — 공백·바이트·원고지 실시간 계산">
+<meta property="og:description" content="붙여넣기만 하면 끝. 자소서·리포트·SNS 글자 제한 확인.">
+<title>글자수 세기 · 공백/바이트/원고지 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<style>
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .counter-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-5);
+    }
+    @media (min-width: 920px) {
+        .counter-grid { grid-template-columns: 1.7fr 1fr; align-items: start; }
+    }
+    .editor-panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+    .editor-toolbar {
+        display: flex; gap: var(--space-2);
+        padding: var(--space-3) var(--space-4);
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-sunken);
+        flex-wrap: wrap;
+    }
+    .editor-toolbar button {
+        padding: 6px 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    .editor-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+    #editor {
+        width: 100%;
+        min-height: 420px;
+        border: none;
+        padding: var(--space-5);
+        font-size: 1.02rem;
+        line-height: 1.8;
+        font-family: var(--font-sans);
+        color: var(--text-primary);
+        background: var(--bg-card);
+        resize: vertical;
+    }
+    #editor:focus { outline: none; }
+
+    .stats-panel {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        position: sticky;
+        top: 80px;
+    }
+    .stat-big {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        text-align: center;
+    }
+    .stat-big .num {
+        font-family: var(--font-serif);
+        font-size: 3rem;
+        font-weight: 600;
+        color: var(--accent);
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+    }
+    .stat-big .label { color: var(--text-muted); font-size: 0.88rem; margin-top: 6px; }
+    .stat-rows {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4) var(--space-5);
+    }
+    .stat-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 0;
+        font-size: 0.92rem;
+    }
+    .stat-row + .stat-row { border-top: 1px solid var(--border); }
+    .stat-row .k { color: var(--text-secondary); }
+    .stat-row .v {
+        font-family: var(--font-mono);
+        color: var(--text-primary);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+    .limit-checker {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4) var(--space-5);
+    }
+    .limit-checker h3 {
+        font-family: var(--font-sans);
+        font-size: 0.95rem; font-weight: 600;
+        margin: 0 0 var(--space-3);
+    }
+    .limit-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 7px 0;
+        font-size: 0.86rem;
+    }
+    .limit-row .name { color: var(--text-secondary); }
+    .limit-row .status { font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; }
+    .limit-row .status.ok { color: #4A8E5F; }
+    .limit-row .status.over { color: #C0392B; }
+    .info-section {
+        margin-top: var(--space-7);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: var(--space-4);
+    }
+    .info-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+    }
+    .info-card h3 {
+        font-family: var(--font-sans);
+        font-size: 1rem; font-weight: 600;
+        margin: 0 0 var(--space-2);
+    }
+    .info-card p { font-size: 0.9rem; margin: 0; color: var(--text-secondary); line-height: 1.65; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand"><span class="nav-brand-mark">L</span><span>LeDeuxions</span></a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="app-hero container-narrow">
+    <div class="eyebrow" style="margin-bottom:12px;">Character Counter</div>
+    <h1>글자수 <em style="color:var(--accent);font-style:italic;">세기</em></h1>
+    <p class="lead">붙여넣기만 하면 끝. 공백·바이트·원고지·단어수를 실시간으로 계산합니다.</p>
+</header>
+
+<main class="container" style="padding-bottom:var(--space-9);">
+
+<div class="counter-grid">
+
+    <div class="editor-panel">
+        <div class="editor-toolbar">
+            <button id="btn-paste">📋 붙여넣기</button>
+            <button id="btn-copy">복사</button>
+            <button id="btn-clear">지우기</button>
+            <button id="btn-trim">공백 정리</button>
+        </div>
+        <textarea id="editor" placeholder="여기에 텍스트를 입력하거나 붙여넣으세요…" autofocus></textarea>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat-big">
+            <div class="num" id="s-total">0</div>
+            <div class="label">공백 포함 글자수</div>
+        </div>
+        <div class="stat-rows">
+            <div class="stat-row"><span class="k">공백 제외</span><span class="v" id="s-nospace">0</span></div>
+            <div class="stat-row"><span class="k">바이트 (UTF-8)</span><span class="v" id="s-bytes">0</span></div>
+            <div class="stat-row"><span class="k">바이트 (한글 2byte)</span><span class="v" id="s-bytes2">0</span></div>
+            <div class="stat-row"><span class="k">단어수</span><span class="v" id="s-words">0</span></div>
+            <div class="stat-row"><span class="k">문장수</span><span class="v" id="s-sentences">0</span></div>
+            <div class="stat-row"><span class="k">줄수</span><span class="v" id="s-lines">0</span></div>
+            <div class="stat-row"><span class="k">문단수</span><span class="v" id="s-paragraphs">0</span></div>
+            <div class="stat-row"><span class="k">원고지 (200자)</span><span class="v" id="s-manuscript">0매</span></div>
+        </div>
+        <div class="limit-checker">
+            <h3>제한 체크</h3>
+            <div class="limit-row"><span class="name">자소서 (500자)</span><span class="status" data-limit="500" data-mode="total">—</span></div>
+            <div class="limit-row"><span class="name">자소서 (1,000자)</span><span class="status" data-limit="1000" data-mode="total">—</span></div>
+            <div class="limit-row"><span class="name">자소서 (1,500자)</span><span class="status" data-limit="1500" data-mode="total">—</span></div>
+            <div class="limit-row"><span class="name">X (트위터, 280자)</span><span class="status" data-limit="280" data-mode="total">—</span></div>
+            <div class="limit-row"><span class="name">인스타 캡션 (2,200자)</span><span class="status" data-limit="2200" data-mode="total">—</span></div>
+            <div class="limit-row"><span class="name">유튜브 제목 (100자)</span><span class="status" data-limit="100" data-mode="total">—</span></div>
+            <div class="limit-row"><span class="name">문자 SMS (90byte)</span><span class="status" data-limit="90" data-mode="bytes2">—</span></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- SEO 콘텐츠 -->
+<section class="info-section">
+    <div class="info-card">
+        <h3>공백 포함 vs 제외, 뭘 봐야 하나요?</h3>
+        <p>대부분의 자기소개서·논술 시험은 <strong>공백 포함</strong> 기준입니다. 다만 일부 대학·기업은 공백 제외를 쓰므로 공고문의 "글자수 (공백 포함)" 표기를 꼭 확인하세요.</p>
+    </div>
+    <div class="info-card">
+        <h3>바이트 계산은 언제 쓰나요?</h3>
+        <p>문자(SMS)는 한글 2바이트 기준 90바이트, 일부 입사지원 시스템도 바이트 제한을 씁니다. UTF-8에서 한글은 3바이트지만, 관공서·통신은 EUC-KR(2바이트) 기준이 많아 둘 다 표시합니다.</p>
+    </div>
+    <div class="info-card">
+        <h3>원고지 매수는 어떻게 계산하나요?</h3>
+        <p>200자 원고지 기준으로, 공백 포함 글자수를 200으로 나눈 값을 올림 처리합니다. 논술·문학 공모전 분량 확인에 사용하세요.</p>
+    </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions. 글자수 세기 v2026.06</span>
+            <span><a href="/web-projects/">← 다른 도구</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../../assets/js/common.js"></script>
+<script>
+(function () {
+    'use strict';
+    var editor = document.getElementById('editor');
+
+    function count() {
+        var t = editor.value;
+        var total = Array.from(t).length; // 코드포인트 단위 (이모지 안전)
+        var noSpace = Array.from(t.replace(/\s/g, '')).length;
+        var bytesUtf8 = new Blob([t]).size;
+        // 한글 2바이트(EUC-KR 근사): ASCII 1, 그 외 2
+        var bytes2 = 0;
+        for (var ch of t) { bytes2 += (ch.charCodeAt(0) <= 0x7F) ? 1 : 2; }
+        var words = t.trim() ? t.trim().split(/\s+/).length : 0;
+        var sentences = (t.match(/[.!?。！？…]+(\s|$)/g) || []).length;
+        var lines = t ? t.split('\n').length : 0;
+        var paragraphs = t.trim() ? t.trim().split(/\n\s*\n/).filter(Boolean).length : 0;
+        var manuscript = Math.ceil(total / 200);
+
+        document.getElementById('s-total').textContent = total.toLocaleString();
+        document.getElementById('s-nospace').textContent = noSpace.toLocaleString();
+        document.getElementById('s-bytes').textContent = bytesUtf8.toLocaleString();
+        document.getElementById('s-bytes2').textContent = bytes2.toLocaleString();
+        document.getElementById('s-words').textContent = words.toLocaleString();
+        document.getElementById('s-sentences').textContent = sentences.toLocaleString();
+        document.getElementById('s-lines').textContent = lines.toLocaleString();
+        document.getElementById('s-paragraphs').textContent = paragraphs.toLocaleString();
+        document.getElementById('s-manuscript').textContent = manuscript.toLocaleString() + '매';
+
+        // limit checks
+        document.querySelectorAll('[data-limit]').forEach(function (el) {
+            var limit = parseInt(el.dataset.limit, 10);
+            var val = el.dataset.mode === 'bytes2' ? bytes2 : total;
+            if (val === 0) { el.textContent = '—'; el.className = 'status'; return; }
+            var remain = limit - val;
+            if (remain >= 0) {
+                el.textContent = remain.toLocaleString() + ' 남음';
+                el.className = 'status ok';
+            } else {
+                el.textContent = Math.abs(remain).toLocaleString() + ' 초과';
+                el.className = 'status over';
+            }
+        });
+    }
+
+    editor.addEventListener('input', count);
+
+    document.getElementById('btn-clear').addEventListener('click', function () {
+        editor.value = ''; count(); editor.focus();
+    });
+    document.getElementById('btn-copy').addEventListener('click', function () {
+        navigator.clipboard.writeText(editor.value).then(function () { LD.toast('복사되었습니다'); });
+    });
+    document.getElementById('btn-paste').addEventListener('click', async function () {
+        try {
+            var t = await navigator.clipboard.readText();
+            editor.value = t; count();
+        } catch (e) { LD.toast('클립보드 접근이 차단되었습니다. Ctrl+V를 사용하세요.', 'error'); }
+    });
+    document.getElementById('btn-trim').addEventListener('click', function () {
+        editor.value = editor.value.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+        count(); LD.toast('공백을 정리했습니다');
+    });
+
+    count();
+})();
+</script>
+</body>
+</html>
