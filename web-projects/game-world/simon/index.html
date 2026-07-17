@@ -64,19 +64,23 @@ async function play(){ playing=false; msg.textContent='잘 봐...';
   for(const id of seq){ await flash(id); } msg.textContent='따라 눌러!'; input=[]; playing=true; }
 function next(){ seq.push(pads[Math.floor(Math.random()*4)]);
   lvEl.textContent='레벨 '+seq.length+' · 최고 '+best; setTimeout(play,600); }
-function start(){ seq=[]; input=[]; startBtn.style.display='none'; msg.textContent=''; next(); }
+function start(){ if(window.Arcade) Arcade.ensureName(); seq=[]; input=[]; startBtn.style.display='none'; msg.textContent=''; next(); }
 
 pads.forEach(id=> el(id).addEventListener('pointerdown',()=>{ if(!playing) return;
   el(id).classList.add('on'); beep(id); setTimeout(()=>el(id).classList.remove('on'),140);
   input.push(id); const i=input.length-1;
   if(input[i]!==seq[i]){ // 틀림
-    playing=false; if(seq.length-1>best){ best=seq.length-1; localStorage.setItem('simon_best',best);}
-    msg.textContent='땡! '+(seq.length-1)+'단계까지 갔어';
-    lvEl.textContent='레벨 '+(seq.length-1)+' · 최고 '+best;
-    startBtn.textContent='다시'; startBtn.style.display='block'; return; }
+    playing=false; const sc=seq.length-1; const rec = sc>best;
+    if(rec){ best=sc; localStorage.setItem('simon_best',best);}
+    msg.textContent='땡! '+sc+'단계까지 갔어';
+    lvEl.textContent='레벨 '+sc+' · 최고 '+best;
+    startBtn.textContent='다시'; startBtn.style.display='block';
+    if(rec && sc>0 && window.Arcade){ Arcade.submit('simon',sc).then(r=>{ if(r) msg.textContent='땡! '+sc+'단계 · '+Arcade.rankText(r); }); }
+    return; }
   if(input.length===seq.length){ playing=false; msg.textContent='좋아! 다음 ↑'; next(); }
 }));
 startBtn.addEventListener('click',start);
 </script>
+<script src="../arcade.js"></script>
 </body>
 </html>

@@ -206,13 +206,13 @@
     bestEl.textContent = best;
 
     let state = 'ready';           // ready | playing | over
-    let blocks, current, falls, camY, camTarget, combo, shake, parts;
+    let blocks, current, falls, camY, camTarget, combo, shake, parts, newRecord;
 
     function hueFor(level) { return (200 + level * 9) % 360; }
 
     function reset() {
         blocks = [{ x: (W - BASE_W) / 2, w: BASE_W, level: 0 }];
-        camY = 0; camTarget = 0; combo = 0; falls = []; shake = 0; parts = [];
+        camY = 0; camTarget = 0; combo = 0; falls = []; shake = 0; parts = []; newRecord = false;
         spawn();
         floorsEl.textContent = '0';
     }
@@ -285,6 +285,7 @@
             best = current.level;
             bestEl.textContent = best;
             localStorage.setItem('tower_best', String(best));
+            newRecord = true;
         }
         spawn();
     }
@@ -315,12 +316,23 @@
         const score = blocks[blocks.length - 1].level;
         ovTitle.textContent = '무너졌어요!';
         ovDesc.innerHTML = '<span class="big-score">' + score + '층</span>' +
-            (score >= best && score > 0 ? '<br>신기록! 🏆' : '<br>최고 ' + best + '층');
+            (newRecord && score > 0 ? '<br>신기록! 🏆' : '<br>최고 ' + best + '층') +
+            '<br><span id="rankLine" style="opacity:.9;font-size:.95rem"></span>';
         playBtn.textContent = '다시 짓기';
         overlay.classList.remove('hidden');
+        // 신기록이면 전세계 랭킹 제출·표시
+        if (newRecord && score > 0 && window.Arcade) {
+            const line = document.getElementById('rankLine');
+            if (line) line.textContent = '🌍 순위 확인 중…';
+            Arcade.submit('tower', score).then(function (res) {
+                const el = document.getElementById('rankLine');
+                if (el) el.textContent = Arcade.rankText(res);
+            });
+        }
     }
 
     function start() {
+        if (window.Arcade) Arcade.ensureName();   // 최초 1회 이름 입력
         reset();
         state = 'playing';
         overlay.classList.add('hidden');
@@ -454,6 +466,7 @@
     try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
 })();
 </script>
+<script src="../arcade.js"></script>
 <script src="../../../assets/js/common.js"></script>
 </body>
 </html>

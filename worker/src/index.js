@@ -252,6 +252,54 @@ async function handleMe(req, env, origin) {
 }
 
 // ---------- Entry ----------
+// ---------- Leaderboard (게임월드 전세계 랭킹) ----------
+const ARCADE_GAMES = ["tower", "simon", "snake"];
+const LB_MAX = 100;          // 게임별 저장 상위 인원 수
+const LB_NAME_MAX = 16;
+
+function sanitizeName(s) {
+    return String(s || "").replace(/[<>\n\r\t]/g, "").trim().slice(0, LB_NAME_MAX) || "익명";
+}
+
+// POST /score  { game, name, score }  → { rank, total, best, name, score }
+// 이름별 최고기록만 유지, 상위 LB_MAX명 보관. (KV eventual consistency — 가족 게임 규모라 허용)
+async function handleScoreSubmit(req, env, origin) {
+    let body;
+    try { body = await req.json(); } catch (e) { return json({ error: "invalid json" }, 400, corsHeaders(origin)); }
+    const game = String(body.game || "");
+    if (!ARCADE_GAMES.includes(game)) return json({ error: "unknown game" }, 400, corsHeaders(origin));
+    const name = sanitizeName(body.name);
+    const score = Math.floor(Number(body.score));
+    if (!Number.isFinite(score) || score < 0 || score > 1000000) {
+        return json({ error: "invalid score" }, 400, corsHeaders(origin));
+    }
+    const key = `lb:${game}`;
+    const list = (await env.KV.get(key, "json")) || [];
+    const idx = list.findIndex(e => e.n === name);
+    if (idx >= 0) {
+        if (score > list[idx].s) { list[idx].s = score; list[idx].t = Date.now(); }
+    } else {
+        list.push({ n: name, s: score, t: Date.now() });
+    }
+    list.sort((a, b) => (b.s - a.s) || (a.t - b.t));
+    if (list.length > LB_MAX) list.length = LB_MAX;
+    await env.KV.put(key, JSON.stringify(list));
+    const rank = list.filter(e => e.s > score).length + 1;
+    return json({ rank, total: list.length, best: list[0].s, name, score }, 200, corsHeaders(origin));
+}
+
+// GET /leaderboard?game=tower&limit=10  → { game, total, top: [{n,s}] }
+async function handleLeaderboard(req, env, origin) {
+    const url = new URL(req.url);
+    const game = String(url.searchParams.get("game") || "");
+    if (!ARCADE_GAMES.includes(game)) return json({ error: "unknown game" }, 400, corsHeaders(origin));
+    let limit = parseInt(url.searchParams.get("limit") || "10", 10);
+    if (!Number.isFinite(limit) || limit < 1) limit = 10;
+    if (limit > 50) limit = 50;
+    const list = (await env.KV.get(`lb:${game}`, "json")) || [];
+    return json({ game, total: list.length, top: list.slice(0, limit).map(e => ({ n: e.n, s: e.s })) }, 200, corsHeaders(origin));
+}
+
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
@@ -277,6 +325,12 @@ export default {
         if (url.pathname.startsWith("/v1/") && request.method === "POST") {
             const tool = url.pathname.slice(4);
             return handleApiCall(tool, request, env, origin);
+        }
+        if (url.pathname === "/score" && request.method === "POST") {
+            return handleScoreSubmit(request, env, origin);
+        }
+        if (url.pathname === "/leaderboard" && request.method === "GET") {
+            return handleLeaderboard(request, env, origin);
         }
 
         return json({ error: "not found", path: url.pathname }, 404, corsHeaders(origin));

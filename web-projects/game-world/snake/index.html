@@ -42,6 +42,7 @@ let best=+(localStorage.getItem('snake_best')||0);
 let snake, dir, nextDir, food, score, timer, alive=false;
 
 function reset(){
+  if(window.Arcade) Arcade.ensureName();
   snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}]; dir={x:1,y:0}; nextDir=dir;
   score=0; placeFood(); alive=true; startBtn.style.display='none';
   scEl.textContent='점수 0 · 최고 '+best;
@@ -60,9 +61,11 @@ function tick(){
   draw();
 }
 function over(){ alive=false; clearInterval(timer);
-  if(score>best){ best=score; localStorage.setItem('snake_best',best); }
+  const rec = score>best;
+  if(rec){ best=score; localStorage.setItem('snake_best',best); }
   scEl.textContent='끝! 점수 '+score+' · 최고 '+best;
   startBtn.textContent='다시'; startBtn.style.display='block';
+  if(rec && score>0 && window.Arcade){ Arcade.submit('snake',score).then(r=>{ if(r) scEl.textContent='끝! '+score+'점 · '+Arcade.rankText(r); }); }
 }
 function draw(){
   ctx.fillStyle='rgba(0,0,0,.15)'; ctx.fillRect(0,0,SZ,SZ);
@@ -89,5 +92,6 @@ ctx.fillStyle='rgba(0,0,0,.15)'; ctx.fillRect(0,0,SZ,SZ);
 ctx.fillStyle='#5fe08e'; ctx.font='16px sans-serif'; ctx.textAlign='center';
 ctx.fillText('🐍 시작을 눌러', SZ/2, SZ/2);
 </script>
+<script src="../arcade.js"></script>
 </body>
 </html>
