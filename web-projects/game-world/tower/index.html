@@ -11,7 +11,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<link rel="stylesheet" href="../../../assets/css/claude-design.css">
 <style>
     .app-hero { padding: var(--space-6) 0 var(--space-4); text-align: center; }
     .app-hero h1 { margin: 0 0 var(--space-2); }
@@ -110,18 +110,25 @@
 </style>
 </head>
 <body>
-<header class="site-nav">
-    <nav class="nav-inner">
-        <a href="/" class="nav-brand">LeDeuxions</a>
-        <div class="nav-links">
+<!-- Navbar -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
             <a href="/" class="nav-link" data-nav-link>홈</a>
             <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
             <a href="/work/" class="nav-link" data-nav-link>작품</a>
             <a href="/history/" class="nav-link" data-nav-link>이야기</a>
             <a href="/contact/" class="nav-link" data-nav-link>연락</a>
         </div>
-    </nav>
-</header>
+    </div>
+</nav>
 
 <main class="container">
     <section class="app-hero">
@@ -447,5 +454,6 @@
     try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
 })();
 </script>
+<script src="../../../assets/js/common.js"></script>
 </body>
 </html>

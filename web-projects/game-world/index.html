@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="LeDeuxions 게임월드 — 브라우저에서 바로 즐기는 미니게임 모음. 설치 없이, 모바일도 OK. 건축 타워 빌더로 시작.">
+<meta property="og:title" content="게임월드 — LeDeuxions">
+<meta property="og:description" content="브라우저에서 바로 즐기는 미니게임 모음.">
+<title>게임월드 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<style>
+    .hub-hero { padding: var(--space-8) 0 var(--space-7); text-align: center; }
+    .hub-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-5);
+        margin-bottom: var(--space-7);
+    }
+    .tool-card {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        padding: var(--space-6);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        color: inherit;
+        transition: all .25s var(--ease);
+        position: relative;
+        overflow: hidden;
+    }
+    .tool-card:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-3px);
+        color: inherit;
+    }
+    .tool-card-icon {
+        width: 56px; height: 56px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-md);
+        display: grid; place-items: center;
+        font-size: 1.6rem;
+    }
+    .tool-card h3 {
+        font-family: var(--font-serif);
+        font-size: 1.35rem;
+        margin: 0;
+        color: var(--text-primary);
+    }
+    .tool-card p {
+        color: var(--text-secondary);
+        font-size: 0.93rem;
+        margin: 0 0 var(--space-2);
+        line-height: 1.55;
+    }
+    .tool-card-meta {
+        display: flex;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+        margin-top: auto;
+        padding-top: var(--space-3);
+    }
+    .tool-card-arrow {
+        position: absolute;
+        top: var(--space-5); right: var(--space-5);
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        transition: transform .2s var(--ease), color .2s var(--ease);
+    }
+    .tool-card:hover .tool-card-arrow {
+        color: var(--accent);
+        transform: translate(3px, -3px);
+    }
+    /* 준비 중 카드 */
+    .tool-card.soon {
+        border-style: dashed;
+        cursor: default;
+        opacity: 0.75;
+    }
+    .tool-card.soon:hover {
+        transform: none;
+        border-color: var(--border);
+        box-shadow: none;
+    }
+    .tool-card.soon .tool-card-icon {
+        background: var(--bg-sunken);
+        color: var(--text-muted);
+    }
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
+            <a href="/work/" class="nav-link" data-nav-link>작품</a>
+            <a href="/history/" class="nav-link" data-nav-link>이야기</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="hub-hero container">
+    <div class="eyebrow" style="margin-bottom:12px;">Game World</div>
+    <h1>🎮 게임월드</h1>
+    <p class="lead" style="max-width:640px;margin:0 auto;">
+        브라우저에서 바로 즐기는 미니게임 모음.<br>
+        설치도 회원가입도 없이, 탭 한 번이면 시작합니다.
+    </p>
+</header>
+
+<main class="container">
+
+    <div class="hub-grid">
+
+        <a href="tower/" class="tool-card">
+            <span class="tool-card-arrow">↗</span>
+            <div class="tool-card-icon">🏗️</div>
+            <h3>건축 타워 빌더</h3>
+            <p>블록을 정확히 쌓아 건물을 높이 올려요. 완벽하게 맞추면 콤보 보너스로 다시 넓어집니다. 몇 층까지?</p>
+            <div class="tool-card-meta">
+                <span class="badge">완전 정적</span>
+                <span class="badge badge-neutral">모바일 OK</span>
+            </div>
+        </a>
+
+        <div class="tool-card soon">
+            <span class="tool-card-arrow">✦</span>
+            <div class="tool-card-icon">🕹️</div>
+            <h3>곧 추가돼요</h3>
+            <p>게임월드는 계속 자라납니다. 다음 게임을 짓고 있어요 — 자주 놀러 오세요!</p>
+            <div class="tool-card-meta">
+                <span class="badge badge-neutral">준비 중</span>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-grid">
+            <div>
+                <div class="nav-brand" style="margin-bottom:12px;">
+                    <span class="nav-brand-mark">L</span>
+                    <span>LeDeuxions</span>
+                </div>
+                <p style="font-size:.9rem;color:var(--text-muted);max-width:300px;">
+                    건축가의 시선으로 일상의 도구를, 그리고 놀거리를 짓습니다.
+                </p>
+            </div>
+            <div>
+                <h4>둘러보기</h4>
+                <ul>
+                    <li><a href="/web-projects/">웹 도구</a></li>
+                    <li><a href="/">홈</a></li>
+                    <li><a href="/work/">작품</a></li>
+                    <li><a href="/contact/">연락</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>약관</h4>
+                <ul>
+                    <li><a href="/privacy/">개인정보</a></li>
+                    <li><a href="/terms/">이용약관</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions.</span>
+            <span class="mono" style="font-size:.78rem;">v2026.05</span>
+        </div>
+    </div>
+</footer>
+
+<script src="../../assets/js/common.js"></script>
+</body>
+</html>
