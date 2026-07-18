@@ -4,105 +4,237 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#1a2036">
-<meta name="description" content="이음 픽셀 그림판 — 8·16·32 격자에 콕콕 찍어 픽셀 아트를 그리고 투명배경 PNG로 저장. 게임 캐릭터·아이템 스프라이트 만들기에 딱.">
+<meta name="description" content="이음 픽셀 그림판 — 8·16·32 격자에 콕콕 찍어 픽셀 아트를 그리고 투명배경 PNG로 저장. 확대·스포이드·커스텀색 지원, 휴대폰에서 두 손가락 확대·이동. 게임 캐릭터·아이템 스프라이트 만들기에 딱.">
 <meta property="og:title" content="🎨 이음 픽셀 그림판 — LeDeuxions 게임월드">
-<meta property="og:description" content="픽셀 아트를 그려서 투명 PNG로 저장. 게임 캐릭터 만들기!">
+<meta property="og:description" content="픽셀 아트를 그려서 투명 PNG로 저장. 확대·스포이드 지원, 폰에서 두 손가락 확대! 게임 캐릭터 만들기.">
 <title>🎨 이음 픽셀 그림판 — LeDeuxions</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; touch-action:none; }
   body { min-height:100vh; font-family:-apple-system,'Malgun Gothic',sans-serif;
     background:linear-gradient(160deg,#1a2036,#2b2350); color:#fff;
-    display:flex; flex-direction:column; align-items:center; padding:14px; }
-  a.back { position:fixed; top:14px; left:16px; color:#fff; opacity:.6; text-decoration:none; font-size:15px; z-index:5; }
-  h1 { font-size:20px; font-weight:800; margin:4px 0 10px; }
-  #tools { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-bottom:8px; align-items:center; }
-  .sz { padding:6px 12px; font-size:13px; font-weight:700; background:rgba(255,255,255,.1);
-    border:1px solid rgba(255,255,255,.15); border-radius:10px; color:#fff; cursor:pointer; }
-  .sz.on { background:#ffc247; color:#1a2036; }
-  #palette { display:grid; grid-template-columns:repeat(9,1fr); gap:5px; max-width:340px; margin-bottom:10px; }
+    display:flex; flex-direction:column; align-items:center; padding:12px; }
+  a.back { position:fixed; top:12px; left:14px; color:#fff; opacity:.6; text-decoration:none; font-size:15px; z-index:5; }
+  h1 { font-size:19px; font-weight:800; margin:2px 0 8px; }
+  .row { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; align-items:center; margin-bottom:8px; }
+  .sz,.tool { padding:7px 12px; font-size:13px; font-weight:700; background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.15); border-radius:10px; color:#fff; cursor:pointer; line-height:1; }
+  .sz.on,.tool.on { background:#ffc247; color:#1a2036; border-color:#ffc247; }
+  .pick { width:38px; height:34px; padding:0; border:1px solid rgba(255,255,255,.25); border-radius:10px;
+    background:transparent; cursor:pointer; overflow:hidden; }
+  .pick::-webkit-color-swatch-wrapper { padding:2px; }
+  .pick::-webkit-color-swatch { border:none; border-radius:7px; }
+  #palette { display:grid; grid-template-columns:repeat(9,1fr); gap:5px; max-width:340px; margin-bottom:8px; }
   .sw { width:100%; aspect-ratio:1; border-radius:6px; cursor:pointer; border:2px solid transparent; }
-  .sw.on { border-color:#fff; transform:scale(1.1); }
-  .sw.eraser { background:repeating-conic-gradient(#bbb 0% 25%, #fff 0% 50%) 50%/10px 10px; position:relative; }
-  #wrap { background:#fff; border-radius:8px; padding:6px; box-shadow:0 8px 24px rgba(0,0,0,.35); }
-  canvas { display:block; image-rendering:pixelated; background:
-    repeating-conic-gradient(#d8d8d8 0% 25%, #fff 0% 50%) 50%/16px 16px; cursor:crosshair; }
-  #btns { display:flex; gap:8px; margin-top:12px; }
-  .b { padding:11px 20px; font-size:15px; font-weight:800; border:none; border-radius:30px; cursor:pointer; }
+  .sw.on { border-color:#fff; transform:scale(1.12); }
+  .sw.eraser { background:repeating-conic-gradient(#bbb 0% 25%, #fff 0% 50%) 50%/10px 10px; }
+  #zoombar { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
+  .zb { width:40px; height:40px; font-size:20px; font-weight:800; background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.15); border-radius:12px; color:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; line-height:1; }
+  .zb:active { transform:translateY(1px); }
+  #zlabel { min-width:64px; text-align:center; font-size:14px; font-weight:800; opacity:.85; }
+  #wrap { background:#fff; border-radius:8px; padding:6px; box-shadow:0 8px 24px rgba(0,0,0,.35);
+    overflow:hidden; position:relative; }
+  #view { overflow:hidden; position:relative; }
+  canvas { display:block; image-rendering:pixelated; transform-origin:0 0;
+    background:repeating-conic-gradient(#d8d8d8 0% 25%, #fff 0% 50%) 50%/16px 16px; cursor:crosshair; }
+  #btns { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; justify-content:center; }
+  .b { padding:11px 18px; font-size:15px; font-weight:800; border:none; border-radius:30px; cursor:pointer; }
   .b.save { background:linear-gradient(180deg,#a9f5c8,#5fe08e); color:#16241c; }
   .b.clear { background:rgba(255,255,255,.12); color:#fff; }
+  .b.undo { background:rgba(255,255,255,.12); color:#fff; }
   .b:active { transform:translateY(2px); }
-  #hint { font-size:12px; opacity:.55; margin-top:10px; text-align:center; line-height:1.5; }
+  .b:disabled { opacity:.35; }
+  #hint { font-size:12px; opacity:.55; margin-top:10px; text-align:center; line-height:1.6; max-width:360px; }
 </style>
 </head>
 <body>
   <a class="back" href="../">← 게임월드</a>
   <h1>🎨 이음 픽셀 그림판</h1>
-  <div id="tools">
+
+  <div class="row">
     <span class="sz on" data-n="16">16×16</span>
     <span class="sz" data-n="32">32×32</span>
     <span class="sz" data-n="8">8×8</span>
+    <span class="tool" id="eyedrop" title="스포이드 — 그림 위의 색을 콕 찍어 가져와요">💧 스포이드</span>
+    <input type="color" class="pick" id="pick" value="#ff66cc" title="내 색 만들기">
   </div>
+
   <div id="palette"></div>
-  <div id="wrap"><canvas id="c"></canvas></div>
+
+  <div id="zoombar">
+    <button class="zb" id="zout" title="축소">−</button>
+    <span id="zlabel">100%</span>
+    <button class="zb" id="zin" title="확대">+</button>
+    <button class="zb" id="zreset" title="원래대로" style="font-size:16px;">⤢</button>
+  </div>
+
+  <div id="wrap"><div id="view"><canvas id="c"></canvas></div></div>
+
   <div id="btns">
+    <button class="b undo" id="undo" disabled>↩︎ 되돌리기</button>
     <button class="b clear" id="clear">전체 지우기</button>
     <button class="b save" id="save">PNG 저장</button>
   </div>
-  <div id="hint">색 고르고 그림 그려요 · 저장하면 투명배경 PNG로 나와요<br>게임 캐릭터·아이템 그려서 삼촌한테 주면 게임에 넣어줄게요 🐟</div>
+  <div id="hint">
+    한 손가락으로 그리기 · <b>두 손가락으로 확대·이동</b> 📱<br>
+    💧 스포이드로 색 찍기 · 오른쪽 색칸으로 내 색 만들기<br>
+    저장하면 투명배경 PNG로 나와요 · 게임 캐릭터 그려서 삼촌한테 주면 넣어줄게요 🐟
+  </div>
+
 <script>
 const COLORS=['#000000','#ffffff','#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6',
   '#e84393','#fd79a8','#a0522d','#7f8c8d','#bdc3c7','#2c3e50','#27ae60','#c0392b','__ERASE__'];
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 const pal=document.getElementById('palette');
-let N=16, DISP=Math.min(window.innerWidth-44,352), cell, grid, color='#000000', drawing=false;
+const pickEl=document.getElementById('pick'), eyedropBtn=document.getElementById('eyedrop');
+const zlabel=document.getElementById('zlabel'), undoBtn=document.getElementById('undo');
 
-// 팔레트
+let N=16, DISP=Math.min(window.innerWidth-40,352), cell, cssSize=DISP;
+let grid, color='#000000', drawing=false, picking=false;
+let scale=1, ox=0, oy=0;                 // 확대/이동 상태
+const MINS=1, MAXS=12;
+const pointers=new Map();                // 멀티터치 추적
+let gesture=null;                        // 핀치 제스처 상태
+const undoStack=[];
+
+// ── 팔레트 ──────────────────────────────────
 COLORS.forEach((col,i)=>{ const s=document.createElement('div'); s.className='sw'+(i===0?' on':'');
   if(col==='__ERASE__'){ s.className+=' eraser'; s.title='지우개'; } else s.style.background=col;
-  s.addEventListener('click',()=>{ document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));
-    s.classList.add('on'); color=col; }); pal.appendChild(s); });
+  s.dataset.col=col;
+  s.addEventListener('click',()=>selectColor(col,s)); pal.appendChild(s); });
 
+function selectColor(col,el){
+  document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));
+  if(el) el.classList.add('on');
+  color=col;
+  setPicking(false);
+}
+pickEl.addEventListener('input',()=>selectColor(pickEl.value,null));
+
+// ── 스포이드 ─────────────────────────────────
+function setPicking(on){ picking=on; eyedropBtn.classList.toggle('on',on);
+  cv.style.cursor = on ? 'copy' : 'crosshair'; }
+eyedropBtn.addEventListener('click',()=>setPicking(!picking));
+
+// ── 캔버스 셋업 ──────────────────────────────
 function setup(n){
-  N=n; cell=Math.floor(DISP/N); const size=cell*N;
-  cv.width=size; cv.height=size; cv.style.width=size+'px'; cv.style.height=size+'px';
+  N=n; cell=Math.floor(DISP/N); cssSize=cell*N;
+  cv.width=cssSize; cv.height=cssSize; cv.style.width=cssSize+'px'; cv.style.height=cssSize+'px';
+  document.getElementById('view').style.width=cssSize+'px';
+  document.getElementById('view').style.height=cssSize+'px';
   grid=Array.from({length:N},()=>Array(N).fill(null));
-  render();
+  undoStack.length=0; refreshUndo();
+  resetView(); render();
 }
 function render(){
   ctx.clearRect(0,0,cv.width,cv.height);
   for(let y=0;y<N;y++)for(let x=0;x<N;x++){ if(grid[y][x]){ ctx.fillStyle=grid[y][x];
     ctx.fillRect(x*cell,y*cell,cell,cell); } }
-  // 격자선
-  ctx.strokeStyle='rgba(0,0,0,.08)'; ctx.lineWidth=1;
-  for(let i=0;i<=N;i++){ ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell,cv.height); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(cv.width,i*cell); ctx.stroke(); }
+  ctx.strokeStyle='rgba(0,0,0,.10)'; ctx.lineWidth=1;
+  for(let i=0;i<=N;i++){ const p=i*cell+.5;
+    ctx.beginPath(); ctx.moveTo(p,0); ctx.lineTo(p,cv.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,p); ctx.lineTo(cv.width,p); ctx.stroke(); }
 }
-function paint(e){
+
+// ── 확대/이동 transform ──────────────────────
+function clampPan(){
+  const min=cssSize*(1-scale);            // 캔버스가 뷰포트를 항상 덮게
+  ox=Math.max(min,Math.min(0,ox));
+  oy=Math.max(min,Math.min(0,oy));
+}
+function applyTransform(){
+  clampPan();
+  cv.style.transform=`translate(${ox}px,${oy}px) scale(${scale})`;
+  zlabel.textContent=Math.round(scale*100)+'%';
+}
+function resetView(){ scale=1; ox=0; oy=0; applyTransform(); }
+function zoomAt(cx,cy,factor){            // (cx,cy)=뷰포트 기준 좌표를 중심으로 확대
+  const ns=Math.max(MINS,Math.min(MAXS,scale*factor));
+  const f=ns/scale;
+  ox=cx-f*(cx-ox); oy=cy-f*(cy-oy);
+  scale=ns; applyTransform();
+}
+document.getElementById('zin').addEventListener('click',()=>zoomAt(cssSize/2,cssSize/2,1.5));
+document.getElementById('zout').addEventListener('click',()=>zoomAt(cssSize/2,cssSize/2,1/1.5));
+document.getElementById('zreset').addEventListener('click',resetView);
+
+// ── 좌표 → 셀 (transform 반영은 getBoundingClientRect가 처리) ──
+function cellAt(clientX,clientY){
   const r=cv.getBoundingClientRect();
-  const px=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
-  const py=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
-  const x=Math.floor(px/cell), y=Math.floor(py/cell);
-  if(x<0||y<0||x>=N||y>=N) return;
-  grid[y][x] = color==='__ERASE__'? null : color;
+  const x=Math.floor((clientX-r.left)/(r.width/N));
+  const y=Math.floor((clientY-r.top)/(r.height/N));
+  return (x<0||y<0||x>=N||y>=N)?null:{x,y};
+}
+
+// ── 되돌리기 ─────────────────────────────────
+function pushUndo(){ undoStack.push(grid.map(r=>r.slice())); if(undoStack.length>40) undoStack.shift(); refreshUndo(); }
+function refreshUndo(){ undoBtn.disabled=undoStack.length===0; }
+undoBtn.addEventListener('click',()=>{ if(!undoStack.length)return; grid=undoStack.pop(); refreshUndo(); render(); });
+
+// ── 그리기 / 찍기 ────────────────────────────
+function stroke(clientX,clientY){
+  const c=cellAt(clientX,clientY); if(!c) return;
+  if(picking){
+    const g=grid[c.y][c.x]; if(g){ selectColor(g,[...document.querySelectorAll('.sw')].find(s=>s.dataset.col===g)||null); }
+    setPicking(false); return;
+  }
+  grid[c.y][c.x] = color==='__ERASE__'? null : color;
   render();
 }
-cv.addEventListener('pointerdown',e=>{ drawing=true; paint(e); });
-cv.addEventListener('pointermove',e=>{ if(drawing) paint(e); });
-window.addEventListener('pointerup',()=>drawing=false);
 
+// ── 포인터(멀티터치) ─────────────────────────
+function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+function mid(a,b){ const r=cv.parentElement.getBoundingClientRect();
+  return { x:(a.x+b.x)/2 - r.left, y:(a.y+b.y)/2 - r.top }; }
+
+cv.addEventListener('pointerdown',e=>{
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===1){ drawing=true; pushUndo(); stroke(e.clientX,e.clientY); }
+  else if(pointers.size===2){
+    drawing=false;                        // 두 손가락 = 확대/이동 (그리기 취소)
+    if(undoStack.length) { undoStack.pop(); refreshUndo(); }  // 방금 찍은 점 되돌림
+    const pts=[...pointers.values()];
+    gesture={ d0:dist(pts[0],pts[1]), m0:mid(pts[0],pts[1]), s0:scale, ox0:ox, oy0:oy };
+  }
+});
+window.addEventListener('pointermove',e=>{
+  if(!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size>=2 && gesture){
+    const pts=[...pointers.values()];
+    const d=dist(pts[0],pts[1]), m=mid(pts[0],pts[1]);
+    const ns=Math.max(MINS,Math.min(MAXS, gesture.s0 * d/gesture.d0));
+    const f=ns/gesture.s0;
+    ox=m.x - f*(gesture.m0.x - gesture.ox0);
+    oy=m.y - f*(gesture.m0.y - gesture.oy0);
+    scale=ns; applyTransform();
+  } else if(drawing){ stroke(e.clientX,e.clientY); }
+});
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if(pointers.size<2) gesture=null;
+  if(pointers.size===0) drawing=false;
+}
+window.addEventListener('pointerup',endPointer);
+window.addEventListener('pointercancel',endPointer);
+
+// ── 격자 크기 버튼 ───────────────────────────
 document.querySelectorAll('.sz').forEach(b=> b.addEventListener('click',()=>{
   document.querySelectorAll('.sz').forEach(x=>x.classList.remove('on')); b.classList.add('on');
   setup(+b.dataset.n); }));
-document.getElementById('clear').addEventListener('click',()=>{ if(confirm('전체 지울까요?')){ setup(N); } });
+
+// ── 지우기 / 저장 ────────────────────────────
+document.getElementById('clear').addEventListener('click',()=>{ if(confirm('전체 지울까요?')){ pushUndo(); grid=Array.from({length:N},()=>Array(N).fill(null)); render(); } });
 document.getElementById('save').addEventListener('click',()=>{
-  // 실제 픽셀 크기(N×N) 투명 PNG로 저장
   const o=document.createElement('canvas'); o.width=N; o.height=N; const octx=o.getContext('2d');
   for(let y=0;y<N;y++)for(let x=0;x<N;x++){ if(grid[y][x]){ octx.fillStyle=grid[y][x]; octx.fillRect(x,y,1,1); } }
   const a=document.createElement('a'); a.download='픽셀그림_'+N+'x'+N+'.png'; a.href=o.toDataURL('image/png'); a.click();
 });
+
 setup(16);
 </script>
-<div style="text-align:center;font-size:12px;opacity:.45;margin:16px 0 22px;">🎨 이음 제작 — LeDeuxions 게임월드</div>
+<div style="text-align:center;font-size:12px;opacity:.45;margin:16px 0 22px;">🎨 이음 제작 · 확대·스포이드 업그레이드 — LeDeuxions 게임월드</div>
 </body>
 </html>
