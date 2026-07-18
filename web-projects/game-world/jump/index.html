@@ -108,7 +108,8 @@
     }
     fitDPR(); window.addEventListener('resize', fitDPR);
 
-    const G = 0.40;                 // 중력(단위/프레임²) — 천천히 떨어지게 완화(형 요청)
+    const G = 0.32;                 // 중력(단위/프레임²) — 천천히 떨어지게 완화(형 요청)
+    const STRETCH_SPRING = 4.0;     // 고무줄 탄성(늘어난 뒤 튕기는 힘) — 작을수록 깊고 길게 늘어남
     const CHAR_SCREEN = H * 0.72;   // 캐릭터가 그려지는 화면 y (고정)
     const CHAR_R = 15;              // 캐릭터 반지름
     const PERFECT_BAND = 26;        // 이 고도 이하에서 탭하면 perfect (관대하게 넓힘)
@@ -221,9 +222,11 @@
         if (ty < H + 40) {
             ctx.strokeStyle = '#e05b5b'; ctx.lineWidth = 5;
             ctx.beginPath();
-            const stretch = (state === 'playing' && a < 20 && va < 0) ? (20 - a) * 0.5 : 0;
+            // 캐릭터가 고무줄을 아래로 눌러 내린 만큼 쭉 늘어남
+            const charY = toScreen(a);
+            const dip = Math.max(0, charY - ty);
             ctx.moveTo(W * 0.22, ty);
-            ctx.quadraticCurveTo(W * 0.5, ty + 10 + stretch, W * 0.78, ty);
+            ctx.quadraticCurveTo(W * 0.5, ty + 12 + dip, W * 0.78, ty);
             ctx.stroke();
             // 지지대
             ctx.fillStyle = '#8a5a3c';
@@ -256,10 +259,16 @@
     function update() {
         if (state === 'playing') {
             const wasUp = va > 0;
-            va -= G; a += va;
-            if (wasUp && va <= 0) canTap = true;         // 정점 통과 → 이번 하강에 한 번 장전 가능
+            if (a > 0 || va >= 0) {
+                va -= G; a += va;                        // 공중: 중력
+                if (wasUp && va <= 0) canTap = true;     // 정점 통과 → 이번 하강에 한 번 장전 가능
+            } else {
+                // 고무줄에 닿아 늘어나는 중(a<=0, 하강): 스프링으로 감속 → 최저점서 튕김
+                va += STRETCH_SPRING;
+                a += va;
+                if (va >= 0) bounce();                   // 최저점(속도 0) 도달 → 반동
+            }
             if (a > maxA) maxA = a;
-            if (a <= 0 && va < 0) bounce();
             // 카메라: 캐릭터 고도를 부드럽게 따라감(하한 0으로 트램폴린 보이게)
             camA += (a - camA) * 0.12;
             if (camA < 0) camA = 0;
