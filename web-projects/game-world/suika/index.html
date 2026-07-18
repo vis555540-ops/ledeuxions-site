@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#3a2a1a">
+<meta name="description" content="이음 수박게임 — 과일을 떨어뜨려 같은 과일끼리 합치고 더 크게! 수박까지 만들어보세요. 위험선 넘으면 끝. 세계 랭킹 도전.">
+<meta property="og:title" content="🍉 이음 수박게임 — LeDeuxions 게임월드">
+<meta property="og:description" content="과일 합치기 물리 퍼즐. 수박까지 만들면 최고!">
+<title>🍉 이음 수박게임 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; touch-action:none; }
+  body { min-height:100vh; font-family:-apple-system,'Malgun Gothic',sans-serif;
+    background:linear-gradient(160deg,#3a2a1a,#5a3d22); color:#fff;
+    display:flex; flex-direction:column; align-items:center; padding:10px; }
+  a.back { position:fixed; top:12px; left:16px; color:#fff; opacity:.6; text-decoration:none; font-size:15px; z-index:5; }
+  h1 { font-size:20px; font-weight:800; margin:2px 0 6px; }
+  #top { display:flex; gap:18px; align-items:center; margin-bottom:6px; font-size:14px; }
+  #sc { font-weight:800; font-size:18px; }
+  #best { color:#ffd479; font-weight:700; }
+  #wrap { position:relative; border-radius:12px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.4); }
+  canvas { display:block; background:linear-gradient(180deg,#fff8ec,#ffeecd); }
+  #over { position:absolute; inset:0; display:none; flex-direction:column; justify-content:center; align-items:center;
+    background:rgba(50,30,15,.78); color:#fff; text-align:center; }
+  #over.show { display:flex; }
+  #over h2 { font-size:30px; font-weight:800; margin-bottom:4px; }
+  #retry { margin-top:16px; padding:13px 40px; font-size:18px; font-weight:800; color:#5a3d22;
+    background:linear-gradient(180deg,#ffe08a,#ffc247); border:none; border-radius:40px; cursor:pointer; }
+  #hint { font-size:12px; opacity:.6; margin-top:8px; text-align:center; line-height:1.5; }
+</style>
+</head>
+<body>
+  <a class="back" href="../">← 게임월드</a>
+  <a class="back" href="../ranking/" style="left:auto;right:16px;">🏆 순위</a>
+  <h1>🍉 이음 수박게임</h1>
+  <div id="top"><span id="sc">0</span><span id="best">최고 0</span></div>
+  <div id="wrap">
+    <canvas id="c"></canvas>
+    <div id="over"><h2>게임 끝!</h2><div id="fsc"></div><button id="retry">다시하기</button></div>
+  </div>
+  <div id="hint">움직여서 과일 위치 잡고 · 탭하면 떨어져요<br>같은 과일끼리 만나면 합쳐져요 🍒→🍓→🍇… 🍉</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+const {Engine,Runner,Bodies,Composite,Events,Body}=Matter;
+// 과일 단계: 반지름, 색, 이모지
+const FRUITS=[
+  {r:14,c:'#f94c4c',e:'🍒'},{r:19,c:'#ff6b9d',e:'🍓'},{r:25,c:'#a259c9',e:'🍇'},
+  {r:31,c:'#ff9f40',e:'🍊'},{r:39,c:'#ff8c42',e:'🍑'},{r:48,c:'#ff5252',e:'🍎'},
+  {r:57,c:'#c9e265',e:'🍐'},{r:67,c:'#ffd24a',e:'🍍'},{r:78,c:'#8ed94f',e:'🍈'},{r:92,c:'#3fae4f',e:'🍉'}
+];
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+const W=Math.min(window.innerWidth-20,360), H=Math.min(window.innerHeight-150,540);
+cv.width=W; cv.height=H;
+const scEl=document.getElementById('sc'), bestEl=document.getElementById('best');
+const overEl=document.getElementById('over'), fscEl=document.getElementById('fsc');
+const DEADLINE=70; // 상단 위험선 y
+let engine, runner, score=0, best=+(localStorage.getItem('suika_best')||0), cur, curLv, canDrop=true, dropX=W/2, alive=true, overTimer=0;
+bestEl.textContent='최고 '+best;
+
+function newEngine(){
+  if(runner) Runner.stop(runner);
+  if(engine) Composite.clear(engine.world,false), Engine.clear(engine);
+  engine=Engine.create(); engine.gravity.y=1;
+  const opt={isStatic:true,restitution:.1,friction:.5};
+  Composite.add(engine.world,[
+    Bodies.rectangle(W/2,H+8,W,20,opt),
+    Bodies.rectangle(-8,H/2,20,H*2,opt),
+    Bodies.rectangle(W+8,H/2,20,H*2,opt)
+  ]);
+  Events.on(engine,'collisionStart',e=>{
+    for(const p of e.pairs){ const a=p.bodyA,b=p.bodyB;
+      if(a.plugin&&b.plugin&&a.plugin.lv!==undefined&&a.plugin.lv===b.plugin.lv&&!a.plugin.dead&&!b.plugin.dead){
+        const lv=a.plugin.lv; if(lv>=FRUITS.length-1){ a.plugin.dead=b.plugin.dead=true;
+          Composite.remove(engine.world,a); Composite.remove(engine.world,b); addScore(lv); continue; }
+        a.plugin.dead=b.plugin.dead=true;
+        const nx=(a.position.x+b.position.x)/2, ny=(a.position.y+b.position.y)/2;
+        Composite.remove(engine.world,a); Composite.remove(engine.world,b);
+        spawn(nx,ny,lv+1,false); addScore(lv);
+      }
+    }
+  });
+  runner=Runner.create(); Runner.run(runner,engine);
+}
+function addScore(lv){ score+=(lv+1)*2; scEl.textContent=score; }
+function spawn(x,y,lv,isCur){
+  const f=FRUITS[lv];
+  const bd=Bodies.circle(x,y,f.r,{restitution:.15,friction:.6,density:.001,isStatic:isCur});
+  bd.plugin={lv,dead:false,cur:isCur}; Composite.add(engine.world,bd); return bd;
+}
+function nextFruit(){ curLv=Math.floor(Math.random()*4); cur=spawn(dropX,40,curLv,true); canDrop=true; }
+function drop(){ if(!canDrop||!cur||!alive) return;
+  if(window.Arcade && !window.__named){ window.__named=true; Arcade.ensureName(); }
+  canDrop=false;
+  Body.setStatic(cur,false); const dropped=cur; dropped.plugin.cur=false; cur=null;
+  setTimeout(()=>{ if(alive) nextFruit(); }, 550);
+}
+function moveTo(x){ dropX=Math.max(FRUITS[curLv?curLv:0].r+4,Math.min(W-(FRUITS[curLv?curLv:0].r+4),x));
+  if(cur&&cur.plugin.cur) Body.setPosition(cur,{x:dropX,y:40}); }
+cv.addEventListener('pointermove',e=>{ const r=cv.getBoundingClientRect(); moveTo(e.clientX-r.left); });
+cv.addEventListener('pointerdown',e=>{ const r=cv.getBoundingClientRect(); moveTo(e.clientX-r.left); drop(); });
+
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  // 위험선
+  ctx.strokeStyle='rgba(230,90,60,.5)'; ctx.setLineDash([6,6]); ctx.beginPath();
+  ctx.moveTo(0,DEADLINE); ctx.lineTo(W,DEADLINE); ctx.stroke(); ctx.setLineDash([]);
+  let danger=false;
+  for(const b of Composite.allBodies(engine.world)){
+    if(!b.plugin || b.plugin.lv===undefined) continue; const f=FRUITS[b.plugin.lv];
+    ctx.save(); ctx.translate(b.position.x,b.position.y); ctx.rotate(b.angle);
+    ctx.fillStyle=f.c; ctx.beginPath(); ctx.arc(0,0,f.r,0,6.29); ctx.fill();
+    ctx.font=(f.r*1.3)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(f.e,0,1); ctx.restore();
+    if(!b.plugin.cur && !b.isStatic && b.position.y-f.r<DEADLINE && Math.abs(b.velocity.y)<0.3) danger=true;
+  }
+  if(danger&&alive){ overTimer++; if(overTimer>90) gameOver(); } else overTimer=Math.max(0,overTimer-2);
+  if(alive) requestAnimationFrame(loop);
+}
+function gameOver(){ alive=false; const rec=score>best;
+  if(rec){best=score;localStorage.setItem('suika_best',best);bestEl.textContent='최고 '+best;}
+  fscEl.innerHTML='점수 '+score+' · 최고 '+best+'<br><span id="suikaRank" style="opacity:.9;font-size:.9rem"></span>';
+  overEl.classList.add('show');
+  if(rec && score>0 && window.Arcade){ const l=document.getElementById('suikaRank'); if(l) l.textContent='🌍 순위 확인 중…';
+    Arcade.submit('suika',score).then(r=>{ const el=document.getElementById('suikaRank'); if(el) el.textContent=Arcade.rankText(r); }); } }
+function start(){ overEl.classList.remove('show'); score=0; scEl.textContent=0; alive=true; overTimer=0; dropX=W/2;
+  newEngine(); nextFruit(); loop(); }
+document.getElementById('retry').addEventListener('click',start);
+if(window.Matter) start(); else document.getElementById('hint').textContent='물리엔진 로딩 실패 — 인터넷 연결 확인';
+</script>
+<script src="../arcade.js"></script>
+<div style="text-align:center;font-size:12px;opacity:.45;margin:10px 0 16px;">🍉 이음 제작 — LeDeuxions 게임월드</div>
+</body>
+</html>
