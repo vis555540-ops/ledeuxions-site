@@ -233,6 +233,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://ledeuxions.com/web-projects/game-world/hangle/</loc>
+    <lastmod>2026-07-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://ledeuxions.com/web-projects/game-world/ranking/</loc>
     <lastmod>2026-07-18</lastmod>
     <changefreq>daily</changefreq>

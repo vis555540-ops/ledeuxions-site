@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a2036">
+<meta name="description" content="한글 워들 — 두 글자 한글 단어를 여섯 번 안에 맞히는 낱말 퍼즐. 자음·모음(자모) 단위로 초록·노랑 힌트! 세계적 인기 Wordle의 한국어 버전. 설치 없이 브라우저에서 바로.">
+<meta property="og:title" content="🟩 한글 워들 — LeDeuxions 게임월드">
+<meta property="og:description" content="두 글자 한글 단어 맞히기! Wordle 한국어판. 자모 단위 힌트로 여섯 번 안에 맞혀봐요.">
+<title>🟩 한글 워들 — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; }
+  body { min-height:100vh; font-family:-apple-system,'Malgun Gothic',sans-serif;
+    background:linear-gradient(160deg,#1a2036,#2b2350); color:#fff;
+    display:flex; flex-direction:column; align-items:center; padding:12px; }
+  a.back { position:fixed; top:12px; left:14px; color:#fff; opacity:.6; text-decoration:none; font-size:15px; z-index:5; }
+  h1 { font-size:20px; font-weight:800; margin:4px 0 2px; }
+  .sub { font-size:12px; opacity:.55; margin-bottom:12px; }
+  #board { display:grid; grid-template-rows:repeat(6,1fr); gap:7px; margin-bottom:14px; }
+  .rowline { display:grid; grid-template-columns:repeat(3,1fr) 10px repeat(3,1fr); gap:6px; }
+  .gap { width:10px; }
+  .cell { width:46px; height:46px; border:2px solid rgba(255,255,255,.16); border-radius:8px;
+    display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800;
+    background:rgba(255,255,255,.04); transition:transform .12s, background .2s, border-color .2s; }
+  .cell.filled { border-color:rgba(255,255,255,.4); transform:scale(1.05); }
+  .cell.correct { background:#2ea043; border-color:#2ea043; color:#fff; }
+  .cell.present { background:#d8a417; border-color:#d8a417; color:#fff; }
+  .cell.absent  { background:#3a3550; border-color:#3a3550; color:#cfcfe0; }
+  #inputRow { display:flex; gap:8px; margin-bottom:8px; }
+  #guess { width:150px; padding:12px; font-size:20px; font-weight:800; text-align:center;
+    border:2px solid rgba(255,255,255,.2); border-radius:12px; background:rgba(255,255,255,.08);
+    color:#fff; -webkit-user-select:text; user-select:text; }
+  #guess:focus { outline:none; border-color:#ffc247; }
+  #enter { padding:12px 20px; font-size:16px; font-weight:800; border:none; border-radius:12px;
+    background:linear-gradient(180deg,#a9f5c8,#5fe08e); color:#16241c; cursor:pointer; }
+  #enter:active { transform:translateY(2px); }
+  #msg { font-size:14px; font-weight:700; min-height:22px; margin:4px 0 8px; opacity:.9; text-align:center; }
+  #hint { font-size:12px; opacity:.5; text-align:center; line-height:1.6; max-width:340px; margin-top:4px; }
+  .legend { display:flex; gap:10px; font-size:11px; opacity:.6; margin-top:6px; flex-wrap:wrap; justify-content:center; }
+  .legend b { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:middle; margin-right:3px; }
+  #overlay { position:fixed; inset:0; background:rgba(10,12,24,.86); display:none;
+    flex-direction:column; align-items:center; justify-content:center; z-index:20; padding:24px; text-align:center; }
+  #overlay.show { display:flex; }
+  #ovTitle { font-size:26px; font-weight:800; margin-bottom:8px; }
+  #ovWord { font-size:20px; margin-bottom:6px; }
+  #ovGrid { font-size:20px; line-height:1.25; margin:12px 0; white-space:pre; }
+  .b { padding:12px 22px; font-size:16px; font-weight:800; border:none; border-radius:30px; cursor:pointer; margin:5px; }
+  .b.share { background:#3498db; color:#fff; }
+  .b.again { background:linear-gradient(180deg,#a9f5c8,#5fe08e); color:#16241c; }
+</style>
+</head>
+<body>
+  <a class="back" href="../">← 게임월드</a>
+  <h1>🟩 한글 워들</h1>
+  <div class="sub">두 글자 단어를 여섯 번 안에 맞혀요 · 자음·모음 단위 힌트</div>
+
+  <div id="board"></div>
+
+  <div id="msg"></div>
+  <div id="inputRow">
+    <input id="guess" maxlength="2" autocomplete="off" autocapitalize="off" placeholder="두 글자" inputmode="text">
+    <button id="enter">확인</button>
+  </div>
+  <div class="legend">
+    <span><b style="background:#2ea043"></b>자리·글자 맞음</span>
+    <span><b style="background:#d8a417"></b>있지만 자리 틀림</span>
+    <span><b style="background:#3a3550"></b>없음</span>
+  </div>
+  <div id="hint">받침(종성)도 한 칸이에요 · 받침 없으면 빈 칸<br>예: '사과'는 ㅅ·ㅏ·(받침없음)·ㄱ·ㅘ·(받침없음)</div>
+
+  <div id="overlay">
+    <div id="ovTitle"></div>
+    <div id="ovWord"></div>
+    <div id="ovGrid"></div>
+    <div>
+      <button class="b share" id="share">📋 결과 복사</button>
+      <button class="b again" id="again">다시 하기</button>
+    </div>
+  </div>
+
+<script>
+const CHO  = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+const JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+// 두 글자 일상 단어 (받침 유무 다양)
+const WORDS = ['사과','바다','하늘','나무','학교','친구','가족','음악','영화','커피','시간','사랑','행복','바람','노래',
+  '그림','의자','우산','시계','지갑','안경','신발','양말','모자','거울','이불','베개','수건','접시','그릇',
+  '눈물','얼굴','사람','마음','생각','구름','딸기','수박','포도','토끼','고래','여우','하마','사자','기차',
+  '자전','비행','풍선','촛불','유리','거미','나비','개미','다리','머리','손목','발목','무릎','어깨'];
+
+function decomp(ch){
+  const c = ch.charCodeAt(0) - 0xAC00;
+  if(c < 0 || c > 11171) return null;
+  return [CHO[Math.floor(c/588)], JUNG[Math.floor((c%588)/28)], JONG[c%28]];
+}
+function toSlots(word){
+  const s = [];
+  for(const ch of word){ const d = decomp(ch); if(!d) return null; s.push(d[0], d[1], d[2]); }
+  return s; // 길이 6
+}
+
+let answer, answerSlots, row, done, history;
+const board = document.getElementById('board');
+const guessEl = document.getElementById('guess');
+const msgEl = document.getElementById('msg');
+
+function buildBoard(){
+  board.innerHTML = '';
+  for(let r=0;r<6;r++){
+    const line = document.createElement('div'); line.className='rowline';
+    for(let i=0;i<6;i++){
+      if(i===3){ const g=document.createElement('div'); g.className='gap'; line.appendChild(g); }
+      const cell = document.createElement('div'); cell.className='cell'; cell.id='c'+r+'_'+i;
+      line.appendChild(cell);
+    }
+    board.appendChild(line);
+  }
+}
+
+function newGame(){
+  answer = WORDS[Math.floor(Math.random()*WORDS.length)];
+  answerSlots = toSlots(answer);
+  row = 0; done = false; history = [];
+  buildBoard();
+  msgEl.textContent = '';
+  guessEl.value = ''; guessEl.disabled = false; guessEl.focus();
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function judge(gs){
+  const res = new Array(6).fill('absent');
+  const rem = answerSlots.slice();
+  for(let i=0;i<6;i++){ if(gs[i] === answerSlots[i]){ res[i]='correct'; rem[i]=null; } }
+  for(let i=0;i<6;i++){
+    if(res[i]==='correct' || gs[i]==='') continue;
+    const idx = rem.indexOf(gs[i]);
+    if(idx >= 0){ res[i]='present'; rem[idx]=null; }
+  }
+  return res;
+}
+
+function flash(t){ msgEl.textContent = t; }
+
+function submit(){
+  if(done) return;
+  const w = guessEl.value.trim();
+  if(w.length !== 2){ flash('두 글자를 입력해요'); return; }
+  const gs = toSlots(w);
+  if(!gs){ flash('완성된 한글 두 글자만 돼요'); return; }
+  const res = judge(gs);
+  // 칸 채우기
+  for(let i=0;i<6;i++){
+    const cell = document.getElementById('c'+row+'_'+i);
+    cell.textContent = gs[i];
+    cell.classList.add('filled', res[i]);
+  }
+  history.push(res);
+  guessEl.value = '';
+  const win = res.every(x => x === 'correct');
+  if(win){ done = true; setTimeout(()=>finish(true), 350); return; }
+  row++;
+  if(row >= 6){ done = true; setTimeout(()=>finish(false), 350); return; }
+  flash('');
+  guessEl.focus();
+}
+
+function finish(win){
+  const ov = document.getElementById('overlay');
+  document.getElementById('ovTitle').textContent = win ? '🎉 맞혔어요!' : '아쉬워요!';
+  document.getElementById('ovWord').textContent = '정답: ' + answer + (win ? '  ('+row+'번 만에!)' : '');
+  // 이모지 격자
+  const emo = { correct:'🟩', present:'🟨', absent:'⬛' };
+  const grid = history.map(r => r.map(x=>emo[x]).join('')).join('\n');
+  document.getElementById('ovGrid').textContent = grid;
+  guessEl.disabled = true;
+  window._shareText = '🟩 한글 워들\n' + (win ? row+'/6' : 'X/6') + '\n' + grid + '\nledeuxions.com 게임월드';
+  ov.classList.add('show');
+}
+
+document.getElementById('enter').addEventListener('click', submit);
+guessEl.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
+document.getElementById('again').addEventListener('click', newGame);
+document.getElementById('share').addEventListener('click', ()=>{
+  const t = window._shareText || '';
+  if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>flashShare()); }
+  else { const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); flashShare(); }
+});
+function flashShare(){ const b=document.getElementById('share'); const o=b.textContent; b.textContent='복사됐어요!'; setTimeout(()=>b.textContent=o,1200); }
+
+newGame();
+try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e){}
+</script>
+<div style="text-align:center;font-size:12px;opacity:.45;margin:18px 0 22px;">🟩 맺음 제작 — LeDeuxions 게임월드 · Wordle 한국어판</div>
+</body>
+</html>
