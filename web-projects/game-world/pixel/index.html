@@ -42,6 +42,7 @@
   #btns { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; justify-content:center; }
   .b { padding:11px 18px; font-size:15px; font-weight:800; border:none; border-radius:30px; cursor:pointer; }
   .b.save { background:linear-gradient(180deg,#a9f5c8,#5fe08e); color:#16241c; }
+  .b.photo { background:linear-gradient(180deg,#ffd98a,#f6b73c); color:#3a2a00; }
   .b.clear { background:rgba(255,255,255,.12); color:#fff; }
   .b.undo { background:rgba(255,255,255,.12); color:#fff; }
   .b:active { transform:translateY(2px); }
@@ -73,13 +74,16 @@
   <div id="wrap"><div id="view"><canvas id="c"></canvas></div></div>
 
   <div id="btns">
+    <button class="b photo" id="photo">🖼️ 사진 넣기</button>
     <button class="b undo" id="undo" disabled>↩︎ 되돌리기</button>
     <button class="b clear" id="clear">전체 지우기</button>
     <button class="b save" id="save">PNG 저장</button>
   </div>
+  <input type="file" id="photoInput" accept="image/*" style="display:none">
   <div id="hint">
     한 손가락으로 그리기 · <b>두 손가락으로 확대·이동</b> 📱<br>
     💧 스포이드로 색 찍기 · 오른쪽 색칸으로 내 색 만들기<br>
+    <b>🖼️ 사진 넣으면 픽셀아트로 변신!</b> (격자 크기 8·16·32로 세밀하게)<br>
     저장하면 투명배경 PNG로 나와요 · 게임 캐릭터 그려서 삼촌한테 주면 넣어줄게요 🐟
   </div>
 
@@ -232,6 +236,30 @@ document.getElementById('save').addEventListener('click',()=>{
   for(let y=0;y<N;y++)for(let x=0;x<N;x++){ if(grid[y][x]){ octx.fillStyle=grid[y][x]; octx.fillRect(x,y,1,1); } }
   const a=document.createElement('a'); a.download='픽셀그림_'+N+'x'+N+'.png'; a.href=o.toDataURL('image/png'); a.click();
 });
+
+// ── 사진 → 픽셀아트 (현재 격자 크기로 다운샘플) ──────────────
+function loadImage(file){
+  const img=new Image();
+  img.onload=()=>{
+    pushUndo();
+    const tmp=document.createElement('canvas'); tmp.width=N; tmp.height=N;
+    const tctx=tmp.getContext('2d');
+    const s=Math.min(img.width,img.height);          // 중앙 정사각 크롭
+    const sx=(img.width-s)/2, sy=(img.height-s)/2;
+    tctx.drawImage(img, sx,sy,s,s, 0,0,N,N);          // N×N로 축소=픽셀화
+    const d=tctx.getImageData(0,0,N,N).data;
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      const i=(y*N+x)*4;
+      if(d[i+3]<40){ grid[y][x]=null; continue; }     // 투명은 빈칸
+      grid[y][x]='#'+[d[i],d[i+1],d[i+2]].map(v=>v.toString(16).padStart(2,'0')).join('');
+    }
+    render();
+    URL.revokeObjectURL(img.src);
+  };
+  img.src=URL.createObjectURL(file);
+}
+document.getElementById('photo').addEventListener('click',()=>document.getElementById('photoInput').click());
+document.getElementById('photoInput').addEventListener('change',e=>{ if(e.target.files[0]) loadImage(e.target.files[0]); e.target.value=''; });
 
 setup(16);
 </script>
