@@ -107,6 +107,11 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     fitDPR(); window.addEventListener('resize', fitDPR);
+    ctx.imageSmoothingEnabled = false;                     // 픽셀아트 선명하게
+    // 곰돌이 3프레임 (형이 픽셀 그림판으로 직접 그림)
+    const bearIdle = new Image();   bearIdle.src = 'bear_idle.png';     // 공중/하강
+    const bearUp = new Image();     bearUp.src = 'bear_up.png';         // 튕겨오름(팔 쫙)
+    const bearSquash = new Image(); bearSquash.src = 'bear_squash.png'; // 고무줄에 눌림
 
     const G = 0.32;                 // 중력(단위/프레임²) — 천천히 떨어지게 완화(형 요청)
     const STRETCH_SPRING = 4.0;     // 고무줄 탄성(늘어난 뒤 튕기는 힘) — 작을수록 깊고 길게 늘어남
@@ -233,17 +238,18 @@
             ctx.fillRect(W * 0.2, ty, 6, H - ty); ctx.fillRect(W * 0.78, ty, 6, H - ty);
         }
 
-        // 캐릭터
+        // 캐릭터 (곰돌이 3프레임 애니메이션)
         const cy = toScreen(a);
-        ctx.save();
-        const squash = (state === 'playing' && a < 12 && va < 0) ? 0.7 : 1;
-        ctx.translate(W / 2, cy);
-        ctx.scale(1 / Math.sqrt(squash), squash);
-        ctx.fillStyle = '#ffcf4d';
-        ctx.beginPath(); ctx.arc(0, -CHAR_R, CHAR_R, 0, 6.29); ctx.fill();
-        ctx.fillStyle = '#3a2f14';
-        ctx.beginPath(); ctx.arc(-5, -CHAR_R - 2, 2.2, 0, 6.29); ctx.arc(5, -CHAR_R - 2, 2.2, 0, 6.29); ctx.fill();
-        ctx.restore();
+        let frame = bearIdle;
+        if (state === 'playing' && a <= 3 && va < 0) frame = bearSquash;   // 고무줄에 눌릴 때
+        else if (va > 0) frame = bearUp;                                   // 튕겨 오를 때(팔 쫙)
+        const SZ = 48;
+        if (frame && frame.complete && frame.naturalWidth) {
+            ctx.drawImage(frame, W / 2 - SZ / 2, cy - SZ + 5, SZ, SZ);     // 발이 고도(cy)에 닿게
+        } else {                                                          // 로딩 전 폴백=노란 원
+            ctx.fillStyle = '#ffcf4d';
+            ctx.beginPath(); ctx.arc(W / 2, cy - CHAR_R, CHAR_R, 0, 6.29); ctx.fill();
+        }
 
         // 피드백 텍스트
         if (feedTimer > 0) {
