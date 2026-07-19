@@ -58,6 +58,7 @@
     <span class="sz on" data-n="16">16×16</span>
     <span class="sz" data-n="32">32×32</span>
     <span class="sz" data-n="8">8×8</span>
+    <span class="tool" id="eraser" title="지우개 — 칠한 칸을 지워요">🧹 지우개</span>
     <span class="tool" id="eyedrop" title="스포이드 — 그림 위의 색을 콕 찍어 가져와요">💧 스포이드</span>
     <input type="color" class="pick" id="pick" value="#ff66cc" title="내 색 만들기">
   </div>
@@ -93,6 +94,7 @@ const COLORS=['#000000','#ffffff','#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc
 const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 const pal=document.getElementById('palette');
 const pickEl=document.getElementById('pick'), eyedropBtn=document.getElementById('eyedrop');
+const eraserBtn=document.getElementById('eraser');
 const zlabel=document.getElementById('zlabel'), undoBtn=document.getElementById('undo');
 
 let N=16, DISP=Math.min(window.innerWidth-40,352), cell, cssSize=DISP;
@@ -113,9 +115,11 @@ function selectColor(col,el){
   document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));
   if(el) el.classList.add('on');
   color=col;
+  eraserBtn.classList.toggle('on', col==='__ERASE__');
   setPicking(false);
 }
 pickEl.addEventListener('input',()=>selectColor(pickEl.value,null));
+eraserBtn.addEventListener('click',()=>selectColor('__ERASE__',null));
 
 // ── 스포이드 ─────────────────────────────────
 function setPicking(on){ picking=on; eyedropBtn.classList.toggle('on',on);
