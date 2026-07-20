@@ -114,9 +114,10 @@
     const bearSquash = new Image(); bearSquash.src = 'bear_squash.png'; // 고무줄에 눌림
 
     const G = 0.32;                 // 중력(단위/프레임²) — 천천히 떨어지게 완화(형 요청)
-    const STRETCH_SPRING = 2.1;     // 고무줄 탄성 — 작을수록 깊고 길게 늘어남(눌림 잘 보이되 화면 안 벗어나게)
-    const PERFECT_V = 3.5;          // 튕김 최저점(속도0) 근처서 탭하면 PERFECT (형 통찰: 튕길때 타이밍)
-    const GOOD_V = 9;               // 그보다 벗어나면 Good
+    const STRETCH_SPRING = 1.85;    // 고무줄 탄성 — 작을수록 깊고 길게 늘어남(형 요청: 쭉쭉+저점 체류시간↑=타이밍 여유)
+    const SPRING_FLOOR = -50;       // 최대 늘어남 제한 — 강한 반동에도 화면 밖 안 나가게(바닥 체류=타이밍 쉬움 보너스)
+    const PERFECT_V = 7;            // 튕김 최저점(속도0) 근처서 탭하면 PERFECT — 관대하게 넓힘(형 요청: 판정 쉽게)
+    const GOOD_V = 16;              // 그보다 벗어나면 Good — 관대하게 넓힘
     const CHAR_SCREEN = H * 0.72;   // 캐릭터가 그려지는 화면 y (고정)
     const CHAR_R = 15;              // 캐릭터 반지름
     const PERFECT_BAND = 26;        // 이 고도 이하에서 탭하면 perfect (관대하게 넓힘)
@@ -191,7 +192,7 @@
 
     function tap() {
         if (state !== 'playing') return;
-        if (canTap && a <= 8) { tapVa = Math.abs(va); canTap = false; }  // 고무줄 근처서 탭한 순간의 속도(최저점=튕김순간=완벽)
+        if (canTap && a <= 11) { tapVa = Math.abs(va); canTap = false; }  // 고무줄 근처서 탭한 순간의 속도(최저점=튕김순간=완벽) — 탭 창 넓힘(형 요청)
     }
 
     // 색 보간
@@ -234,7 +235,7 @@
             const charY = toScreen(a);
             const dip = Math.max(0, charY - ty);
             ctx.moveTo(W * 0.22, ty);
-            ctx.quadraticCurveTo(W * 0.5, ty + 12 + dip, W * 0.78, ty);
+            ctx.quadraticCurveTo(W * 0.5, ty + 12 + dip * 1.5, W * 0.78, ty);   // dip 시각 증폭 — 쭉쭉 늘어나는 느낌(형 요청)
             ctx.stroke();
             // 지지대
             ctx.fillStyle = '#8a5a3c';
@@ -279,6 +280,7 @@
                 if (springImpact === 0) springImpact = Math.abs(va);  // 스프링 진입 순간 하강속도 저장(반등 에너지)
                 va += STRETCH_SPRING;
                 a += va;
+                if (a < SPRING_FLOOR) a = SPRING_FLOOR;  // 최대 늘어남 제한(화면 밖 방지·바닥 체류)
                 if (va >= 0) bounce();                   // 최저점(속도 0) 도달 → 반동
             }
             if (a > maxA) maxA = a;
