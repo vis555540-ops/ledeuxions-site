@@ -114,7 +114,7 @@
     const bearSquash = new Image(); bearSquash.src = 'bear_squash.png'; // 고무줄에 눌림
 
     const G = 0.32;                 // 중력(단위/프레임²) — 천천히 떨어지게 완화(형 요청)
-    const STRETCH_SPRING = 3.0;     // 고무줄 탄성 — 작을수록 깊고 길게 늘어남(곰돌이 육중+타이밍창 넓게)
+    const STRETCH_SPRING = 2.1;     // 고무줄 탄성 — 작을수록 깊고 길게 늘어남(눌림 잘 보이되 화면 안 벗어나게)
     const PERFECT_V = 3.5;          // 튕김 최저점(속도0) 근처서 탭하면 PERFECT (형 통찰: 튕길때 타이밍)
     const GOOD_V = 9;               // 그보다 벗어나면 Good
     const CHAR_SCREEN = H * 0.72;   // 캐릭터가 그려지는 화면 y (고정)
@@ -247,8 +247,11 @@
         if (state === 'playing' && a <= 3 && va < 0) frame = bearSquash;   // 고무줄에 눌릴 때
         else if (va > 0) frame = bearUp;                                   // 튕겨 오를 때(팔 쫙)
         const SZ = 48;
+        // 고무줄에 눌릴 때(a<=6, 하강/스프링) 곰돌이 납작하게 squash — 눌리는 느낌
+        const sq = (state === 'playing' && a <= 6 && va < 0) ? Math.max(0.62, Math.min(1, a / 6)) : 1;
+        const sh = SZ * sq, sw = SZ * (2 - sq);                            // 세로 줄고 가로 늘어(납작)
         if (frame && frame.complete && frame.naturalWidth) {
-            ctx.drawImage(frame, W / 2 - SZ / 2, cy - SZ + 5, SZ, SZ);     // 발이 고도(cy)에 닿게
+            ctx.drawImage(frame, W / 2 - sw / 2, cy - sh + 5, sw, sh);     // 발이 고도(cy)에 닿게
         } else {                                                          // 로딩 전 폴백=노란 원
             ctx.fillStyle = '#ffcf4d';
             ctx.beginPath(); ctx.arc(W / 2, cy - CHAR_R, CHAR_R, 0, 6.29); ctx.fill();
