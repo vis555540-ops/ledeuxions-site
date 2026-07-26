@@ -1,0 +1,1898 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14110F">
+<meta name="description" content="PDF300 — 24 free PDF tools in one page. Merge, split, rotate, crop, compress, add page numbers, watermark, sign, redact, convert to image or text, plus server-side OCR, password protection and repair. Browser tools never upload your file.">
+<meta name="keywords" content="merge pdf, split pdf, compress pdf, rotate pdf, crop pdf, pdf to image, image to pdf, pdf to text, pdf watermark, sign pdf, redact pdf, pdf ocr, unlock pdf, protect pdf, repair pdf, office to pdf, free pdf tools, ilovepdf alternative">
+<link rel="canonical" href="https://pdf300.com/">
+<link rel="alternate" hreflang="en" href="https://pdf300.com/">
+<link rel="alternate" hreflang="ko" href="https://ledeuxions.com/web-projects/pdf300/">
+<link rel="alternate" hreflang="x-default" href="https://pdf300.com/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://pdf300.com/">
+<meta property="og:title" content="PDF300 — 24 free PDF tools, no upload">
+<meta property="og:description" content="Merge, split, compress, sign, redact and convert PDFs right in your browser. Your files never leave your device for the 14 browser tools.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PDF300 — 24 free PDF tools, no upload">
+<meta name="twitter:description" content="Merge, split, compress, sign, redact and convert PDFs right in your browser.">
+<title>PDF300 — 24 Free PDF Tools (Merge, Split, Compress, OCR)</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="../../../assets/css/claude-design.css">
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';</script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+    /* ============================================================
+       PDF300 — Dark premium theme (overrides claude-design.css vars)
+       ============================================================ */
+    :root {
+        --bg-canvas: #14110F;
+        --bg-canvas-soft: #1A1613;
+        --bg-card: #1E1A16;
+        --bg-sunken: #16120F;
+        --bg-inverse: #FAF9F5;
+
+        --text-primary: #F6F2EA;
+        --text-secondary: #B7B0A4;
+        --text-muted: #837C70;
+        --text-inverse: #14110F;
+
+        --accent: #E8895F;
+        --accent-hover: #F1A07E;
+        --accent-soft: rgba(232,137,95,0.15);
+        --accent-deep: #F3AE8E;
+
+        --border: #2C2722;
+        --border-strong: #3C352D;
+
+        --shadow-xs: 0 1px 2px rgba(0,0,0,0.4);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.45);
+        --shadow-md: 0 12px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.4);
+        --shadow-lg: 0 28px 60px rgba(0,0,0,0.55);
+
+        --font-sans: 'Pretendard', 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+
+        --grad: linear-gradient(135deg, #E8895F 0%, #D9576B 55%, #B5489E 100%);
+        --grad-soft: linear-gradient(135deg, rgba(232,137,95,.16), rgba(181,72,158,.12));
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+        background:
+            radial-gradient(1200px 600px at 80% -10%, rgba(232,137,95,.10), transparent 60%),
+            radial-gradient(900px 500px at -10% 10%, rgba(181,72,158,.08), transparent 55%),
+            var(--bg-canvas);
+        background-attachment: fixed;
+    }
+
+    /* Headings use Pretendard (sans) in this page for the modern look */
+    h1, h2, h3, h4 { font-family: var(--font-sans); letter-spacing: -0.02em; }
+
+    /* Navbar — dark glass */
+    .nav {
+        background: rgba(20,17,15,0.72) !important;
+        border-bottom: 1px solid var(--border);
+        -webkit-backdrop-filter: saturate(160%) blur(14px);
+        backdrop-filter: saturate(160%) blur(14px);
+    }
+    .nav-brand-mark { background: var(--grad); box-shadow: 0 4px 14px rgba(217,87,107,.4); }
+
+    /* Hero */
+    .app-hero { padding: var(--space-8) 0 var(--space-6); text-align: center; position: relative; }
+    .app-hero h1 {
+        font-size: clamp(2.6rem, 7vw, 4.4rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 6px 0 var(--space-4);
+    }
+    .app-hero h1 em {
+        font-style: normal;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent !important;
+    }
+    .app-hero .eyebrow {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: var(--radius-pill);
+        background: var(--grad-soft);
+        border: 1px solid var(--border-strong);
+        color: var(--accent-deep);
+    }
+    .app-hero .lead { color: var(--text-secondary); max-width: 580px; margin: 0 auto; }
+
+    /* ========== Tool grid ========== */
+    .tool-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--space-4);
+        margin-bottom: var(--space-7);
+    }
+    .tool-tile {
+        position: relative;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-6) var(--space-4) var(--space-5);
+        text-align: center;
+        cursor: pointer;
+        transition: transform .28s var(--ease), box-shadow .28s var(--ease), border-color .28s var(--ease);
+        text-decoration: none; color: inherit;
+        display: flex; flex-direction: column;
+        align-items: center; gap: var(--space-2);
+        overflow: hidden;
+        isolation: isolate;
+    }
+    /* gradient sheen on hover */
+    .tool-tile::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--grad-soft);
+        opacity: 0;
+        transition: opacity .28s var(--ease);
+        z-index: -1;
+    }
+    .tool-tile::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: var(--grad);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity .28s var(--ease);
+        z-index: -1;
+    }
+    .tool-tile:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        color: inherit;
+    }
+    .tool-tile:hover::before { opacity: 1; }
+    .tool-tile:hover::after { opacity: 1; }
+    .tool-tile-icon {
+        width: 56px; height: 56px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: 16px;
+        display: grid; place-items: center;
+        font-size: 1.6rem;
+        transition: transform .28s var(--ease), background .28s var(--ease), color .28s var(--ease), box-shadow .28s var(--ease);
+    }
+    .tool-tile:hover .tool-tile-icon {
+        background: var(--grad);
+        color: #fff;
+        transform: scale(1.08) translateY(-2px);
+        box-shadow: 0 10px 24px rgba(217,87,107,.35);
+    }
+    .tool-tile h4 {
+        font-family: var(--font-sans);
+        font-size: 0.98rem;
+        font-weight: 700;
+        margin: 6px 0 0;
+        letter-spacing: -0.01em;
+    }
+    .tool-tile p {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    /* ========== Premium polish ========== */
+    .grid-section-head {
+        display: flex; align-items: center; gap: var(--space-3);
+        margin: 0 0 var(--space-5);
+    }
+    .grid-section-head h2 {
+        font-size: 1.25rem; font-weight: 700; margin: 0;
+        letter-spacing: -0.02em;
+    }
+    .grid-section-head .line {
+        flex: 1; height: 1px;
+        background: linear-gradient(90deg, var(--border), transparent);
+    }
+    .grid-section-head .count {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        padding: 3px 9px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-pill);
+    }
+
+    /* Primary buttons get the brand gradient */
+    .btn-primary {
+        background: var(--grad) !important;
+        border: none;
+        box-shadow: 0 6px 18px rgba(217,87,107,.28);
+    }
+    .btn-primary:hover {
+        filter: brightness(1.06);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 26px rgba(217,87,107,.38);
+    }
+    .btn-primary:disabled, .btn-primary[disabled] {
+        background: var(--bg-sunken) !important;
+        color: var(--text-muted) !important;
+        box-shadow: none;
+        border: 1px solid var(--border);
+    }
+    .btn-secondary {
+        background: var(--bg-card);
+        border-color: var(--border-strong);
+        color: var(--text-primary);
+    }
+    .btn-secondary:hover { background: var(--bg-canvas-soft); border-color: var(--accent); }
+
+    /* Workspace header */
+    .ws-header { border-bottom-color: var(--border); }
+    .ws-header .ico {
+        background: var(--grad-soft);
+        border: 1px solid var(--border-strong);
+        color: var(--accent-deep);
+    }
+    .ws-back { background: var(--bg-card); border: 1px solid var(--border); }
+    .ws-back:hover { background: var(--grad); color: #fff; border-color: transparent; }
+
+    /* Panels & cards */
+    .panel {
+        background: linear-gradient(180deg, var(--bg-card), var(--bg-canvas-soft));
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Dropzone glow */
+    .dropzone {
+        background: var(--bg-canvas-soft);
+        border-color: var(--border-strong);
+        transition: border-color .25s var(--ease), background .25s var(--ease), box-shadow .25s var(--ease);
+    }
+    .dropzone:hover, .dropzone.is-active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        box-shadow: 0 0 0 4px rgba(232,137,95,.08), var(--shadow-sm);
+    }
+    .dropzone-icon { color: var(--accent); }
+
+    /* Inputs in dark */
+    .input, .select, .textarea {
+        background: var(--bg-sunken);
+        border-color: var(--border-strong);
+        color: var(--text-primary);
+    }
+    .input:focus, .select:focus, .textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .seg { background: var(--bg-sunken); }
+    .seg button.on { background: var(--bg-card); color: var(--text-primary); }
+
+    /* Footer */
+    .site-footer { background: var(--bg-canvas-soft); border-top-color: var(--border); }
+
+    /* Reveal animation for workspaces & tiles */
+    .workspace.is-active { animation: ws-in .35s var(--ease-out) both; }
+    @keyframes ws-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    .tool-grid .tool-tile { animation: tile-in .4s var(--ease-out) both; }
+    .tool-grid .tool-tile:nth-child(2) { animation-delay: .03s; }
+    .tool-grid .tool-tile:nth-child(3) { animation-delay: .06s; }
+    .tool-grid .tool-tile:nth-child(4) { animation-delay: .09s; }
+    .tool-grid .tool-tile:nth-child(5) { animation-delay: .12s; }
+    .tool-grid .tool-tile:nth-child(6) { animation-delay: .15s; }
+    .tool-grid .tool-tile:nth-child(7) { animation-delay: .18s; }
+    .tool-grid .tool-tile:nth-child(n+8) { animation-delay: .21s; }
+    @keyframes tile-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) {
+        .workspace.is-active, .tool-grid .tool-tile { animation: none; }
+    }
+
+    /* ========== Server section ========== */
+    .server-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        margin: var(--space-7) 0 var(--space-4);
+        padding-top: var(--space-6);
+        border-top: 1px solid var(--border);
+    }
+    .server-head h2 {
+        font-size: 1.4rem;
+        margin: 0 0 4px;
+        display: flex; align-items: center; gap: var(--space-2);
+    }
+    .server-head .server-sub {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+    .server-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 14px;
+        border-radius: var(--radius-pill);
+        font-size: 0.85rem;
+        font-weight: 500;
+        background: var(--bg-sunken);
+        color: var(--text-secondary);
+        white-space: nowrap;
+    }
+    .server-badge .dot {
+        width: 9px; height: 9px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        flex-shrink: 0;
+    }
+    .server-badge[data-state="checking"] .dot { animation: pulse 1s ease-in-out infinite; }
+    .server-badge[data-state="online"] { background: rgba(107,142,107,.14); color: #3F5C3F; }
+    .server-badge[data-state="online"] .dot { background: #3FA34D; box-shadow: 0 0 0 3px rgba(63,163,77,.2); }
+    .server-badge[data-state="offline"] { background: rgba(184,91,61,.12); color: var(--accent-deep); }
+    .server-badge[data-state="offline"] .dot { background: #C0392B; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    #server-grid { position: relative; }
+    #server-grid.offline { opacity: .55; }
+    .tool-tile .server-tag {
+        position: absolute;
+        top: 10px; right: 10px;
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        letter-spacing: .05em;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+    .tool-tile { position: relative; }
+    .offline-note {
+        margin: var(--space-3) 0 0;
+        padding: var(--space-3);
+        background: rgba(184,91,61,.08);
+        border: 1px solid rgba(184,91,61,.2);
+        border-radius: var(--radius-md);
+        font-size: 0.82rem;
+        color: var(--accent-deep);
+    }
+    .ws-server-tag {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        letter-spacing: .05em;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        padding: 2px 7px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        vertical-align: middle;
+        margin-left: 6px;
+    }
+    .ocr-output {
+        width: 100%;
+        min-height: 280px;
+        margin-top: var(--space-4);
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        line-height: 1.6;
+        resize: vertical;
+    }
+
+    /* ========== Tool workspace ========== */
+    .workspace { display: none; }
+    .workspace.is-active { display: block; }
+    .ws-header {
+        display: flex; align-items: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-5);
+        padding-bottom: var(--space-4);
+        border-bottom: 1px solid var(--border);
+    }
+    .ws-back {
+        width: 40px; height: 40px;
+        border-radius: var(--radius-md);
+        background: var(--bg-sunken);
+        display: grid; place-items: center;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+    }
+    .ws-back:hover { background: var(--accent); color: #fff; }
+    .ws-header h2 {
+        font-family: var(--font-serif);
+        font-size: 1.4rem;
+        margin: 0;
+    }
+    .ws-header .ico {
+        width: 44px; height: 44px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-md);
+        display: grid; place-items: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    .ws-header .ws-desc {
+        flex: 1;
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .workbench {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-5);
+    }
+    @media (min-width: 920px) {
+        .workbench { grid-template-columns: 1.6fr 1fr; align-items: start; }
+    }
+    .panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+    }
+    .panel h3 {
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 var(--space-3);
+    }
+
+    /* ========== File list / items ========== */
+    .file-list {
+        list-style: none;
+        padding: 0;
+        margin: var(--space-4) 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        max-height: 380px;
+        overflow-y: auto;
+    }
+    .file-item {
+        display: flex; align-items: center; gap: var(--space-3);
+        padding: var(--space-3);
+        background: var(--bg-sunken);
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+    }
+    .file-item-icon {
+        flex: 0 0 36px; height: 36px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-sm);
+        display: grid; place-items: center;
+        font-size: 0.85rem; font-weight: 600;
+    }
+    .file-item-body { flex: 1; min-width: 0; }
+    .file-item-name {
+        font-size: 0.92rem; font-weight: 500;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .file-item-meta {
+        font-size: 0.76rem;
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+    }
+    .file-item-actions { display: flex; gap: 4px; }
+    .icon-btn {
+        width: 30px; height: 30px;
+        border-radius: var(--radius-sm);
+        display: grid; place-items: center;
+        color: var(--text-muted);
+    }
+    .icon-btn:hover { background: var(--bg-card); color: var(--accent); }
+
+    /* ========== Form / Settings ========== */
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-4); }
+    .form-row-inline { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .seg {
+        display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+        gap: 4px; padding: 4px;
+        background: var(--bg-sunken);
+        border-radius: var(--radius-md);
+    }
+    .seg button {
+        padding: 8px; border-radius: var(--radius-sm);
+        font-size: 0.85rem; font-weight: 500;
+        color: var(--text-secondary);
+    }
+    .seg button.on {
+        background: var(--bg-card); color: var(--text-primary);
+        box-shadow: var(--shadow-xs);
+    }
+
+    /* ========== Preview grid (for page thumbnails) ========== */
+    .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: var(--space-3);
+        max-height: 520px;
+        overflow-y: auto;
+        padding: var(--space-2);
+    }
+    .preview-thumb {
+        background: var(--bg-sunken);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        position: relative;
+    }
+    .preview-thumb canvas { width: 100%; height: auto; display: block; background: #fff; transition: transform .2s var(--ease); }
+    .preview-thumb-num {
+        position: absolute; top: 6px; left: 6px;
+        background: rgba(31,30,27,.85);
+        color: #fff;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    .preview-thumb-actions {
+        position: absolute; top: 6px; right: 6px;
+        display: flex; gap: 4px;
+    }
+    .preview-thumb-action {
+        width: 22px; height: 22px;
+        background: rgba(255,255,255,.95);
+        border-radius: 4px;
+        display: grid; place-items: center;
+        font-size: 0.7rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        border: 1px solid var(--border);
+    }
+    .preview-thumb-action:hover { background: var(--accent); color: #fff; }
+    .preview-thumb.removed { opacity: .35; }
+    .preview-thumb.removed canvas { filter: grayscale(1); }
+    .preview-thumb.selected { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+    /* ========== Status ========== */
+    .status {
+        font-size: 0.86rem;
+        color: var(--text-secondary);
+        margin-top: var(--space-3);
+        padding: var(--space-3);
+        background: var(--bg-sunken);
+        border-radius: var(--radius-md);
+        font-family: var(--font-mono);
+    }
+    .status.ok { background: rgba(99,178,118,.16); color: #8FD9A4; }
+    .status.err { background: rgba(224,108,90,.16); color: #F0A08E; }
+    .help { font-size: 0.8rem; color: var(--text-muted); margin-top: var(--space-2); }
+
+    /* ========== Stage for interactive tools (sign, redact, crop) ========== */
+    .stage {
+        background: var(--bg-sunken);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+        margin-top: var(--space-4);
+        position: relative;
+        overflow: hidden;
+    }
+    .stage-canvas-wrap {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+    }
+    .stage canvas { max-width: 100%; display: block; background: #fff; }
+    .stage-overlay {
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        cursor: crosshair;
+    }
+    .stage-paginator {
+        display: flex; align-items: center; gap: var(--space-3);
+        margin-top: var(--space-3);
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+    .stage-paginator button {
+        width: 32px; height: 32px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+    }
+    .stage-paginator button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .stage-paginator button:disabled { opacity: .4; cursor: not-allowed; }
+
+    .sign-tray {
+        display: flex; gap: var(--space-3); flex-wrap: wrap;
+        margin-top: var(--space-3);
+    }
+    .sign-tray-item {
+        width: 90px; height: 60px;
+        background: var(--bg-sunken);
+        border: 1px dashed var(--border-strong);
+        border-radius: var(--radius-sm);
+        display: grid; place-items: center;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .sign-tray-item img { max-width: 100%; max-height: 100%; }
+    .sign-tray-item.add {
+        color: var(--text-muted);
+        font-size: 0.78rem;
+    }
+    .sign-tray-item .x {
+        position: absolute; top: 2px; right: 2px;
+        background: rgba(0,0,0,.7); color: #fff;
+        width: 18px; height: 18px;
+        border-radius: 50%;
+        font-size: 0.7rem;
+        display: none;
+        align-items: center; justify-content: center;
+    }
+    .sign-tray-item:hover .x { display: flex; }
+
+    .badge-info {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 8px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        border-radius: var(--radius-pill);
+        font-size: 0.74rem;
+        font-weight: 500;
+    }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>Home</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>Web Tools</a>
+            <a href="/work/" class="nav-link" data-nav-link>Work</a>
+            <a href="/contact/" class="nav-link" data-nav-link>Contact</a>
+            <a href="https://ledeuxions.com/web-projects/pdf300/" class="nav-link" hreflang="ko" data-nav-link>한국어</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero (visible on home) -->
+<header class="app-hero container-narrow" id="hero">
+    <div class="eyebrow" style="margin-bottom:14px;">PDF Toolkit · 14 + 10 tools</div>
+    <h1>PDF <em>300</em></h1>
+    <p class="lead">From merging to OCR and encryption — light jobs run in your browser, heavy jobs on our server. The browser tools never upload your file.</p>
+</header>
+
+<main class="container" style="padding-bottom:var(--space-9);">
+
+    <!-- ============================== LOCAL TOOL GRID ============================== -->
+    <div class="grid-section-head">
+        <h2>🔒 Browser tools</h2>
+        <span class="line"></span>
+        <span class="count">14 · offline</span>
+    </div>
+    <section id="tool-grid" class="tool-grid">
+
+        <a href="#merge" class="tool-tile" data-tool="merge">
+            <div class="tool-tile-icon">📑</div>
+            <h4>Merge</h4>
+            <p>Combine several PDFs into one</p>
+        </a>
+        <a href="#split" class="tool-tile" data-tool="split">
+            <div class="tool-tile-icon">✂️</div>
+            <h4>Split</h4>
+            <p>Cut by page range</p>
+        </a>
+        <a href="#organize" class="tool-tile" data-tool="organize">
+            <div class="tool-tile-icon">🔄</div>
+            <h4>Rotate &amp; reorder</h4>
+            <p>Page order and rotation</p>
+        </a>
+        <a href="#crop" class="tool-tile" data-tool="crop">
+            <div class="tool-tile-icon">✂</div>
+            <h4>Crop</h4>
+            <p>Trim margins</p>
+        </a>
+        <a href="#nup" class="tool-tile" data-tool="nup">
+            <div class="tool-tile-icon">📐</div>
+            <h4>N-up</h4>
+            <p>2 or 4 pages per sheet</p>
+        </a>
+        <a href="#numbers" class="tool-tile" data-tool="numbers">
+            <div class="tool-tile-icon">🔢</div>
+            <h4>Page numbers</h4>
+            <p>Automatic numbering</p>
+        </a>
+        <a href="#watermark" class="tool-tile" data-tool="watermark">
+            <div class="tool-tile-icon">💧</div>
+            <h4>Watermark</h4>
+            <p>Text watermark</p>
+        </a>
+        <a href="#sign" class="tool-tile" data-tool="sign">
+            <div class="tool-tile-icon">✍️</div>
+            <h4>Signature &amp; stamp</h4>
+            <p>Drop an image onto the PDF</p>
+        </a>
+        <a href="#redact" class="tool-tile" data-tool="redact">
+            <div class="tool-tile-icon">⬛</div>
+            <h4>Redact</h4>
+            <p>Black out private areas</p>
+        </a>
+        <a href="#pdf2img" class="tool-tile" data-tool="pdf2img">
+            <div class="tool-tile-icon">🖼</div>
+            <h4>PDF → Image</h4>
+            <p>Pages to PNG / JPG</p>
+        </a>
+        <a href="#img2pdf" class="tool-tile" data-tool="img2pdf">
+            <div class="tool-tile-icon">📷</div>
+            <h4>Image → PDF</h4>
+            <p>Photos into a PDF</p>
+        </a>
+        <a href="#pdf2txt" class="tool-tile" data-tool="pdf2txt">
+            <div class="tool-tile-icon">📝</div>
+            <h4>PDF → Text</h4>
+            <p>Extract body text</p>
+        </a>
+        <a href="#compress" class="tool-tile" data-tool="compress">
+            <div class="tool-tile-icon">🗜</div>
+            <h4>Compress</h4>
+            <p>Image-mode re-encoding</p>
+        </a>
+        <a href="#meta" class="tool-tile" data-tool="meta">
+            <div class="tool-tile-icon">ℹ️</div>
+            <h4>Metadata</h4>
+            <p>Edit title and author</p>
+        </a>
+
+    </section>
+
+    <!-- ============================== SERVER ADVANCED TOOLS ============================== -->
+    <div class="server-head">
+        <div>
+            <h2>⚡ Advanced tools <span class="ws-server-tag">Server</span></h2>
+            <p class="server-sub">Heavy jobs like OCR, encryption and repair are handled on our pdf.ledeuxions.com server.</p>
+        </div>
+        <div id="server-status" class="server-badge" data-state="checking">
+            <span class="dot"></span><span class="txt">Checking server…</span>
+        </div>
+    </div>
+
+    <section id="server-grid" class="tool-grid">
+        <a href="#srv-compress" class="tool-tile" data-tool="srv-compress">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🗜️</div>
+            <h4>High-quality compress</h4>
+            <p>Smaller file, quality kept</p>
+        </a>
+        <a href="#srv-ocr" class="tool-tile" data-tool="srv-ocr">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🔍</div>
+            <h4>OCR text extraction</h4>
+            <p>Read text from scanned PDFs</p>
+        </a>
+        <a href="#srv-protect" class="tool-tile" data-tool="srv-protect">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🔒</div>
+            <h4>Set password</h4>
+            <p>Encrypt and protect a PDF</p>
+        </a>
+        <a href="#srv-unlock" class="tool-tile" data-tool="srv-unlock">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🔓</div>
+            <h4>Remove password</h4>
+            <p>Strip encryption</p>
+        </a>
+        <a href="#srv-strip" class="tool-tile" data-tool="srv-strip">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🧹</div>
+            <h4>Remove metadata</h4>
+            <p>Erase hidden personal data</p>
+        </a>
+        <a href="#srv-repair" class="tool-tile" data-tool="srv-repair">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🛠️</div>
+            <h4>Repair PDF</h4>
+            <p>Restore damaged files</p>
+        </a>
+        <a href="#srv-numbers" class="tool-tile" data-tool="srv-numbers">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">🔢</div>
+            <h4>Page numbers</h4>
+            <p>Precise server-side insertion</p>
+        </a>
+        <a href="#srv-nup" class="tool-tile" data-tool="srv-nup">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">📐</div>
+            <h4>N-up layout</h4>
+            <p>Any rows and columns</p>
+        </a>
+        <a href="#srv-office" class="tool-tile" data-tool="srv-office">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">📄</div>
+            <h4>Office → PDF</h4>
+            <p>Convert Word, Excel, PPT</p>
+        </a>
+        <a href="#srv-watermark" class="tool-tile" data-tool="srv-watermark">
+            <span class="server-tag">SRV</span>
+            <div class="tool-tile-icon">💧</div>
+            <h4>Watermark</h4>
+            <p>Server-side watermarking</p>
+        </a>
+    </section>
+
+    <div id="server-offline-note" class="offline-note" hidden>
+        🔴 The server is unreachable right now, so the advanced tools are unavailable. The <strong>browser tools</strong> above keep working as usual.
+    </div>
+
+
+    <!-- ============================== TOOL WORKSPACES ============================== -->
+
+    <!-- WORKSPACE TEMPLATE: each tool below uses the same `.workspace` pattern -->
+
+    <!-- ============ MERGE ============ -->
+    <section class="workspace" data-ws="merge">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📑</div>
+            <div>
+                <h2>Merge PDF</h2>
+                <p class="ws-desc">Combine multiple PDFs into one, in order.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="merge-drop">
+                    <div class="dropzone-icon">📑</div>
+                    <div class="dropzone-text">
+                        <strong>Drop PDF files here</strong> or click to browse<br>
+                        <small>Combine multiple PDFs into one, in order.</small>
+                    </div>
+                    <input type="file" id="merge-files" multiple accept="application/pdf" hidden>
+                </div>
+                <ul class="file-list" id="merge-list"></ul>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="merge-name" value="merged.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="merge-run" disabled>Merge &amp; download</button>
+                <div class="status" id="merge-status" hidden></div>
+                <p class="help">💡 Reorder items with the ▲▼ buttons.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SPLIT ============ -->
+    <section class="workspace" data-ws="split">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">✂️</div>
+            <div>
+                <h2>Split PDF</h2>
+                <p class="ws-desc">Split by page range, single pages, or fixed-size groups.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="split-drop">
+                    <div class="dropzone-icon">✂️</div>
+                    <div class="dropzone-text"><strong>Choose one PDF</strong> to cut it by page range.</div>
+                    <input type="file" id="split-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="split-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Split mode</label>
+                    <select class="select" id="split-mode">
+                        <option value="range">By page range</option>
+                        <option value="each">Every single page</option>
+                        <option value="every">Every N pages</option>
+                    </select>
+                </div>
+                <div class="form-row" id="split-range-row">
+                    <label class="label">Range (e.g. 1-3, 5, 7-10)</label>
+                    <input class="input" id="split-range" placeholder="1-3, 5, 7-10">
+                </div>
+                <div class="form-row hidden" id="split-every-row">
+                    <label class="label">Group size</label>
+                    <input class="input" id="split-every" type="number" min="1" value="1">
+                </div>
+                <button class="btn btn-primary btn-block" id="split-run" disabled>Split &amp; download (ZIP)</button>
+                <div class="status" id="split-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ ORGANIZE (Rotate/Reorder/Remove) ============ -->
+    <section class="workspace" data-ws="organize">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔄</div>
+            <div>
+                <h2>Rotate &amp; reorder</h2>
+                <p class="ws-desc">Rotate, drop and reorder individual pages.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="org-drop">
+                    <div class="dropzone-icon">🔄</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong> and its page previews open up.</div>
+                    <input type="file" id="org-file" accept="application/pdf" hidden>
+                </div>
+                <div class="preview-grid" id="org-grid"></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Rotate all</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-secondary btn-sm" data-org-rotate-all="-90">↺ 90°</button>
+                        <button class="btn btn-secondary btn-sm" data-org-rotate-all="90">↻ 90°</button>
+                        <button class="btn btn-secondary btn-sm" data-org-rotate-all="180">180°</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="org-name" value="organized.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="org-run" disabled>Save &amp; download</button>
+                <div class="status" id="org-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ CROP ============ -->
+    <section class="workspace" data-ws="crop">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">✂</div>
+            <div>
+                <h2>Crop margins</h2>
+                <p class="ws-desc">Trim the same margin from every page.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="crop-drop">
+                    <div class="dropzone-icon">✂</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong> to see the preview.</div>
+                    <input type="file" id="crop-file" accept="application/pdf" hidden>
+                </div>
+                <div class="stage" id="crop-stage" hidden>
+                    <div class="stage-canvas-wrap">
+                        <canvas id="crop-canvas"></canvas>
+                        <div class="stage-overlay" id="crop-overlay"></div>
+                    </div>
+                    <div class="stage-paginator" id="crop-paginator">
+                        <button data-crop-prev>‹</button>
+                        <span id="crop-pageinfo">— / —</span>
+                        <button data-crop-next>›</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>Margins (mm)</h3>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">Top</label>
+                        <input class="input" id="crop-top" type="number" min="0" value="0">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">Bottom</label>
+                        <input class="input" id="crop-bottom" type="number" min="0" value="0">
+                    </div>
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">Left</label>
+                        <input class="input" id="crop-left" type="number" min="0" value="0">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">Right</label>
+                        <input class="input" id="crop-right" type="number" min="0" value="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="crop-name" value="cropped.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="crop-run" disabled>Crop now</button>
+                <div class="status" id="crop-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ N-UP ============ -->
+    <section class="workspace" data-ws="nup">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📐</div>
+            <div>
+                <h2>N-up · pages per sheet</h2>
+                <p class="ws-desc">Put two or four pages on a single sheet, ready to print.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="nup-drop">
+                    <div class="dropzone-icon">📐</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>.</div>
+                    <input type="file" id="nup-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="nup-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Layout</label>
+                    <div class="seg" id="nup-layout">
+                        <button class="on" data-n="2">2-up</button>
+                        <button data-n="4">4-up</button>
+                        <button data-n="6">6-up</button>
+                        <button data-n="9">9-up</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">Orientation</label>
+                    <div class="seg" id="nup-orient">
+                        <button class="on" data-o="auto">Auto</button>
+                        <button data-o="landscape">Landscape</button>
+                        <button data-o="portrait">Portrait</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">Margin (pt)</label>
+                    <input class="input" id="nup-margin" type="number" min="0" value="20">
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="nup-name" value="nup.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="nup-run" disabled>Create N-up</button>
+                <div class="status" id="nup-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PAGE NUMBERS ============ -->
+    <section class="workspace" data-ws="numbers">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔢</div>
+            <div>
+                <h2>Add page numbers</h2>
+                <p class="ws-desc">Insert page numbers automatically.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="num-drop">
+                    <div class="dropzone-icon">🔢</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>.</div>
+                    <input type="file" id="num-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="num-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Position</label>
+                    <div class="seg" id="num-pos">
+                        <button data-p="tl">↖</button>
+                        <button data-p="tc">↑</button>
+                        <button data-p="tr">↗</button>
+                        <button data-p="bl">↙</button>
+                        <button class="on" data-p="bc">↓</button>
+                        <button data-p="br">↘</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">Format</label>
+                    <select class="select" id="num-format">
+                        <option value="n">1, 2, 3 ...</option>
+                        <option value="n/N">1 / N, 2 / N ...</option>
+                        <option value="-n-">- 1 -, - 2 - ...</option>
+                        <option value="page n">Page 1, Page 2 ...</option>
+                        <option value="page n of N">Page 1 of N ...</option>
+                    </select>
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">Size (pt)</label>
+                        <input class="input" id="num-size" type="number" min="6" max="40" value="12">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">Start number</label>
+                        <input class="input" id="num-start" type="number" min="1" value="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">Color</label>
+                    <input class="input" id="num-color" type="color" value="#1F1E1B" style="height:44px;padding:6px;">
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="num-name" value="numbered.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="num-run" disabled>Add page numbers</button>
+                <div class="status" id="num-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ WATERMARK ============ -->
+    <section class="workspace" data-ws="watermark">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">💧</div>
+            <div>
+                <h2>Add watermark</h2>
+                <p class="ws-desc">Stamp a text watermark across every page.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="wm-drop">
+                    <div class="dropzone-icon">💧</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong> to add a watermark.</div>
+                    <input type="file" id="wm-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="wm-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Text</label>
+                    <input class="input" id="wm-text" value="CONFIDENTIAL">
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">Size</label>
+                        <input class="input" id="wm-size" type="number" min="10" max="200" value="60">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">Opacity (%)</label>
+                        <input class="input" id="wm-opacity" type="number" min="5" max="100" value="25">
+                    </div>
+                </div>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">Color</label>
+                        <input class="input" id="wm-color" type="color" value="#D97757" style="height:44px;padding:6px;">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">Angle</label>
+                        <input class="input" id="wm-angle" type="number" value="-30">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="wm-name" value="watermarked.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="wm-run" disabled>Add watermark</button>
+                <div class="status" id="wm-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SIGN ============ -->
+    <section class="workspace" data-ws="sign">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">✍️</div>
+            <div>
+                <h2>Insert signature or stamp</h2>
+                <p class="ws-desc">Place a signature or stamp image (PNG) anywhere on any page.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="sign-drop">
+                    <div class="dropzone-icon">✍️</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>. Then upload a signature image and click the preview to place it.</div>
+                    <input type="file" id="sign-file" accept="application/pdf" hidden>
+                </div>
+                <div class="stage" id="sign-stage" hidden>
+                    <div class="stage-canvas-wrap">
+                        <canvas id="sign-canvas"></canvas>
+                        <div class="stage-overlay" id="sign-overlay"></div>
+                    </div>
+                    <div class="stage-paginator">
+                        <button data-sign-prev>‹</button>
+                        <span id="sign-pageinfo">— / —</span>
+                        <button data-sign-next>›</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>Signature image</h3>
+                <p class="help" style="margin-top:0;margin-bottom:var(--space-3);">A transparent PNG works best. A PNG made with a stamp extractor can be used as-is.</p>
+                <div class="sign-tray" id="sign-tray">
+                    <label class="sign-tray-item add" id="sign-add">
+                        + Add
+                        <input type="file" id="sign-img-input" accept="image/png,image/jpeg" multiple hidden>
+                    </label>
+                </div>
+                <div class="form-row" style="margin-top:var(--space-4);">
+                    <label class="label">Size (scale)</label>
+                    <input class="input" id="sign-scale" type="range" min="20" max="200" value="100">
+                    <span class="help mono" id="sign-scale-val">100%</span>
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="sign-name" value="signed.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="sign-run" disabled>Save</button>
+                <button class="btn btn-secondary btn-block" id="sign-undo" style="margin-top:var(--space-3);" disabled>Undo last placement</button>
+                <div class="status" id="sign-status" hidden></div>
+                <p class="help">💡 Pick a signature from the tray, then click the preview to drop it there.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ REDACT ============ -->
+    <section class="workspace" data-ws="redact">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">⬛</div>
+            <div>
+                <h2>Redact</h2>
+                <p class="ws-desc">Permanently cover private areas with black boxes.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="rd-drop">
+                    <div class="dropzone-icon">⬛</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>, then drag on the preview to mark areas.</div>
+                    <input type="file" id="rd-file" accept="application/pdf" hidden>
+                </div>
+                <div class="stage" id="rd-stage" hidden>
+                    <div class="stage-canvas-wrap">
+                        <canvas id="rd-canvas"></canvas>
+                        <div class="stage-overlay" id="rd-overlay"></div>
+                    </div>
+                    <div class="stage-paginator">
+                        <button data-rd-prev>‹</button>
+                        <span id="rd-pageinfo">— / —</span>
+                        <button data-rd-next>›</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Color</label>
+                    <input class="input" id="rd-color" type="color" value="#000000" style="height:44px;padding:6px;">
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="rd-name" value="redacted.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="rd-run" disabled>Save</button>
+                <button class="btn btn-secondary btn-block" id="rd-clear" style="margin-top:var(--space-3);" disabled>Clear every box on this page</button>
+                <div class="status" id="rd-status" hidden></div>
+                <p class="help">💡 Drag to draw a rectangle. A black box is permanently burned in at that spot.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PDF → IMAGES ============ -->
+    <section class="workspace" data-ws="pdf2img">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🖼</div>
+            <div>
+                <h2>PDF → Image</h2>
+                <p class="ws-desc">Export each page as PNG, JPG or WebP.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="ext-drop">
+                    <div class="dropzone-icon">🖼</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>.</div>
+                    <input type="file" id="ext-file" accept="application/pdf" hidden>
+                </div>
+                <div class="preview-grid" id="ext-grid"></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">Format</label>
+                        <select class="select" id="ext-format">
+                            <option value="image/png">PNG</option>
+                            <option value="image/jpeg" selected>JPG</option>
+                            <option value="image/webp">WebP</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label class="label">Resolution</label>
+                        <select class="select" id="ext-dpi">
+                            <option value="1">72 DPI</option>
+                            <option value="1.5">108 DPI</option>
+                            <option value="2" selected>144 DPI</option>
+                            <option value="3">216 DPI</option>
+                            <option value="4">288 DPI</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">JPG / WebP quality</label>
+                    <input class="input" id="ext-quality" type="range" min="50" max="100" value="92">
+                </div>
+                <button class="btn btn-primary btn-block" id="ext-run" disabled>Extract images (ZIP)</button>
+                <div class="status" id="ext-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ IMAGES → PDF ============ -->
+    <section class="workspace" data-ws="img2pdf">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📷</div>
+            <div>
+                <h2>Image → PDF</h2>
+                <p class="ws-desc">Bundle JPG / PNG files into one PDF.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="img-drop">
+                    <div class="dropzone-icon">📷</div>
+                    <div class="dropzone-text"><strong>Drop images here</strong> or click to browse</div>
+                    <input type="file" id="img-files" multiple accept="image/jpeg,image/png" hidden>
+                </div>
+                <ul class="file-list" id="img-list"></ul>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Page size</label>
+                    <select class="select" id="img-size">
+                        <option value="fit">Fit to image size</option>
+                        <option value="A4">A4 (210×297mm)</option>
+                        <option value="Letter">Letter (8.5×11in)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label class="label">Orientation</label>
+                    <select class="select" id="img-orient">
+                        <option value="auto">Auto</option>
+                        <option value="portrait">Portrait</option>
+                        <option value="landscape">Landscape</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label class="label">Margin (mm)</label>
+                    <input class="input" id="img-margin" type="number" min="0" value="10">
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="img-name" value="images.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="img-run" disabled>Create PDF</button>
+                <div class="status" id="img-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PDF → TEXT ============ -->
+    <section class="workspace" data-ws="pdf2txt">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📝</div>
+            <div>
+                <h2>PDF → Text</h2>
+                <p class="ws-desc">Pulls out the body text and saves it as .txt. (Scanned image PDFs need OCR.)</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="txt-drop">
+                    <div class="dropzone-icon">📝</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong> and its text is extracted.</div>
+                    <input type="file" id="txt-file" accept="application/pdf" hidden>
+                </div>
+                <textarea class="textarea" id="txt-output" rows="14" placeholder="Extracted text appears here…" style="margin-top:var(--space-4);font-family:var(--font-mono);font-size:.85rem;"></textarea>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Page separator</label>
+                    <select class="select" id="txt-sep">
+                        <option value="form-feed">Form feed (\\f)</option>
+                        <option value="header" selected>--- Page N ---</option>
+                        <option value="newline">Blank line only</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="txt-name" value="extracted.txt">
+                </div>
+                <button class="btn btn-primary btn-block" id="txt-run" disabled>Extract text</button>
+                <button class="btn btn-secondary btn-block" id="txt-download" disabled style="margin-top:var(--space-3);">Download .txt</button>
+                <button class="btn btn-ghost btn-block" id="txt-copy" disabled style="margin-top:var(--space-3);">Copy to clipboard</button>
+                <div class="status" id="txt-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ COMPRESS ============ -->
+    <section class="workspace" data-ws="compress">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🗜</div>
+            <div>
+                <h2>Compress (image mode)</h2>
+                <p class="ws-desc">Redraws every page as a JPG image, producing a far smaller PDF. Text search is lost in exchange.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="cmp-drop">
+                    <div class="dropzone-icon">🗜</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong> to compress it.</div>
+                    <input type="file" id="cmp-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="cmp-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Compression level</label>
+                    <div class="seg" id="cmp-level">
+                        <button data-l="low">Low</button>
+                        <button class="on" data-l="med">Medium</button>
+                        <button data-l="high">High</button>
+                        <button data-l="extreme">Extreme</button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="label">Max page width (px)</label>
+                    <input class="input" id="cmp-width" type="number" min="400" value="1280">
+                </div>
+                <div class="form-row">
+                    <label class="label">JPG quality</label>
+                    <input class="input" id="cmp-quality" type="range" min="30" max="95" value="72">
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="cmp-name" value="compressed.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="cmp-run" disabled>Compress now</button>
+                <div class="status" id="cmp-status" hidden></div>
+                <p class="help">⚠️ After compression the PDF is image-based — text selection and search will no longer work.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ METADATA ============ -->
+    <section class="workspace" data-ws="meta">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">ℹ️</div>
+            <div>
+                <h2>Edit metadata</h2>
+                <p class="ws-desc">View and edit the title, author, keywords and other metadata of a PDF.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="meta-drop">
+                    <div class="dropzone-icon">ℹ️</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>.</div>
+                    <input type="file" id="meta-file" accept="application/pdf" hidden>
+                </div>
+                <div class="panel" id="meta-current" hidden style="margin-top:var(--space-4);">
+                    <h3>Current metadata</h3>
+                    <div id="meta-list" style="font-family:var(--font-mono);font-size:.85rem;color:var(--text-secondary);line-height:1.8;"></div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>New metadata</h3>
+                <div class="form-row">
+                    <label class="label">Title</label>
+                    <input class="input" id="meta-title">
+                </div>
+                <div class="form-row">
+                    <label class="label">Author</label>
+                    <input class="input" id="meta-author">
+                </div>
+                <div class="form-row">
+                    <label class="label">Subject</label>
+                    <input class="input" id="meta-subject">
+                </div>
+                <div class="form-row">
+                    <label class="label">Keywords (comma separated)</label>
+                    <input class="input" id="meta-keywords">
+                </div>
+                <div class="form-row">
+                    <label class="label">Output filename</label>
+                    <input class="input" id="meta-name" value="meta-edited.pdf">
+                </div>
+                <button class="btn btn-primary btn-block" id="meta-run" disabled>Save</button>
+                <button class="btn btn-secondary btn-block" id="meta-strip" disabled style="margin-top:var(--space-3);">Remove all metadata</button>
+                <div class="status" id="meta-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         SERVER ADVANCED WORKSPACES
+         ============================================================ -->
+
+    <!-- ============ SERVER: COMPRESS ============ -->
+    <section class="workspace" data-ws="srv-compress">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🗜️</div>
+            <div>
+                <h2>High-quality compress <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">The server re-optimises the images, shrinking the file with minimal quality loss.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-compress-drop">
+                    <div class="dropzone-icon">🗜️</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong> to run server-side compression.</div>
+                    <input type="file" id="srv-compress-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-compress-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Run</h3>
+                <p class="help" style="margin-top:0;">Your file is sent to the server, processed, and returned right away.</p>
+                <button class="btn btn-primary btn-block" id="srv-compress-run" disabled style="margin-top:var(--space-4);">Compress now</button>
+                <div class="status" id="srv-compress-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: OCR ============ -->
+    <section class="workspace" data-ws="srv-ocr">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔍</div>
+            <div>
+                <h2>OCR text extraction <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">Recognises characters in scanned or image-only PDFs and turns them into text.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-ocr-drop">
+                    <div class="dropzone-icon">🔍</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong> to recognise its text.</div>
+                    <input type="file" id="srv-ocr-file" accept="application/pdf" hidden>
+                </div>
+                <textarea class="textarea ocr-output" id="srv-ocr-output" readonly placeholder="Recognised text appears here…"></textarea>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Recognition language</label>
+                    <select class="select" id="srv-ocr-lang">
+                        <option value="kor+eng">Korean + English</option>
+                        <option value="kor">Korean</option>
+                        <option value="eng" selected>English</option>
+                        <option value="jpn">Japanese</option>
+                        <option value="chi_sim">Chinese (Simplified)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-ocr-run" disabled>Extract text</button>
+                <button class="btn btn-secondary btn-block" id="srv-ocr-copy" disabled style="margin-top:var(--space-3);">📋 Copy to clipboard</button>
+                <button class="btn btn-secondary btn-block" id="srv-ocr-download" disabled style="margin-top:var(--space-3);">Download .txt</button>
+                <div class="status" id="srv-ocr-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: PROTECT ============ -->
+    <section class="workspace" data-ws="srv-protect">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔒</div>
+            <div>
+                <h2>Set password <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">Encrypt the PDF so a password is required to open it.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-protect-drop">
+                    <div class="dropzone-icon">🔒</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>.</div>
+                    <input type="file" id="srv-protect-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-protect-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Password</label>
+                    <input class="input" id="srv-protect-pw" type="password" placeholder="Password to set">
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-protect-run" disabled>Encrypt &amp; download</button>
+                <div class="status" id="srv-protect-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: UNLOCK ============ -->
+    <section class="workspace" data-ws="srv-unlock">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔓</div>
+            <div>
+                <h2>Remove password <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">Strip the password from a PDF you already know the password for.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-unlock-drop">
+                    <div class="dropzone-icon">🔓</div>
+                    <div class="dropzone-text"><strong>Choose an encrypted PDF</strong>.</div>
+                    <input type="file" id="srv-unlock-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-unlock-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Current password</label>
+                    <input class="input" id="srv-unlock-pw" type="password" placeholder="PDF password">
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-unlock-run" disabled>Remove password &amp; download</button>
+                <div class="status" id="srv-unlock-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: STRIP METADATA ============ -->
+    <section class="workspace" data-ws="srv-strip">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🧹</div>
+            <div>
+                <h2>Remove metadata <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">Completely wipes hidden info such as title, author and producer on the server.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-strip-drop">
+                    <div class="dropzone-icon">🧹</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>.</div>
+                    <input type="file" id="srv-strip-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-strip-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Run</h3>
+                <button class="btn btn-primary btn-block" id="srv-strip-run" disabled style="margin-top:var(--space-2);">Remove metadata</button>
+                <div class="status" id="srv-strip-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: REPAIR ============ -->
+    <section class="workspace" data-ws="srv-repair">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🛠️</div>
+            <div>
+                <h2>Repair PDF <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">Rebuilds the internal structure of a corrupt or unopenable PDF and tries to recover it.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-repair-drop">
+                    <div class="dropzone-icon">🛠️</div>
+                    <div class="dropzone-text"><strong>Choose a damaged PDF</strong>.</div>
+                    <input type="file" id="srv-repair-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-repair-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Run</h3>
+                <button class="btn btn-primary btn-block" id="srv-repair-run" disabled style="margin-top:var(--space-2);">Try repair</button>
+                <div class="status" id="srv-repair-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: PAGE NUMBERS ============ -->
+    <section class="workspace" data-ws="srv-numbers">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">🔢</div>
+            <div>
+                <h2>Page numbers <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">Inserts page numbers precisely, on the server.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-numbers-drop">
+                    <div class="dropzone-icon">🔢</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>.</div>
+                    <input type="file" id="srv-numbers-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-numbers-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Position</label>
+                    <select class="select" id="srv-numbers-pos">
+                        <option value="bottom-center" selected>Bottom center</option>
+                        <option value="bottom-right">Bottom right</option>
+                        <option value="bottom-left">Bottom left</option>
+                        <option value="top-center">Top center</option>
+                        <option value="top-right">Top right</option>
+                        <option value="top-left">Top left</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label class="label">Format</label>
+                    <select class="select" id="srv-numbers-fmt">
+                        <option value="{n}" selected>1, 2, 3 …</option>
+                        <option value="{n}/{total}">1/N, 2/N …</option>
+                        <option value="- {n} -">- 1 -, - 2 - …</option>
+                        <option value="Page {n}">Page 1 …</option>
+                        <option value="Page {n} of {total}">Page 1 of N …</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-numbers-run" disabled>Add page numbers</button>
+                <div class="status" id="srv-numbers-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: N-UP ============ -->
+    <section class="workspace" data-ws="srv-nup">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📐</div>
+            <div>
+                <h2>N-up layout <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">Arrange several pages on one sheet in rows and columns.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-nup-drop">
+                    <div class="dropzone-icon">📐</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>.</div>
+                    <input type="file" id="srv-nup-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-nup-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row-inline">
+                    <div class="form-row">
+                        <label class="label">Rows</label>
+                        <input class="input" id="srv-nup-rows" type="number" min="1" max="6" value="2">
+                    </div>
+                    <div class="form-row">
+                        <label class="label">Columns</label>
+                        <input class="input" id="srv-nup-cols" type="number" min="1" max="6" value="2">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-nup-run" disabled>Create N-up</button>
+                <div class="status" id="srv-nup-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: OFFICE → PDF ============ -->
+    <section class="workspace" data-ws="srv-office">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">📄</div>
+            <div>
+                <h2>Office → PDF <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">Convert Word, Excel, PowerPoint and HWP documents into PDF.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-office-drop">
+                    <div class="dropzone-icon">📄</div>
+                    <div class="dropzone-text">
+                        <strong>Choose a document</strong>.<br>
+                        <small>.docx · .xlsx · .pptx · .doc · .hwp · .odt and more</small>
+                    </div>
+                    <input type="file" id="srv-office-file" accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.odt,.ods,.odp,.rtf,.txt" hidden>
+                </div>
+                <div class="status" id="srv-office-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Run</h3>
+                <button class="btn btn-primary btn-block" id="srv-office-run" disabled style="margin-top:var(--space-2);">Convert to PDF</button>
+                <div class="status" id="srv-office-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SERVER: WATERMARK ============ -->
+    <section class="workspace" data-ws="srv-watermark">
+        <div class="ws-header">
+            <a href="#" class="ws-back ws-back-link">←</a>
+            <div class="ico">💧</div>
+            <div>
+                <h2>Watermark <span class="ws-server-tag">Server</span></h2>
+                <p class="ws-desc">Stamps a text watermark across every page, on the server.</p>
+            </div>
+        </div>
+        <div class="workbench">
+            <div>
+                <div class="dropzone" id="srv-watermark-drop">
+                    <div class="dropzone-icon">💧</div>
+                    <div class="dropzone-text"><strong>Choose a PDF</strong>.</div>
+                    <input type="file" id="srv-watermark-file" accept="application/pdf" hidden>
+                </div>
+                <div class="status" id="srv-watermark-info" hidden></div>
+            </div>
+            <div class="panel">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label class="label">Watermark text</label>
+                    <input class="input" id="srv-watermark-text" value="CONFIDENTIAL">
+                </div>
+                <button class="btn btn-primary btn-block" id="srv-watermark-run" disabled>Add watermark</button>
+                <div class="status" id="srv-watermark-status" hidden></div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions. PDF300 v2026.05 · 14 browser + 10 server tools</span>
+            <span><a href="/web-projects/">← More tools</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../../../assets/js/common.js"></script>
+<script src="pdf300.js"></script>
+<script src="pdf300-server.js"></script>
+</body>
+</html>
