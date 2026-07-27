@@ -464,7 +464,9 @@ def main():
     # 7) 얼리 액세스 이메일 수집 스크립트 (영어판 전용, 결제 오픈 전 한시 운영)
     html = html.replace(
         '<script src="pdf300-server.js"></script>',
-        '<script src="pdf300-server.js"></script>\n<script src="early-access.js"></script>', 1)
+        '<script src="paywall.js"></script>\n'
+        '<script src="pdf300-server.js"></script>\n'
+        '<script src="early-access.js"></script>', 1)
 
     open(os.path.join(DST, 'index.html'), 'w', encoding='utf-8').write(html)
 

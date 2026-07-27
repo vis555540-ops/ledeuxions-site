@@ -44,6 +44,10 @@ const upstreamUrlFor = (env, tool) => {
     return r ? r.base + r.path : backendOf(env) + "/v1/" + tool;
 };
 
+// 무료 사용자가 pdf300 서버도구를 하루에 쓸 수 있는 횟수.
+// 형 결정(2026-07-27): 5회. ("3회면 쓰다 막혀서 딴 데로 간다, 5회 넘으면 다른 도구 쓰기 싫을 타이밍")
+const FREE_PDF_PER_DAY = 5;
+
 // pdf300 서버도구 무료/유료 한도 (형이 값 정하면 여기만 고치면 됨)
 const PDF_SERVER_TOOLS = ["pdf-hq-compress", "pdf-ocr", "pdf-protect", "pdf-unlock",
     "pdf-strip", "pdf-repair", "pdf-numbers", "pdf-nup", "pdf-watermark", "pdf-office"];
@@ -51,7 +55,7 @@ const pdfLimits = (n) => Object.fromEntries(PDF_SERVER_TOOLS.map(t => [t, n]));
 
 // 티어별 1일 호출 제한
 const TIERS = {
-    free:     { transcribe: 3,   "remove-bg": 5,    ocr: 5,    "pdf-compress": 10,    "restore-face": 2,   ...pdfLimits(10)   },
+    free:     { transcribe: 3,   "remove-bg": 5,    ocr: 5,    "pdf-compress": 10,    "restore-face": 2,   ...pdfLimits(FREE_PDF_PER_DAY) },
     pro:      { transcribe: 200, "remove-bg": 500,  ocr: 500,  "pdf-compress": 1000,  "restore-face": 100, ...pdfLimits(1000) },
     business: { transcribe: 1000,"remove-bg": 5000, ocr: 5000, "pdf-compress": 10000, "restore-face": 500, ...pdfLimits(10000)},
 };
@@ -192,6 +196,51 @@ async function handleWebhookLemon(req, env) {
     return json({ ok: true, email, plan: user.plan });
 }
 
+// 익명 사용자용 pdf300 서버도구 프록시 (IP 기준 일일 무료 한도)
+// KV: anon:{ip}:{date} → 그날 사용 횟수
+async function handleAnonPdfCall(tool, req, env, origin) {
+    const h = corsHeaders(origin);
+    const ip = req.headers.get("CF-Connecting-IP") || "unknown";
+    const key = `anon:${ip}:${todayKey()}`;
+    const used = Number((await env.KV.get(key)) || 0);
+
+    if (used >= FREE_PDF_PER_DAY) {
+        return json({
+            error: "daily free limit reached",
+            tool, used, limit: FREE_PDF_PER_DAY,
+            message: `You have used all ${FREE_PDF_PER_DAY} free server-tool runs for today. ` +
+                     `Browser tools stay free and unlimited.`,
+            upgrade_url: "https://pdf300.com/pricing",
+        }, 429, h);
+    }
+
+    await env.KV.put(key, String(used + 1), { expirationTtl: 60 * 60 * 26 });
+
+    const upstreamHeaders = new Headers();
+    const ct = req.headers.get("Content-Type");
+    if (ct) upstreamHeaders.set("Content-Type", ct);
+
+    let upstream;
+    try {
+        upstream = await fetch(upstreamUrlFor(env, tool), {
+            method: "POST", headers: upstreamHeaders, body: req.body,
+        });
+    } catch (e) {
+        await env.KV.put(key, String(used), { expirationTtl: 60 * 60 * 26 });  // 환불
+        return json({ error: "backend unreachable", detail: String(e) }, 502, h);
+    }
+    if (!upstream.ok) {
+        await env.KV.put(key, String(used), { expirationTtl: 60 * 60 * 26 });  // 환불
+    }
+
+    const resp = new Response(upstream.body, upstream);
+    Object.keys(h).forEach(k => resp.headers.set(k, h[k]));
+    resp.headers.set("X-Quota-Used", String(upstream.ok ? used + 1 : used));
+    resp.headers.set("X-Quota-Limit", String(FREE_PDF_PER_DAY));
+    resp.headers.set("X-Plan", "anonymous");
+    return resp;
+}
+
 async function handleApiCall(tool, req, env, origin) {
     if (!ALLOWED_TOOLS.includes(tool)) {
         return json({ error: "unknown tool" }, 404, corsHeaders(origin));
@@ -199,6 +248,12 @@ async function handleApiCall(tool, req, env, origin) {
     const apiKey = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim()
                 || (req.headers.get("X-API-Key") || "").trim();
     if (!apiKey) {
+        // 익명(계정 없이) pdf300 서버도구 사용 — IP 기준 하루 무료 N회.
+        // ⚠️ env.PDF_METER_ANON 이 "on" 일 때만 동작. 기본은 꺼짐(=기존대로 401).
+        //    가입 강요하면 이탈한다는 형 판단 때문에 키 대신 IP로 셈.
+        if (env.PDF_METER_ANON === "on" && PDF_SERVER_TOOLS.includes(tool)) {
+            return handleAnonPdfCall(tool, req, env, origin);
+        }
         return json({ error: "missing api key", hint: "Authorization: Bearer ld_..." }, 401, corsHeaders(origin));
     }
 
