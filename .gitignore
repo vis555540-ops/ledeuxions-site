@@ -1,0 +1,4 @@
+
+# pdf300.com 배포 번들 (tools/build_pdf300_root.py 로 생성, wrangler 직접 배포)
+dist/
+.wrangler/
