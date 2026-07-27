@@ -20,14 +20,44 @@
 const DEFAULT_BACKEND = "https://ai.ledeuxions.com";
 const backendOf = (env) => env.BACKEND_URL || DEFAULT_BACKEND;
 
-// 티어별 1일 호출 제한
-const TIERS = {
-    free:     { transcribe: 3,   "remove-bg": 5,    ocr: 5,    "pdf-compress": 10,    "restore-face": 2   },
-    pro:      { transcribe: 200, "remove-bg": 500,  ocr: 500,  "pdf-compress": 1000,  "restore-face": 100 },
-    business: { transcribe: 1000,"remove-bg": 5000, ocr: 5000, "pdf-compress": 10000, "restore-face": 500 },
+// 툴별 업스트림 라우팅. 없으면 {기본백엔드}/v1/{tool}.
+//  - pdf-compress(목표용량 압축) = 미니PC 서버 본진
+//  - pdf300 서버도구 10종 = 미니PC pdf-tools(:8022), 경로가 /v1/* 이 아니라 루트라서 path 지정
+// ⚠️ 아직 pdf300 프론트는 pdf.ledeuxions.com 을 직접 부른다. 여기 등록은
+//    "게이트웨이로도 서빙 가능하게" 만든 준비 단계일 뿐, 사용자 동작은 바뀌지 않는다.
+const PDF_TOOLS_BASE = "https://pdf.ledeuxions.com";
+const TOOL_ROUTES = {
+    "pdf-compress":     { base: "https://pdf-api.ledeuxions.com", path: "/v1/pdf-compress" },
+    "pdf-hq-compress":  { base: PDF_TOOLS_BASE, path: "/compress" },
+    "pdf-ocr":          { base: PDF_TOOLS_BASE, path: "/ocr" },
+    "pdf-protect":      { base: PDF_TOOLS_BASE, path: "/protect" },
+    "pdf-unlock":       { base: PDF_TOOLS_BASE, path: "/unlock" },
+    "pdf-strip":        { base: PDF_TOOLS_BASE, path: "/strip-metadata" },
+    "pdf-repair":       { base: PDF_TOOLS_BASE, path: "/repair" },
+    "pdf-numbers":      { base: PDF_TOOLS_BASE, path: "/add-page-numbers" },
+    "pdf-nup":          { base: PDF_TOOLS_BASE, path: "/n-up" },
+    "pdf-watermark":    { base: PDF_TOOLS_BASE, path: "/watermark" },
+    "pdf-office":       { base: PDF_TOOLS_BASE, path: "/office-to-pdf" },
+};
+const upstreamUrlFor = (env, tool) => {
+    const r = TOOL_ROUTES[tool];
+    return r ? r.base + r.path : backendOf(env) + "/v1/" + tool;
 };
 
-const ALLOWED_TOOLS = ["transcribe", "remove-bg", "ocr", "pdf-compress", "restore-face"];
+// pdf300 서버도구 무료/유료 한도 (형이 값 정하면 여기만 고치면 됨)
+const PDF_SERVER_TOOLS = ["pdf-hq-compress", "pdf-ocr", "pdf-protect", "pdf-unlock",
+    "pdf-strip", "pdf-repair", "pdf-numbers", "pdf-nup", "pdf-watermark", "pdf-office"];
+const pdfLimits = (n) => Object.fromEntries(PDF_SERVER_TOOLS.map(t => [t, n]));
+
+// 티어별 1일 호출 제한
+const TIERS = {
+    free:     { transcribe: 3,   "remove-bg": 5,    ocr: 5,    "pdf-compress": 10,    "restore-face": 2,   ...pdfLimits(10)   },
+    pro:      { transcribe: 200, "remove-bg": 500,  ocr: 500,  "pdf-compress": 1000,  "restore-face": 100, ...pdfLimits(1000) },
+    business: { transcribe: 1000,"remove-bg": 5000, ocr: 5000, "pdf-compress": 10000, "restore-face": 500, ...pdfLimits(10000)},
+};
+
+const ALLOWED_TOOLS = ["transcribe", "remove-bg", "ocr", "pdf-compress", "restore-face",
+    ...PDF_SERVER_TOOLS];
 
 // ---------- Helpers ----------
 const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -202,7 +232,7 @@ async function handleApiCall(tool, req, env, origin) {
 
     let upstream;
     try {
-        upstream = await fetch(backendOf(env) + "/v1/" + tool, {
+        upstream = await fetch(upstreamUrlFor(env, tool), {
             method: "POST",
             headers: upstreamHeaders,
             body: req.body,
