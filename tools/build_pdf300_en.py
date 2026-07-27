@@ -461,6 +461,29 @@ def main():
         '            <a href="https://ledeuxions.com/web-projects/pdf300/" class="nav-link" '
         'hreflang="ko" data-nav-link>한국어</a>', 1)
 
+    # 6-b) 신뢰 배지 — 경쟁사 대비 우리 차별점을 첫 화면에 명시.
+    #      (리서치: 신뢰·사회적 증거 있으면 체험 시작률 2배. Smallpdf=워터마크·2회, iLovePDF=15MB 제한)
+    lead_end = '</p>'
+    lead_start = html.find('<p class="lead">')
+    if lead_start != -1:
+        cut = html.find(lead_end, lead_start) + len(lead_end)
+        chip_html = (
+            '\n        <ul class="trust-row" aria-label="Why PDF300">'
+            '<li>🔒 Files never uploaded</li>'
+            '<li>✅ No sign-up</li>'
+            '<li>🚫 No watermark</li>'
+            '<li>♾️ Browser tools unlimited</li>'
+            '</ul>')
+        html = html[:cut] + chip_html + html[cut:]
+        html = html.replace('</style>', """
+    .trust-row{list-style:none;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+        margin:var(--space-4,18px) 0 0;padding:0;}
+    .trust-row li{font-size:.82rem;color:var(--text-secondary,#B7B0A4);
+        background:var(--bg-card,#1E1A16);border:1px solid var(--border,rgba(255,255,255,.08));
+        border-radius:999px;padding:6px 14px;white-space:nowrap;}
+    @media (max-width:640px){.trust-row{gap:6px}.trust-row li{font-size:.75rem;padding:5px 10px}}
+</style>""", 1)
+
     # 7) 얼리 액세스 이메일 수집 스크립트 (영어판 전용, 결제 오픈 전 한시 운영)
     html = html.replace(
         '<script src="pdf300-server.js"></script>',

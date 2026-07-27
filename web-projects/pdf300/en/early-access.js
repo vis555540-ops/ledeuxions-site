@@ -149,9 +149,13 @@
         }
         var bar = document.createElement('div');
         bar.className = 'ea-bar';
+        // 모바일에선 짧게 — 긴 문구가 첫 화면의 1/5을 잡아먹는다
+        var pitch = (window.innerWidth < 640)
+            ? '🎁 <b>Free while in beta.</b> Get a <b>free Pro code</b> at launch.'
+            : '🎁 <b>Founding user offer</b> — every tool is free and unlimited while we are in beta. ' +
+              'Leave your email and get a <b>free Pro code</b> the day paid plans open.';
         bar.innerHTML =
-            '<span>🎁 <b>Founding user offer</b> — every tool is free and unlimited while we are in beta. ' +
-            'Leave your email and get a <b>free Pro code</b> the day paid plans open.</span>' +
+            '<span>' + pitch + '</span>' +
             '<form id="ea-bform"><input type="email" id="ea-bmail" placeholder="you@example.com" ' +
             'autocomplete="email" inputmode="email"><button type="submit">Reserve my code</button></form>' +
             '<button class="ea-dismiss" id="ea-bx" aria-label="Dismiss">✕</button>';

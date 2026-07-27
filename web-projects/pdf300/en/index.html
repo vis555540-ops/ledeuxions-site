@@ -655,6 +655,13 @@
         font-size: 0.74rem;
         font-weight: 500;
     }
+
+    .trust-row{list-style:none;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+        margin:var(--space-4,18px) 0 0;padding:0;}
+    .trust-row li{font-size:.82rem;color:var(--text-secondary,#B7B0A4);
+        background:var(--bg-card,#1E1A16);border:1px solid var(--border,rgba(255,255,255,.08));
+        border-radius:999px;padding:6px 14px;white-space:nowrap;}
+    @media (max-width:640px){.trust-row{gap:6px}.trust-row li{font-size:.75rem;padding:5px 10px}}
 </style>
 </head>
 <body>
@@ -683,6 +690,7 @@
     <div class="eyebrow" style="margin-bottom:14px;">PDF Toolkit · 14 + 10 tools</div>
     <h1>PDF <em>300</em></h1>
     <p class="lead">From merging to OCR and encryption — light jobs run in your browser, heavy jobs on our server. The browser tools never upload your file.</p>
+        <ul class="trust-row" aria-label="Why PDF300"><li>🔒 Files never uploaded</li><li>✅ No sign-up</li><li>🚫 No watermark</li><li>♾️ Browser tools unlimited</li></ul>
 </header>
 
 <main class="container" style="padding-bottom:var(--space-9);">
