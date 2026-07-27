@@ -118,6 +118,74 @@
         }
     }
 
+    /* ── 사전 오픈 행사 배너 ────────────────────────────────────────
+       형 지시(2026-07-28): "레몬즙 나올 때까지 행사하자".
+       지금은 전부 무료·무제한인 상태 자체가 행사다. 그걸 페이지에 말해주고
+       이메일을 받아둔다. 결제 열리는 날 이 사람들부터 무료 코드.
+       한 번 닫으면 다시 안 뜬다(K_BANNER). 이메일 넣으면 당연히 안 뜬다. */
+    var K_BANNER = 'pdf300_banner_off';
+
+    function banner() {
+        if (get(K_DONE, '') === '1' || get(K_BANNER, '') === '1') return;
+        if (!document.body) { document.addEventListener('DOMContentLoaded', banner); return; }
+        injectStyles();
+        if (!document.getElementById('ea-banner-styles')) {
+            var bs = document.createElement('style');
+            bs.id = 'ea-banner-styles';
+            bs.textContent = [
+                '.ea-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;',
+                'padding:12px 18px;background:linear-gradient(90deg,rgba(232,137,95,.16),rgba(232,137,95,.06));',
+                'border-bottom:1px solid var(--border,rgba(255,255,255,.1));font-size:.92rem;}',
+                '.ea-bar b{color:var(--accent,#E8895F);}',
+                '.ea-bar form{display:flex;gap:8px;}',
+                '.ea-bar input{padding:8px 12px;border-radius:8px;border:1px solid var(--border,rgba(255,255,255,.15));',
+                'background:var(--bg-sunken,#16120F);color:inherit;font-size:.9rem;min-width:200px;}',
+                '.ea-bar button{padding:8px 14px;border-radius:8px;border:0;background:var(--accent,#E8895F);',
+                'color:#14110F;font-weight:600;font-size:.9rem;cursor:pointer;}',
+                '.ea-bar .ea-dismiss{background:transparent;color:var(--text-muted,#837C70);font-weight:400;}',
+                '.ea-bar .ea-said{color:#7FB88A;}'
+            ].join('');
+            document.head.appendChild(bs);
+        }
+        var bar = document.createElement('div');
+        bar.className = 'ea-bar';
+        bar.innerHTML =
+            '<span>🎁 <b>Founding user offer</b> — every tool is free and unlimited while we are in beta. ' +
+            'Leave your email and get a <b>free Pro code</b> the day paid plans open.</span>' +
+            '<form id="ea-bform"><input type="email" id="ea-bmail" placeholder="you@example.com" ' +
+            'autocomplete="email" inputmode="email"><button type="submit">Reserve my code</button></form>' +
+            '<button class="ea-dismiss" id="ea-bx" aria-label="Dismiss">✕</button>';
+        document.body.insertBefore(bar, document.body.firstChild);
+
+        bar.querySelector('#ea-bx').onclick = function () {
+            set(K_BANNER, '1');
+            if (bar.parentNode) bar.parentNode.removeChild(bar);
+        };
+        bar.querySelector('#ea-bform').onsubmit = async function (e) {
+            e.preventDefault();
+            var email = (bar.querySelector('#ea-bmail').value || '').trim();
+            var msgEl = bar.querySelector('span');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+                msgEl.innerHTML = '⚠️ Please enter a valid email address.';
+                return;
+            }
+            try {
+                var res = await fetch(API, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, source: 'pdf300-banner', uses: Number(get(K_USES, 0)) })
+                });
+                if (!res.ok) throw new Error(res.status);
+                set(K_DONE, '1'); set(K_BANNER, '1');
+                bar.innerHTML = '<span class="ea-said">✅ Thank you — your free Pro code is reserved. ' +
+                                'Keep using everything free in the meantime.</span>';
+                setTimeout(function () { if (bar.parentNode) bar.parentNode.removeChild(bar); }, 4000);
+            } catch (err) {
+                msgEl.innerHTML = '⚠️ Could not reach the server. Please try again later.';
+            }
+        };
+    }
+    banner();
+
     // LD.download 를 감싸서 "결과물이 만들어진 순간"만 카운트
     function hook() {
         if (!window.LD || typeof LD.download !== 'function' || LD.__eaHooked) return false;
