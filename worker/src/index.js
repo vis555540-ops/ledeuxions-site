@@ -349,7 +349,8 @@ async function handleWaitlistSubmit(request, env, origin) {
 async function handleWaitlistList(request, env, origin) {
     const h = corsHeaders(origin);
     const url = new URL(request.url);
-    const key = url.searchParams.get("key");
+    // 키는 헤더 우선(쿼리스트링은 특수문자·WAF 때문에 403 나는 경우가 있었음)
+    const key = request.headers.get("X-Admin-Key") || url.searchParams.get("key");
     if (!env.INTERNAL_API_KEY || key !== env.INTERNAL_API_KEY) {
         return json({ error: "unauthorized" }, 401, h);
     }
