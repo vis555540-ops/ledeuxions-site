@@ -489,7 +489,8 @@ def main():
         '<script src="pdf300-server.js"></script>',
         '<script src="paywall.js"></script>\n'
         '<script src="pdf300-server.js"></script>\n'
-        '<script src="early-access.js"></script>', 1)
+        '<script src="early-access.js"></script>\n'
+        '<script src="promo.js"></script>', 1)
 
     open(os.path.join(DST, 'index.html'), 'w', encoding='utf-8').write(html)
 
