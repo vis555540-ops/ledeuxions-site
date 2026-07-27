@@ -35,7 +35,7 @@ def main():
     shutil.copy2(os.path.join(ROOT, 'ads.txt'), os.path.join(OUT, 'ads.txt'))
 
     # --- 앱 파일 ---
-    for name in ('pdf300.js', 'pdf300-server.js'):
+    for name in ('pdf300.js', 'pdf300-server.js', 'early-access.js'):
         shutil.copy2(os.path.join(SRC, name), os.path.join(OUT, name))
     if os.path.exists(os.path.join(SRC, 'target-size.html')):
         shutil.copy2(os.path.join(SRC, 'target-size.html'),

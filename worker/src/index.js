@@ -300,6 +300,73 @@ async function handleLeaderboard(req, env, origin) {
     return json({ game, total: list.length, top: list.slice(0, limit).map(e => ({ n: e.n, s: e.s })) }, 200, corsHeaders(origin));
 }
 
+// ---------- 얼리 액세스 대기명단 (pdf300 사전등록) ----------
+// 결제 오픈 전까지 "무료 10회 넘게 쓴 사람"에게 이메일을 받아두는 용도.
+// KV: wl:{email} → { email, source, uses, ts, ip }
+//     wlrl:{ip}:{date} → 하루 제출 횟수 (스팸 방지)
+const WL_MAX_PER_IP_PER_DAY = 5;
+
+function validEmail(s) {
+    return typeof s === "string" && s.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
+}
+
+async function handleWaitlistSubmit(request, env, origin) {
+    const h = corsHeaders(origin);
+    let body;
+    try { body = await request.json(); } catch { return json({ error: "invalid json" }, 400, h); }
+
+    const email = String(body.email || "").trim().toLowerCase();
+    if (!validEmail(email)) return json({ error: "invalid email" }, 400, h);
+
+    const source = String(body.source || "unknown").slice(0, 40);
+    const uses = Number.isFinite(body.uses) ? Math.min(Math.trunc(body.uses), 100000) : 0;
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+
+    // IP당 하루 제출 제한
+    const rlKey = `wlrl:${ip}:${todayKey()}`;
+    const count = Number((await env.KV.get(rlKey)) || 0);
+    if (count >= WL_MAX_PER_IP_PER_DAY) {
+        return json({ error: "too many requests" }, 429, h);
+    }
+    await env.KV.put(rlKey, String(count + 1), { expirationTtl: 60 * 60 * 26 });
+
+    const key = `wl:${email}`;
+    const existing = await env.KV.get(key, "json");
+    const record = {
+        email,
+        source,
+        uses: Math.max(uses, existing?.uses || 0),
+        ts: existing?.ts || new Date().toISOString(),
+        updated: new Date().toISOString(),
+        country: request.headers.get("CF-IPCountry") || null,
+    };
+    await env.KV.put(key, JSON.stringify(record));
+
+    return json({ ok: true, already: Boolean(existing) }, 200, h);
+}
+
+// 관리자용: GET /waitlist?key=INTERNAL_API_KEY
+async function handleWaitlistList(request, env, origin) {
+    const h = corsHeaders(origin);
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+    if (!env.INTERNAL_API_KEY || key !== env.INTERNAL_API_KEY) {
+        return json({ error: "unauthorized" }, 401, h);
+    }
+    const out = [];
+    let cursor;
+    do {
+        const page = await env.KV.list({ prefix: "wl:", cursor });
+        for (const k of page.keys) {
+            const v = await env.KV.get(k.name, "json");
+            if (v) out.push(v);
+        }
+        cursor = page.list_complete ? undefined : page.cursor;
+    } while (cursor);
+    out.sort((a, b) => (a.ts < b.ts ? -1 : 1));
+    return json({ total: out.length, entries: out }, 200, h);
+}
+
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
@@ -325,6 +392,12 @@ export default {
         if (url.pathname.startsWith("/v1/") && request.method === "POST") {
             const tool = url.pathname.slice(4);
             return handleApiCall(tool, request, env, origin);
+        }
+        if (url.pathname === "/waitlist" && request.method === "POST") {
+            return handleWaitlistSubmit(request, env, origin);
+        }
+        if (url.pathname === "/waitlist" && request.method === "GET") {
+            return handleWaitlistList(request, env, origin);
         }
         if (url.pathname === "/score" && request.method === "POST") {
             return handleScoreSubmit(request, env, origin);
