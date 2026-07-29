@@ -126,16 +126,31 @@ def main():
     html = html.replace('</main>', FAQ_HTML + '\n</main>', 1)
     html = html.replace('</head>', JSONLD + '\n</head>', 1)
 
-    open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8').write(html)
-
-    # --- 도구별 SEO 랜딩페이지 ---
-    # 이유: 도구가 index.html 한 장에 해시로만 있어서 'merge pdf' 같은 검색어에 안 걸린다.
-    # 경쟁사는 도구마다 독립 URL을 가진다. 얄팍한 페이지는 구글이 벌주므로 실제 내용을 넣는다.
     import importlib.util as _il
     _spec = _il.spec_from_file_location('landing', os.path.join(ROOT, 'tools', 'pdf300_landing_data.py'))
     _m = _il.module_from_spec(_spec); _spec.loader.exec_module(_m)
     TOOLS = _m.TOOLS
 
+    # 메인 → 랜딩페이지 내부링크. 사이트맵만으론 크롤링이 약하다.
+    tool_links = ''.join(
+        '<li><a href="/%s/">%s</a></li>' % (t['slug'], t['h1']) for t in TOOLS)
+    html = html.replace('</main>',
+        '<section class="tool-index" aria-label="All PDF tools">'
+        '<h2>All PDF tools</h2><ul>' + tool_links + '</ul></section></main>', 1)
+    html = html.replace('</style>', """
+    .tool-index{max-width:var(--maxw,1100px);margin:56px auto 0;padding:28px 20px 0;
+        border-top:1px solid var(--border,rgba(255,255,255,.08));}
+    .tool-index h2{font-size:1rem;color:var(--text-muted,#837C70);margin:0 0 14px;font-weight:500}
+    .tool-index ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px 18px;padding:0;margin:0}
+    .tool-index a{font-size:.86rem;color:var(--text-secondary,#B7B0A4);text-decoration:none}
+    .tool-index a:hover{color:var(--accent,#E8895F)}
+</style>""", 1)
+
+    open(os.path.join(OUT, 'index.html'), 'w', encoding='utf-8').write(html)
+
+    # --- 도구별 SEO 랜딩페이지 ---
+    # 이유: 도구가 index.html 한 장에 해시로만 있어서 'merge pdf' 같은 검색어에 안 걸린다.
+    # 경쟁사는 도구마다 독립 URL을 가진다. 얄팍한 페이지는 구글이 벌주므로 실제 내용을 넣는다.
     nav_links = ' · '.join(
         '<a href="/%s/">%s</a>' % (t['slug'], t['h1']) for t in TOOLS)
 
