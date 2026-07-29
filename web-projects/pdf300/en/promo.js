@@ -16,7 +16,7 @@ window.PDF300_PROMO = {
     enabled: true,
     url: 'https://pdf300.com/',
     instagram: 'https://instagram.com/meajeum',
-    bonusRuns: 5            // paywall 켜진 뒤 공유 보상(하루 +N회)
+    bonusRuns: 10           // paywall 켜진 뒤 공유 보상(하루 +N회). 형 결정 2026-07-29: 5→10
 };
 
 (function () {
