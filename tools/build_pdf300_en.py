@@ -409,6 +409,14 @@ def main():
     # ---------- index.html ----------
     html = open(os.path.join(SRC, 'index.html'), encoding='utf-8').read()
 
+    # 0) 한국어 전용 블록 제거 (FAQ · JSON-LD)
+    #    영어판 것은 build_pdf300_root.py 가 따로 주입한다. 여기 두면 한국어가 그대로 새어나간다.
+    for tag in ('FAQ:KO', 'LDJSON:KO'):
+        s = html.find('<!-- %s:START' % tag)
+        e = html.find('<!-- %s:END -->' % tag)
+        if s != -1 and e != -1:
+            html = html[:s] + html[e + len('<!-- %s:END -->' % tag):]
+
     # 1) head (SEO) 통째 교체
     old_head = html[html.index('<meta name="description"'):html.index('</title>') + len('</title>')]
     new_head = (

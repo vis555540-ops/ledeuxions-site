@@ -646,6 +646,9 @@
         font-weight: 500;
     }
 </style>
+<!-- LDJSON:KO:START — 영어판 빌드에서는 잘라낸다(영어용은 build_pdf300_root.py 가 주입) -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"PDF300","url":"https://ledeuxions.com/web-projects/pdf300/","applicationCategory":"UtilitiesApplication","operatingSystem":"웹 브라우저","browserRequirements":"JavaScript 필요","inLanguage":"ko","description":"무료 PDF 도구 24개. 브라우저 도구 14개는 기기 안에서 처리되어 파일이 업로드되지 않습니다.","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},"featureList":["PDF 합치기","PDF 나누기","페이지 회전·순서 변경","여백 자르기","모아찍기","쪽번호 넣기","워터마크","서명·도장","가리기(먹칠)","PDF를 이미지로","이미지를 PDF로","PDF에서 텍스트 추출","용량 줄이기","문서 정보 수정","고화질 압축","OCR 문자인식","암호 걸기","암호 풀기","메타데이터 제거","PDF 복구","오피스 문서를 PDF로"]},{"@type":"FAQPage","inLanguage":"ko","mainEntity":[{"@type":"Question","name":"내 파일이 서버로 올라가나요?","acceptedAnswer":{"@type":"Answer","text":"브라우저 도구 14개는 올라가지 않습니다. 합치기·나누기·자르기·압축·서명·가리기 같은 작업은 전부 브라우저 안에서 처리되고 파일은 기기 밖으로 나가지 않습니다. 고급 도구 10개(OCR·암호·복구·오피스 변환)는 브라우저에서 할 수 없어 서버가 필요하며 SRV 표시가 붙어 있습니다."}},{"@type":"Question","name":"정말 무료인가요?","acceptedAnswer":{"@type":"Answer","text":"네. 지금은 24개 도구를 모두 무료로 쓸 수 있고, 브라우저 도구 14개는 앞으로도 계속 무제한 무료입니다."}},{"@type":"Question","name":"가입해야 하나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 회원가입도, 로그인도, 이메일도 필요 없습니다."}},{"@type":"Question","name":"결과물에 워터마크가 찍히나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 저희가 만든 결과물에는 워터마크도 로고도 넣지 않습니다."}},{"@type":"Question","name":"파일 크기 제한이 있나요?","acceptedAnswer":{"@type":"Answer","text":"브라우저 도구는 기기 메모리가 감당하는 만큼 처리됩니다. 서버 도구는 파일이 오가야 해서 현실적인 제한이 있습니다."}},{"@type":"Question","name":"어떤 도구가 서버를 쓰나요?","acceptedAnswer":{"@type":"Answer","text":"고화질 압축, OCR, 암호 걸기, 암호 풀기, 메타데이터 제거, 복구, 쪽번호, 모아찍기, 워터마크, 오피스→PDF 변환입니다."}},{"@type":"Question","name":"인터넷이 끊겨도 되나요?","acceptedAnswer":{"@type":"Answer","text":"페이지가 한 번 열린 뒤에는 브라우저 도구가 오프라인에서도 동작합니다. 서버 도구는 연결이 필요합니다."}}]}]}</script>
+<!-- LDJSON:KO:END -->
 </head>
 <body>
 
@@ -1868,6 +1871,41 @@
             </div>
         </div>
     </section>
+
+<!-- FAQ:KO:START — 영어판 빌드(build_pdf300_en.py)에서는 이 블록을 잘라낸다.
+     영어 FAQ 는 build_pdf300_root.py 가 따로 주입한다. -->
+    <section class="faq container-narrow" id="faq" style="margin-top:var(--space-8,56px);">
+        <h2 style="font-size:1.2rem;margin:0 0 18px;">자주 묻는 질문</h2>
+        <details style="border-bottom:1px solid var(--border,#2C2722);padding:14px 0;">
+            <summary style="cursor:pointer;font-weight:600;font-size:.95rem;">내 파일이 서버로 올라가나요?</summary>
+            <p style="margin:10px 0 0;font-size:.9rem;line-height:1.65;color:var(--text-secondary,#B7B0A4);">브라우저 도구 14개는 올라가지 않습니다. 합치기·나누기·자르기·압축·서명·가리기 같은 작업은 전부 여러분 브라우저 안에서 처리되고, 파일은 기기 밖으로 나가지 않습니다. 고급 도구 10개(OCR·암호·복구·오피스 변환)는 브라우저에서 할 수 없는 작업이라 서버가 필요하며, SRV 표시가 붙어 있습니다.</p>
+        </details>
+        <details style="border-bottom:1px solid var(--border,#2C2722);padding:14px 0;">
+            <summary style="cursor:pointer;font-weight:600;font-size:.95rem;">정말 무료인가요?</summary>
+            <p style="margin:10px 0 0;font-size:.9rem;line-height:1.65;color:var(--text-secondary,#B7B0A4);">네. 지금은 24개 도구를 모두 무료로 쓸 수 있고, 브라우저 도구 14개는 앞으로도 계속 무제한 무료입니다.</p>
+        </details>
+        <details style="border-bottom:1px solid var(--border,#2C2722);padding:14px 0;">
+            <summary style="cursor:pointer;font-weight:600;font-size:.95rem;">가입해야 하나요?</summary>
+            <p style="margin:10px 0 0;font-size:.9rem;line-height:1.65;color:var(--text-secondary,#B7B0A4);">아니요. 회원가입도, 로그인도, 이메일도 필요 없습니다.</p>
+        </details>
+        <details style="border-bottom:1px solid var(--border,#2C2722);padding:14px 0;">
+            <summary style="cursor:pointer;font-weight:600;font-size:.95rem;">결과물에 워터마크가 찍히나요?</summary>
+            <p style="margin:10px 0 0;font-size:.9rem;line-height:1.65;color:var(--text-secondary,#B7B0A4);">아니요. 저희가 만든 결과물에는 워터마크도 로고도 넣지 않습니다.</p>
+        </details>
+        <details style="border-bottom:1px solid var(--border,#2C2722);padding:14px 0;">
+            <summary style="cursor:pointer;font-weight:600;font-size:.95rem;">파일 크기 제한이 있나요?</summary>
+            <p style="margin:10px 0 0;font-size:.9rem;line-height:1.65;color:var(--text-secondary,#B7B0A4);">브라우저 도구는 기기 메모리가 감당하는 만큼 처리됩니다. 서버 도구는 파일이 오가야 해서 현실적인 제한이 있습니다.</p>
+        </details>
+        <details style="border-bottom:1px solid var(--border,#2C2722);padding:14px 0;">
+            <summary style="cursor:pointer;font-weight:600;font-size:.95rem;">어떤 도구가 서버를 쓰나요?</summary>
+            <p style="margin:10px 0 0;font-size:.9rem;line-height:1.65;color:var(--text-secondary,#B7B0A4);">고화질 압축, OCR, 암호 걸기, 암호 풀기, 메타데이터 제거, 복구, 쪽번호, 모아찍기, 워터마크, 오피스→PDF 변환입니다.</p>
+        </details>
+        <details style="border-bottom:1px solid var(--border,#2C2722);padding:14px 0;">
+            <summary style="cursor:pointer;font-weight:600;font-size:.95rem;">인터넷이 끊겨도 되나요?</summary>
+            <p style="margin:10px 0 0;font-size:.9rem;line-height:1.65;color:var(--text-secondary,#B7B0A4);">페이지가 한 번 열린 뒤에는 브라우저 도구가 오프라인에서도 동작합니다. 서버 도구는 연결이 필요합니다.</p>
+        </details>
+    </section>
+<!-- FAQ:KO:END -->
 
 </main>
 
