@@ -47,6 +47,9 @@ const upstreamUrlFor = (env, tool) => {
 // 무료 사용자가 pdf300 서버도구를 하루에 쓸 수 있는 횟수.
 // 형 결정(2026-07-27): 5회. ("3회면 쓰다 막혀서 딴 데로 간다, 5회 넘으면 다른 도구 쓰기 싫을 타이밍")
 const FREE_PDF_PER_DAY = 5;
+// 하단 공유줄을 눌러 알려주면 그날 더 주는 횟수. 형 결정(2026-07-29): 10회.
+// ⚠️ 검증하지 않는다(명예제). 공유 여부를 확인할 방법이 없고, 확인하는 척은 안 하기로 했다.
+const SHARE_BONUS_PER_DAY = 10;
 
 // pdf300 서버도구 무료/유료 한도 (형이 값 정하면 여기만 고치면 됨)
 const PDF_SERVER_TOOLS = ["pdf-hq-compress", "pdf-ocr", "pdf-protect", "pdf-unlock",
@@ -196,6 +199,20 @@ async function handleWebhookLemon(req, env) {
     return json({ ok: true, email, plan: user.plan });
 }
 
+
+// 공유줄 클릭 → 그날 무료 횟수 추가. 하루 1번만. 검증 없음(명예제, 형 결정).
+async function handleShareBonus(request, env, origin) {
+    const h = corsHeaders(origin);
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    const key = `anonbonus:${ip}:${todayKey()}`;
+    const cur = Number((await env.KV.get(key)) || 0);
+    if (cur > 0) {
+        return json({ ok: true, already: true, bonus: cur }, 200, h);
+    }
+    await env.KV.put(key, String(SHARE_BONUS_PER_DAY), { expirationTtl: 60 * 60 * 26 });
+    return json({ ok: true, bonus: SHARE_BONUS_PER_DAY }, 200, h);
+}
+
 // 익명 사용자용 pdf300 서버도구 프록시 (IP 기준 일일 무료 한도)
 // KV: anon:{ip}:{date} → 그날 사용 횟수
 async function handleAnonPdfCall(tool, req, env, origin) {
@@ -203,12 +220,14 @@ async function handleAnonPdfCall(tool, req, env, origin) {
     const ip = req.headers.get("CF-Connecting-IP") || "unknown";
     const key = `anon:${ip}:${todayKey()}`;
     const used = Number((await env.KV.get(key)) || 0);
+    const bonus = Number((await env.KV.get(`anonbonus:${ip}:${todayKey()}`)) || 0);
+    const allowance = FREE_PDF_PER_DAY + bonus;
 
-    if (used >= FREE_PDF_PER_DAY) {
+    if (used >= allowance) {
         return json({
             error: "daily free limit reached",
-            tool, used, limit: FREE_PDF_PER_DAY,
-            message: `You have used all ${FREE_PDF_PER_DAY} free server-tool runs for today. ` +
+            tool, used, limit: allowance, bonus,
+            message: `You have used all ${allowance} free server-tool runs for today. ` +
                      `Browser tools stay free and unlimited.`,
             upgrade_url: "https://pdf300.com/pricing",
         }, 429, h);
@@ -236,7 +255,7 @@ async function handleAnonPdfCall(tool, req, env, origin) {
     const resp = new Response(upstream.body, upstream);
     Object.keys(h).forEach(k => resp.headers.set(k, h[k]));
     resp.headers.set("X-Quota-Used", String(upstream.ok ? used + 1 : used));
-    resp.headers.set("X-Quota-Limit", String(FREE_PDF_PER_DAY));
+    resp.headers.set("X-Quota-Limit", String(allowance));
     resp.headers.set("X-Plan", "anonymous");
     return resp;
 }
@@ -478,6 +497,9 @@ export default {
         if (url.pathname.startsWith("/v1/") && request.method === "POST") {
             const tool = url.pathname.slice(4);
             return handleApiCall(tool, request, env, origin);
+        }
+        if (url.pathname === "/share-bonus" && request.method === "POST") {
+            return handleShareBonus(request, env, origin);
         }
         if (url.pathname === "/waitlist" && request.method === "POST") {
             return handleWaitlistSubmit(request, env, origin);
