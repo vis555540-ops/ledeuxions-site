@@ -20,6 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'web-projects', 'pdf300', 'en')
 OUT = os.path.join(ROOT, 'dist', 'pdf300')
 MAIN = 'https://ledeuxions.com'
+INDEXNOW_KEY = '38cd3402e02ca6caabfc63074173147f'
 
 
 QA = [
@@ -214,6 +215,10 @@ def main():
 """.format(title=t['title'], desc=t['desc'], slug=t['slug'], h1=t['h1'],
            what=t['what'], app=app, steps=steps, faq=faq, faq_ld=faq_ld, nav=nav_links)
         open(os.path.join(d, 'index.html'), 'w', encoding='utf-8').write(html_pg)
+
+    # IndexNow 키 파일 — 검색엔진(Bing·Yandex 등)에 URL 즉시 통보용.
+    # 계정 없이 가능한 유일한 색인 요청 수단이라 넣어둔다.
+    open(os.path.join(OUT, INDEXNOW_KEY + '.txt'), 'w', encoding='utf-8').write(INDEXNOW_KEY)
 
     # --- SEO 파일 ---
     open(os.path.join(OUT, 'robots.txt'), 'w', encoding='utf-8').write(
