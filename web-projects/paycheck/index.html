@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="내가 제대로 돈을 받고 있을까? — 용역금액·투입 인원·기간·내 월급을 넣으면 내가 회사에 얼마를 만들어주고 얼마를 받는지 보여줍니다. 연봉 비교가 아니라 내가 한 일에 비한 계산입니다.">
+<meta property="og:title" content="내가 제대로 돈을 받고 있을까? — LeDeuxions">
+<meta property="og:description" content="연봉 비교가 아닙니다. 내가 한 일에 비해 얼마를 받는지 봅니다.">
+<title>내가 제대로 돈을 받고 있을까? — LeDeuxions</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<style>
+    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .panel {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        margin-bottom: var(--space-4);
+    }
+    .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-5); }
+    .form-row:last-child { margin-bottom: 0; }
+    .form-hint { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; }
+    .in-line { display: flex; align-items: center; gap: var(--space-2); }
+    .in-line .input { flex: 1; min-width: 0; font-size: 1.05rem; }
+    .in-unit { font-size: 0.95rem; color: var(--text-secondary); white-space: nowrap; }
+    .echo { font-size: 0.85rem; color: var(--accent); font-weight: 600; min-height: 1.25em; }
+
+    .result { display: none; }
+    .result.on { display: block; }
+    .headline {
+        font-family: var(--font-serif);
+        font-size: 1.35rem;
+        line-height: 1.6;
+        margin: 0 0 var(--space-5);
+        color: var(--text-primary);
+    }
+    .headline b { color: var(--accent-deep); }
+
+    .bar { margin-bottom: var(--space-3); }
+    .bar-lab { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 6px; color: var(--text-secondary); }
+    .bar-lab b { color: var(--text-primary); }
+    .track { height: 14px; background: var(--bg-sunken); border-radius: var(--radius-pill); overflow: hidden; }
+    .fill { height: 100%; border-radius: var(--radius-pill); transition: width .5s ease; }
+    .fill-made { background: var(--accent); }
+    .fill-got { background: var(--accent-soft); border: 1px solid var(--accent); }
+
+    .verdict {
+        margin-top: var(--space-5);
+        padding: var(--space-4);
+        border-radius: var(--radius-md);
+        background: var(--bg-sunken);
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    .caveat { margin: var(--space-3) 0 0; font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; }
+
+    .story h2 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin: 0 0 var(--space-3); }
+    .story h2:not(:first-child) { margin-top: var(--space-5); }
+    .story p { margin: 0 0 var(--space-3); font-size: 0.93rem; color: var(--text-secondary); line-height: 1.75; }
+    .story p:last-child { margin-bottom: 0; }
+    .story b { color: var(--text-primary); }
+    .story .pull {
+        font-family: var(--font-serif);
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        padding-left: var(--space-4);
+        border-left: 3px solid var(--accent);
+    }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="app-hero container-narrow">
+    <p class="eyebrow">급여 점검</p>
+    <h1 class="hero-title">내가 제대로 돈을 받고 있을까?</h1>
+    <p class="hero-lead">연봉 비교가 아닙니다. <b>내가 한 일에 비해</b> 얼마를 받는지 봅니다.</p>
+</header>
+
+<main class="container-narrow" style="padding-bottom: var(--space-8)">
+
+    <div class="panel">
+        <div class="form-row">
+            <label class="label" for="amount">용역 금액</label>
+            <p class="form-hint">계약서에 적힌 금액입니다. 공공 용역이면 나라장터에서 낙찰금액을 볼 수 있습니다. 부가세는 빼고 넣으세요.</p>
+            <div class="in-line">
+                <input class="input" type="number" id="amount" inputmode="numeric" placeholder="예: 17809000">
+                <span class="in-unit">원</span>
+            </div>
+            <div class="echo" id="amountEcho"></div>
+        </div>
+
+        <div class="form-row">
+            <label class="label" for="people">투입 인원</label>
+            <p class="form-hint">이 일을 실제로 한 사람 수입니다. 본인을 포함합니다.</p>
+            <div class="in-line">
+                <input class="input" type="number" id="people" inputmode="numeric" placeholder="예: 3" min="1">
+                <span class="in-unit">명</span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="label" for="months">기간</label>
+            <p class="form-hint">계약서상 수행 기간입니다.</p>
+            <div class="in-line">
+                <input class="input" type="number" id="months" inputmode="decimal" placeholder="예: 2" min="0.5" step="0.5">
+                <span class="in-unit">개월</span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label class="label" for="pay">내 월급 (세전)</label>
+            <p class="form-hint">세금을 떼기 전 금액입니다.</p>
+            <div class="in-line">
+                <input class="input" type="number" id="pay" inputmode="numeric" placeholder="예: 2850000">
+                <span class="in-unit">원</span>
+            </div>
+            <div class="echo" id="payEcho"></div>
+        </div>
+    </div>
+
+    <button class="btn btn-primary btn-lg btn-block" id="go">계산하기</button>
+
+    <div class="panel result" id="result" style="margin-top: var(--space-4)">
+        <p class="headline" id="headline"></p>
+
+        <div class="bar">
+            <div class="bar-lab"><span>내가 만든 돈 (월)</span><b id="madeTxt"></b></div>
+            <div class="track"><div class="fill fill-made" style="width:100%"></div></div>
+        </div>
+        <div class="bar">
+            <div class="bar-lab"><span>내가 받는 돈 (월)</span><b id="gotTxt"></b></div>
+            <div class="track"><div class="fill fill-got" id="gotBar" style="width:0"></div></div>
+        </div>
+
+        <div class="verdict" id="verdict"></div>
+        <p class="caveat">이 계산은 순수 용역금액 기준입니다. 회사의 간접비·이윤·다른 지출은 여기에 포함되지 않았습니다.</p>
+    </div>
+
+    <div class="panel story" style="margin-top: var(--space-5)">
+        <h2>왜 이걸 만들었나</h2>
+        <p>늦게까지 도면을 그리고, 견적을 붙이고, 현장을 다녀도 월급 명세서에는 늘 같은 숫자가 찍힙니다.</p>
+        <p class="pull">“내가 제대로 받고 있는 걸까?”</p>
+        <p>이 질문에 답할 도구가 생각보다 없었습니다. 남들이 얼마 받는지 알려주는 곳은 많은데, <b>내가 한 일에 비해</b> 어떤지 보여주는 곳은 없었습니다. 그래서 만들었습니다.</p>
+
+        <h2>이 숫자를 어떻게 읽어야 하나</h2>
+        <p>이건 “회사가 나를 착취한다”는 계산이 아닙니다. 용역금액 안에는 사무실 임대료, 4대보험 회사 부담분, 장비와 프로그램, 세금, 일이 없는 달의 인건비가 함께 들어 있습니다.</p>
+        <p>그래서 이 계산이 말해주는 것은 하나입니다 — <b>내가 만들어낸 돈의 규모</b>, 그리고 그것이 내 급여와 얼마나 떨어져 있는지. 판단은 보는 사람의 몫입니다.</p>
+
+        <h2>입력한 값은 어디로 가나</h2>
+        <p><b>아무 데도 가지 않습니다.</b> 이 페이지 안에서만 계산되고, 어디에도 저장하거나 전송하지 않습니다.</p>
+    </div>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <div class="site-footer-bottom">
+            <span>© 2005–2026 LeDeuxions. 급여 점검 v2026.08</span>
+            <span><a href="/web-projects/">← 다른 도구</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../../assets/js/common.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var $ = function (id) { return document.getElementById(id); };
+
+    // 원 단위를 사람이 읽는 말로 — 0을 잘못 친 걸 바로 알아채라고
+    function toKorean(n) {
+        if (!(n > 0)) return '';
+        var eok = Math.floor(n / 100000000);
+        var man = Math.floor((n % 100000000) / 10000);
+        var rest = Math.round(n % 10000);
+        var s = '';
+        if (eok) s += eok + '억 ';
+        if (man) s += man.toLocaleString('ko-KR') + '만 ';
+        if (rest) s += rest.toLocaleString('ko-KR') + ' ';
+        return s.trim() + '원';
+    }
+
+    function manwon(n) {
+        return Math.round(n / 10000).toLocaleString('ko-KR') + '만원';
+    }
+
+    function bindEcho(inputId, echoId) {
+        var el = $(inputId), echo = $(echoId);
+        el.addEventListener('input', function () {
+            echo.textContent = toKorean(parseFloat(el.value));
+        });
+    }
+    bindEcho('amount', 'amountEcho');
+    bindEcho('pay', 'payEcho');
+
+    function calc() {
+        var amount = parseFloat($('amount').value);
+        var people = parseFloat($('people').value);
+        var months = parseFloat($('months').value);
+        var pay    = parseFloat($('pay').value);
+
+        if (!(amount > 0) || !(people >= 1) || !(months > 0) || !(pay > 0)) {
+            alert('네 칸을 모두 채워주세요.');
+            return;
+        }
+
+        // 1인당 월 창출액 = 용역금액 ÷ 투입 인원 ÷ 기간
+        var made  = amount / people / months;
+        var diff  = made - pay;
+        var ratio = pay / made * 100;
+
+        $('headline').innerHTML =
+            '당신은 이 일로 회사에 <b>월 ' + manwon(made) + '</b>을 만들어주고,<br>' +
+            '<b>월 ' + manwon(pay) + '</b>을 받고 있습니다.';
+
+        $('madeTxt').textContent = manwon(made);
+        $('gotTxt').textContent  = manwon(pay);
+        $('gotBar').style.width  = Math.max(0, Math.min(100, ratio)) + '%';
+
+        var v = $('verdict');
+        if (ratio > 110) {
+            v.textContent = '당신이 만든 금액보다 ' + manwon(-diff) + '을 더 받고 있습니다.';
+        } else if (ratio >= 90) {
+            v.textContent = '회사 몫과 당신 몫이 거의 같습니다.';
+        } else {
+            v.textContent = '회사에 남는 몫은 월 ' + manwon(diff) + '입니다. 당신은 만든 돈의 '
+                          + ratio.toFixed(0) + '%를 받고 있습니다.';
+        }
+
+        $('result').classList.add('on');
+        $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    $('go').addEventListener('click', calc);
+
+    ['amount', 'people', 'months', 'pay'].forEach(function (id) {
+        $(id).addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') calc();
+        });
+    });
+})();
+</script>
+</body>
+</html>
