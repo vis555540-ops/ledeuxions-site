@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="점검 보고서에 캐드 도면을 캡처해서 붙이면 인쇄할 때 치수 글자가 뭉개집니다. 원인은 화질 설정이 아니라 형식입니다. 한글은 WMF, 파워포인트는 EMF를 받습니다.">
+<meta property="og:title" content="점검 보고서에 캐드 도면 넣을 때 글자가 뭉개지는 이유">
+<meta property="og:description" content="캡처는 픽셀이고 도면은 좌표입니다. 좌표를 픽셀로 바꿔서 붙이고 있는 것이 문제입니다.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://ledeuxions.com/notes/cad-hwp-vector/">
+<title>점검 보고서에 캐드 도면 넣을 때 글자가 뭉개지는 이유 — LeDeuxions</title>
+<link rel="canonical" href="https://ledeuxions.com/notes/cad-hwp-vector/">
+<style>
+  :root{
+    --bg:#FAF9F5; --ink:#1F1E1B; --muted:#6B675E; --rule:#E3E0D8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16150F; --ink:#EDEAE0; --muted:#9B968A; --rule:#302E27; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",Segoe UI,sans-serif;
+    line-height:1.85; font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px; margin:0 auto; padding:64px 24px 96px}
+  a{color:inherit}
+  h1{font-size:1.6rem; line-height:1.45; margin:0 0 8px; letter-spacing:-.01em}
+  .kicker{color:var(--muted); font-size:.86rem; margin:0 0 40px}
+  h2{font-size:1.08rem; margin:44px 0 12px; letter-spacing:-.01em}
+  p{margin:0 0 20px}
+  ul{margin:0 0 20px; padding-left:20px}
+  li{margin:0 0 8px}
+  .lead{font-size:1.06rem}
+  hr{border:0; border-top:1px solid var(--rule); margin:56px 0 28px}
+  .foot{color:var(--muted); font-size:.9rem}
+  strong{font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>점검 보고서에 캐드 도면 넣을 때 글자가 뭉개지는 이유</h1>
+  <p class="kicker">LeDeuxions</p>
+
+  <p class="lead">점검 보고서나 감리 문서에 캐드 도면을 넣습니다. 화면을 캡처해서 붙입니다. 화면에서는 괜찮아 보입니다. 그런데 인쇄하거나 확대하면 치수 글자가 뭉개집니다.</p>
+
+  <p>발주처가 도면 글자가 안 읽힌다고 합니다. 다시 캡처합니다. 또 뭉개집니다.</p>
+
+  <h2>왜 그런가</h2>
+
+  <p>캡처한 그림은 <strong>픽셀</strong>입니다. 가로 1000개, 세로 700개 점으로 이루어진 격자입니다. 확대하면 점이 커집니다. 없던 정보가 생기지 않습니다. 그래서 글자 획이 뭉쳐 보입니다.</p>
+
+  <p>반면 캐드 도면은 원래 <strong>좌표</strong>입니다. 선은 시작점과 끝점이고, 글자는 폰트와 크기입니다. 좌표는 확대할 때마다 다시 그려집니다. 그래서 몇 배로 키워도 선명합니다.</p>
+
+  <p>즉 문제는 화질 설정이 아니라 <strong>형식</strong>입니다. 좌표였던 것을 픽셀로 바꿔서 붙이고 있는 것입니다.</p>
+
+  <h2>흔히 하는 대응과 그 한계</h2>
+
+  <ul>
+    <li><strong>해상도를 올려서 캡처한다</strong> — 조금 나아지지만 근본 해결이 아닙니다. 파일 용량만 커지고, 어느 배율부터는 똑같이 뭉개집니다. 보고서 파일도 무거워집니다.</li>
+    <li><strong>PDF로 출력한 뒤 이미지로 변환한다</strong> — 중간에 다시 픽셀이 됩니다. 같은 문제로 돌아옵니다.</li>
+    <li><strong>PDF를 그대로 삽입한다</strong> — 벡터는 유지되지만 한글에서 위치·크기 조절이 까다롭고, 필요한 부분만 잘라 넣기가 어렵습니다.</li>
+  </ul>
+
+  <h2>정공법</h2>
+
+  <p>캐드에서 <strong>벡터 형식으로 내보내서</strong> 붙이는 것입니다. 윈도우에는 벡터를 담는 클립보드 형식이 있습니다. WMF와 EMF입니다.</p>
+
+  <p>여기서 자주 막히는 지점이 하나 있습니다. <strong>한글(HWP)은 WMF를 잘 받고, 파워포인트는 EMF를 잘 받습니다.</strong> 같은 도면을 같은 방법으로 붙였는데 한쪽만 깨진다면 대개 이 차이입니다.</p>
+
+  <p>캐드에서는 <strong>WMFOUT</strong> 명령으로 내보낼 수 있습니다. 다만 실제로 해보면 번거롭습니다.</p>
+
+  <ul>
+    <li>파일로 저장한 뒤 한글에서 다시 불러와야 합니다</li>
+    <li>선택한 영역 밖의 흰 여백이 크게 따라옵니다</li>
+    <li>도면이 여러 장이면 이 과정을 매번 반복합니다</li>
+  </ul>
+
+  <h2>그 과정을 줄인 도구</h2>
+
+  <p>위 과정을 명령 하나로 줄인 도구를 만들었습니다. 캐드에서 영역을 드래그하면 벡터 그대로 클립보드에 들어가고, 한글에서 바로 붙여넣습니다. 여백은 선택한 영역에 맞춰 잘립니다.</p>
+
+  <p>이름은 <strong>WC</strong>입니다. 윈도우 · 캐드 · 한글 환경에서 동작합니다.</p>
+
+  <hr>
+
+  <p class="foot">문의 · 사용 요청: <a href="mailto:ledeuxions@gmail.com">ledeuxions@gmail.com</a></p>
+  <p class="foot"><a href="/">LeDeuxions</a></p>
+
+</div>
+</body>
+</html>
