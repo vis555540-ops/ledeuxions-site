@@ -133,18 +133,23 @@
 import { FilesetResolver, FaceLandmarker }
   from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
 
-/* ───────── 문구 (말해요 본판과 같은 구성, 눈으로 고르기 좋게 묶음만 정리) ───────── */
-const CALL = "__CALL__";
-const PHRASES = {
-  "즉시":       ["네","아니오","아파요","잠깐만요","괜찮아요","고마워요","미안해요","좀 쉬고 싶어요"],
-  "몸·통증":    ["머리 아파요","목 아파요","어깨 아파요","허리 아파요","다리 아파요","배 아파요","위관 부위 아파요","가슴 답답해요","숨쉬기 힘들어요","어지러워요","메스꺼워요","춥다","덥다"],
-  "위관·영양":  ["영양 주입 시작해도 돼요","영양 주입 멈춰주세요","천천히 주입해주세요","속이 안 편해요","위관 위치 확인해주세요","위관이 아파요","가래가 있어요","석션 해주세요","입 안이 마릅니다","구강 케어 해주세요"],
-  "돌봄·자세":  ["자세 바꿔주세요","일으켜 앉혀주세요","눕혀주세요","머리 좀 올려주세요","베개 조정해주세요","이불 덮어주세요","이불 벗겨주세요","화장실 도와주세요","기저귀 확인해주세요","다리 저림 풀어주세요"],
-  "가족·마음":  ["사랑해요","고맙습니다","미안합니다","손 잡고 싶어요","옆에 있어주세요","혼자 있고 싶어요","이야기 나누고 싶어요","손자 손녀 보고 싶어요","가족 사진 보여주세요","지금 힘들어요"],
-  "신앙":       ["기도해주세요","성경 읽어주세요","찬송 듣고 싶어요","하나님께 감사합니다","목사님 오셨으면 좋겠어요","함께 기도합시다"],
-  "부탁":       ["TV 켜주세요","TV 꺼주세요","조용히 해주세요","불 밝게","불 어둡게","커튼 열어주세요","커튼 닫아주세요","창문 열어주세요","선풍기·에어컨","안경 주세요"],
-  "의료·응급":  ["간호사 불러주세요","의사 선생님 불러주세요","약 시간 됐어요","혈압 재주세요","산소포화도 확인","체온 재주세요","통증 심해요","숨쉬기 매우 힘들어요","지금 응급 상황 같아요","가족한테 연락해주세요"]
-};
+/* ───────── 문구 ─────────
+   2026-08-15 형이 장인어른 옆에서 직접 불러준 목록.
+   우리가 짐작으로 만든 89개는 버렸다. 실제로 필요한 말이 이것이다.
+   앞의 다섯은 사람을 부르고 눈길을 옮기는 말, 뒤의 넷은 '어디가 가려운지' 짚는 말이다.
+   ⚠️ 순서를 함부로 바꾸지 말 것. 형이 정한 순서다.
+   ⚠️ 늘릴 때도 짧게. 칸 하나 넘어가는 데 1.8초라 목록이 길면 그만큼 늦어진다. */
+const PHRASES = [
+  "여보",
+  "와봐",
+  "여기",
+  "여기 봐봐",
+  "아니야 다른 데야",
+  "귓구멍",
+  "입안",
+  "입술",
+  "목"
+];
 // 한 화면에 보여줄 칸 수. '다음'·'뒤로'까지 더해도 화면 안에 다 들어와야 한다.
 // 잘리면 그 칸은 눈으로 고를 수 없으므로 넉넉히 잡는다.
 //
@@ -217,35 +222,30 @@ function alarm(){
 const listEl  = document.getElementById("list");
 const crumbEl = document.getElementById("crumb");
 
-let level = 0;            // 0 = 묶음, 1 = 문구
-let group = null;
-let page  = 0;
+let page  = 0;   // 목록이 화면보다 길 때만 쓴다
 let items = [];
 let idx   = 0;
 let timer = null;
 
 function buildItems(){
-  // 한 화면에 PAGE개씩 잘라 보여주고, 넘칠 때만 '다음'을 붙인다.
-  // '다음'은 마지막 쪽에서 첫 쪽으로 돌아온다 — 어디서도 막다른 길이 없어야 한다.
-  PAGE = fitPage();   // 폰마다 화면이 달라 매번 다시 잰다 (잘리면 눈으로 못 고른다)
-  let all, title;
-  if(level===0){
-    all = [{label:"🔔 사람 불러주세요", kind:"call"}]
-      .concat(Object.keys(PHRASES).map(k=>({label:k, kind:"group", key:k})));
-    title = "묶음 고르기";
+  // 묶음 없이 한 줄로 늘어놓는다. 목록이 짧으니 나눌수록 느려질 뿐이다.
+  // 다 들어가면 '다음' 없이 통째로 보여주고, 넘칠 때만 쪽을 나눈다.
+  const cap = fitPage() + 2;   // 이 화면에 실제로 들어가는 칸 수
+  const all = [{label:"🔔 사람 불러주세요", kind:"call"}]
+    .concat(PHRASES.map(p=>({label:p, kind:"say"})));
+
+  if(all.length <= cap){
+    page = 0;
+    items = all;
+    crumbEl.textContent = "눈을 꾹 감으면 선택됩니다";
   } else {
-    all = PHRASES[group].map(p=>({label:p, kind:"say"}));
-    title = group;
+    PAGE = cap - 1;                       // '다음' 자리 하나 뺀다
+    const pages = Math.ceil(all.length / PAGE);
+    if(page >= pages) page = 0;           // 마지막 쪽 다음은 첫 쪽. 막다른 길이 없어야 한다
+    items = all.slice(page*PAGE, page*PAGE + PAGE);
+    items.push({label:"▶ 다음", kind:"next"});
+    crumbEl.textContent = `${page+1} / ${pages}`;
   }
-
-  const pages = Math.max(1, Math.ceil(all.length / PAGE));
-  if(page >= pages) page = 0;
-
-  items = all.slice(page*PAGE, page*PAGE + PAGE);
-  if(pages > 1) items.push({label:"▶ 다음", kind:"next"});
-  if(level===1) items.push({label:"◀ 뒤로", kind:"back"});
-
-  crumbEl.textContent = pages > 1 ? `${title}  (${page+1}/${pages})` : title;
   idx = 0;
   render();
 }
@@ -276,9 +276,7 @@ function choose(){
 
   if(it.kind==="call"){ alarm(); return; }
   if(it.kind==="say"){ speak(it.label); return; }
-  if(it.kind==="group"){ level=1; group=it.key; page=0; buildItems(); return; }
   if(it.kind==="next"){ page++; buildItems(); return; }
-  if(it.kind==="back"){ level=0; group=null; page=0; buildItems(); return; }
 }
 
 document.getElementById("tapBtn").onclick = ()=>choose();
