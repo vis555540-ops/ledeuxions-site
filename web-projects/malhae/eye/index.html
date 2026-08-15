@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#101317">
+<title>말해요 · 눈으로 (시험판)</title>
+<style>
+  :root{
+    --bg:#101317; --panel:#1a1f26; --ink:#F2F0EA; --muted:#8B93A0;
+    --on:#FFD24A; --ok:#4ADE80; --warn:#F87171; --line:#2A313B;
+    --cell: clamp(64px, 11vh, 104px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+
+  header{display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--line)}
+  h1{font-size:16px; margin:0; font-weight:600; letter-spacing:-.01em}
+  .tag{font-size:11px; color:var(--muted)}
+  .spacer{flex:1}
+
+  button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
+  .mini{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:8px 12px; font-size:13px; min-height:40px;
+  }
+  .mini.live{border-color:var(--ok); color:var(--ok)}
+
+  /* 눈 상태 표시줄 */
+  .meter{padding:8px 14px; border-bottom:1px solid var(--line); background:#141922}
+  .bar{height:12px; background:#232a34; border-radius:99px; overflow:hidden; position:relative}
+  .bar i{display:block; height:100%; width:0; background:var(--ok); transition:width .06s linear}
+  .bar u{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--warn)}
+  .meterrow{display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); margin-bottom:6px}
+  .meterrow b{color:var(--ink); font-weight:600}
+  .hold{color:var(--on)}
+
+  main{flex:1; overflow:hidden; padding:10px 12px; display:flex; flex-direction:column; gap:8px}
+  .crumb{font-size:13px; color:var(--muted); min-height:18px}
+  .list{flex:1; display:flex; flex-direction:column; gap:8px; overflow:hidden}
+  .cell{
+    flex:1; min-height:var(--cell); display:flex; align-items:center; gap:12px;
+    background:var(--panel); border:2px solid transparent; border-radius:16px;
+    padding:0 16px; font-size:clamp(18px,4.6vw,26px); font-weight:600; letter-spacing:-.01em;
+    transition:background .12s, border-color .12s;
+  }
+  .cell.on{background:#3A3212; border-color:var(--on); color:#FFF3CF}
+  .cell.picked{background:#123020; border-color:var(--ok)}
+  .cell .n{font-size:12px; color:var(--muted); font-weight:500; min-width:22px}
+  .cell.call{background:#301416; border-color:#5A2226}
+  .cell.call.on{background:#5A1E22; border-color:var(--warn); color:#FFE1E1}
+
+  footer{padding:10px 14px; border-top:1px solid var(--line); display:flex; gap:8px; align-items:center}
+  .say{flex:1; font-size:14px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+  /* 설정 */
+  dialog{border:0; border-radius:16px; background:var(--panel); color:var(--ink); padding:18px; width:min(420px,92vw)}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  label{display:block; font-size:13px; color:var(--muted); margin:14px 0 6px}
+  input[type=range]{width:100%}
+  .val{color:var(--on); font-weight:600}
+  .row{display:flex; gap:8px; margin-top:16px}
+  .row .mini{flex:1; text-align:center}
+
+  .note{font-size:12px; color:var(--muted); line-height:1.6}
+  video,canvas.hidden{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>말해요 · 눈으로</h1>
+  <span class="tag">시험판</span>
+  <span class="spacer"></span>
+  <button class="mini" id="setBtn">설정</button>
+  <button class="mini" id="camBtn">눈 켜기</button>
+</header>
+
+<div class="meter">
+  <div class="meterrow">
+    <span>눈 감김 <b id="valTxt">—</b></span>
+    <span id="holdTxt" class="hold"></span>
+    <span class="spacer"></span>
+    <span id="stat">카메라 꺼짐</span>
+  </div>
+  <div class="bar"><i id="barFill"></i><u id="barMark"></u></div>
+</div>
+
+<main>
+  <div class="crumb" id="crumb">묶음 고르기</div>
+  <div class="list" id="list"></div>
+</main>
+
+<footer>
+  <div class="say" id="say">준비됨</div>
+  <button class="mini" id="tapBtn">손으로 선택</button>
+</footer>
+
+<video id="vid" playsinline muted></video>
+
+<dialog id="dlg">
+  <h1 style="font-size:16px;margin:0 0 4px">설정</h1>
+  <p class="note">숫자를 바꾸면 바로 반영됩니다. 장인어른께 맞을 때까지 형 눈으로 먼저 맞춰 보세요.</p>
+
+  <label>칸이 넘어가는 속도 — <span class="val" id="dwellV"></span>초</label>
+  <input type="range" id="dwell" min="0.8" max="4" step="0.1">
+
+  <label>눈 감았다고 볼 기준 — <span class="val" id="thrV"></span></label>
+  <input type="range" id="thr" min="0.2" max="0.9" step="0.02">
+
+  <label>몇 초 감아야 선택 — <span class="val" id="holdV"></span>초</label>
+  <input type="range" id="hold" min="0.2" max="2" step="0.05">
+
+  <p class="note" style="margin-top:14px">
+    보통 깜빡임은 0.3초쯤입니다. 그보다 길게 잡아야 무심코 깜빡였을 때 잘못 골라지지 않습니다.
+  </p>
+
+  <div class="row">
+    <button class="mini" id="closeDlg">닫기</button>
+  </div>
+</dialog>
+
+<script type="module">
+import { FilesetResolver, FaceLandmarker }
+  from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+/* ───────── 문구 (말해요 본판과 같은 구성, 눈으로 고르기 좋게 묶음만 정리) ───────── */
+const CALL = "__CALL__";
+const PHRASES = {
+  "즉시":       ["네","아니오","아파요","잠깐만요","괜찮아요","고마워요","미안해요","좀 쉬고 싶어요"],
+  "몸·통증":    ["머리 아파요","목 아파요","어깨 아파요","허리 아파요","다리 아파요","배 아파요","위관 부위 아파요","가슴 답답해요","숨쉬기 힘들어요","어지러워요","메스꺼워요","춥다","덥다"],
+  "위관·영양":  ["영양 주입 시작해도 돼요","영양 주입 멈춰주세요","천천히 주입해주세요","속이 안 편해요","위관 위치 확인해주세요","위관이 아파요","가래가 있어요","석션 해주세요","입 안이 마릅니다","구강 케어 해주세요"],
+  "돌봄·자세":  ["자세 바꿔주세요","일으켜 앉혀주세요","눕혀주세요","머리 좀 올려주세요","베개 조정해주세요","이불 덮어주세요","이불 벗겨주세요","화장실 도와주세요","기저귀 확인해주세요","다리 저림 풀어주세요"],
+  "가족·마음":  ["사랑해요","고맙습니다","미안합니다","손 잡고 싶어요","옆에 있어주세요","혼자 있고 싶어요","이야기 나누고 싶어요","손자 손녀 보고 싶어요","가족 사진 보여주세요","지금 힘들어요"],
+  "신앙":       ["기도해주세요","성경 읽어주세요","찬송 듣고 싶어요","하나님께 감사합니다","목사님 오셨으면 좋겠어요","함께 기도합시다"],
+  "부탁":       ["TV 켜주세요","TV 꺼주세요","조용히 해주세요","불 밝게","불 어둡게","커튼 열어주세요","커튼 닫아주세요","창문 열어주세요","선풍기·에어컨","안경 주세요"],
+  "의료·응급":  ["간호사 불러주세요","의사 선생님 불러주세요","약 시간 됐어요","혈압 재주세요","산소포화도 확인","체온 재주세요","통증 심해요","숨쉬기 매우 힘들어요","지금 응급 상황 같아요","가족한테 연락해주세요"]
+};
+const PAGE = 5;   // 한 화면에 보여줄 칸 수 (나머지는 '다음'으로 넘김)
+
+/* ───────── 설정값 ───────── */
+const cfgDefault = { dwell:1.8, thr:0.45, hold:0.6 };
+let cfg = { ...cfgDefault, ...JSON.parse(localStorage.getItem("malhae_eye")||"{}") };
+const saveCfg = () => localStorage.setItem("malhae_eye", JSON.stringify(cfg));
+
+/* ───────── 소리 ───────── */
+let voice=null;
+const pickVoice = () => {
+  const vs = speechSynthesis.getVoices();
+  voice = vs.find(v=>/ko(-|_)?KR/i.test(v.lang)) || vs.find(v=>/ko/i.test(v.lang)) || null;
+};
+pickVoice(); speechSynthesis.onvoiceschanged = pickVoice;
+
+function speak(t){
+  if(!t) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t);
+  u.lang="ko-KR"; if(voice) u.voice=voice; u.rate=.95;
+  speechSynthesis.speak(u);
+  document.getElementById("say").textContent = t;
+}
+
+let ac=null;
+function alarm(){
+  // 말이 아니라 소리로 사람을 부른다. 방에 아무도 없을 때를 위한 것.
+  ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+  if(ac.state==="suspended") ac.resume();
+  const t0 = ac.currentTime;
+  for(let i=0;i<6;i++){
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type="square"; o.frequency.value = i%2 ? 880 : 1320;
+    g.gain.setValueAtTime(0, t0+i*0.28);
+    g.gain.linearRampToValueAtTime(0.5, t0+i*0.28+0.02);
+    g.gain.linearRampToValueAtTime(0, t0+i*0.28+0.24);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t0+i*0.28); o.stop(t0+i*0.28+0.26);
+  }
+  document.getElementById("say").textContent = "사람을 부르는 중…";
+  setTimeout(()=>speak("불러주세요. 도와주세요."), 1900);
+}
+
+/* ───────── 화면 구성 · 스캔 ───────── */
+const listEl  = document.getElementById("list");
+const crumbEl = document.getElementById("crumb");
+
+let level = 0;            // 0 = 묶음, 1 = 문구
+let group = null;
+let page  = 0;
+let items = [];
+let idx   = 0;
+let timer = null;
+
+function buildItems(){
+  // 한 화면에 PAGE개씩 잘라 보여주고, 넘칠 때만 '다음'을 붙인다.
+  // '다음'은 마지막 쪽에서 첫 쪽으로 돌아온다 — 어디서도 막다른 길이 없어야 한다.
+  let all, title;
+  if(level===0){
+    all = [{label:"🔔 사람 불러주세요", kind:"call"}]
+      .concat(Object.keys(PHRASES).map(k=>({label:k, kind:"group", key:k})));
+    title = "묶음 고르기";
+  } else {
+    all = PHRASES[group].map(p=>({label:p, kind:"say"}));
+    title = group;
+  }
+
+  const pages = Math.max(1, Math.ceil(all.length / PAGE));
+  if(page >= pages) page = 0;
+
+  items = all.slice(page*PAGE, page*PAGE + PAGE);
+  if(pages > 1) items.push({label:"▶ 다음", kind:"next"});
+  if(level===1) items.push({label:"◀ 뒤로", kind:"back"});
+
+  crumbEl.textContent = pages > 1 ? `${title}  (${page+1}/${pages})` : title;
+  idx = 0;
+  render();
+}
+
+function render(){
+  listEl.innerHTML = "";
+  items.forEach((it,i)=>{
+    const b = document.createElement("button");
+    b.className = "cell" + (i===idx?" on":"") + (it.kind==="call"?" call":"");
+    b.innerHTML = `<span class="n">${i+1}</span><span>${it.label}</span>`;
+    b.onclick = ()=>{ idx=i; render(); choose(); };
+    listEl.appendChild(b);
+  });
+}
+
+function step(){
+  idx = (idx+1) % items.length;
+  render();
+}
+function startScan(){ stopScan(); timer = setInterval(step, cfg.dwell*1000); }
+function stopScan(){ if(timer){ clearInterval(timer); timer=null; } }
+
+function choose(){
+  const it = items[idx];
+  if(!it) return;
+  const el = listEl.children[idx];
+  if(el){ el.classList.add("picked"); setTimeout(()=>el.classList.remove("picked"), 400); }
+
+  if(it.kind==="call"){ alarm(); return; }
+  if(it.kind==="say"){ speak(it.label); return; }
+  if(it.kind==="group"){ level=1; group=it.key; page=0; buildItems(); return; }
+  if(it.kind==="next"){ page++; buildItems(); return; }
+  if(it.kind==="back"){ level=0; group=null; page=0; buildItems(); return; }
+}
+
+document.getElementById("tapBtn").onclick = ()=>choose();
+
+/* ───────── 눈 읽기 ───────── */
+const vid = document.getElementById("vid");
+const barFill = document.getElementById("barFill");
+const barMark = document.getElementById("barMark");
+const valTxt  = document.getElementById("valTxt");
+const holdTxt = document.getElementById("holdTxt");
+const stat    = document.getElementById("stat");
+const camBtn  = document.getElementById("camBtn");
+
+let landmarker=null, running=false, closedSince=null, fired=false, wakeLock=null;
+
+async function startCam(){
+  try{
+    stat.textContent = "준비 중…";
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:"user", width:{ideal:640}, height:{ideal:480} }, audio:false
+    });
+    vid.srcObject = stream; await vid.play();
+
+    if(!landmarker){
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+      landmarker = await FaceLandmarker.createFromOptions(vision,{
+        baseOptions:{ modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task" },
+        outputFaceBlendshapes:true, runningMode:"VIDEO", numFaces:1
+      });
+    }
+
+    try{ wakeLock = await navigator.wakeLock.request("screen"); }catch(e){}
+
+    running = true;
+    camBtn.textContent = "눈 끄기";
+    camBtn.classList.add("live");
+    stat.textContent = "보는 중";
+    startScan();
+    loop();
+  }catch(e){
+    stat.textContent = "카메라 안 됨: " + (e && e.name ? e.name : e);
+  }
+}
+
+function stopCam(){
+  running = false;
+  stopScan();
+  if(vid.srcObject){ vid.srcObject.getTracks().forEach(t=>t.stop()); vid.srcObject=null; }
+  if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock=null; }
+  camBtn.textContent = "눈 켜기";
+  camBtn.classList.remove("live");
+  stat.textContent = "카메라 꺼짐";
+  barFill.style.width = "0%";
+  valTxt.textContent = "—"; holdTxt.textContent = "";
+}
+
+camBtn.onclick = ()=> running ? stopCam() : startCam();
+
+function loop(){
+  if(!running) return;
+  const now = performance.now();
+  let v = 0, seen = false;
+  try{
+    const r = landmarker.detectForVideo(vid, now);
+    const bs = r.faceBlendshapes && r.faceBlendshapes[0];
+    if(bs){
+      seen = true;
+      const get = n => (bs.categories.find(c=>c.categoryName===n)||{score:0}).score;
+      v = (get("eyeBlinkLeft") + get("eyeBlinkRight")) / 2;
+    }
+  }catch(e){}
+
+  valTxt.textContent = seen ? v.toFixed(2) : "얼굴 안 보임";
+  barFill.style.width = Math.min(100, v*100) + "%";
+  barFill.style.background = v >= cfg.thr ? "var(--on)" : "var(--ok)";
+
+  if(seen && v >= cfg.thr){
+    if(closedSince === null){ closedSince = now; fired = false; }
+    const held = (now - closedSince)/1000;
+    holdTxt.textContent = `감은 채 ${held.toFixed(1)}초`;
+    if(!fired && held >= cfg.hold){
+      fired = true;
+      holdTxt.textContent = "선택!";
+      stopScan();
+      choose();
+      setTimeout(()=>{ if(running) startScan(); }, 900);
+    }
+  }else{
+    closedSince = null; fired = false;
+    if(holdTxt.textContent !== "선택!") holdTxt.textContent = "";
+  }
+
+  requestAnimationFrame(loop);
+}
+
+// 화면이 다시 보이면 화면꺼짐방지를 되건다 (탭 전환·잠금 후 복귀 대응)
+document.addEventListener("visibilitychange", async ()=>{
+  if(document.visibilityState==="visible" && running && !wakeLock){
+    try{ wakeLock = await navigator.wakeLock.request("screen"); }catch(e){}
+  }
+});
+
+/* ───────── 설정 화면 ───────── */
+const dlg = document.getElementById("dlg");
+const dwell = document.getElementById("dwell"), thr = document.getElementById("thr"), hold = document.getElementById("hold");
+const dwellV = document.getElementById("dwellV"), thrV = document.getElementById("thrV"), holdV = document.getElementById("holdV");
+
+function syncCfg(){
+  dwell.value=cfg.dwell; thr.value=cfg.thr; hold.value=cfg.hold;
+  dwellV.textContent=(+cfg.dwell).toFixed(1);
+  thrV.textContent=(+cfg.thr).toFixed(2);
+  holdV.textContent=(+cfg.hold).toFixed(2);
+  barMark.style.left = (cfg.thr*100)+"%";
+}
+[["dwell",dwell,dwellV,1],["thr",thr,thrV,2],["hold",hold,holdV,2]].forEach(([k,el,out,d])=>{
+  el.oninput = ()=>{
+    cfg[k] = parseFloat(el.value); out.textContent = cfg[k].toFixed(d); saveCfg();
+    barMark.style.left = (cfg.thr*100)+"%";
+    if(k==="dwell" && timer) startScan();
+  };
+});
+document.getElementById("setBtn").onclick = ()=>dlg.showModal();
+document.getElementById("closeDlg").onclick = ()=>dlg.close();
+
+/* ───────── 시작 ───────── */
+syncCfg();
+buildItems();
+</script>
+</body>
+</html>
