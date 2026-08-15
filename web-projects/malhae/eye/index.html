@@ -9,10 +9,10 @@
   :root{
     --bg:#101317; --panel:#1a1f26; --ink:#F2F0EA; --muted:#8B93A0;
     --on:#FFD24A; --ok:#4ADE80; --warn:#F87171; --line:#2A313B;
-    --cell: clamp(64px, 11vh, 104px);
+    --cell: 52px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  html,body{height:100%}
+  html,body{height:100%; height:100dvh}
   body{
     margin:0; background:var(--bg); color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
@@ -40,11 +40,11 @@
   .meterrow b{color:var(--ink); font-weight:600}
   .hold{color:var(--on)}
 
-  main{flex:1; overflow:hidden; padding:10px 12px; display:flex; flex-direction:column; gap:8px}
-  .crumb{font-size:13px; color:var(--muted); min-height:18px}
-  .list{flex:1; display:flex; flex-direction:column; gap:8px; overflow:hidden}
+  main{flex:1; min-height:0; overflow:hidden; padding:10px 12px; display:flex; flex-direction:column; gap:8px}
+  .crumb{font-size:13px; color:var(--muted); min-height:18px; flex:none}
+  .list{flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; overflow:hidden}
   .cell{
-    flex:1; min-height:var(--cell); display:flex; align-items:center; gap:12px;
+    flex:1 1 0; min-height:var(--cell); display:flex; align-items:center; gap:12px;
     background:var(--panel); border:2px solid transparent; border-radius:16px;
     padding:0 16px; font-size:clamp(18px,4.6vw,26px); font-weight:600; letter-spacing:-.01em;
     transition:background .12s, border-color .12s;
@@ -141,7 +141,9 @@ const PHRASES = {
   "부탁":       ["TV 켜주세요","TV 꺼주세요","조용히 해주세요","불 밝게","불 어둡게","커튼 열어주세요","커튼 닫아주세요","창문 열어주세요","선풍기·에어컨","안경 주세요"],
   "의료·응급":  ["간호사 불러주세요","의사 선생님 불러주세요","약 시간 됐어요","혈압 재주세요","산소포화도 확인","체온 재주세요","통증 심해요","숨쉬기 매우 힘들어요","지금 응급 상황 같아요","가족한테 연락해주세요"]
 };
-const PAGE = 5;   // 한 화면에 보여줄 칸 수 (나머지는 '다음'으로 넘김)
+// 한 화면에 보여줄 칸 수. '다음'·'뒤로'까지 더해도 화면 안에 다 들어와야 한다.
+// 잘리면 그 칸은 눈으로 고를 수 없으므로 넉넉히 잡는다.
+const PAGE = 4;
 
 /* ───────── 설정값 ───────── */
 const cfgDefault = { dwell:1.8, thr:0.45, hold:0.6 };
