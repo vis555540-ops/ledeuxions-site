@@ -41,7 +41,15 @@
   .hold{color:var(--on)}
 
   main{flex:1; min-height:0; overflow:hidden; padding:10px 12px; display:flex; flex-direction:column; gap:8px}
-  .crumb{font-size:13px; color:var(--muted); min-height:18px; flex:none}
+  .crumb{font-size:12px; color:var(--muted); flex:none; text-align:center}
+
+  /* 눈으로 위아래를 보는 자리. 눈길이 가야 하므로 크고 뚜렷해야 한다. */
+  .look{
+    flex:none; height:68px; border-radius:14px; background:#182130; border:2px solid #26344a;
+    color:#7FA5D8; font-size:30px; line-height:1; display:flex; align-items:center; justify-content:center;
+    transition:background .1s, border-color .1s, color .1s;
+  }
+  .look.hit{background:#20406E; border-color:#5B9BFF; color:#DCEBFF}
   .list{flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; overflow:hidden}
   .cell{
     flex:1 1 0; min-height:var(--cell); display:flex; align-items:center; gap:12px;
@@ -96,8 +104,10 @@
 </div>
 
 <main>
-  <div class="crumb" id="crumb">묶음 고르기</div>
+  <button class="look" id="upZone">▲</button>
   <div class="list" id="list"></div>
+  <button class="look" id="dnZone">▼</button>
+  <div class="crumb" id="crumb"></div>
 </main>
 
 <footer>
@@ -122,6 +132,24 @@
 
   <p class="note" style="margin-top:14px">
     보통 깜빡임은 0.3초쯤입니다. 그보다 길게 잡아야 무심코 깜빡였을 때 잘못 골라지지 않습니다.
+  </p>
+
+  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+
+  <label>눈동자를 굴렸다고 볼 기준 — <span class="val" id="lookV"></span></label>
+  <input type="range" id="look" min="0.2" max="0.9" step="0.02">
+  <p class="note">
+    눈을 위로 뜨면 한 칸 올라가고 아래로 내리면 한 칸 내려갑니다.
+    잘 안 움직이면 이 숫자를 낮추고, 가만히 있는데 저절로 움직이면 올리세요.
+    화면 위쪽 <b>↑ ↓</b> 숫자를 보면서 맞추면 됩니다.
+  </p>
+
+  <div class="row">
+    <button class="mini" id="autoBtn">자동으로 훑기: 켬</button>
+  </div>
+  <p class="note">
+    자동 훑기를 끄면 칸이 저절로 넘어가지 않고, 눈동자로만 움직입니다.
+    눈을 위아래로 움직이실 수 있으면 끄는 편이 훨씬 빠릅니다.
   </p>
 
   <div class="row">
@@ -178,7 +206,7 @@ addEventListener("resize", ()=>{
 });
 
 /* ───────── 설정값 ───────── */
-const cfgDefault = { dwell:1.8, thr:0.45, hold:0.6 };
+const cfgDefault = { dwell:1.8, thr:0.45, hold:0.6, look:0.5, auto:true };
 let cfg = { ...cfgDefault, ...JSON.parse(localStorage.getItem("malhae_eye")||"{}") };
 const saveCfg = () => localStorage.setItem("malhae_eye", JSON.stringify(cfg));
 
@@ -316,7 +344,7 @@ async function startCam(){
     camBtn.textContent = "눈 끄기";
     camBtn.classList.add("live");
     stat.textContent = "보는 중";
-    startScan();
+    if(cfg.auto) startScan();
     loop();
   }catch(e){
     stat.textContent = "카메라 안 됨: " + (e && e.name ? e.name : e);
@@ -337,25 +365,44 @@ function stopCam(){
 
 camBtn.onclick = ()=> running ? stopCam() : startCam();
 
+// 눈동자를 위아래로 굴리면 칸이 따라 움직인다.
+// 한 번 굴릴 때 한 칸만 가야 한다 — 계속 위를 보고 있다고 계속 올라가면 못 쓴다.
+// 그래서 가운데로 돌아와야(armed=false) 다음 한 칸이 먹는다.
+let armed = false, lastMove = 0;
+const upZone = document.getElementById("upZone");
+const dnZone = document.getElementById("dnZone");
+
+function moveBy(d){
+  idx = (idx + d + items.length) % items.length;
+  render();
+}
+// 옆에서 돌봐주시는 분이 손으로도 옮길 수 있게
+upZone.onclick = ()=>moveBy(-1);
+dnZone.onclick = ()=>moveBy(+1);
+
 function loop(){
   if(!running) return;
   const now = performance.now();
-  let v = 0, seen = false;
+  let v = 0, up = 0, dn = 0, seen = false;
   try{
     const r = landmarker.detectForVideo(vid, now);
     const bs = r.faceBlendshapes && r.faceBlendshapes[0];
     if(bs){
       seen = true;
       const get = n => (bs.categories.find(c=>c.categoryName===n)||{score:0}).score;
-      v = (get("eyeBlinkLeft") + get("eyeBlinkRight")) / 2;
+      v  = (get("eyeBlinkLeft")   + get("eyeBlinkRight"))   / 2;
+      up = (get("eyeLookUpLeft")  + get("eyeLookUpRight"))  / 2;
+      dn = (get("eyeLookDownLeft")+ get("eyeLookDownRight"))/ 2;
     }
   }catch(e){}
 
-  valTxt.textContent = seen ? v.toFixed(2) : "얼굴 안 보임";
+  valTxt.textContent = seen ? `${v.toFixed(2)}  ↑${up.toFixed(2)} ↓${dn.toFixed(2)}` : "얼굴 안 보임";
   barFill.style.width = Math.min(100, v*100) + "%";
   barFill.style.background = v >= cfg.thr ? "var(--on)" : "var(--ok)";
 
   if(seen && v >= cfg.thr){
+    // 감고 있는 동안은 눈동자 방향을 보지 않는다.
+    // 눈을 감으면 아래를 보는 것처럼 읽혀서 칸이 멋대로 내려간다.
     if(closedSince === null){ closedSince = now; fired = false; }
     const held = (now - closedSince)/1000;
     holdTxt.textContent = `감은 채 ${held.toFixed(1)}초`;
@@ -364,11 +411,20 @@ function loop(){
       holdTxt.textContent = "선택!";
       stopScan();
       choose();
-      setTimeout(()=>{ if(running) startScan(); }, 900);
+      setTimeout(()=>{ if(running && cfg.auto) startScan(); }, 900);
     }
   }else{
     closedSince = null; fired = false;
     if(holdTxt.textContent !== "선택!") holdTxt.textContent = "";
+
+    upZone.classList.toggle("hit", seen && up >= cfg.look);
+    dnZone.classList.toggle("hit", seen && dn >= cfg.look);
+
+    if(seen && now - lastMove > 350){
+      if(!armed && up >= cfg.look){ moveBy(-1); armed = true; lastMove = now; holdTxt.textContent = "▲"; }
+      else if(!armed && dn >= cfg.look){ moveBy(+1); armed = true; lastMove = now; holdTxt.textContent = "▼"; }
+    }
+    if(up < cfg.look*0.6 && dn < cfg.look*0.6) armed = false;   // 가운데로 돌아오면 다시 준비
   }
 
   requestAnimationFrame(loop);
@@ -383,23 +439,33 @@ document.addEventListener("visibilitychange", async ()=>{
 
 /* ───────── 설정 화면 ───────── */
 const dlg = document.getElementById("dlg");
-const dwell = document.getElementById("dwell"), thr = document.getElementById("thr"), hold = document.getElementById("hold");
-const dwellV = document.getElementById("dwellV"), thrV = document.getElementById("thrV"), holdV = document.getElementById("holdV");
+const dwell = document.getElementById("dwell"), thr = document.getElementById("thr"),
+      hold = document.getElementById("hold"), look = document.getElementById("look");
+const dwellV = document.getElementById("dwellV"), thrV = document.getElementById("thrV"),
+      holdV = document.getElementById("holdV"), lookV = document.getElementById("lookV");
+const autoBtn = document.getElementById("autoBtn");
 
 function syncCfg(){
-  dwell.value=cfg.dwell; thr.value=cfg.thr; hold.value=cfg.hold;
+  dwell.value=cfg.dwell; thr.value=cfg.thr; hold.value=cfg.hold; look.value=cfg.look;
   dwellV.textContent=(+cfg.dwell).toFixed(1);
   thrV.textContent=(+cfg.thr).toFixed(2);
   holdV.textContent=(+cfg.hold).toFixed(2);
+  lookV.textContent=(+cfg.look).toFixed(2);
   barMark.style.left = (cfg.thr*100)+"%";
+  autoBtn.textContent = "자동으로 훑기: " + (cfg.auto ? "켬" : "끔");
+  autoBtn.classList.toggle("live", cfg.auto);
 }
-[["dwell",dwell,dwellV,1],["thr",thr,thrV,2],["hold",hold,holdV,2]].forEach(([k,el,out,d])=>{
+[["dwell",dwell,dwellV,1],["thr",thr,thrV,2],["hold",hold,holdV,2],["look",look,lookV,2]].forEach(([k,el,out,d])=>{
   el.oninput = ()=>{
     cfg[k] = parseFloat(el.value); out.textContent = cfg[k].toFixed(d); saveCfg();
     barMark.style.left = (cfg.thr*100)+"%";
     if(k==="dwell" && timer) startScan();
   };
 });
+autoBtn.onclick = ()=>{
+  cfg.auto = !cfg.auto; saveCfg(); syncCfg();
+  if(cfg.auto){ if(running) startScan(); } else stopScan();
+};
 document.getElementById("setBtn").onclick = ()=>dlg.showModal();
 document.getElementById("closeDlg").onclick = ()=>dlg.close();
 
