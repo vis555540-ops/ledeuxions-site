@@ -55,7 +55,11 @@
   .cell.call{background:#301416; border-color:#5A2226}
   .cell.call.on{background:#5A1E22; border-color:var(--warn); color:#FFE1E1}
 
-  footer{padding:10px 14px; border-top:1px solid var(--line); display:flex; gap:8px; align-items:center}
+  /* 아래 여백에 폰 제스처바(홈 바) 높이를 더한다. 안 그러면 버튼이 그 밑에 깔린다. */
+  footer{
+    padding:10px 14px; padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid var(--line); display:flex; gap:8px; align-items:center; flex:none;
+  }
   .say{flex:1; font-size:14px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 
   /* 설정 */
@@ -150,6 +154,7 @@ const PHRASES = {
 function fitPage(){
   const list = document.getElementById("list");
   const h = list ? list.clientHeight : 0;
+  if(h < 60) return 4;   // 아직 화면 높이가 안 잡힌 때. 0으로 계산하면 칸이 2개로 쪼그라든다
   const cell = parseInt(getComputedStyle(document.documentElement)
                 .getPropertyValue("--cell")) || 52;
   const gap = 8;
@@ -158,6 +163,14 @@ function fitPage(){
   return Math.max(2, Math.min(6, total - 2));
 }
 let PAGE = 4;
+
+// 가로세로 전환·주소창 접힘으로 화면이 바뀌면 다시 잰다.
+// 단 칸 수가 실제로 달라질 때만 다시 그린다 — 매번 그리면 고르던 자리가 처음으로 돌아간다.
+let fitTimer = null;
+addEventListener("resize", ()=>{
+  clearTimeout(fitTimer);
+  fitTimer = setTimeout(()=>{ if(fitPage() !== PAGE) buildItems(); }, 250);
+});
 
 /* ───────── 설정값 ───────── */
 const cfgDefault = { dwell:1.8, thr:0.45, hold:0.6 };
