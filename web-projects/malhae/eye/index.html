@@ -43,13 +43,32 @@
   main{flex:1; min-height:0; overflow:hidden; padding:10px 12px; display:flex; flex-direction:column; gap:8px}
   .crumb{font-size:12px; color:var(--muted); flex:none; text-align:center}
 
-  /* 눈으로 위아래를 보는 자리. 눈길이 가야 하므로 크고 뚜렷해야 한다. */
+  /* 눈으로 위아래를 보는 자리.
+     눈길이 실제로 그쪽으로 가야 값이 잡히므로, 화면 위아래 끝에 크게 둔다.
+     2026-08-15 형: "위아래 칸 너무 작다" → 크게 키움 */
   .look{
-    flex:none; height:68px; border-radius:14px; background:#182130; border:2px solid #26344a;
-    color:#7FA5D8; font-size:30px; line-height:1; display:flex; align-items:center; justify-content:center;
+    flex:none; height:clamp(96px, 17vh, 170px);
+    border-radius:16px; background:#182130; border:2px solid #26344a;
+    color:#7FA5D8; font-size:44px; line-height:1; display:flex; align-items:center; justify-content:center;
     transition:background .1s, border-color .1s, color .1s;
   }
   .look.hit{background:#20406E; border-color:#5B9BFF; color:#DCEBFF}
+
+  /* 시작 보정 화면 */
+  #cal{
+    position:fixed; inset:0; background:#0B0E12; z-index:50;
+    display:none; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:24px;
+    text-align:center;
+  }
+  #cal.show{display:flex}
+  #calMsg{font-size:clamp(26px,7vw,40px); font-weight:700; line-height:1.35}
+  #calSub{font-size:15px; color:var(--muted); line-height:1.6}
+  #calVal{font-size:15px; color:var(--on); font-variant-numeric:tabular-nums}
+  #calRing{
+    width:120px; height:120px; border-radius:50%; border:8px solid #232C3A;
+    display:flex; align-items:center; justify-content:center; font-size:38px; font-weight:700; color:var(--on);
+  }
+  #cal .arrow{font-size:64px; color:#5B9BFF}
   /* 목록이 화면보다 길면 따라 움직인다. 스크롤 막대는 감춘다 — 볼 사람이 손을 못 쓴다 */
   .list{flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; overflow-y:auto; scrollbar-width:none}
   .list::-webkit-scrollbar{display:none}
@@ -119,6 +138,14 @@
 
 <video id="vid" playsinline muted></video>
 
+<div id="cal">
+  <div class="arrow" id="calArrow"></div>
+  <div id="calMsg">준비</div>
+  <div id="calRing">3</div>
+  <div id="calSub">화면을 얼굴 앞에 두고 그대로 계세요</div>
+  <div id="calVal"></div>
+</div>
+
 <dialog id="dlg">
   <h1 style="font-size:16px;margin:0 0 4px">설정</h1>
   <p class="note">숫자를 바꾸면 바로 반영됩니다. 장인어른께 맞을 때까지 형 눈으로 먼저 맞춰 보세요.</p>
@@ -155,6 +182,14 @@
   </p>
 
   <div class="row">
+    <button class="mini" id="calBtn">눈 다시 맞추기</button>
+  </div>
+  <p class="note">
+    쓰는 사람이 바뀌었거나, 앉은 자세·안경·불빛이 달라지면 다시 맞추세요.
+    위·아래·감기를 3초씩 시키고 그 사람에 맞는 숫자를 알아서 정합니다.
+  </p>
+
+  <div class="row">
     <button class="mini" id="closeDlg">닫기</button>
   </div>
 </dialog>
@@ -186,7 +221,7 @@ const PHRASES = [
 //    목록이 길면 따라 움직이게(scrollIntoView) 바꿨다. 어떤 화면에서도 지금 칸은 보인다.
 
 /* ───────── 설정값 ───────── */
-const cfgDefault = { dwell:1.8, thr:0.45, hold:0.6, look:0.5, auto:true };
+const cfgDefault = { dwell:1.8, thr:0.45, hold:0.6, look:0.5, auto:true, calibrated:false };
 let cfg = { ...cfgDefault, ...JSON.parse(localStorage.getItem("malhae_eye")||"{}") };
 const saveCfg = () => localStorage.setItem("malhae_eye", JSON.stringify(cfg));
 
@@ -315,6 +350,8 @@ async function startCam(){
     stat.textContent = "보는 중";
     if(cfg.auto) startScan();
     loop();
+    // 처음 켠 사람이면 눈을 먼저 재고 시작한다
+    if(!cfg.calibrated) calibrate();
   }catch(e){
     stat.textContent = "카메라 안 됨: " + (e && e.name ? e.name : e);
   }
@@ -340,6 +377,88 @@ camBtn.onclick = ()=> running ? stopCam() : startCam();
 let armed = false, lastMove = 0;
 const upZone = document.getElementById("upZone");
 const dnZone = document.getElementById("dnZone");
+
+/* ───────── 시작 보정 ─────────
+   사람마다 눈 크기·안경·앉은 각도가 다르다. 기본 숫자로는 누구에게도 안 맞는다.
+   그래서 켤 때 한 번, 그 사람 눈을 직접 재서 기준을 정한다.
+   형 말: "시작할 때 아이트래킹 하고 시작해야 할 것 같아" */
+const calEl   = document.getElementById("cal");
+const calMsg  = document.getElementById("calMsg");
+const calSub  = document.getElementById("calSub");
+const calRing = document.getElementById("calRing");
+const calVal  = document.getElementById("calVal");
+const calArrow= document.getElementById("calArrow");
+
+let sample = null;   // 보정 중일 때만 값이 쌓인다. loop() 가 채운다.
+
+const wait = ms => new Promise(r=>setTimeout(r, ms));
+
+async function collect(msg, sub, arrow, ms){
+  calArrow.textContent = arrow;
+  calMsg.textContent = msg;
+  calSub.textContent = sub;
+  sample = [];
+  const t0 = performance.now();
+  while(performance.now() - t0 < ms){
+    const left = Math.ceil((ms - (performance.now()-t0))/1000);
+    calRing.textContent = left;
+    const n = sample.length;
+    calVal.textContent = n ? `읽는 중 ${n}회` : "얼굴을 찾는 중…";
+    await wait(120);
+  }
+  const got = sample; sample = null;
+  return got;
+}
+
+// 가운데 값과 최대값 사이 어디쯤을 기준으로 삼을지. 너무 낮으면 저절로 움직이고, 높으면 안 먹는다.
+function pick(baseArr, maxArr, key){
+  if(!baseArr.length || !maxArr.length) return null;
+  const avg = a => a.reduce((s,x)=>s+x[key],0)/a.length;
+  const base = avg(baseArr);
+  // 최대값은 상위 30% 만 평균낸다 (눈을 다 못 올린 순간이 섞이므로)
+  const sorted = maxArr.map(x=>x[key]).sort((a,b)=>b-a);
+  const top = sorted.slice(0, Math.max(1, Math.round(sorted.length*0.3)));
+  const peak = top.reduce((s,x)=>s+x,0)/top.length;
+  if(peak - base < 0.08) return null;          // 차이가 없으면 그 동작은 못 쓰는 것
+  return Math.min(0.9, Math.max(0.15, base + (peak - base) * 0.45));
+}
+
+async function calibrate(){
+  calEl.classList.add("show");
+  const wasAuto = cfg.auto; cfg.auto = false; stopScan();
+
+  await collect("준비하세요", "화면을 얼굴 앞에 두고 그대로 계세요", "", 2000);
+  const mid  = await collect("화면 가운데를 보세요", "눈을 편하게 뜨고 계세요", "●", 3000);
+  const up   = await collect("위를 보세요", "고개는 그대로, 눈만 위로", "▲", 3000);
+  const dn   = await collect("아래를 보세요", "고개는 그대로, 눈만 아래로", "▼", 3000);
+  const blk  = await collect("눈을 꾹 감으세요", "천천히 세는 동안 감고 계세요", "—", 3000);
+
+  const lookUp = pick(mid, up, "up");
+  const lookDn = pick(mid, dn, "dn");
+  const blink  = pick(mid, blk, "v");
+
+  let msg = [], ok = true;
+  if(lookUp && lookDn){ cfg.look = Math.min(lookUp, lookDn); msg.push("위아래 ✔"); }
+  else { ok = false; msg.push("위아래 ✖"); }
+  if(blink){ cfg.thr = blink; msg.push("감기 ✔"); }
+  else { ok = false; msg.push("감기 ✖"); }
+
+  cfg.auto = ok ? false : wasAuto;   // 눈으로 다 되면 자동 훑기는 꺼도 된다
+  cfg.calibrated = true;
+  saveCfg(); syncCfg();
+
+  calArrow.textContent = ok ? "✓" : "!";
+  calMsg.textContent = ok ? "맞췄습니다" : "일부는 못 맞췄어요";
+  calSub.textContent = ok
+    ? "이제 눈으로 위아래 움직이고, 꾹 감으면 말합니다"
+    : "안 잡힌 동작은 자동으로 훑어드릴게요. 설정에서 다시 맞출 수 있어요";
+  calVal.textContent = msg.join("   ");
+  calRing.textContent = "";
+  await wait(2600);
+
+  calEl.classList.remove("show");
+  if(cfg.auto && running) startScan();
+}
 
 function moveBy(d){
   idx = (idx + d + items.length) % items.length;
@@ -368,6 +487,13 @@ function loop(){
   valTxt.textContent = seen ? `${v.toFixed(2)}  ↑${up.toFixed(2)} ↓${dn.toFixed(2)}` : "얼굴 안 보임";
   barFill.style.width = Math.min(100, v*100) + "%";
   barFill.style.background = v >= cfg.thr ? "var(--on)" : "var(--ok)";
+
+  // 보정 중에는 값만 모으고 아무것도 고르지 않는다
+  if(sample){
+    if(seen) sample.push({v, up, dn});
+    requestAnimationFrame(loop);
+    return;
+  }
 
   if(seen && v >= cfg.thr){
     // 감고 있는 동안은 눈동자 방향을 보지 않는다.
@@ -437,6 +563,10 @@ autoBtn.onclick = ()=>{
 };
 document.getElementById("setBtn").onclick = ()=>dlg.showModal();
 document.getElementById("closeDlg").onclick = ()=>dlg.close();
+document.getElementById("calBtn").onclick = ()=>{
+  if(!running){ alert("먼저 오른쪽 위 '눈 켜기'를 눌러주세요."); return; }
+  dlg.close(); calibrate();
+};
 
 /* ───────── 시작 ───────── */
 syncCfg();
