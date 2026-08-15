@@ -50,7 +50,9 @@
     transition:background .1s, border-color .1s, color .1s;
   }
   .look.hit{background:#20406E; border-color:#5B9BFF; color:#DCEBFF}
-  .list{flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; overflow:hidden}
+  /* 목록이 화면보다 길면 따라 움직인다. 스크롤 막대는 감춘다 — 볼 사람이 손을 못 쓴다 */
+  .list{flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; overflow-y:auto; scrollbar-width:none}
+  .list::-webkit-scrollbar{display:none}
   .cell{
     flex:1 1 0; min-height:var(--cell); display:flex; align-items:center; gap:12px;
     background:var(--panel); border:2px solid transparent; border-radius:16px;
@@ -178,32 +180,10 @@ const PHRASES = [
   "입술",
   "목"
 ];
-// 한 화면에 보여줄 칸 수. '다음'·'뒤로'까지 더해도 화면 안에 다 들어와야 한다.
-// 잘리면 그 칸은 눈으로 고를 수 없으므로 넉넉히 잡는다.
-//
 // ⚠️ 2026-08-15 형 폰(삼성)에서 맨 아래 칸이 잘렸다.
-//    묶음 화면 = [사람 불러주세요] + PAGE개 + [다음] 이라 PAGE=4면 6칸이 되어 넘쳤다.
-//    화면 높이에서 실제로 들어가는 칸 수를 재서 정한다. 잘린 칸은 눈으로 못 고른다.
-function fitPage(){
-  const list = document.getElementById("list");
-  const h = list ? list.clientHeight : 0;
-  if(h < 60) return 4;   // 아직 화면 높이가 안 잡힌 때. 0으로 계산하면 칸이 2개로 쪼그라든다
-  const cell = parseInt(getComputedStyle(document.documentElement)
-                .getPropertyValue("--cell")) || 52;
-  const gap = 8;
-  // 들어갈 수 있는 총 칸 수 (고정칸 2개 = 긴급 + 다음/뒤로 를 빼고 남는 수)
-  const total = Math.floor((h + gap) / (cell + gap));
-  return Math.max(2, Math.min(6, total - 2));
-}
-let PAGE = 4;
-
-// 가로세로 전환·주소창 접힘으로 화면이 바뀌면 다시 잰다.
-// 단 칸 수가 실제로 달라질 때만 다시 그린다 — 매번 그리면 고르던 자리가 처음으로 돌아간다.
-let fitTimer = null;
-addEventListener("resize", ()=>{
-  clearTimeout(fitTimer);
-  fitTimer = setTimeout(()=>{ if(fitPage() !== PAGE) buildItems(); }, 250);
-});
+//    처음엔 화면에 들어가는 칸 수를 재서 쪽을 나눴는데, '다음' 칸이 생기면 그만큼 느려지고
+//    폰마다 생겼다 없어졌다 해서 더 헷갈렸다. 그래서 쪽 나누기를 아예 버리고
+//    목록이 길면 따라 움직이게(scrollIntoView) 바꿨다. 어떤 화면에서도 지금 칸은 보인다.
 
 /* ───────── 설정값 ───────── */
 const cfgDefault = { dwell:1.8, thr:0.45, hold:0.6, look:0.5, auto:true };
@@ -250,30 +230,17 @@ function alarm(){
 const listEl  = document.getElementById("list");
 const crumbEl = document.getElementById("crumb");
 
-let page  = 0;   // 목록이 화면보다 길 때만 쓴다
 let items = [];
 let idx   = 0;
 let timer = null;
 
 function buildItems(){
-  // 묶음 없이 한 줄로 늘어놓는다. 목록이 짧으니 나눌수록 느려질 뿐이다.
-  // 다 들어가면 '다음' 없이 통째로 보여주고, 넘칠 때만 쪽을 나눈다.
-  const cap = fitPage() + 2;   // 이 화면에 실제로 들어가는 칸 수
-  const all = [{label:"🔔 사람 불러주세요", kind:"call"}]
+  // 쪽 나누기를 없앴다. '다음' 칸이 생기면 그만큼 고르는 데 더 걸리고,
+  // 폰 크기에 따라 생겼다 없어졌다 해서 쓰는 사람이 헷갈린다.
+  // 화면보다 길면 목록이 따라 움직이게 해서 지금 칸은 언제나 보이게 한다.
+  items = [{label:"🔔 사람 불러주세요", kind:"call"}]
     .concat(PHRASES.map(p=>({label:p, kind:"say"})));
-
-  if(all.length <= cap){
-    page = 0;
-    items = all;
-    crumbEl.textContent = "눈을 꾹 감으면 선택됩니다";
-  } else {
-    PAGE = cap - 1;                       // '다음' 자리 하나 뺀다
-    const pages = Math.ceil(all.length / PAGE);
-    if(page >= pages) page = 0;           // 마지막 쪽 다음은 첫 쪽. 막다른 길이 없어야 한다
-    items = all.slice(page*PAGE, page*PAGE + PAGE);
-    items.push({label:"▶ 다음", kind:"next"});
-    crumbEl.textContent = `${page+1} / ${pages}`;
-  }
+  crumbEl.textContent = "눈을 꾹 감으면 말합니다";
   idx = 0;
   render();
 }
@@ -287,6 +254,9 @@ function render(){
     b.onclick = ()=>{ idx=i; render(); choose(); };
     listEl.appendChild(b);
   });
+  // 화면보다 목록이 길면 지금 칸이 안 보일 수 있다. 안 보이면 못 고른다.
+  const cur = listEl.children[idx];
+  if(cur) cur.scrollIntoView({block:"nearest"});
 }
 
 function step(){
@@ -304,7 +274,6 @@ function choose(){
 
   if(it.kind==="call"){ alarm(); return; }
   if(it.kind==="say"){ speak(it.label); return; }
-  if(it.kind==="next"){ page++; buildItems(); return; }
 }
 
 document.getElementById("tapBtn").onclick = ()=>choose();
