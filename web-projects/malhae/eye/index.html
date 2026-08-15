@@ -143,7 +143,21 @@ const PHRASES = {
 };
 // 한 화면에 보여줄 칸 수. '다음'·'뒤로'까지 더해도 화면 안에 다 들어와야 한다.
 // 잘리면 그 칸은 눈으로 고를 수 없으므로 넉넉히 잡는다.
-const PAGE = 4;
+//
+// ⚠️ 2026-08-15 형 폰(삼성)에서 맨 아래 칸이 잘렸다.
+//    묶음 화면 = [사람 불러주세요] + PAGE개 + [다음] 이라 PAGE=4면 6칸이 되어 넘쳤다.
+//    화면 높이에서 실제로 들어가는 칸 수를 재서 정한다. 잘린 칸은 눈으로 못 고른다.
+function fitPage(){
+  const list = document.getElementById("list");
+  const h = list ? list.clientHeight : 0;
+  const cell = parseInt(getComputedStyle(document.documentElement)
+                .getPropertyValue("--cell")) || 52;
+  const gap = 8;
+  // 들어갈 수 있는 총 칸 수 (고정칸 2개 = 긴급 + 다음/뒤로 를 빼고 남는 수)
+  const total = Math.floor((h + gap) / (cell + gap));
+  return Math.max(2, Math.min(6, total - 2));
+}
+let PAGE = 4;
 
 /* ───────── 설정값 ───────── */
 const cfgDefault = { dwell:1.8, thr:0.45, hold:0.6 };
@@ -200,6 +214,7 @@ let timer = null;
 function buildItems(){
   // 한 화면에 PAGE개씩 잘라 보여주고, 넘칠 때만 '다음'을 붙인다.
   // '다음'은 마지막 쪽에서 첫 쪽으로 돌아온다 — 어디서도 막다른 길이 없어야 한다.
+  PAGE = fitPage();   // 폰마다 화면이 달라 매번 다시 잰다 (잘리면 눈으로 못 고른다)
   let all, title;
   if(level===0){
     all = [{label:"🔔 사람 불러주세요", kind:"call"}]
