@@ -1,215 +1,25 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FFFFFF">
-<title>말해요 · 써서 말하기</title>
-<link rel="manifest" href="manifest.json">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>말해요 — 써서 말하기</title>
+<meta http-equiv="refresh" content="0; url=../type/">
+<link rel="canonical" href="https://ledeuxions.com/web-projects/malhae/type/">
+<script>location.replace("../type/");</script>
 <style>
-  :root{
-    --bg:#FFFFFF; --ink:#111418; --muted:#6B7280; --line:#E5E7EB;
-    --key:#1D4ED8; --keyink:#FFFFFF; --star:#F59E0B; --soft:#F3F4F6;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  html,body{height:100%; height:100dvh; margin:0}
-  body{
-    background:var(--bg); color:var(--ink); display:flex; flex-direction:column;
-    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    overflow:hidden;
-  }
-  button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
-
-  header{
-    display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); flex:none;
-  }
-  h1{font-size:15px; margin:0; font-weight:700}
-  .sub{font-size:11px; color:var(--muted)}
-  .spacer{flex:1}
-  .mini{border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:13px; min-height:40px}
-
-  /* 쓰는 칸 — 크게. 옆 사람이 쓰는 중에도 읽을 수 있어야 한다 */
-  #say{
-    flex:1; min-height:0; width:100%; border:0; outline:0; resize:none;
-    padding:14px 16px; font:inherit; font-size:clamp(26px,7vw,44px); font-weight:600; line-height:1.35;
-    letter-spacing:-.01em; background:var(--bg); color:var(--ink);
-  }
-  #say::placeholder{color:#C7CBD1; font-weight:500}
-
-  /* 큰 버튼 두 개 */
-  .keys{display:flex; gap:8px; padding:8px 12px; flex:none}
-  .key{
-    flex:1; min-height:76px; border-radius:16px; background:var(--key); color:var(--keyink);
-    font-size:22px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px;
-  }
-  .key.ghost{background:var(--soft); color:var(--ink); flex:0 0 34%}
-  .key:active{transform:scale(.98)}
-
-  /* 자주 쓰는 말 */
-  .saved{flex:none; max-height:38vh; overflow-y:auto; padding:0 12px 6px; scrollbar-width:none}
-  .saved::-webkit-scrollbar{display:none}
-  .savedhead{font-size:12px; color:var(--muted); padding:6px 2px}
-  .item{
-    display:flex; align-items:center; gap:10px; width:100%;
-    border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:6px;
-    font-size:clamp(17px,4.4vw,22px); font-weight:600; text-align:left;
-  }
-  .item .t{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .item .st{font-size:20px; color:#D1D5DB; flex:none; padding:0 2px}
-  .item .st.on{color:var(--star)}
-  .item .del{font-size:16px; color:#C7CBD1; flex:none; padding:0 2px}
-
-  footer{
-    flex:none; padding:6px 14px calc(8px + env(safe-area-inset-bottom,0px));
-    border-top:1px solid var(--line); font-size:12px; color:var(--muted); display:flex; gap:10px; align-items:center;
-  }
-
-  /* 보여주기 — 소리 대신 글자로. 조용한 데서 쓴다 */
-  #show{
-    position:fixed; inset:0; background:#fff; z-index:40; display:none;
-    align-items:center; justify-content:center; padding:24px; text-align:center;
-  }
-  #show.on{display:flex}
-  #showTxt{font-size:clamp(34px,11vw,90px); font-weight:800; line-height:1.25; letter-spacing:-.02em}
-  #showHint{position:fixed; bottom:24px; left:0; right:0; font-size:13px; color:var(--muted)}
+  body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+       background:#0B0E12;color:#E9F0F8;
+       font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+       text-align:center;padding:24px}
+  a{color:#5B9BFF;font-size:22px;font-weight:700}
 </style>
 </head>
 <body>
-
-<header>
-  <h1>말해요</h1>
-  <span class="sub">써서 말하기</span>
-  <span class="spacer"></span>
-  <button class="mini" id="showBtn">크게 보여주기</button>
-</header>
-
-<textarea id="say" placeholder="여기에 쓰세요" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
-
-<div class="keys">
-  <button class="key" id="speak">🔊 말하기</button>
-  <button class="key ghost" id="clear">지우기</button>
-</div>
-
-<div class="saved">
-  <div class="savedhead" id="savedHead">자주 쓰는 말</div>
-  <div id="list"></div>
-</div>
-
-<footer>
-  <span id="stat">준비됨</span>
-  <span class="spacer"></span>
-  <button class="mini" id="slower">천천히</button>
-  <button class="mini" id="louder">크게</button>
-</footer>
-
-<div id="show">
-  <div id="showTxt"></div>
-  <div id="showHint">아무 데나 누르면 닫힙니다</div>
-</div>
-
-<script>
-/* ───────── 말하기 ─────────
-   2026-08-16. 장인어른은 손도 다리도 되시고 폰도 잘 쓰신다. 턱 근육만 안 되신다.
-   그래서 눈으로 고르는 판이 아니라 '써서 말하는 것'이 맞다.
-   ⚠️ 손바닥에 글씨를 쓰시는 습관이 있으시다 → 폰 자판을 손글씨 입력으로 바꿔 쓰시면 된다.
-      그건 앱이 아니라 폰 설정이다 (삼성 키보드 → 키보드 목록 → 손글씨). */
-const cfg = Object.assign({rate:0.95, vol:1}, JSON.parse(localStorage.getItem("malhae_say_cfg")||"{}"));
-const saveCfg = ()=>localStorage.setItem("malhae_say_cfg", JSON.stringify(cfg));
-
-let voice=null;
-function pickVoice(){
-  const vs = speechSynthesis.getVoices();
-  voice = vs.find(v=>/ko(-|_)?KR/i.test(v.lang)) || vs.find(v=>/ko/i.test(v.lang)) || null;
-}
-pickVoice(); speechSynthesis.onvoiceschanged = pickVoice;
-
-const sayEl  = document.getElementById("say");
-const stat   = document.getElementById("stat");
-
-function speak(t){
-  t = (t||"").trim();
-  if(!t) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(t);
-  u.lang="ko-KR"; if(voice) u.voice=voice;
-  u.rate = cfg.rate; u.volume = cfg.vol;
-  u.onstart = ()=> stat.textContent = "말하는 중…";
-  u.onend   = ()=> stat.textContent = "준비됨";
-  speechSynthesis.speak(u);
-  remember(t);
-}
-
-/* ───────── 자주 쓰는 말 ─────────
-   한 번 한 말은 남는다. 매번 다시 치지 않게. 별표를 누르면 맨 위에 고정된다. */
-let items = JSON.parse(localStorage.getItem("malhae_say_items")||"[]");
-const saveItems = ()=>localStorage.setItem("malhae_say_items", JSON.stringify(items));
-
-function remember(t){
-  const i = items.findIndex(x=>x.t===t);
-  if(i>=0){ items[i].n++; }
-  else { items.unshift({t, n:1, star:false}); }
-  items = items.slice(0, 60);
-  saveItems(); render();
-}
-
-function render(){
-  const list = document.getElementById("list");
-  const sorted = items.slice().sort((a,b)=> (b.star-a.star) || (b.n-a.n));
-  document.getElementById("savedHead").textContent =
-    sorted.length ? "자주 쓰는 말 — 누르면 바로 말합니다" : "한 번 말한 문장이 여기 쌓입니다";
-  list.innerHTML = "";
-  sorted.forEach(it=>{
-    const row = document.createElement("div"); row.className = "item";
-
-    const star = document.createElement("button");
-    star.className = "st" + (it.star ? " on" : ""); star.textContent = it.star ? "★" : "☆";
-    star.onclick = e => { e.stopPropagation(); it.star = !it.star; saveItems(); render(); };
-
-    const t = document.createElement("button");
-    t.className = "t"; t.textContent = it.t;
-    t.onclick = ()=>{ sayEl.value = it.t; speak(it.t); };
-
-    const del = document.createElement("button");
-    del.className = "del"; del.textContent = "✕";
-    del.onclick = e => { e.stopPropagation(); items = items.filter(x=>x.t!==it.t); saveItems(); render(); };
-
-    row.append(star, t, del);
-    list.appendChild(row);
-  });
-}
-
-document.getElementById("speak").onclick = ()=> speak(sayEl.value);
-document.getElementById("clear").onclick = ()=>{ sayEl.value=""; sayEl.focus(); };
-
-/* 크게 보여주기 — 소리 대신 글자로. 조용한 자리나 시끄러운 자리에서 쓴다 */
-const show = document.getElementById("show");
-document.getElementById("showBtn").onclick = ()=>{
-  const t = sayEl.value.trim(); if(!t) return;
-  document.getElementById("showTxt").textContent = t;
-  show.classList.add("on");
-};
-show.onclick = ()=> show.classList.remove("on");
-
-/* 소리 조절 — 어르신이 직접 누르실 수 있게 버튼으로 */
-document.getElementById("slower").onclick = ()=>{
-  cfg.rate = cfg.rate <= 0.7 ? 1.0 : Math.max(0.6, cfg.rate - 0.15);
-  saveCfg(); stat.textContent = "말 속도 " + cfg.rate.toFixed(2);
-};
-document.getElementById("louder").onclick = ()=>{
-  cfg.vol = cfg.vol >= 1 ? 0.6 : Math.min(1, cfg.vol + 0.2);
-  saveCfg(); stat.textContent = "소리 " + Math.round(cfg.vol*100) + "%";
-};
-
-/* 화면이 꺼지면 다시 켜야 해서 번거롭다 */
-(async ()=>{ try{ await navigator.wakeLock.request("screen"); }catch(e){} })();
-document.addEventListener("visibilitychange", async ()=>{
-  if(document.visibilityState==="visible"){ try{ await navigator.wakeLock.request("screen"); }catch(e){} }
-});
-
-if("serviceWorker" in navigator){ navigator.serviceWorker.register("../sw.js").catch(()=>{}); }
-
-render();
-sayEl.focus();
-</script>
+  <!-- 같은 앱이 두 군데 생겨 형이 헷갈렸다. type 한 곳으로 합쳤다. 2026-08-16 -->
+  <div>
+    <p style="font-size:19px;line-height:1.7">여기 있던 것은 옮겼습니다.<br>아래를 누르세요.</p>
+    <a href="../type/">써서 말하기 열기</a>
+  </div>
 </body>
 </html>

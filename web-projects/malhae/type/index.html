@@ -135,7 +135,17 @@
     <button data-fs="38">크게</button>
     <button data-fs="46">아주 크게</button>
   </div>
-  <p class="note" style="margin-top:16px">
+  <label style="display:block;margin-top:18px">말 빠르기 — <span class="val" id="rateV"></span></label>
+  <input type="range" id="rate" min="0.5" max="1.3" step="0.05" style="width:100%">
+
+  <p class="note" style="margin-top:18px">
+    <b style="color:var(--on)">손으로 쓰는 게 편하시면</b><br>
+    폰 자판을 손글씨로 바꿀 수 있습니다. 앱이 아니라 폰 설정이에요.<br>
+    삼성 폰이면 설정 → 일반 → 키보드 목록 → 손글씨를 켜시면 됩니다.<br>
+    자판 왼쪽 아래 자판 모양을 눌러도 바꿀 수 있어요.
+  </p>
+
+  <p class="note" style="margin-top:14px">
     말이 안 나오면 폰 소리가 꺼져 있는지 보세요.<br>
     저장한 말은 이 폰에만 남습니다. 다른 폰에는 안 갑니다.
   </p>
@@ -216,7 +226,7 @@ function speak(text){
   const u = new SpeechSynthesisUtterance(t);
   if(koVoice) u.voice = koVoice;
   u.lang = "ko-KR";
-  u.rate = 0.95;
+  u.rate = st.rate || 0.95;
   u.pitch = 1.0;
   u.volume = 1.0;
   u.onend = () => flash.classList.remove("show");
@@ -291,6 +301,15 @@ document.getElementById("fsRow").onclick = (e) => {
   const b = e.target.closest("button"); if(!b) return;
   st.fs = Number(b.dataset.fs); save(); applyFs();
 };
+/* 말 빠르기 — 알아듣기 힘들어하시면 천천히 */
+const rateEl = document.getElementById("rate"), rateV = document.getElementById("rateV");
+function applyRate(){
+  rateEl.value = st.rate || 0.95;
+  rateV.textContent = Number(rateEl.value) < 0.8 ? "천천히"
+                    : Number(rateEl.value) > 1.1 ? "빠르게" : "보통";
+}
+rateEl.oninput = () => { st.rate = Number(rateEl.value); save(); applyRate(); };
+
 document.getElementById("setBtn").onclick = () => dlg.showModal();
 document.getElementById("closeBtn").onclick = () => dlg.close();
 
@@ -305,6 +324,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 applyFs();
+applyRate();
 render();
 box.focus();
 
