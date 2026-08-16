@@ -174,7 +174,7 @@ function cellAt(f, c){
 
 /* 이번 라운드에 금이 갈 곳을 고른다. 위층일수록 더 잘 간다 — 흔들림을 크게 받으니까 */
 function makeCracks(){
-  const want = Math.min(floors * COLS - 1, 2 + Math.floor(round * 0.8));
+  const want = Math.min(floors * COLS - 1, 2 + Math.floor(round * 0.6));
   const pool = [];
   for(let f = 0; f < floors; f++)
     for(let c = 0; c < COLS; c++)
@@ -207,9 +207,12 @@ function onTap(e){
   }
 }
 
-function roundTime(){
-  // 라운드가 갈수록 짧아지되 2.2초 밑으로는 안 내린다
-  return Math.max(2200, 5200 - round * 260);
+/* 시간은 '금 간 개수'에 맞춰 준다. 개수만 늘리고 시간을 고정하면
+   몇 판 만에 사람 손으로 불가능해진다 — 어려운 게 아니라 그냥 못 하는 것이 된다.
+   그래서 한 곳당 주는 시간을 조금씩 깎는 방식으로 어렵게 만든다. */
+function roundTime(n){
+  const per = Math.max(280, 700 - round * 18);   // 한 곳당 주는 시간
+  return 900 + n * per;                          // 손이 옮겨가는 여유 900ms
 }
 
 function startRound(){
@@ -221,7 +224,7 @@ function startRound(){
   msgEl.textContent = "금 간 곳을 누르세요";
   playing = true;
 
-  const dur = roundTime();
+  const dur = roundTime(cracks.length);
   tEnd = performance.now() + dur;
   barEl.style.transform = "scaleX(1)";
   clearInterval(timer);
