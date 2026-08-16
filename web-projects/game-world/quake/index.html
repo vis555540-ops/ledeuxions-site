@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>버텨라 — 지진 오기 전에 보강하기 | 게임월드</title>
+<meta name="description" content="금 간 곳을 지진이 오기 전에 보강하세요. 한 군데라도 놓치면 무너집니다. 몇 번째 지진까지 버틸 수 있나요?">
+<meta name="theme-color" content="#10141B">
+<style>
+  :root{
+    --bg:#10141B; --panel:#191F29; --line:#2A3340;
+    --ink:#E8EEF6; --muted:#8C9AAB;
+    --crack:#E0533D; --fixed:#2F9E6B; --steel:#4C8FE0;
+    --gold:#F0B429;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%; margin:0; overflow:hidden}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    display:flex; flex-direction:column; user-select:none;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+
+  .back{
+    position:fixed; top:14px; left:14px; z-index:20;
+    color:var(--muted); text-decoration:none; font-size:14px; font-weight:600;
+    background:rgba(25,31,41,.86); border:1px solid var(--line); border-radius:10px; padding:7px 11px;
+  }
+  .back.r{left:auto; right:14px}
+
+  header{padding:56px 16px 8px; text-align:center; flex:0 0 auto}
+  h1{font-size:19px; margin:0; letter-spacing:-.02em}
+  .sub{font-size:13px; color:var(--muted); margin-top:3px}
+
+  /* 시간 막대 */
+  .barwrap{margin:12px auto 0; width:min(520px,92vw); height:12px;
+           background:var(--panel); border:1px solid var(--line); border-radius:999px; overflow:hidden}
+  .bar{height:100%; width:100%; background:linear-gradient(90deg,var(--fixed),var(--gold),var(--crack));
+       transform-origin:left center}
+  .stats{display:flex; justify-content:center; gap:16px; margin-top:9px; font-size:14px; color:var(--muted);
+         font-variant-numeric:tabular-nums}
+  .stats b{color:var(--ink)}
+
+  /* 건물 */
+  .stage{flex:1; display:flex; align-items:flex-end; justify-content:center; padding:14px 12px 0; min-height:0}
+  #building{display:flex; flex-direction:column-reverse; gap:5px; width:min(520px,92vw); max-height:100%}
+  .floor{display:flex; gap:5px; flex:0 0 auto}
+  .cell{
+    flex:1; height:var(--ch,40px); border-radius:7px;
+    background:#38424F; border:2px solid #46525F;
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px; transition:background .12s, border-color .12s, transform .08s;
+  }
+  .cell.crack{background:#4A2E2C; border-color:var(--crack); cursor:pointer}
+  .cell.crack::after{content:"⚡"; opacity:.9}
+  .cell.fixed{background:#25443A; border-color:var(--fixed)}
+  .cell.fixed::after{content:"✚"; color:#7FE0B0; opacity:.95}
+  .cell.crack:active{transform:scale(.93)}
+  .ground{height:9px; border-radius:4px; background:#5A4A34; margin-top:4px}
+
+  .shake{animation:shake .42s cubic-bezier(.36,.07,.19,.97) both}
+  @keyframes shake{
+    10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)}
+    30%,50%,70%{transform:translateX(-8px)} 40%,60%{transform:translateX(8px)}
+  }
+  .collapse{animation:fall .6s ease-in forwards}
+  @keyframes fall{to{transform:translateY(46px) rotate(3deg); opacity:.15}}
+
+  /* 아래 안내 */
+  footer{flex:0 0 auto; padding:10px 16px 18px; text-align:center; font-size:13.5px; color:var(--muted)}
+
+  /* 덮개 */
+  .over{
+    position:fixed; inset:0; background:rgba(16,20,27,.94); z-index:30;
+    display:flex; align-items:center; justify-content:center; padding:26px; text-align:center;
+  }
+  .over.hide{display:none}
+  .card{max-width:400px}
+  .card h2{font-size:clamp(24px,6vw,32px); margin:0 0 8px; letter-spacing:-.03em}
+  .card p{color:var(--muted); font-size:14.5px; line-height:1.75; margin:0 0 6px}
+  .big{
+    margin-top:18px; background:var(--steel); color:#06121F; border:0; border-radius:14px;
+    padding:16px 30px; font-size:18px; font-weight:800; cursor:pointer; font-family:inherit;
+  }
+  .rank{margin-top:14px; font-size:14px; color:var(--gold); font-weight:700; min-height:20px}
+  .tip{margin-top:16px; font-size:13px; color:#66717F; line-height:1.7}
+</style>
+</head>
+<body>
+
+<a class="back" href="../">← 게임월드</a>
+<a class="back r" href="../ranking/">🏆 순위</a>
+
+<header>
+  <h1>버텨라</h1>
+  <div class="sub">지진이 오기 전에 금 간 곳을 눌러 보강하세요</div>
+  <div class="barwrap"><div class="bar" id="bar"></div></div>
+  <div class="stats">
+    <span>지진 <b id="round">1</b>번째</span>
+    <span>남은 곳 <b id="left">0</b></span>
+    <span>최고 <b id="best">0</b></span>
+  </div>
+</header>
+
+<div class="stage"><div id="building"></div></div>
+
+<footer id="msg">금 간 칸을 누르면 보강됩니다</footer>
+
+<div class="over" id="over">
+  <div class="card">
+    <h2 id="ot">버텨라</h2>
+    <p id="op">건물에 금이 갑니다.<br>지진이 오기 전에 전부 보강하세요.<br>한 군데라도 남으면 무너집니다.</p>
+    <div class="rank" id="orank"></div>
+    <button class="big" id="ob">시작</button>
+    <div class="tip">층이 높아질수록 시간이 짧아집니다.<br>실제 건물도 그렇습니다 — 위층이 흔들림을 더 크게 받습니다.</div>
+  </div>
+</div>
+
+<script src="../arcade.js"></script>
+<script>
+/* 버텨라 — 지진 오기 전 보강하기
+   형이 하는 일(내진 보강)을 게임으로 옮겼다. 2026-08-17 새벽.
+   규칙은 단순하다: 금 간 곳을 시간 안에 전부 누르면 버티고, 하나라도 놓치면 무너진다. */
+
+const buildingEl = document.getElementById("building");
+const barEl   = document.getElementById("bar");
+const roundEl = document.getElementById("round");
+const leftEl  = document.getElementById("left");
+const bestEl  = document.getElementById("best");
+const msgEl   = document.getElementById("msg");
+const over    = document.getElementById("over");
+const ot = document.getElementById("ot"), op = document.getElementById("op");
+const ob = document.getElementById("ob"), orank = document.getElementById("orank");
+
+const COLS = 4;
+const BEST_KEY = "gw_quake_best";
+let best = Number(localStorage.getItem(BEST_KEY) || 0);
+bestEl.textContent = best;
+
+let round = 0, floors = 2, cracks = [], timer = null, tEnd = 0, playing = false;
+
+/* 층수가 늘면 칸이 작아진다. 화면 밖으로 나가면 못 누른다 */
+function cellHeight(n){
+  const stage = document.querySelector(".stage").clientHeight - 20;
+  return Math.max(22, Math.min(44, Math.floor(stage / n) - 7));
+}
+
+function build(){
+  buildingEl.innerHTML = "";
+  const ch = cellHeight(floors);
+  for(let f = 0; f < floors; f++){
+    const row = document.createElement("div");
+    row.className = "floor";
+    row.dataset.floor = f;
+    for(let c = 0; c < COLS; c++){
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.style.setProperty("--ch", ch + "px");
+      cell.dataset.f = f; cell.dataset.c = c;
+      cell.addEventListener("pointerdown", onTap);
+      row.appendChild(cell);
+    }
+    buildingEl.appendChild(row);
+  }
+  const g = document.createElement("div");
+  g.className = "ground";
+  buildingEl.appendChild(g);
+}
+
+function cellAt(f, c){
+  return buildingEl.querySelector(`.cell[data-f="${f}"][data-c="${c}"]`);
+}
+
+/* 이번 라운드에 금이 갈 곳을 고른다. 위층일수록 더 잘 간다 — 흔들림을 크게 받으니까 */
+function makeCracks(){
+  const want = Math.min(floors * COLS - 1, 2 + Math.floor(round * 0.8));
+  const pool = [];
+  for(let f = 0; f < floors; f++)
+    for(let c = 0; c < COLS; c++)
+      // 위층 가중치
+      for(let k = 0; k <= f; k++) pool.push([f,c]);
+
+  const chosen = new Set();
+  while(chosen.size < want && pool.length){
+    const [f,c] = pool[Math.floor(Math.random() * pool.length)];
+    chosen.add(f + "," + c);
+  }
+  cracks = [...chosen].map(s => s.split(",").map(Number));
+  cracks.forEach(([f,c]) => cellAt(f,c)?.classList.add("crack"));
+  leftEl.textContent = cracks.length;
+}
+
+function onTap(e){
+  if(!playing) return;
+  const el = e.currentTarget;
+  if(!el.classList.contains("crack")) return;
+  el.classList.remove("crack");
+  el.classList.add("fixed");
+  const remain = buildingEl.querySelectorAll(".cell.crack").length;
+  leftEl.textContent = remain;
+  beep(660, 0.05);
+  if(remain === 0){
+    // 다 고쳤으면 기다릴 것 없이 바로 지진
+    clearInterval(timer);
+    setTimeout(() => quake(), 260);
+  }
+}
+
+function roundTime(){
+  // 라운드가 갈수록 짧아지되 2.2초 밑으로는 안 내린다
+  return Math.max(2200, 5200 - round * 260);
+}
+
+function startRound(){
+  round++;
+  roundEl.textContent = round;
+  if(round % 2 === 0) floors = Math.min(9, floors + 1);
+  build();
+  makeCracks();
+  msgEl.textContent = "금 간 곳을 누르세요";
+  playing = true;
+
+  const dur = roundTime();
+  tEnd = performance.now() + dur;
+  barEl.style.transform = "scaleX(1)";
+  clearInterval(timer);
+  timer = setInterval(() => {
+    const left = tEnd - performance.now();
+    const r = Math.max(0, left / dur);
+    barEl.style.transform = "scaleX(" + r + ")";
+    if(left <= 0){ clearInterval(timer); quake(); }
+  }, 40);
+}
+
+function quake(){
+  playing = false;
+  msgEl.textContent = "지진!";
+  buildingEl.classList.add("shake");
+  rumble();
+  setTimeout(() => buildingEl.classList.remove("shake"), 460);
+
+  const missed = [...buildingEl.querySelectorAll(".cell.crack")];
+  setTimeout(() => {
+    if(missed.length){
+      // 못 고친 층은 무너진다
+      const floorsHit = new Set(missed.map(el => el.dataset.f));
+      floorsHit.forEach(f => {
+        buildingEl.querySelector(`.floor[data-floor="${f}"]`)?.classList.add("collapse");
+      });
+      setTimeout(() => gameOver(missed.length), 620);
+    }else{
+      msgEl.textContent = "버텼습니다";
+      beep(880, 0.09);
+      setTimeout(startRound, 620);
+    }
+  }, 440);
+}
+
+async function gameOver(missed){
+  const score = round - 1;          // 버텨낸 지진 횟수
+  playing = false;
+  if(score > best){
+    best = score;
+    localStorage.setItem(BEST_KEY, best);
+    bestEl.textContent = best;
+  }
+  ot.textContent = "무너졌습니다";
+  op.innerHTML =
+    `보강 못 한 곳이 <b>${missed}</b>군데 있었습니다.<br>` +
+    `버텨낸 지진 <b>${score}</b>번 · 최고 <b>${best}</b>번`;
+  ob.textContent = "다시";
+  orank.textContent = "";
+  over.classList.remove("hide");
+
+  if(score > 0 && window.Arcade){
+    try{
+      const r = await Arcade.submit("quake", score);
+      if(r && r.rank) orank.textContent = `전체 ${r.total}명 중 ${r.rank}위`;
+    }catch(e){}
+  }
+}
+
+/* 소리 — 파일 없이 만든다 */
+let ac = null;
+function actx(){ if(!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); return ac; }
+function beep(freq, dur){
+  try{
+    const c = actx(), o = c.createOscillator(), g = c.createGain();
+    o.frequency.value = freq; o.type = "triangle";
+    g.gain.setValueAtTime(0.06, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
+    o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + dur);
+  }catch(e){}
+}
+function rumble(){
+  try{
+    const c = actx();
+    const buf = c.createBuffer(1, c.sampleRate * 0.45, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) * 0.5;
+    const s = c.createBufferSource(); s.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 190;
+    s.connect(f); f.connect(c.destination); s.start();
+  }catch(e){}
+}
+
+ob.onclick = () => {
+  if(window.Arcade) Arcade.ensureName();
+  round = 0; floors = 2;
+  over.classList.add("hide");
+  startRound();
+};
+
+/* 화면이 바뀌어도 게임을 다시 만들지 않는다 — 진행 중이면 고친 것이 다 날아간다.
+   칸 높이만 새로 맞춘다 */
+window.addEventListener("resize", () => {
+  const ch = cellHeight(floors);
+  buildingEl.querySelectorAll(".cell").forEach(el => el.style.setProperty("--ch", ch + "px"));
+});
+</script>
+</body>
+</html>
