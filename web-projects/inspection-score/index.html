@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>소규모 노후건축물 점검 점수·등급 계산기 | LeDeuxions</title>
+<meta name="description" content="소규모 노후건축물 점검표의 중항목 평균·가중치를 적용해 대항목 점수와 등급(우수·양호·보통·미흡·불량)을 자동 계산합니다. 계산 과정을 그대로 보여줘 검산할 수 있습니다.">
+<link rel="canonical" href="https://ledeuxions.com/web-projects/inspection-score/">
+<meta property="og:title" content="소규모 노후건축물 점검 점수·등급 계산기">
+<meta property="og:description" content="평균이냐 합계냐, 대지·구조물·철골은 묶느냐. 매뉴얼대로 계산하고 과정을 보여줍니다.">
+<meta property="og:type" content="website">
+<style>
+  :root{
+    --bg:#F6F7F9; --card:#FFFFFF; --ink:#1B2430; --muted:#6B7887; --line:#E2E6EC;
+    --brand:#1F5FA8;
+    --ok:#1E9E62; --warn:#C8801A; --bad:#C0392B;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+    line-height:1.65; letter-spacing:-.01em;
+  }
+  .wrap{max-width:960px; margin:0 auto; padding:28px 18px 80px}
+
+  header h1{font-size:clamp(22px,4.2vw,30px); margin:0 0 6px; letter-spacing:-.03em}
+  header p{margin:0; color:var(--muted); font-size:15px}
+  .lead{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+    padding:16px 18px; margin:20px 0 26px; font-size:14.5px; color:#3A4552;
+  }
+  .lead b{color:var(--ink)}
+  .lead ul{margin:10px 0 0; padding-left:18px}
+  .lead li{margin:4px 0}
+
+  /* 대항목 */
+  .major{margin-bottom:26px}
+  .major > h2{
+    font-size:17px; margin:0 0 10px; display:flex; align-items:center; gap:10px;
+  }
+  .major > h2 .cap{
+    font-size:12px; font-weight:600; color:var(--muted);
+    border:1px solid var(--line); background:var(--card); border-radius:999px; padding:3px 10px;
+  }
+
+  /* 중항목 카드 */
+  .mid{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--r);
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .mid-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px}
+  .mid-name{font-weight:700; font-size:15.5px}
+  .w{font-size:12.5px; color:var(--muted); background:#F0F3F7; border-radius:999px; padding:2px 9px}
+  .mid-score{margin-left:auto; font-size:14px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .mid-score b{color:var(--brand); font-size:16px}
+
+  .rows{display:flex; flex-direction:column; gap:7px}
+  .row{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .row .no{width:26px; color:var(--muted); font-size:13px; flex:0 0 auto; font-variant-numeric:tabular-nums}
+  .opts{display:flex; gap:5px; flex-wrap:wrap; flex:1}
+  .opt{
+    border:1px solid var(--line); background:#FBFCFD; color:#54606E;
+    border-radius:9px; padding:7px 11px; font-size:13.5px; font-weight:600; cursor:pointer;
+    font-family:inherit;
+  }
+  .opt:hover{border-color:#C7D2DF}
+  .opt.on{background:var(--brand); border-color:var(--brand); color:#fff}
+  .opt.na.on{background:#7A8796; border-color:#7A8796}
+  .del{border:0; background:transparent; color:#B4BDC7; font-size:16px; cursor:pointer; padding:4px 6px}
+  .del:hover{color:var(--bad)}
+  .add{
+    margin-top:9px; border:1px dashed #C7D2DF; background:transparent; color:var(--muted);
+    border-radius:9px; padding:8px 12px; font-size:13.5px; cursor:pointer; font-family:inherit; width:100%;
+  }
+  .add:hover{border-color:var(--brand); color:var(--brand)}
+
+  /* 결과 */
+  .result{
+    position:sticky; bottom:0; background:var(--card);
+    border:1px solid var(--line); border-radius:var(--r);
+    padding:16px 18px; margin-top:26px; box-shadow:0 -6px 24px rgba(20,30,45,.07);
+  }
+  .rgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px}
+  .rbox{border:1px solid var(--line); border-radius:11px; padding:12px 14px}
+  .rbox .t{font-size:13px; color:var(--muted); margin-bottom:2px}
+  .rbox .v{font-size:26px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.02em}
+  .rbox .g{font-size:14px; font-weight:700; margin-top:2px}
+  .g.우수,.g.양호{color:var(--ok)} .g.보통{color:var(--warn)} .g.미흡,.g.불량{color:var(--bad)}
+
+  details{margin-top:14px; border-top:1px solid var(--line); padding-top:12px}
+  summary{cursor:pointer; font-size:14px; font-weight:600; color:var(--brand)}
+  .calc{font-size:13.5px; color:#48535F; font-variant-numeric:tabular-nums; margin-top:8px; white-space:pre-wrap; line-height:1.8}
+
+  .btns{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap}
+  .btn{
+    border:1px solid var(--line); background:#FBFCFD; color:var(--ink);
+    border-radius:10px; padding:10px 15px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;
+  }
+  .btn.pri{background:var(--brand); border-color:var(--brand); color:#fff}
+
+  footer{margin-top:40px; padding-top:22px; border-top:1px solid var(--line); font-size:13.5px; color:var(--muted)}
+  footer a{color:var(--brand)}
+  .note{background:#FFF8E8; border:1px solid #F0E0BC; border-radius:11px; padding:12px 14px; font-size:13.5px; color:#6B5520; margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>소규모 노후건축물 점검 점수·등급 계산기</h1>
+  <p>세부항목만 누르면 중항목 평균 · 가중치 · 대항목 점수 · 등급까지 계산합니다.</p>
+</header>
+
+<div class="lead">
+  <b>이 계산에서 자주 틀리는 세 가지</b>
+  <ul>
+    <li>중항목 점수는 세부항목 점수의 <b>평균</b>에 가중치를 곱한 값입니다. 합계가 아닙니다.</li>
+    <li><b>대지·구조물·철골은 묶어서</b> 하나의 중항목으로 산정합니다.</li>
+    <li><b>해당없음</b>은 0점이 아니라 <b>평균 낼 때 개수에서 빼는 것</b>입니다.</li>
+  </ul>
+</div>
+
+<div id="majors"></div>
+
+<div class="result">
+  <div class="rgrid" id="rgrid"></div>
+
+  <details>
+    <summary>계산 과정 보기 (검산용)</summary>
+    <div class="calc" id="calc"></div>
+  </details>
+
+  <div class="btns">
+    <button class="btn pri" id="copyBtn">결과 복사</button>
+    <button class="btn" id="resetBtn">전부 지우기</button>
+  </div>
+</div>
+
+<div class="note">
+  이 계산기는 <b>점검표 작성 매뉴얼의 산식(표2 가중치 · 표3 등급)</b>을 그대로 옮긴 것입니다.
+  다만 최종 판단과 책임은 점검자에게 있습니다. 제출 전 반드시 매뉴얼 원문과 대조하세요.
+  서식이 개정되면 가중치가 달라질 수 있습니다.
+</div>
+
+<footer>
+  현장에서 매번 손으로 계산하다 틀리는 게 아까워서 만들었습니다.
+  같은 일 하시는 분께 도움이 되면 좋겠습니다. —
+  <a href="https://ledeuxions.com/">LeDeuxions</a>
+  · <a href="https://ledeuxions.com/notes/cad-hwp-vector/">캐드 도면을 한글에 벡터로 넣는 법</a>
+</footer>
+
+</div>
+
+<script>
+/* 소규모 노후건축물 점검 점수·등급 계산기
+   산식은 점검표 작성 매뉴얼 표2·표3 원문 기준이다.
+   - 세부항목 점수: 우수10 양호8 보통6 미흡4 불량2, 해당없음은 평균 모수에서 제외
+   - 중항목 점수 = 평균 × 가중치 (소수점 2자리)
+   - 대항목 점수 = 중항목 점수 합 (가중치 합이 10이라 만점 100)
+   - 등급: 90이상 우수 / 75이상 양호 / 60이상 보통 / 50이상 미흡 / 50미만 불량 */
+
+const SCORE = { 우수:10, 양호:8, 보통:6, 미흡:4, 불량:2 };
+const OPTS  = ["우수","양호","보통","미흡","불량","해당없음"];
+
+const MAJORS = [
+  { name:"구조안전", mids:[
+      { key:"structure", name:"대지 · 구조물 · 철골", w:6, note:"묶어서 산정" },
+      { key:"finish",    name:"마감",               w:2 },
+      { key:"living",    name:"생활",               w:2 },
+  ]},
+  { name:"화재안전", mids:[
+      { key:"escape", name:"피난", w:4 },
+      { key:"fire",   name:"내화", w:3 },
+      { key:"fight",  name:"소방", w:3 },
+  ]},
+  { name:"에너지성능 등", mids:[
+      { key:"insul",  name:"단열",   w:5 },
+      { key:"window", name:"창호",   w:2 },
+      { key:"elec",   name:"전기설비", w:3 },
+  ]},
+];
+
+// 중항목별 세부항목 선택값. null = 아직 안 고름
+const state = {};
+MAJORS.forEach(M => M.mids.forEach(m => state[m.key] = [null, null, null]));
+
+const grade = s =>
+  s >= 90 ? "우수" : s >= 75 ? "양호" : s >= 60 ? "보통" : s >= 50 ? "미흡" : "불량";
+
+/* 중항목 하나 계산 — 해당없음은 개수에서 뺀다 */
+function calcMid(m){
+  const picked = state[m.key].filter(v => v !== null);
+  const counted = picked.filter(v => v !== "해당없음");
+  if(!counted.length) return { avg:null, score:0, n:0, total:picked.length };
+  const sum = counted.reduce((a,v) => a + SCORE[v], 0);
+  const avg = sum / counted.length;
+  return {
+    avg,
+    score: Math.round(avg * m.w * 100) / 100,   // 소수점 2자리
+    n: counted.length,
+    total: picked.length,
+    sum
+  };
+}
+
+function render(){
+  const box = document.getElementById("majors");
+  box.innerHTML = "";
+
+  MAJORS.forEach(M => {
+    const sec = document.createElement("section");
+    sec.className = "major";
+
+    const h = document.createElement("h2");
+    h.textContent = M.name;
+    const cap = document.createElement("span");
+    cap.className = "cap";
+    cap.textContent = "가중치 합 10 · 만점 100";
+    h.appendChild(cap);
+    sec.appendChild(h);
+
+    M.mids.forEach(m => {
+      const r = calcMid(m);
+      const card = document.createElement("div");
+      card.className = "mid";
+
+      const head = document.createElement("div");
+      head.className = "mid-head";
+      head.innerHTML =
+        `<span class="mid-name">${m.name}</span>` +
+        `<span class="w">가중치 ${m.w}</span>` +
+        (m.note ? `<span class="w">${m.note}</span>` : "") +
+        `<span class="mid-score">` +
+          (r.avg === null
+            ? "—"
+            : `평균 ${r.avg.toFixed(2)} × ${m.w} = <b>${r.score.toFixed(2)}</b>`) +
+        `</span>`;
+      card.appendChild(head);
+
+      const rows = document.createElement("div");
+      rows.className = "rows";
+
+      state[m.key].forEach((val, i) => {
+        const row = document.createElement("div");
+        row.className = "row";
+
+        const no = document.createElement("span");
+        no.className = "no";
+        no.textContent = (i + 1) + ".";
+        row.appendChild(no);
+
+        const opts = document.createElement("div");
+        opts.className = "opts";
+        OPTS.forEach(o => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "opt" + (o === "해당없음" ? " na" : "") + (val === o ? " on" : "");
+          b.textContent = o;
+          b.onclick = () => {
+            state[m.key][i] = (state[m.key][i] === o) ? null : o;
+            render();
+          };
+          opts.appendChild(b);
+        });
+        row.appendChild(opts);
+
+        if(state[m.key].length > 1){
+          const del = document.createElement("button");
+          del.className = "del";
+          del.type = "button";
+          del.textContent = "✕";
+          del.title = "이 세부항목 지우기";
+          del.onclick = () => { state[m.key].splice(i,1); render(); };
+          row.appendChild(del);
+        }
+        rows.appendChild(row);
+      });
+      card.appendChild(rows);
+
+      const add = document.createElement("button");
+      add.className = "add";
+      add.type = "button";
+      add.textContent = "＋ 세부항목 추가";
+      add.onclick = () => { state[m.key].push(null); render(); };
+      card.appendChild(add);
+
+      sec.appendChild(card);
+    });
+
+    box.appendChild(sec);
+  });
+
+  renderResult();
+}
+
+function renderResult(){
+  const grid = document.getElementById("rgrid");
+  const calc = document.getElementById("calc");
+  grid.innerHTML = "";
+  let lines = [];
+
+  MAJORS.forEach(M => {
+    let total = 0, any = false;
+    lines.push(`【${M.name}】`);
+    M.mids.forEach(m => {
+      const r = calcMid(m);
+      if(r.avg === null){
+        lines.push(`  ${m.name} — 아직 고른 항목 없음`);
+        return;
+      }
+      any = true;
+      total += r.score;
+      const na = r.total - r.n;
+      lines.push(
+        `  ${m.name}: (${r.sum} ÷ ${r.n}) = ${r.avg.toFixed(2)}` +
+        ` × 가중치 ${m.w} = ${r.score.toFixed(2)}` +
+        (na ? `   ※ 해당없음 ${na}개는 개수에서 뺌` : "")
+      );
+    });
+    total = Math.round(total * 100) / 100;
+    lines.push(`  ── 합계 ${total.toFixed(2)}점 → ${any ? grade(total) : "—"}`);
+    lines.push("");
+
+    const b = document.createElement("div");
+    b.className = "rbox";
+    b.innerHTML =
+      `<div class="t">${M.name}</div>` +
+      `<div class="v">${any ? total.toFixed(2) : "—"}</div>` +
+      `<div class="g ${any ? grade(total) : ""}">${any ? grade(total) : "입력 전"}</div>`;
+    grid.appendChild(b);
+  });
+
+  calc.textContent = lines.join("\n");
+}
+
+document.getElementById("resetBtn").onclick = () => {
+  MAJORS.forEach(M => M.mids.forEach(m => state[m.key] = [null,null,null]));
+  render();
+};
+
+document.getElementById("copyBtn").onclick = async () => {
+  const txt = document.getElementById("calc").textContent;
+  try{
+    await navigator.clipboard.writeText(txt);
+    const b = document.getElementById("copyBtn");
+    b.textContent = "복사했습니다";
+    setTimeout(()=> b.textContent = "결과 복사", 1400);
+  }catch(e){
+    alert("복사가 안 되면 계산 과정 보기를 열어 직접 선택해 복사하세요.");
+  }
+};
+
+render();
+</script>
+</body>
+</html>
