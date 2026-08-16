@@ -1,0 +1,12 @@
+{
+  "name": "말해요 — 써서 말하기",
+  "short_name": "써서 말하기",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0B0E12",
+  "theme_color": "#0B0E12",
+  "orientation": "portrait",
+  "icons": [
+    {"src":"../icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ]
+}

@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>말해요 — 써서 말하기</title>
+<meta name="theme-color" content="#0B0E12">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root{
+    --bg:#0B0E12; --panel:#141A22; --panel2:#1B232E;
+    --on:#E9F0F8; --muted:#93A2B5; --line:#28313D;
+    --key:#5B9BFF; --key2:#2B6FD1; --ok:#3DD68C;
+    --fs:30px;                 /* 글자 크기. 아래 버튼으로 바뀐다 */
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--on);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    display:flex; flex-direction:column;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    overscroll-behavior:none;
+  }
+
+  header{
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    border-bottom:1px solid var(--line); flex:0 0 auto;
+  }
+  header .t{font-size:15px; color:var(--muted); font-weight:600; letter-spacing:-.01em}
+  header .sp{flex:1}
+  .mini{
+    background:var(--panel2); color:var(--on); border:1px solid var(--line);
+    border-radius:12px; padding:9px 13px; font-size:15px; font-weight:600;
+  }
+
+  /* ── 쓰는 곳 ── */
+  #box{
+    flex:0 0 auto; margin:12px; padding:16px;
+    background:var(--panel); border:2px solid var(--line); border-radius:18px;
+    font-size:var(--fs); line-height:1.4; font-weight:600; color:var(--on);
+    width:calc(100% - 24px); min-height:2.6em; max-height:34vh;
+    resize:none; outline:none; letter-spacing:-.01em;
+  }
+  #box:focus{border-color:var(--key)}
+  #box::placeholder{color:#5C6B7E; font-weight:500}
+
+  /* ── 말하기 ── */
+  .row{display:flex; gap:10px; padding:0 12px; flex:0 0 auto}
+  .big{
+    flex:1; background:linear-gradient(180deg,var(--key),var(--key2));
+    color:#06121F; border:0; border-radius:18px;
+    padding:20px 12px; font-size:26px; font-weight:800; letter-spacing:-.02em;
+    box-shadow:0 6px 18px rgba(43,111,209,.35);
+  }
+  .big:active{transform:translateY(2px)}
+  .side{
+    background:var(--panel2); color:var(--on); border:1px solid var(--line);
+    border-radius:18px; padding:20px 18px; font-size:20px; font-weight:700;
+  }
+
+  /* ── 자주 쓰는 말 ── */
+  .lbl{
+    display:flex; align-items:center; gap:8px;
+    padding:16px 14px 8px; font-size:14px; color:var(--muted); font-weight:700; flex:0 0 auto;
+  }
+  .lbl .sp{flex:1}
+  #saved{
+    flex:1 1 auto; min-height:0; overflow-y:auto;
+    padding:0 12px 16px; display:flex; flex-direction:column; gap:9px;
+    scrollbar-width:none;
+  }
+  #saved::-webkit-scrollbar{display:none}
+  .item{
+    display:flex; align-items:center; gap:10px;
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:15px 14px; font-size:22px; font-weight:700; letter-spacing:-.01em;
+    text-align:left; color:var(--on); width:100%;
+  }
+  .item:active{background:var(--panel2)}
+  .item .x{
+    margin-left:auto; background:transparent; border:0; color:#6F8098;
+    font-size:20px; padding:6px 4px; font-weight:700;
+  }
+  .empty{color:var(--muted); font-size:16px; padding:10px 4px; line-height:1.7}
+
+  /* ── 말하는 중 표시 ── */
+  #flash{
+    position:fixed; inset:0; background:rgba(11,14,18,.94); z-index:40;
+    display:none; align-items:center; justify-content:center; padding:28px; text-align:center;
+  }
+  #flash.show{display:flex}
+  #flashT{font-size:clamp(30px,9vw,54px); font-weight:800; line-height:1.35; letter-spacing:-.02em}
+
+  dialog{
+    border:0; border-radius:20px; background:var(--panel); color:var(--on);
+    padding:20px; width:min(92vw,420px);
+  }
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  .note{color:var(--muted); font-size:14px; line-height:1.7; margin:6px 0 14px}
+  .fsrow{display:flex; gap:8px; margin-bottom:6px}
+  .fsrow button{flex:1; background:var(--panel2); color:var(--on); border:1px solid var(--line); border-radius:12px; padding:12px; font-weight:700}
+  .fsrow button.on{background:var(--key); color:#06121F; border-color:var(--key)}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="t">써서 말하기</span>
+  <span class="sp"></span>
+  <button class="mini" id="setBtn">설정</button>
+</header>
+
+<textarea id="box" placeholder="여기에 쓰세요" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>
+
+<div class="row">
+  <button class="big" id="sayBtn">말하기</button>
+  <button class="side" id="saveBtn">저장</button>
+  <button class="side" id="clrBtn">지움</button>
+</div>
+
+<div class="lbl">
+  <span>자주 쓰는 말 — 누르면 바로 말합니다</span>
+</div>
+<div id="saved"></div>
+
+<div id="flash"><div id="flashT"></div></div>
+
+<dialog id="dlg">
+  <h1 style="font-size:17px;margin:0 0 2px">설정</h1>
+  <p class="note">글자가 작으면 크게 하세요. 바로 바뀝니다.</p>
+  <div class="fsrow" id="fsRow">
+    <button data-fs="24">작게</button>
+    <button data-fs="30">보통</button>
+    <button data-fs="38">크게</button>
+    <button data-fs="46">아주 크게</button>
+  </div>
+  <p class="note" style="margin-top:16px">
+    말이 안 나오면 폰 소리가 꺼져 있는지 보세요.<br>
+    저장한 말은 이 폰에만 남습니다. 다른 폰에는 안 갑니다.
+  </p>
+  <button class="mini" id="closeBtn" style="width:100%;padding:14px;margin-top:6px">닫기</button>
+</dialog>
+
+<script>
+/* 말해요 — 써서 말하기
+   장인어른은 손이 되시고 걸으신다. 못 하시는 건 말이다(턱 근육).
+   그래서 눈으로 고르는 판이 아니라 자판이 맞다. 2026-08-16 형이 직접 보고 알려줌. */
+
+const box   = document.getElementById("box");
+const sayBtn= document.getElementById("sayBtn");
+const saveBtn=document.getElementById("saveBtn");
+const clrBtn= document.getElementById("clrBtn");
+const savedEl=document.getElementById("saved");
+const flash = document.getElementById("flash");
+const flashT= document.getElementById("flashT");
+const dlg   = document.getElementById("dlg");
+
+/* ───────── 저장 ───────── */
+const KEY = "malhae_type_v1";
+const DEFAULTS = [
+  "여보",
+  "와봐",
+  "여기",
+  "여기 봐봐",
+  "아니야 다른데야",
+  "귓구멍",
+  "입안",
+  "입술",
+  "목",
+  "물",
+  "화장실",
+  "아파요",
+  "괜찮아요",
+  "고마워요"
+];
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { list: DEFAULTS.slice(), fs: 30 };
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
+}
+let st = load();
+if(!Array.isArray(st.list)) st = { list: DEFAULTS.slice(), fs: 30 };
+if(!st.fs) st.fs = 30;
+
+/* ───────── 말하기 ─────────
+   폰 목소리를 쓴다. 인터넷 없어도 된다.
+   한국어 목소리를 찾아 쓰고, 없으면 폰 기본으로 그냥 말한다. */
+let voices = [], koVoice = null;
+function pickVoice(){
+  voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+  koVoice = voices.find(v => /^ko(-|_)/i.test(v.lang)) || null;
+}
+pickVoice();
+if(window.speechSynthesis) speechSynthesis.onvoiceschanged = pickVoice;
+
+function speak(text){
+  const t = (text || "").trim();
+  if(!t) return;
+
+  flashT.textContent = t;
+  flash.classList.add("show");
+
+  if(!window.speechSynthesis){
+    // 목소리가 없는 폰이면 글자만 크게 띄운다. 그것만으로도 보여줄 수 있다.
+    setTimeout(()=>flash.classList.remove("show"), 2600);
+    return;
+  }
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const u = new SpeechSynthesisUtterance(t);
+  if(koVoice) u.voice = koVoice;
+  u.lang = "ko-KR";
+  u.rate = 0.95;
+  u.pitch = 1.0;
+  u.volume = 1.0;
+  u.onend = () => flash.classList.remove("show");
+  u.onerror = () => flash.classList.remove("show");
+  speechSynthesis.speak(u);
+  // 혹시 끝났다는 신호가 안 오는 폰이 있다. 글자가 영원히 안 사라지면 안 된다.
+  setTimeout(()=>flash.classList.remove("show"), Math.max(2600, t.length * 220));
+}
+flash.onclick = ()=>{ try{ speechSynthesis.cancel(); }catch(e){} flash.classList.remove("show"); };
+
+/* ───────── 자주 쓰는 말 ───────── */
+function render(){
+  savedEl.innerHTML = "";
+  if(!st.list.length){
+    const p = document.createElement("div");
+    p.className = "empty";
+    p.textContent = "아직 없습니다. 위에 쓰고 저장을 누르면 여기에 쌓입니다.";
+    savedEl.appendChild(p);
+    return;
+  }
+  st.list.forEach((txt, i) => {
+    const row = document.createElement("button");
+    row.className = "item";
+    row.type = "button";
+
+    const span = document.createElement("span");
+    span.textContent = txt;
+    row.appendChild(span);
+
+    const x = document.createElement("button");
+    x.className = "x";
+    x.type = "button";
+    x.textContent = "✕";
+    x.onclick = (e) => {
+      e.stopPropagation();
+      st.list.splice(i, 1);
+      save(); render();
+    };
+    row.appendChild(x);
+
+    row.onclick = () => speak(txt);
+    savedEl.appendChild(row);
+  });
+}
+
+/* ───────── 버튼 ───────── */
+sayBtn.onclick = () => speak(box.value);
+
+saveBtn.onclick = () => {
+  const t = box.value.trim();
+  if(!t) return;
+  if(!st.list.includes(t)) st.list.unshift(t);   // 방금 쓴 말이 맨 위로
+  save(); render();
+  saveBtn.textContent = "됐어요";
+  setTimeout(()=> saveBtn.textContent = "저장", 1200);
+};
+
+clrBtn.onclick = () => { box.value = ""; box.focus(); };
+
+/* 엔터를 치면 바로 말한다. 줄바꿈이 필요한 사람은 거의 없다 */
+box.addEventListener("keydown", (e) => {
+  if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); speak(box.value); }
+});
+
+/* ───────── 글자 크기 ───────── */
+function applyFs(){
+  document.documentElement.style.setProperty("--fs", st.fs + "px");
+  document.querySelectorAll("#fsRow button").forEach(b =>
+    b.classList.toggle("on", Number(b.dataset.fs) === st.fs));
+}
+document.getElementById("fsRow").onclick = (e) => {
+  const b = e.target.closest("button"); if(!b) return;
+  st.fs = Number(b.dataset.fs); save(); applyFs();
+};
+document.getElementById("setBtn").onclick = () => dlg.showModal();
+document.getElementById("closeBtn").onclick = () => dlg.close();
+
+/* ───────── 화면이 꺼지면 곤란하다 ───────── */
+let wake = null;
+async function keepAwake(){
+  try{ if("wakeLock" in navigator) wake = await navigator.wakeLock.request("screen"); }catch(e){}
+}
+keepAwake();
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "visible") keepAwake();
+});
+
+applyFs();
+render();
+box.focus();
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
