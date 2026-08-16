@@ -69,6 +69,24 @@
     display:flex; align-items:center; justify-content:center; font-size:38px; font-weight:700; color:var(--on);
   }
   #cal .arrow{font-size:64px; color:#5B9BFF}
+
+  /* ★ 볼 지점(타겟).
+     2026-08-16 형이 장인어른과 시험하며: "보이는 곳에 점이 있어야 해. 강제로 시선 옮기기 어려워"
+     맞는 말이다. 사람 눈은 '위를 보세요' 라는 말만으로는 안 올라간다. 볼 것이 있어야 올라간다.
+     그래서 화면 맨 위·가운데·맨 아래에 실제로 점을 띄우고 그걸 보게 한다. */
+  #calDot{
+    position:fixed; left:50%; transform:translateX(-50%);
+    width:64px; height:64px; border-radius:50%;
+    background:#5B9BFF; box-shadow:0 0 0 10px rgba(91,155,255,.22), 0 0 40px rgba(91,155,255,.6);
+    display:none; z-index:60;
+    transition:top .45s cubic-bezier(.4,0,.2,1);
+    animation:calPulse 1.1s ease-in-out infinite;
+  }
+  #calDot.show{display:block}
+  @keyframes calPulse{
+    0%,100%{ transform:translateX(-50%) scale(1) }
+    50%    { transform:translateX(-50%) scale(1.18) }
+  }
   /* 목록이 화면보다 길면 따라 움직인다. 스크롤 막대는 감춘다 — 볼 사람이 손을 못 쓴다 */
   .list{flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; overflow-y:auto; scrollbar-width:none}
   .list::-webkit-scrollbar{display:none}
@@ -140,6 +158,7 @@
 
 <div id="cal">
   <div class="arrow" id="calArrow"></div>
+  <div id="calDot"></div>
   <div id="calMsg">준비</div>
   <div id="calRing">3</div>
   <div id="calSub">화면을 얼굴 앞에 두고 그대로 계세요</div>
@@ -393,7 +412,18 @@ let sample = null;   // 보정 중일 때만 값이 쌓인다. loop() 가 채운
 
 const wait = ms => new Promise(r=>setTimeout(r, ms));
 
-async function collect(msg, sub, arrow, ms){
+// dot = "위" | "가운데" | "아래" | null(안 띄움)
+// 말로만 "위를 보세요" 하면 눈이 안 올라간다. 볼 것을 실제로 띄워야 올라간다.
+function setDot(where){
+  const d = document.getElementById("calDot");
+  if(!where){ d.classList.remove("show"); return; }
+  const pos = { "위":"6vh", "가운데":"calc(50vh - 32px)", "아래":"calc(94vh - 64px)" };
+  d.style.top = pos[where];
+  d.classList.add("show");
+}
+
+async function collect(msg, sub, arrow, ms, dot){
+  setDot(dot || null);
   calArrow.textContent = arrow;
   calMsg.textContent = msg;
   calSub.textContent = sub;
@@ -427,11 +457,11 @@ async function calibrate(){
   calEl.classList.add("show");
   const wasAuto = cfg.auto; cfg.auto = false; stopScan();
 
-  await collect("준비하세요", "화면을 얼굴 앞에 두고 그대로 계세요", "", 2000);
-  const mid  = await collect("화면 가운데를 보세요", "눈을 편하게 뜨고 계세요", "●", 3000);
-  const up   = await collect("위를 보세요", "고개는 그대로, 눈만 위로", "▲", 3000);
-  const dn   = await collect("아래를 보세요", "고개는 그대로, 눈만 아래로", "▼", 3000);
-  const blk  = await collect("눈을 꾹 감으세요", "천천히 세는 동안 감고 계세요", "—", 3000);
+  await collect("준비하세요", "화면을 얼굴 앞에 두고 그대로 계세요", "", 2000, null);
+  const mid  = await collect("파란 점을 보세요", "눈을 편하게 뜨고 점만 보시면 됩니다", "", 3000, "가운데");
+  const up   = await collect("점이 위로 갔어요", "고개는 그대로, 눈으로만 점을 따라가세요", "", 3000, "위");
+  const dn   = await collect("점이 아래로 갔어요", "고개는 그대로, 눈으로만 점을 따라가세요", "", 3000, "아래");
+  const blk  = await collect("눈을 꾹 감으세요", "숫자가 사라질 때까지 감고 계세요", "—", 3000, null);
 
   const lookUp = pick(mid, up, "up");
   const lookDn = pick(mid, dn, "dn");
