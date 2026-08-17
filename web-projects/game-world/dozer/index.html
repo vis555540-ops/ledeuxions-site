@@ -129,6 +129,7 @@ const W = 300;          // 판 가로
 const H = 420;          // 판 세로. y가 클수록 앞(떨어지는 쪽)
 const EDGE = H - 8;     // 이 선을 넘으면 떨어진다
 const R = 15;           // 동전 반지름
+const MAX_STACK = 6;     // 탑 최대 높이
 const LIP_FORCE = 0.09;  // 앞 턱을 넘는 데 필요한 힘 (배당률을 정하는 값)
 const SIDE_OPEN = 250;  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
 
@@ -156,7 +157,7 @@ window.addEventListener("resize", fit);
 
 /* ── 동전 ── */
 function addCoin(x, y, kind){
-  coins.push({ x, y, vx:0, vy:0, kind: kind || "coin", spin: Math.random()*6.28 });
+  coins.push({ x, y, vx:0, vy:0, kind: kind || "coin", stack: 1 });
 }
 
 /* 처음에 깔려 있는 동전. 빈 판에서 시작하면 재미가 없다 */
@@ -232,11 +233,36 @@ function step(){
     }
   }
 
+  /* ── 탑 쌓기 ──
+     실제 기계에서 동전은 옆으로만 밀리지 않는다. 갈 데가 없으면 위로 올라타 층이 쌓인다.
+     그렇게 선 탑이 나중에 한꺼번에 무너지는 게 이 게임의 제일 큰 재미다.
+     (형: "중간에 높은 탑 쌓기 하는 것도 있어") */
+  for(let i = 0; i < coins.length; i++){
+    const a = coins[i];
+    if(a.stack >= MAX_STACK) continue;
+    for(let j = i+1; j < coins.length; j++){
+      const b = coins[j];
+      if(b.kind !== a.kind) continue;                 // 별 동전은 따로 둔다
+      if(a.stack + b.stack > MAX_STACK) continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy);
+      // 거의 같은 자리에서 서로 못 움직이면 → 위로 올라탄다
+      const stuck = Math.abs(a.vy) < 0.05 && Math.abs(b.vy) < 0.05;
+      if(d < R*0.75 && stuck){
+        a.stack += b.stack;
+        a.y = (a.y + b.y) / 2; a.x = (a.x + b.x) / 2;
+        coins.splice(j, 1);
+        j--;
+      }
+    }
+  }
+
   // 떨어진 동전 거두기
-  let got = 0, gotStar = 0, lost = 0;
+  let got = 0, gotStar = 0, lost = 0, tower = 0;
   coins = coins.filter(c => {
     if(c.y > EDGE){
-      if(c.kind === "star"){ gotStar++; } else { got++; }
+      if(c.kind === "star"){ gotStar += c.stack; } else { got += c.stack; }
+      if(c.stack >= 3) tower = Math.max(tower, c.stack);   // 탑이 무너졌다
       return false;
     }
     if(c.x < -R || c.x > W + R){ lost++; return false; }   // 옆으로 빠짐 = 손실
@@ -251,7 +277,8 @@ function step(){
     score += gain;
     scoreEl.textContent = score;
     ding(got + gotStar);
-    if(gotStar) hintEl.textContent = "별 동전! " + (gotStar*10) + "개";
+    if(tower >= 3) hintEl.textContent = tower + "층 탑이 무너졌습니다!";
+    else if(gotStar) hintEl.textContent = "별 동전! " + (gotStar*10) + "개";
     else if(got >= 3) hintEl.textContent = got + "개가 한꺼번에!";
     else hintEl.textContent = "+" + gain;
   }
@@ -280,11 +307,15 @@ function draw(){
   ctx.fillStyle = "#4E6076";
   ctx.fillRect(0, pusher.y - 8, W, 8);
 
-  // 동전
-  for(const c of coins){
+  // 동전 — 뒤에 있는 것부터 그려야 앞 동전이 위로 올라온다
+  const sorted = coins.slice().sort((a,b) => a.y - b.y);
+  for(const c of sorted){
     const isStar = c.kind === "star";
+    const layers = c.stack || 1;
+    // 쌓인 층을 아래에서 위로. 위로 갈수록 살짝 올려 그려 높이가 보이게 한다
+    for(let L = 0; L < layers; L++){
     ctx.save();
-    ctx.translate(c.x, c.y);
+    ctx.translate(c.x, c.y - L * 4.5);
     ctx.scale(1, 0.62);                 // 비스듬히 본 느낌
     // 그림자
     ctx.beginPath(); ctx.arc(1.5, 3, R, 0, 6.2832);
@@ -300,10 +331,18 @@ function draw(){
     ctx.stroke();
     ctx.restore();
     // 무늬
+    }
+    // 맨 위 장에만 글자를 넣는다
     ctx.fillStyle = isStar ? "#1B3D66" : "#8A6718";
     ctx.font = "bold 13px -apple-system, sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(isStar ? "★" : "₩", c.x, c.y);
+    ctx.fillText(isStar ? "★" : "₩", c.x, c.y - (layers-1) * 4.5);
+    // 세 층 넘으면 몇 층인지 보여준다
+    if(layers >= 3){
+      ctx.fillStyle = "#FFF3D0";
+      ctx.font = "bold 11px -apple-system, sans-serif";
+      ctx.fillText(layers + "층", c.x, c.y - (layers-1) * 4.5 - 15);
+    }
   }
 
   // 넣을 자리 표시
@@ -374,7 +413,17 @@ function drop(){
   if(!playing || credits <= 0) return;
   credits--;
   leftEl.textContent = credits;
+
+  /* 타이밍 — 실제 고수들이 쓰는 방법('워터폴').
+     밀개가 뒤로 다 물러났을 때 넣으면 밀개가 앞으로 나오며 힘을 최대로 전한다.
+     아무 때나 넣는 것과 달라야 실력이 된다 */
+  const back = (pusher.y - pusher.min) / (pusher.max - pusher.min);   // 0=완전히 뒤
   addCoin(dropX, pusher.min + R + 2);
+  const c = coins[coins.length - 1];
+  if(back < 0.25){
+    c.vy = 0.5;                       // 뒤로 물러났을 때 = 잘 넣은 것
+    hintEl.textContent = "좋은 타이밍";
+  }
   clink();
   if(credits === 0){
     dropBtn.disabled = true;
