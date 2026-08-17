@@ -823,6 +823,31 @@ function ask(text, aLabel, bLabel, onA, onB){
   chB.onclick = () => close(onB);
 }
 
+/* 형: "그냥 The END. 검은화면."
+   꿈에서 깨는 것도 없이 그대로 끝난다. 이쪽이 더 허무하다 */
+function theEnd(){
+  const t = document.getElementById("talk");
+  const line = document.getElementById("talkLine");
+  t.classList.remove("hide");
+  line.style.fontSize = "clamp(30px,9vw,52px)";
+  line.style.letterSpacing = ".08em";
+  line.textContent = "";
+  line.classList.remove("on");
+  setTimeout(() => { line.textContent = "The END"; line.classList.add("on"); }, 900);
+  // 아무 데나 눌러야 처음으로 돌아간다
+  const back = () => {
+    t.removeEventListener("pointerdown", back);
+    line.style.fontSize = ""; line.style.letterSpacing = "";
+    t.classList.add("hide");
+    document.querySelector(".card h2").textContent = "동전 밀기";
+    document.querySelector(".card p").innerHTML =
+      "오락실에 있던 그 기계입니다.<br>동전을 넣으면 쌓이고, 밀개가 앞으로 밀어 떨어뜨립니다.<br>앞으로 떨어진 동전이 내 돈이 됩니다.";
+    document.getElementById("ob").textContent = "다시";
+    over.classList.remove("hide");
+  };
+  setTimeout(() => t.addEventListener("pointerdown", back), 1600);
+}
+
 function knock(){
   tapSound();
   ask("툭, 툭.\n\n뒤에서 누군가 두드렸다.",
@@ -832,11 +857,11 @@ function knock(){
         if(Math.random() < 0.02){
           // 형: 다 뺏고 한 개만 남긴다. 남길 게 없으면 그대로 끝난다
           if(credits <= 1){
+            // 형: 남길 게 없으면 꿈에서 깨지도 못한다. 그냥 끝
             thud();
-            ask("돌아보자마자 맞았다.\n\n주머니엔 아무것도 없었다.",
-                "…", "…",
-                () => { credits = 0; leftEl.textContent = 0; gameOver(); },
-                () => { credits = 0; leftEl.textContent = 0; gameOver(); });
+            credits = 0; leftEl.textContent = 0;
+            playing = false;
+            theEnd();
             return;
           }
           const taken = credits - 1;
