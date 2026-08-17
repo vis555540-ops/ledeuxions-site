@@ -670,10 +670,13 @@ function drop(){
   leftEl.textContent = credits;
 
   // 뒤에서 두드린다. 완전 랜덤은 아니고 동전을 어느 정도 쓰면 온다 (형 지시)
-  if(nextTapAt === 0) nextTapAt = 8 + Math.floor(Math.random()*4);
-  if(50 - credits >= nextTapAt && tapUsed < 3){
+  // 뒤에서 두드리는 건 가끔이어야 한다. 자주 오면 게임을 못 한다
+  // (형: "뒤에 있는 아저씨는 끊임없이 말걸어요 바뻐죽겠는데")
+  dropCount++;
+  if(nextTapAt === 0) nextTapAt = 22 + Math.floor(Math.random()*8);
+  if(dropCount >= nextTapAt && tapUsed < 2){
     tapUsed++;
-    nextTapAt += 11 + Math.floor(Math.random()*5);
+    nextTapAt = dropCount + 35 + Math.floor(Math.random()*15);
     setTimeout(knock, 700);
   }
 
@@ -1085,7 +1088,7 @@ function startRound(){
   dropBtn.disabled = false;
   hintEl.textContent = "떨어뜨릴 자리를 누르세요";
   shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
-  shakeAt = lastDropAt = 0; tapUsed = 0; nextTapAt = 0;
+  shakeAt = lastDropAt = 0; tapUsed = 0; nextTapAt = 0; dropCount = 0;
   learned.clear(); renderSkills();
   seed();
 }
