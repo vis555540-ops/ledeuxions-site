@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>동전 밀기 — 오락실 코인도저 | 게임월드</title>
+<meta name="description" content="오락실에 있던 그 기계. 동전을 넣어 쌓고, 밀개가 밀어 떨어뜨립니다. 한 번에 우르르 떨어질 때가 제일 좋습니다.">
+<meta name="theme-color" content="#0E1218">
+<style>
+  :root{
+    --bg:#0E1218; --panel:#171E27; --line:#2B3542;
+    --ink:#EAF1F8; --muted:#8FA0B3;
+    --gold:#F2C14E; --gold2:#C99A2E;
+    --red:#E0674F; --blue:#5B9BFF; --green:#3DD68C;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%; margin:0; overflow:hidden; overscroll-behavior:none}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    display:flex; flex-direction:column; user-select:none; touch-action:manipulation;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .back{
+    position:fixed; top:12px; left:12px; z-index:20;
+    color:var(--muted); text-decoration:none; font-size:14px; font-weight:600;
+    background:rgba(23,30,39,.88); border:1px solid var(--line); border-radius:10px; padding:7px 11px;
+  }
+  .back.r{left:auto; right:12px}
+
+  header{padding:52px 14px 6px; text-align:center; flex:0 0 auto}
+  .stats{display:flex; justify-content:center; gap:18px; font-size:15px; color:var(--muted);
+         font-variant-numeric:tabular-nums}
+  .stats b{color:var(--ink); font-size:19px; font-weight:800}
+  .stats .gold b{color:var(--gold)}
+
+  .wrap{flex:1; display:flex; align-items:center; justify-content:center; min-height:0; padding:8px 10px 0}
+  canvas{
+    max-width:100%; max-height:100%; border-radius:14px;
+    background:linear-gradient(180deg,#1B242F,#141B24);
+    border:1px solid var(--line); touch-action:manipulation;
+  }
+
+  footer{flex:0 0 auto; padding:10px 14px 16px; display:flex; gap:10px; align-items:center; justify-content:center}
+  .drop{
+    flex:1; max-width:420px; background:linear-gradient(180deg,var(--gold),var(--gold2));
+    color:#2A1F05; border:0; border-radius:16px; padding:17px 12px;
+    font-size:19px; font-weight:800; letter-spacing:-.02em; font-family:inherit;
+    box-shadow:0 5px 16px rgba(201,154,46,.32);
+  }
+  .drop:active{transform:translateY(2px)}
+  .drop:disabled{filter:grayscale(.7) brightness(.7); box-shadow:none}
+  .hint{text-align:center; font-size:13px; color:var(--muted); padding:0 14px 10px; flex:0 0 auto}
+
+  .over{
+    position:fixed; inset:0; background:rgba(14,18,24,.95); z-index:30;
+    display:flex; align-items:center; justify-content:center; padding:26px; text-align:center;
+  }
+  .over.hide{display:none}
+  .card{max-width:420px}
+  .card h2{font-size:clamp(24px,6.5vw,34px); margin:0 0 10px; letter-spacing:-.03em}
+  .card p{color:var(--muted); font-size:15px; line-height:1.8; margin:0}
+  .big{
+    margin-top:20px; background:var(--blue); color:#06121F; border:0; border-radius:14px;
+    padding:16px 32px; font-size:18px; font-weight:800; cursor:pointer; font-family:inherit;
+  }
+  .rank{margin-top:14px; font-size:14px; color:var(--gold); font-weight:700; min-height:20px}
+  .tip{margin-top:18px; font-size:13px; color:#6B7787; line-height:1.75}
+</style>
+</head>
+<body>
+
+<a class="back" href="../">← 게임월드</a>
+<a class="back r" href="../ranking/">🏆 순위</a>
+
+<header>
+  <div class="stats">
+    <span class="gold">딴 돈 <b id="score">0</b></span>
+    <span>남은 동전 <b id="left">30</b></span>
+    <span>최고 <b id="best">0</b></span>
+  </div>
+</header>
+
+<div class="wrap"><canvas id="cv"></canvas></div>
+
+<div class="hint" id="hint">떨어뜨릴 자리를 누르세요</div>
+
+<footer>
+  <button class="drop" id="dropBtn">동전 넣기</button>
+</footer>
+
+<div class="over" id="over">
+  <div class="card">
+    <h2>동전 밀기</h2>
+    <p>
+      오락실에 있던 그 기계입니다.<br>
+      동전을 넣으면 쌓이고, 밀개가 앞으로 밀어 떨어뜨립니다.<br>
+      앞으로 떨어진 동전이 내 돈이 됩니다.
+    </p>
+    <div class="rank" id="orank"></div>
+    <button class="big" id="ob">시작</button>
+    <div class="tip">
+      한 번에 우르르 떨어질 때가 제일 좋습니다.<br>
+      그래서 바로 안 넣고 쌓이길 기다리는 게 낫습니다.
+    </div>
+  </div>
+</div>
+
+<script src="../arcade.js"></script>
+<script>
+/* 동전 밀기 — 오락실 코인도저
+   형이 유튜브로 보내준 그 기계. 2026-08-17.
+   형: "3D 같은 건 구현 안 해도 돼."  → 위에서 비스듬히 본 화면 + 평면 물리로 만든다.
+   물리는 직접 짠다(외부 라이브러리 없음). 동전은 원이고, 겹치면 밀어내는 것이 전부다. */
+
+const cv = document.getElementById("cv");
+const ctx = cv.getContext("2d");
+const scoreEl = document.getElementById("score");
+const leftEl  = document.getElementById("left");
+const bestEl  = document.getElementById("best");
+const hintEl  = document.getElementById("hint");
+const dropBtn = document.getElementById("dropBtn");
+const over = document.getElementById("over");
+const ob = document.getElementById("ob"), orank = document.getElementById("orank");
+
+/* ── 판 크기 (게임 좌표. 화면 크기와 따로 둔다) ── */
+const W = 300;          // 판 가로
+const H = 420;          // 판 세로. y가 클수록 앞(떨어지는 쪽)
+const EDGE = H - 8;     // 이 선을 넘으면 떨어진다
+const R = 15;           // 동전 반지름
+
+const BEST_KEY = "gw_dozer_best";
+let best = Number(localStorage.getItem(BEST_KEY) || 0);
+bestEl.textContent = best;
+
+let coins = [], score = 0, credits = 30, dropX = W/2, playing = false;
+let pusher = { y: 60, dir: 1, min: 44, max: 96, speed: 0.55 };
+
+/* ── 화면 맞추기 ── */
+function fit(){
+  const wrap = document.querySelector(".wrap");
+  const pad = 20;
+  const availW = wrap.clientWidth - pad, availH = wrap.clientHeight - pad;
+  const scale = Math.min(availW / W, availH / H);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.style.width  = (W * scale) + "px";
+  cv.style.height = (H * scale) + "px";
+  cv.width  = Math.round(W * scale * dpr);
+  cv.height = Math.round(H * scale * dpr);
+  ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
+}
+window.addEventListener("resize", fit);
+
+/* ── 동전 ── */
+function addCoin(x, y, kind){
+  coins.push({ x, y, vx:0, vy:0, kind: kind || "coin", spin: Math.random()*6.28 });
+}
+
+/* 처음에 깔려 있는 동전. 빈 판에서 시작하면 재미가 없다 */
+function seed(){
+  coins = [];
+  for(let i = 0; i < 26; i++){
+    addCoin(30 + Math.random()*(W-60), 150 + Math.random()*(H-230));
+  }
+  // 특별 동전 두 개 — 이게 떨어지면 크게 준다
+  addCoin(W/2 - 40, H - 130, "star");
+  addCoin(W/2 + 40, H - 100, "star");
+}
+
+/* ── 물리 ──
+   1) 밀개가 닿은 동전을 앞으로 민다
+   2) 겹친 동전끼리 서로 밀어낸다 (여러 번 반복해야 안정된다)
+   3) 마찰로 속도를 죽인다. 안 그러면 영원히 미끄러진다 */
+function step(){
+  // 밀개 왕복
+  pusher.y += pusher.speed * pusher.dir;
+  if(pusher.y > pusher.max) pusher.dir = -1;
+  if(pusher.y < pusher.min) pusher.dir = 1;
+
+  for(const c of coins){
+    // 밀개에 눌린 동전
+    if(pusher.dir > 0 && c.y - R < pusher.y && c.y > pusher.y - 30){
+      c.y = pusher.y + R;
+      c.vy = Math.max(c.vy, pusher.speed);
+    }
+    c.vx *= 0.86;  c.vy *= 0.86;      // 마찰
+    c.x += c.vx;   c.y += c.vy;
+
+    // 옆벽
+    if(c.x < R){ c.x = R; c.vx = Math.abs(c.vx) * 0.4; }
+    if(c.x > W - R){ c.x = W - R; c.vx = -Math.abs(c.vx) * 0.4; }
+    // 뒷벽
+    if(c.y < pusher.min + R){ c.y = pusher.min + R; }
+  }
+
+  // 겹침 풀기 — 반복할수록 자연스럽지만 무거워진다. 4번이면 충분하다
+  for(let it = 0; it < 4; it++){
+    for(let i = 0; i < coins.length; i++){
+      for(let j = i+1; j < coins.length; j++){
+        const a = coins[i], b = coins[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let d2 = dx*dx + dy*dy;
+        const min = R*2;
+        if(d2 < min*min && d2 > 0.0001){
+          const d = Math.sqrt(d2);
+          const push = (min - d) / 2;
+          const ux = dx/d, uy = dy/d;
+          a.x -= ux*push; a.y -= uy*push;
+          b.x += ux*push; b.y += uy*push;
+          // 밀린 만큼 앞으로 가려는 힘이 전달된다
+          const share = push * 0.35;
+          a.vx -= ux*share; a.vy -= uy*share;
+          b.vx += ux*share; b.vy += uy*share;
+        }
+      }
+    }
+  }
+
+  // 떨어진 동전 거두기
+  let got = 0, gotStar = 0;
+  coins = coins.filter(c => {
+    if(c.y > EDGE){
+      if(c.kind === "star"){ gotStar++; } else { got++; }
+      return false;
+    }
+    return true;
+  });
+  if(got || gotStar){
+    const gain = got + gotStar * 10;
+    score += gain;
+    scoreEl.textContent = score;
+    ding(got + gotStar);
+    if(gotStar) hintEl.textContent = "별 동전! " + (gotStar*10) + "개";
+    else if(got >= 3) hintEl.textContent = got + "개가 한꺼번에!";
+    else hintEl.textContent = "+" + gain;
+  }
+}
+
+/* ── 그리기 ── */
+function draw(){
+  ctx.clearRect(0, 0, W, H);
+
+  // 바닥 판
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#212C38"); g.addColorStop(1, "#161E27");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  // 떨어지는 선
+  ctx.fillStyle = "rgba(240,180,70,.10)";
+  ctx.fillRect(0, EDGE - 26, W, 26 + 8);
+  ctx.strokeStyle = "rgba(242,193,78,.55)";
+  ctx.setLineDash([6, 6]); ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, EDGE); ctx.lineTo(W, EDGE); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 밀개
+  ctx.fillStyle = "#3C4A5B";
+  ctx.fillRect(0, pusher.y - 34, W, 34);
+  ctx.fillStyle = "#4E6076";
+  ctx.fillRect(0, pusher.y - 8, W, 8);
+
+  // 동전
+  for(const c of coins){
+    const isStar = c.kind === "star";
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.scale(1, 0.62);                 // 비스듬히 본 느낌
+    // 그림자
+    ctx.beginPath(); ctx.arc(1.5, 3, R, 0, 6.2832);
+    ctx.fillStyle = "rgba(0,0,0,.32)"; ctx.fill();
+    // 몸통
+    const cg = ctx.createRadialGradient(-R*0.3, -R*0.3, R*0.2, 0, 0, R);
+    if(isStar){ cg.addColorStop(0, "#9FD8FF"); cg.addColorStop(1, "#3E7FCB"); }
+    else      { cg.addColorStop(0, "#FFE9A8"); cg.addColorStop(1, "#C99A2E"); }
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.2832);
+    ctx.fillStyle = cg; ctx.fill();
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = isStar ? "#2C5E9B" : "#9A7420";
+    ctx.stroke();
+    ctx.restore();
+    // 무늬
+    ctx.fillStyle = isStar ? "#1B3D66" : "#8A6718";
+    ctx.font = "bold 13px -apple-system, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(isStar ? "★" : "₩", c.x, c.y);
+  }
+
+  // 넣을 자리 표시
+  if(playing && credits > 0){
+    ctx.strokeStyle = "rgba(242,193,78,.75)";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(dropX, 6); ctx.lineTo(dropX, pusher.min - 4); ctx.stroke();
+    ctx.beginPath(); ctx.arc(dropX, 14, 6, 0, 6.2832);
+    ctx.fillStyle = "rgba(242,193,78,.85)"; ctx.fill();
+  }
+}
+
+/* ── 소리 (파일 없이) ── */
+let ac = null;
+const actx = () => ac || (ac = new (window.AudioContext || window.webkitAudioContext)());
+function ding(n){
+  try{
+    const c = actx();
+    for(let i = 0; i < Math.min(n, 5); i++){
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = "triangle";
+      o.frequency.value = 620 + i*130;
+      const t = c.currentTime + i*0.045;
+      g.gain.setValueAtTime(0.07, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.connect(g); g.connect(c.destination);
+      o.start(t); o.stop(t + 0.17);
+    }
+  }catch(e){}
+}
+function clink(){
+  try{
+    const c = actx(), o = c.createOscillator(), g = c.createGain();
+    o.type = "square"; o.frequency.value = 320;
+    g.gain.setValueAtTime(0.04, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.09);
+    o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 0.1);
+  }catch(e){}
+}
+
+/* ── 조작 ── */
+function canvasX(e){
+  const r = cv.getBoundingClientRect();
+  const px = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+  return Math.max(R, Math.min(W - R, px / r.width * W));
+}
+cv.addEventListener("pointerdown", e => {
+  if(!playing) return;
+  dropX = canvasX(e);
+  drop();
+});
+cv.addEventListener("pointermove", e => {
+  if(!playing || e.buttons === 0) return;
+  dropX = canvasX(e);
+});
+
+function drop(){
+  if(!playing || credits <= 0) return;
+  credits--;
+  leftEl.textContent = credits;
+  addCoin(dropX, pusher.min + R + 2);
+  clink();
+  if(credits === 0){
+    dropBtn.disabled = true;
+    hintEl.textContent = "동전을 다 썼습니다. 남은 게 떨어질 때까지 기다리세요";
+    setTimeout(checkEnd, 3500);
+  }
+}
+dropBtn.onclick = drop;
+
+function checkEnd(){
+  // 더 이상 점수가 오를 가망이 없으면 끝낸다
+  const near = coins.filter(c => c.y > EDGE - 60).length;
+  if(near > 0){ setTimeout(checkEnd, 2500); return; }
+  gameOver();
+}
+
+async function gameOver(){
+  playing = false;
+  if(score > best){
+    best = score;
+    localStorage.setItem(BEST_KEY, best);
+    bestEl.textContent = best;
+  }
+  document.querySelector(".card h2").textContent = "끝";
+  document.querySelector(".card p").innerHTML =
+    `딴 돈 <b style="color:var(--gold)">${score}</b>개 · 최고 <b>${best}</b>개`;
+  ob.textContent = "다시";
+  orank.textContent = "";
+  over.classList.remove("hide");
+
+  if(score > 0 && window.Arcade){
+    try{
+      const r = await Arcade.submit("dozer", score);
+      if(r && r.rank) orank.textContent = `전체 ${r.total}명 중 ${r.rank}위`;
+    }catch(e){}
+  }
+}
+
+ob.onclick = () => {
+  if(window.Arcade) Arcade.ensureName();
+  score = 0; credits = 30; playing = true;
+  scoreEl.textContent = 0; leftEl.textContent = credits;
+  dropBtn.disabled = false;
+  hintEl.textContent = "떨어뜨릴 자리를 누르세요";
+  seed();
+  over.classList.add("hide");
+};
+
+/* ── 진행 ── */
+function loop(){
+  if(playing) step();
+  draw();
+  requestAnimationFrame(loop);
+}
+fit(); seed(); draw(); loop();
+</script>
+</body>
+</html>
