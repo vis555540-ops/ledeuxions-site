@@ -52,6 +52,9 @@
   .drop:disabled{filter:grayscale(.7) brightness(.7); box-shadow:none}
   .hint{text-align:center; font-size:13px; color:var(--muted); padding:0 14px 10px; flex:0 0 auto}
 
+  .fall{position:fixed; inset:0; background:#000; z-index:41; display:block}
+  .fall.hide{display:none}
+
   /* 대화는 무조건 검은 화면에서만. 게임 화면 위에 겹치지 않는다 (형 지시) */
   .talk{
     position:fixed; inset:0; background:#000; z-index:40;
@@ -109,6 +112,8 @@
   <button class="drop" id="shakeBtn" style="max-width:130px;background:linear-gradient(180deg,#7C8CA0,#5B6A7D);color:#0E141B">흔들기</button>
 </footer>
 
+<canvas id="fall" class="fall hide"></canvas>
+
 <div id="talk" class="talk hide">
   <div class="talk-line" id="talkLine"></div>
   <div class="talk-next">눌러서 넘기기</div>
@@ -150,25 +155,25 @@ const ob = document.getElementById("ob"), orank = document.getElementById("orank
 
 /* ── 판 크기 (게임 좌표. 화면 크기와 따로 둔다) ── */
 const W = 300;          // 판 가로
-const H = 420;          // 판 세로. y가 클수록 앞(떨어지는 쪽)
+const H = 560;          // 판 세로. y가 클수록 앞(떨어지는 쪽)
 const EDGE = H - 8;     // 이 선을 넘으면 떨어진다
-const R = 15;           // 동전 반지름
+const R = 13;           // 동전 반지름
 const MAX_STACK = 6;     // 탑 최대 높이
 const LIP_FORCE = 0.09;  // 앞 턱을 넘는 데 필요한 힘 (배당률을 정하는 값)
-const SIDE_OPEN = 250;  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
+const SIDE_OPEN = 330;  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
 
 const BEST_KEY = "gw_dozer_best";
 let best = Number(localStorage.getItem(BEST_KEY) || 0);
 bestEl.textContent = best;
 
 let coins = [], score = 0, credits = 30, dropX = W/2, playing = false;
-let pusher = { y: 60, dir: 1, min: 44, max: 96, speed: 0.55 };
+let pusher = { y: 60, dir: 1, min: 44, max: 118, speed: 0.6 };
 
 /* ── 동전 탑 (히든 보너스) ──
    형 지시: 코인도저 기본 필드 + 별도 탑 구조물, 무너뜨리면 히든 보너스.
    실제 바벨의 메달타워를 따랐다 —
    기계가 저절로 쌓고, 반 개씩 어긋나게 올려서 앞으로만 넘어지게 만들어져 있다. */
-let tower = { x: W/2, y: 190, h: 0, lean: 0, shake: 0, timer: 0, falling: 0 };
+let tower = { x: W/2, y: 240, h: 0, lean: 0, shake: 0, timer: 0, falling: 0 };
 const TOWER_MAX = 22;      // 최대 층
 const LEAN_LIMIT = 1.0;    // 이만큼 기울면 무너진다
 
@@ -195,13 +200,13 @@ function addCoin(x, y, kind){
 /* 처음에 깔려 있는 동전. 빈 판에서 시작하면 재미가 없다 */
 function seed(){
   coins = [];
-  tower = { x: W/2, y: 190, h: 3, lean: 0, shake: 0, timer: 0, falling: 0 };
-  for(let i = 0; i < 26; i++){
-    addCoin(30 + Math.random()*(W-60), 150 + Math.random()*(H-230));
+  tower = { x: W/2, y: 240, h: 3, lean: 0, shake: 0, timer: 0, falling: 0 };
+  for(let i = 0; i < 40; i++){
+    addCoin(26 + Math.random()*(W-52), 175 + Math.random()*(H-260));
   }
   // 특별 동전 두 개 — 이게 떨어지면 크게 준다
-  addCoin(W/2 - 40, H - 130, "star");
-  addCoin(W/2 + 40, H - 100, "star");
+  addCoin(W/2 - 45, H - 150, "star");
+  addCoin(W/2 + 45, H - 110, "star");
 }
 
 /* ── 물리 ──
@@ -591,8 +596,12 @@ function checkEnd(){
 
 async function gameOver(){
   playing = false;
-  // 끝 대사도 검은 화면에서. 결과판은 그 다음에 보여준다
-  talk(ENDING_LOSS, () => showResult());
+  // 끝 대사도 검은 화면에서. 이기든 지든 결국 꿈에서 깬다 (형이 짠 구조)
+  if(score >= WIN_LINE){
+    talk(ENDING_WIN, () => talk(ENDING_WAKE, showResult));
+  }else{
+    talk(ENDING_LOSS, () => fallScene(() => talk(ENDING_WAKE, showResult)));
+  }
 }
 
 async function showResult(){
@@ -619,19 +628,31 @@ async function showResult(){
 /* ── 검은 화면 대화 ──
    형 지시: 스토리는 조금만. 명시하지 말고 짐작하게. 대화는 무조건 검은 화면에서.
    ⚠️ 아래 대사는 맺음이 쓴 초안이다. 형이 고치면 그걸로 바꾼다 */
+/* 이야기는 형이 짰다 (2026-08-17). 꿈인지 현실인지 모르는 채로 시작하고,
+   이기든 지든 결국 꿈에서 깬다. 주인공은 르통통씨. */
 const OPENING = [
-  "동전 서른 개.",
-  "그거면 충분하다고 했다.",
-  "누가 그랬는지는 기억나지 않는다.",
-  "앞줄이 곧 떨어질 것처럼 걸쳐 있다.",
-  "언제부터 저러고 있었는지 모르겠다."
+  "너 이 게임 좋아하지?",
+  "실컷 해봐라!",
+  "으하하하하",
+  "…",
+  "동전 서른 개가 손에 쥐어져 있다."
 ];
 const ENDING_LOSS = [
-  "동전이 떨어졌다.",
+  "동전이 다 떨어졌다.",
   "앞줄은 아직 그대로 걸쳐 있다.",
-  "조금만 더 있었으면 됐을 것이다.",
-  "늘 그렇게 보인다."
+  "발밑이 열린다.",
+  "동전과 함께 떨어진다."
 ];
+const ENDING_WAKE = [
+  "…",
+  "꿈에서 깼다."
+];
+const ENDING_WIN = [
+  "하하하하",
+  "행복하다…",
+  "하하하…"
+];
+const WIN_LINE = 120;   // 이만큼 넘으면 대박 쪽 결말
 
 const talkEl = document.getElementById("talk");
 const talkLine = document.getElementById("talkLine");
@@ -661,6 +682,65 @@ function talk(lines, done){
 }
 
 let seenOpening = false;
+
+/* 떨어지는 장면 — 형이 그린 그림 그대로.
+   동전과 함께 르통통씨가 떨어진다. 그림 파일은 안 쓰고 도형으로 그린다(파일 하나로 끝내려고) */
+function fallScene(done){
+  const fc = document.getElementById("fall");
+  const g = fc.getContext("2d");
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = window.innerWidth, h = window.innerHeight;
+  fc.width = w*dpr; fc.height = h*dpr;
+  g.setTransform(dpr,0,0,dpr,0,0);
+  fc.classList.remove("hide");
+
+  const bits = [];
+  for(let i = 0; i < 40; i++){
+    bits.push({ x: Math.random()*w, y: -Math.random()*h*1.2,
+                v: 2 + Math.random()*3.4, r: 6 + Math.random()*7,
+                a: Math.random()*6.28, s: (Math.random()-0.5)*0.14 });
+  }
+  const man = { x: w/2, y: -110, v: 2.2, a: 0, s: 0.035 };
+  let t = 0;
+
+  (function anim(){
+    t++;
+    g.fillStyle = "#000"; g.fillRect(0,0,w,h);
+
+    for(const b of bits){
+      b.y += b.v; b.a += b.s;
+      if(b.y > h + 40){ b.y = -30; b.x = Math.random()*w; }
+      g.save(); g.translate(b.x, b.y); g.rotate(b.a); g.scale(1, 0.55);
+      g.beginPath(); g.arc(0,0,b.r,0,6.2832);
+      g.fillStyle = "rgba(201,154,46," + (0.35 + Math.random()*0.2).toFixed(2) + ")";
+      g.fill(); g.restore();
+    }
+
+    // 르통통씨 — 비니모자, 둥근 안경, 마른 몸
+    man.y += man.v; man.v += 0.02; man.a += man.s;
+    g.save(); g.translate(man.x, man.y); g.rotate(man.a);
+    g.strokeStyle = "#C9D2DC"; g.lineWidth = 3; g.lineCap = "round";
+    g.beginPath(); g.arc(0,-30,17,0,6.2832); g.stroke();          // 머리
+    g.beginPath(); g.arc(0,-34,17.5,Math.PI,0); g.stroke();       // 비니
+    g.beginPath(); g.arc(-6,-28,5.5,0,6.2832); g.stroke();        // 안경
+    g.beginPath(); g.arc(7,-28,5.5,0,6.2832); g.stroke();
+    g.beginPath(); g.moveTo(1.5,-28); g.lineTo(-0.5,-28); g.stroke();
+    g.beginPath(); g.moveTo(0,-13); g.lineTo(0,26); g.stroke();   // 몸
+    g.beginPath(); g.moveTo(0,-6); g.lineTo(-22,-22); g.stroke(); // 팔
+    g.beginPath(); g.moveTo(0,-6); g.lineTo(23,-19); g.stroke();
+    g.beginPath(); g.moveTo(0,26); g.lineTo(-15,52); g.stroke();  // 다리
+    g.beginPath(); g.moveTo(0,26); g.lineTo(16,50); g.stroke();
+    g.restore();
+
+    // 서서히 어두워진다
+    if(t > 100){
+      g.fillStyle = "rgba(0,0,0," + Math.min(1, (t-100)/70) + ")";
+      g.fillRect(0,0,w,h);
+    }
+    if(t < 180) requestAnimationFrame(anim);
+    else { fc.classList.add("hide"); done && done(); }
+  })();
+}
 
 ob.onclick = () => {
   if(window.Arcade) Arcade.ensureName();
