@@ -828,13 +828,36 @@ function knock(){
   ask("툭, 툭.\n\n뒤에서 누군가 두드렸다.",
       "돌아본다", "못 본 체한다",
       () => {
+        // 가끔은 알려주는 사람이 아니다. 돌아보는 것 자체가 도박이 된다 (형 지시, 2%)
+        if(Math.random() < 0.02){
+          // 형: 다 뺏고 한 개만 남긴다. 남길 게 없으면 그대로 끝난다
+          if(credits <= 1){
+            thud();
+            ask("돌아보자마자 맞았다.\n\n주머니엔 아무것도 없었다.",
+                "…", "…",
+                () => { credits = 0; leftEl.textContent = 0; gameOver(); },
+                () => { credits = 0; leftEl.textContent = 0; gameOver(); });
+            return;
+          }
+          const taken = credits - 1;
+          credits = 1; leftEl.textContent = credits;
+          thud();
+          hintEl.textContent = "괜히 돌아봤다";
+          ask("돌아보자마자 맞았다.\n\n동전 " + taken + "개를 쓸어 가고\n하나만 남겨두고 사라졌다.",
+              "…", "…", null, null);
+          return;
+        }
         const o = OFFERS[Math.floor(Math.random()*OFFERS.length)];
-        ask("\"" + o.say + "\"\n\n\"동전 " + o.cost + "개.\"",
+        // 신뢰도는 자막으로만 알린다. 숫자는 절대 안 보여준다 (형 지시)
+        const t = TRUST[Math.floor(Math.random()*TRUST.length)];
+        // 값을 먼저 부르고, 돈을 받은 다음에야 내용을 말해준다 (형 지시한 순서)
+        ask('"비밀 하나 알려줄게."\n\n"동전 ' + o.cost + '개."\n\n' + t.line,
             "동전 " + o.cost + "개를 준다", "됐다고 한다",
             () => {
               if(credits >= o.cost){
                 credits -= o.cost; leftEl.textContent = credits;
-                o.apply(); hintEl.textContent = "…알려줬다";
+                ask('"' + o.say + '"', "알겠다", "알겠다",
+                    () => startOrder(o, t), () => startOrder(o, t));
               }else{
                 hintEl.textContent = "줄 동전이 없다";
               }
