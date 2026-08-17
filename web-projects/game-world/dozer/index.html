@@ -52,6 +52,11 @@
   }
   .drop:active{transform:translate(2px,2px); box-shadow:1px 1px 0 #7A5E15}
   .drop:disabled{filter:grayscale(.7) brightness(.7); box-shadow:none}
+  .skills{display:flex; gap:5px; flex-wrap:wrap; justify-content:center; padding:0 12px 4px; flex:0 0 auto}
+  .skill{
+    font-size:11px; color:#9FD0FF; background:#16202C; border:1px solid #2E4157;
+    padding:3px 7px; letter-spacing:-.01em;
+  }
   .hint{text-align:center; font-size:13px; color:var(--muted); padding:0 14px 10px; flex:0 0 auto}
 
   .fall{position:fixed; inset:0; background:#000; z-index:41; display:block}
@@ -114,6 +119,7 @@
 
 <div class="wrap"><canvas id="cv"></canvas></div>
 
+<div class="skills" id="skills"></div>
 <div class="hint" id="hint">떨어뜨릴 자리를 누르세요</div>
 
 <footer>
@@ -184,6 +190,19 @@ let best = Number(localStorage.getItem(BEST_KEY) || 0);
 bestEl.textContent = best;
 
 let coins = [], score = 0, credits = 50, dropX = W/2, playing = false;
+/* ── 단계 ── 형이 짠 구조. 잘될수록 뜯어간다
+   1차 40 채우면 "빌려준 거니까" 하고 다 가져간다
+   2차 동전을 두 개씩 넣어야 한다. 사장이 값을 올렸다
+   3차 동전이 무거워진다. 120 이면 끝 */
+const STAGES = [
+  { goal:40,  per:1, drag:0.86, push:1.0,
+    done:["\"빌려준 거니까.\"", "\"이건 받아간다?\"", "동전이 전부 쓸려 나갔다."] },
+  { goal:80,  per:2, drag:0.86, push:1.0,
+    done:["\"아 맞다.\"", "\"동전 이번에는 두 개 넣어야 한다?\"", "\"사장님이 너무 잘된다고 값을 올렸대.\""] },
+  { goal:120, per:2, drag:0.80, push:0.72,
+    done:["동전이 무거워진 것 같다.", "기분 탓인가."] },
+];
+let stage = 0;
 const COIN_WON = 200;   // 동전 한 개 값. 만원이면 50개 (형: '시작할 때 만원 주고')
 let pusher = { y: 30, dir: 1, min: 22, max: 58, speed: 0.3 };
 
@@ -239,10 +258,16 @@ function step(){
   if(pusher.y > pusher.max) pusher.dir = -1;
   if(pusher.y < pusher.min) pusher.dir = 1;
 
-  orderTick();
   if(hintTimer > 0) hintTimer--;
   if(sideGuard > 0) sideGuard--;
   if(towerAim > 0) towerAim--;
+
+  // 배운 '기다리기' — 넣고 3초 손대지 않으면 앞줄이 스스로 밀린다
+  if(learned.has("wait") && lastDropAt && performance.now() - lastDropAt > 3000){
+    lastDropAt = 0;
+    for(const c of coins) if(c.y > EDGE - 40) c.vy += 0.16;
+    hintEl.textContent = "기다린 값이 나왔다";
+  }
 
   updateTower();
 
@@ -250,9 +275,10 @@ function step(){
     // 밀개에 눌린 동전
     if(pusher.dir > 0 && c.y - R < pusher.y && c.y > pusher.y - 30){
       c.y = pusher.y + R;
-      c.vy = Math.max(c.vy, pusher.speed);
+      c.vy = Math.max(c.vy, pusher.speed * STAGES[stage].push);
     }
-    c.vx *= 0.86;  c.vy *= 0.86;      // 운동마찰
+    const dr = STAGES[stage].drag;
+    c.vx *= dr;  c.vy *= dr;          // 운동마찰. 단계가 오르면 동전이 무거워진다
     // 정지마찰 — 힘이 약하면 아예 안 움직인다. 실제 기계가 그래서 잘 안 떨어진다
     if(Math.abs(c.vx) < 0.018) c.vx = 0;
     if(Math.abs(c.vy) < 0.018) c.vy = 0;
@@ -341,8 +367,11 @@ function step(){
   }
   if(got || gotStar){
     const gain = got + gotStar * 10;
-    score += gain;
+    score += gain;                    // 누적 (목표 판정용)
+    credits += gain;                  // 딴 동전은 다시 내 손에 들어온다. 그래서 계속 하게 된다
     scoreEl.textContent = score;
+    leftEl.textContent = credits;
+    checkStage();
     ding(got + gotStar);
     if(tower >= 3) hintEl.textContent = tower + "층 탑이 무너졌습니다!";
     else if(gotStar) hintEl.textContent = "별 동전! " + (gotStar*10) + "개";
@@ -422,6 +451,56 @@ function shakeSound(){
     const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 900;
     src.connect(f); f.connect(c.destination); src.start();
   }catch(e){}
+}
+
+/* 목표를 채웠나 — 채우면 다음 단계로 넘어간다(그리고 더 힘들어진다) */
+let stageBusy = false;
+function checkStage(){
+  if(stageBusy) return;
+  const st = STAGES[stage];
+  if(score < st.goal) return;
+  stageBusy = true;
+  playing = false;
+  setTimeout(() => {
+    talk(st.done, () => {
+      if(stage === 0){
+        score = 0; scoreEl.textContent = 0;      // 빌려준 거라며 다 가져간다
+      }
+      stage++;
+      if(stage >= STAGES.length){
+        clearGame();
+        return;
+      }
+      document.getElementById("goal").textContent = STAGES[stage].goal;
+      hintEl.textContent = "동전 " + STAGES[stage].per + "개씩 들어갑니다";
+      stageBusy = false;
+      playing = true;
+    });
+  }, 500);
+}
+
+function clearGame(){
+  talk(["하하하하", "행복하다…", "하하하…"], () => talk(["…", "꿈에서 깼다."], () => {
+    document.querySelector(".card h2").textContent = "끝까지 갔다";
+    document.querySelector(".card p").innerHTML =
+      `백이십을 채웠습니다.<br>딴 돈 <b style="color:var(--gold)">${score}</b>개`;
+    document.getElementById("ob").textContent = "다시";
+    over.classList.remove("hide");
+    if(window.Arcade) Arcade.submit("dozer", score).catch(()=>{});
+  }));
+}
+
+/* 배운 것을 화면에 적어둔다 — 외우라고 했지만 잊을 수 있으니 */
+function renderSkills(){
+  const el = document.getElementById("skills");
+  if(!el) return;
+  el.innerHTML = "";
+  SKILLS.filter(k => learned.has(k.id)).forEach(k => {
+    const b = document.createElement("span");
+    b.className = "skill";
+    b.textContent = k.tip;
+    el.appendChild(b);
+  });
 }
 
 /* ── 그리기 ── */
@@ -542,8 +621,9 @@ cv.addEventListener("pointermove", e => {
 });
 
 function drop(){
-  if(!playing || credits <= 0) return;
-  credits--;
+  const per = STAGES[stage].per;
+  if(!playing || credits < per) return;
+  credits -= per;
   leftEl.textContent = credits;
 
   // 뒤에서 두드린다. 완전 랜덤은 아니고 동전을 어느 정도 쓰면 온다 (형 지시)
@@ -557,27 +637,23 @@ function drop(){
   /* 타이밍 — 실제 고수들이 쓰는 방법('워터폴').
      밀개가 뒤로 다 물러났을 때 넣으면 밀개가 앞으로 나오며 힘을 최대로 전한다.
      아무 때나 넣는 것과 달라야 실력이 된다 */
-  // 시킨 대로 하는지 본다
-  if(order){
-    const back0 = (pusher.y - pusher.min) / (pusher.max - pusher.min);
-    if(order.cmd === "wait"){
-      if(order.step === 1){ failOrder("기다리라고 했는데"); }
-      else { order.step = 1; order.last = order.t; } // 넣었다. 이제 손대지 말아야 한다
-    }else if(order.cmd === "shakedrop"){
-      if(order.step === 1 && order.t - order.last < 60) clearOrder();
-      else failOrder("순서가 틀렸다");
-    }else if(order.cmd === "timing3"){
-      if(back0 < 0.3){ order.step++; if(order.step >= 3) clearOrder(); }
-      else failOrder("때가 아니었다");
-    }else if(order.cmd === "tower3"){
-      if(Math.abs(dropX - tower.x) < R*2.2){ order.step++; if(order.step >= 3) clearOrder(); }
-      else failOrder("빗나갔다");
-    }
-  }
-
   const back = (pusher.y - pusher.min) / (pusher.max - pusher.min);   // 0=완전히 뒤
   addCoin(dropX, pusher.min + R + 2);
   const c = coins[coins.length - 1];
+
+  /* ── 배운 것은 조건이 맞을 때만 듣는다 (형 지시) ──
+     배웠다고 늘 되는 게 아니라, 그 순간에 맞게 해야 한다 */
+  let fired = "";
+  if(learned.has("timing") && back < 0.3){ c.vy += 0.22; fired = "때를 맞췄다"; }
+  if(learned.has("center") && Math.abs(dropX - W/2) < W*0.22){ c.vy += 0.1; c.vx *= 0.4; fired = "가운데로 똑바로"; }
+  if(learned.has("tower") && tower.h > 0 && Math.abs(dropX - tower.x) < R*2.2){
+    tower.shake += 0.05; fired = "밑동을 쳤다";
+  }
+  if(learned.has("shake") && shakeAt && (performance.now() - shakeAt) < 1200){
+    c.vy += 0.18; fired = "흔든 틈에 밀어 넣었다";
+  }
+  if(fired) hintEl.textContent = fired;
+  lastDropAt = performance.now();
   const window_ = hintTimer > 0 ? 0.42 : 0.25;      // 알려준 대로 하면 판정이 넉넉해진다
   if(back < window_){
     c.vy = hintTimer > 0 ? 0.34 : 0.26;
@@ -585,10 +661,12 @@ function drop(){
   }
   if(towerAim > 0 && Math.abs(dropX - tower.x) < R*2) c.vy += 0.1;   // 밑동 조준
   clink();
-  if(credits === 0){
+  if(credits < STAGES[stage].per){
     dropBtn.disabled = true;
-    hintEl.textContent = "동전을 다 썼습니다. 남은 게 떨어질 때까지 기다리세요";
+    hintEl.textContent = "넣을 동전이 없습니다. 남은 게 떨어지길 기다리세요";
     setTimeout(checkEnd, 3500);
+  }else{
+    dropBtn.disabled = false;
   }
 }
 dropBtn.onclick = drop;
@@ -605,8 +683,8 @@ shakeBtn.onclick = () => {
     c.vy += Math.random() * 0.9;        // 앞으로만 살짝. 뒤로 가면 이상하다
   }
   thud();
+  shakeAt = performance.now();
   hintEl.textContent = "흔들었습니다";
-  if(order && order.cmd === "shakedrop"){ order.step = 1; order.last = order.t; }
   let n = 6;
   const t = setInterval(() => {
     n--; shakeBtn.textContent = n > 0 ? n + "초" : "흔들기";
@@ -747,16 +825,21 @@ function tapSound(){
    본 체 하면 방법을 알려주겠다며 코인을 요구한다 */
 /* 뒤에 있는 사람이 시키는 것 = 커맨드.
    형 설계: "동전 넣고 몇 초 대기", "흔들고 동전 바로 넣기" 같은 순서를 알려주고 코인을 받는다 */
-const OFFERS = [
-  { say:"동전 넣고 세 셀 때까지 손대지 마. 그때 밀개가 문다.",
-    cmd:"wait", cost:3, ok:"밀린다… 밀린다!" },
-  { say:"흔들고 바로 넣어. 흔들린 김에 같이 넘어가.",
-    cmd:"shakedrop", cost:4, ok:"우르르 넘어간다" },
-  { say:"밀개가 뒤로 다 빠졌을 때만 넣어. 세 번 연속으로.",
-    cmd:"timing3", cost:4, ok:"세 번 다 물었다" },
-  { say:"탑 밑동만 노려. 세 번 쳐.",
-    cmd:"tower3", cost:5, ok:"탑이 흔들린다" },
+/* 스킬은 다섯 개. 한 번 배우면 계속 쓸 수 있다.
+   손님은 방법을 알려줄 뿐이고, 그다음은 사람이 외워서 하는 것이다 (형 지시) */
+const SKILLS = [
+  { id:"wait",   say:"동전 넣고 세 셀 때까지 손대지 마. 그때 밀개가 문다.",
+    tip:"넣고 3초 기다리기", cost:3 },
+  { id:"shake",  say:"흔들고 바로 넣어. 흔들린 김에 같이 넘어가.",
+    tip:"흔든 직후 넣기", cost:4 },
+  { id:"timing", say:"밀개가 뒤로 다 빠졌을 때 넣어. 앞으로 나올 때 넣으면 튕겨.",
+    tip:"밀개가 뒤로 갔을 때 넣기", cost:4 },
+  { id:"tower",  say:"위를 쳐봐야 소용없어. 탑은 밑동을 무너뜨리는 거야.",
+    tip:"탑 밑동 노리기", cost:5 },
+  { id:"center", say:"가운데만 넣어. 옆으로 새면 그건 네 돈이 아니야.",
+    tip:"가운데로 넣기", cost:3 },
 ];
+const learned = new Set();
 
 /* 신뢰도 — 자막으로만 알려준다. 숫자는 절대 안 보여준다 (형 지시) */
 const TRUST = [
@@ -764,44 +847,6 @@ const TRUST = [
   { line:"해볼 만한 걸?",                                     p:0.70 },
   { line:"오락실 사장님 아들이군. 용돈이 모자랐나 보네.",      p:0.96 },
 ];
-
-/* 지금 받은 지시를 지키는지 지켜본다 */
-let order = null;   // {cmd, p, ok, step, t}
-function startOrder(o, trust){
-  order = { cmd:o.cmd, p:trust.p, ok:o.ok, step:0, t:0, last:0 };
-  hintEl.textContent = "시킨 대로 해본다";
-}
-function orderTick(){
-  if(!order) return;
-  order.t++;
-  if(order.cmd === "wait" && order.step === 1 && order.t - order.last > 180){ clearOrder(); return; }
-  if(order.t > 60*22){ failOrder("때를 놓쳤다"); }
-}
-function failOrder(msg){
-  order = null;
-  hintEl.textContent = msg;
-  thud();
-}
-function clearOrder(){
-  // 지시를 지켰다. 다만 지켰다고 늘 되는 건 아니다 — 그게 이 사람의 말값이다
-  const good = Math.random() < order.p;
-  const txt = order.ok;
-  order = null;
-  if(good){
-    hintEl.textContent = txt;
-    for(let i = 0; i < 5; i++){
-      coins.push({ x: 20 + Math.random()*(W-40), y: EDGE - 20 - Math.random()*30,
-                   vx:0, vy: 0.5 + Math.random()*0.5, kind:"coin", stack:1 });
-    }
-    ding(4);
-  }else{
-    hintEl.textContent = "아무 일도 없었다";
-    thud();
-  }
-}
-
-let hintTimer = 0, sideGuard = 0, towerAim = 0;
-let tapUsed = 0, nextTapAt = 0;
 
 const choiceEl  = document.getElementById("choice");
 const choiceLine= document.getElementById("choiceLine");
@@ -872,17 +917,32 @@ function knock(){
               "…", "…", null, null);
           return;
         }
-        const o = OFFERS[Math.floor(Math.random()*OFFERS.length)];
-        // 신뢰도는 자막으로만 알린다. 숫자는 절대 안 보여준다 (형 지시)
+        // 아직 안 배운 것 중에서 하나 (다 배웠으면 그냥 간다)
+        const left = SKILLS.filter(k => !learned.has(k.id));
+        if(!left.length){
+          hintEl.textContent = "더 알려줄 게 없다는 얼굴이다";
+          return;
+        }
+        const o = left[Math.floor(Math.random()*left.length)];
         const t = TRUST[Math.floor(Math.random()*TRUST.length)];
-        // 값을 먼저 부르고, 돈을 받은 다음에야 내용을 말해준다 (형 지시한 순서)
         ask('"비밀 하나 알려줄게."\n\n"동전 ' + o.cost + '개."\n\n' + t.line,
             "동전 " + o.cost + "개를 준다", "됐다고 한다",
             () => {
               if(credits >= o.cost){
                 credits -= o.cost; leftEl.textContent = credits;
-                ask('"' + o.say + '"', "알겠다", "알겠다",
-                    () => startOrder(o, t), () => startOrder(o, t));
+                // 신뢰도만큼만 진짜다. 헛돈일 수도 있다
+                if(Math.random() < t.p){
+                  learned.add(o.id);
+                  renderSkills();
+                  ask('"' + o.say + '"', "외웠다", "외웠다",
+                      () => { hintEl.textContent = o.tip + " — 이제 언제든 된다"; },
+                      () => { hintEl.textContent = o.tip + " — 이제 언제든 된다"; });
+                }else{
+                  ask("\"…\"\n\n말을 하려다 말고 그냥 가버렸다.",
+                      "…", "…",
+                      () => { hintEl.textContent = "돈만 날렸다"; },
+                      () => { hintEl.textContent = "돈만 날렸다"; });
+                }
               }else{
                 hintEl.textContent = "줄 동전이 없다";
               }
@@ -963,12 +1023,14 @@ ob.onclick = () => {
 };
 
 function startRound(){
-  score = 0; credits = 50; playing = true;
+  score = 0; credits = 50; playing = true; stage = 0; stageBusy = false;
+  document.getElementById('goal').textContent = STAGES[0].goal;
   scoreEl.textContent = 0; leftEl.textContent = credits;
   dropBtn.disabled = false;
   hintEl.textContent = "떨어뜨릴 자리를 누르세요";
   shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
-  hintTimer = sideGuard = towerAim = 0; tapUsed = 0; nextTapAt = 0; order = null;
+  shakeAt = lastDropAt = 0; tapUsed = 0; nextTapAt = 0;
+  learned.clear(); renderSkills();
   seed();
 }
 
