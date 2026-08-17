@@ -140,6 +140,14 @@ bestEl.textContent = best;
 let coins = [], score = 0, credits = 30, dropX = W/2, playing = false;
 let pusher = { y: 60, dir: 1, min: 44, max: 96, speed: 0.55 };
 
+/* ── 동전 탑 (히든 보너스) ──
+   형 지시: 코인도저 기본 필드 + 별도 탑 구조물, 무너뜨리면 히든 보너스.
+   실제 바벨의 메달타워를 따랐다 —
+   기계가 저절로 쌓고, 반 개씩 어긋나게 올려서 앞으로만 넘어지게 만들어져 있다. */
+let tower = { x: W/2, y: 190, h: 0, lean: 0, shake: 0, timer: 0, falling: 0 };
+const TOWER_MAX = 22;      // 최대 층
+const LEAN_LIMIT = 1.0;    // 이만큼 기울면 무너진다
+
 /* ── 화면 맞추기 ── */
 function fit(){
   const wrap = document.querySelector(".wrap");
@@ -163,6 +171,7 @@ function addCoin(x, y, kind){
 /* 처음에 깔려 있는 동전. 빈 판에서 시작하면 재미가 없다 */
 function seed(){
   coins = [];
+  tower = { x: W/2, y: 190, h: 3, lean: 0, shake: 0, timer: 0, falling: 0 };
   for(let i = 0; i < 26; i++){
     addCoin(30 + Math.random()*(W-60), 150 + Math.random()*(H-230));
   }
@@ -180,6 +189,8 @@ function step(){
   pusher.y += pusher.speed * pusher.dir;
   if(pusher.y > pusher.max) pusher.dir = -1;
   if(pusher.y < pusher.min) pusher.dir = 1;
+
+  updateTower();
 
   for(const c of coins){
     // 밀개에 눌린 동전
@@ -284,6 +295,66 @@ function step(){
   }
 }
 
+/* ── 탑 ── */
+function updateTower(){
+  if(tower.falling > 0){ tower.falling--; if(tower.falling === 0) collapse(); return; }
+
+  // 저절로 쌓인다. 높아질수록 느리게 (안 그러면 금방 천장을 친다)
+  tower.timer++;
+  const need = 55 + tower.h * 6;
+  if(tower.timer > need && tower.h < TOWER_MAX){ tower.timer = 0; tower.h++; }
+  // 반 개씩 어긋나게 쌓이므로 높이 자체가 기울기가 된다 (실제 바벨이 그렇다).
+  // 흔들림은 여기에 얹히는 것이고, 흔들림만 시간이 지나면 가라앉는다
+  tower.lean = tower.h * 0.042 + tower.shake;
+
+  if(tower.h === 0) return;
+
+  // 동전이 밑동을 치면 흔들린다
+  for(const c of coins){
+    if(Math.abs(c.x - tower.x) < R*2.2 && Math.abs(c.y - tower.y) < R*1.8){
+      const hit = Math.abs(c.vy) + Math.abs(c.vx);
+      if(hit > 0.12){
+        tower.shake += hit * 0.11 * (1 + tower.h / 12);   // 높을수록 잘 넘어간다
+        c.vy *= 0.3;                                     // 부딪히면 동전은 힘을 잃는다
+        c.vx *= 0.3;
+      }
+    }
+  }
+  // 밀개가 밑동까지 밀고 오면 크게 흔들린다
+  if(pusher.dir > 0 && pusher.y > tower.y - R*1.5) tower.shake += 0.012;
+
+  tower.shake *= 0.997;           // 흔들림만 가라앉는다. 기울기는 높이가 만든 것이라 안 없어진다
+  if(tower.lean > LEAN_LIMIT){ tower.falling = 26; shakeSound(); }
+}
+
+/* 탑이 무너진다 — 쌓인 만큼 동전이 앞으로 쏟아진다 */
+function collapse(){
+  const n = tower.h;
+  for(let i = 0; i < n * 2; i++){
+    const c = { x: tower.x + (Math.random()-0.5) * R*3,
+                y: tower.y + 10 + Math.random() * 40,
+                vx: (Math.random()-0.5) * 1.2,
+                vy: 1.2 + Math.random() * 1.6,          // 앞으로 쏟아진다
+                kind: "coin", stack: 1 };
+    coins.push(c);
+  }
+  hintEl.textContent = n + "층 탑이 무너졌습니다!";
+  ding(5);
+  tower.h = 0; tower.lean = 0; tower.shake = 0; tower.timer = 0;
+}
+
+function shakeSound(){
+  try{
+    const c = actx();
+    const buf = c.createBuffer(1, c.sampleRate * 0.5, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * (1 - i/d.length) * 0.4;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 900;
+    src.connect(f); f.connect(c.destination); src.start();
+  }catch(e){}
+}
+
 /* ── 그리기 ── */
 function draw(){
   ctx.clearRect(0, 0, W, H);
@@ -306,6 +377,40 @@ function draw(){
   ctx.fillRect(0, pusher.y - 34, W, 34);
   ctx.fillStyle = "#4E6076";
   ctx.fillRect(0, pusher.y - 8, W, 8);
+
+  // 탑 — 동전보다 먼저 그린다(뒤에 선다)
+  if(tower.h > 0){
+    const shaking = tower.falling > 0;
+    const lean = shaking ? tower.lean + (26 - tower.falling) * 0.06 : tower.lean;
+    ctx.save();
+    ctx.translate(tower.x, tower.y);
+    for(let L = 0; L < tower.h; L++){
+      // 층마다 조금씩 앞으로 밀린다. 기울수록 더
+      const off = lean * L * 3.2 + (shaking ? Math.sin(L + tower.falling) * 2 : 0);
+      const yy = -L * 5.2 + off * 0.5;
+      ctx.save();
+      ctx.translate(off, yy);
+      ctx.scale(1, 0.62);
+      ctx.beginPath(); ctx.arc(0, 0, R*0.92, 0, 6.2832);
+      const tg = ctx.createLinearGradient(-R, -R, R, R);
+      tg.addColorStop(0, "#FFF0BE"); tg.addColorStop(1, "#D8A93A");
+      ctx.fillStyle = tg; ctx.fill();
+      ctx.lineWidth = 1.2; ctx.strokeStyle = "#8C6A18"; ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+    // 몇 층인지
+    ctx.fillStyle = tower.lean > LEAN_LIMIT*0.65 ? "#FF9E7A" : "#FFE9A8";
+    ctx.font = "bold 12px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(tower.h + "층", tower.x, tower.y - tower.h * 5.2 - 16);
+    // 위험 표시
+    if(tower.lean > LEAN_LIMIT*0.65 && !tower.falling){
+      ctx.fillStyle = "rgba(255,140,90,.9)";
+      ctx.font = "bold 11px -apple-system, sans-serif";
+      ctx.fillText("흔들린다", tower.x, tower.y - tower.h * 5.2 - 30);
+    }
+  }
 
   // 동전 — 뒤에 있는 것부터 그려야 앞 동전이 위로 올라온다
   const sorted = coins.slice().sort((a,b) => a.y - b.y);
