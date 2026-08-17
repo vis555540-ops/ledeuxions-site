@@ -70,6 +70,13 @@
     opacity:0; transition:opacity .55s ease;
   }
   .talk-line.on{opacity:1}
+  .choices{display:flex; flex-direction:column; gap:10px; margin-top:26px; width:min(320px,86vw)}
+  .ch{
+    background:#141A22; color:#D8DEE6; border:2px solid #3A4756; border-radius:0;
+    padding:13px 14px; font-size:15px; font-family:inherit; cursor:pointer;
+    box-shadow:3px 3px 0 #0A0E13; text-align:left;
+  }
+  .ch:active{transform:translate(2px,2px); box-shadow:1px 1px 0 #0A0E13}
   .talk-next{
     position:absolute; bottom:34px; font-size:12.5px; color:#4A525C; letter-spacing:.02em;
     opacity:0; animation:fadeIn .6s ease 1.4s forwards;
@@ -100,7 +107,7 @@
 <header>
   <div class="stats">
     <span class="gold">딴 돈 <b id="score">0</b></span>
-    <span>남은 동전 <b id="left">30</b></span>
+    <span>남은 동전 <b id="left">50</b></span>
     <span>최고 <b id="best">0</b></span>
   </div>
 </header>
@@ -115,6 +122,14 @@
 </footer>
 
 <canvas id="fall" class="fall hide"></canvas>
+
+<div id="choice" class="talk hide">
+  <div class="talk-line on" id="choiceLine"></div>
+  <div class="choices">
+    <button class="ch" id="chA"></button>
+    <button class="ch" id="chB"></button>
+  </div>
+</div>
 
 <div id="talk" class="talk hide">
   <div class="talk-line" id="talkLine"></div>
@@ -168,7 +183,8 @@ const BEST_KEY = "gw_dozer_best";
 let best = Number(localStorage.getItem(BEST_KEY) || 0);
 bestEl.textContent = best;
 
-let coins = [], score = 0, credits = 30, dropX = W/2, playing = false;
+let coins = [], score = 0, credits = 50, dropX = W/2, playing = false;
+const COIN_WON = 200;   // 동전 한 개 값. 만원이면 50개 (형: '시작할 때 만원 주고')
 let pusher = { y: 30, dir: 1, min: 22, max: 58, speed: 0.3 };
 
 /* ── 동전 탑 (히든 보너스) ──
@@ -223,6 +239,10 @@ function step(){
   if(pusher.y > pusher.max) pusher.dir = -1;
   if(pusher.y < pusher.min) pusher.dir = 1;
 
+  if(hintTimer > 0) hintTimer--;
+  if(sideGuard > 0) sideGuard--;
+  if(towerAim > 0) towerAim--;
+
   updateTower();
 
   for(const c of coins){
@@ -246,9 +266,11 @@ function step(){
 
     // 옆벽 — 뒤쪽은 막혀 있고 앞쪽(SIDE_OPEN 아래)은 열려 있다.
     // 열린 데로 빠지면 내 돈이 안 된다. 이게 이 게임의 긴장이다 (이음이 찾아준 실제 룰)
-    if(c.y < SIDE_OPEN){
-      if(c.x < R){ c.x = R; c.vx = Math.abs(c.vx) * 0.4; }
-      if(c.x > W - R){ c.x = W - R; c.vx = -Math.abs(c.vx) * 0.4; }
+    // 알려준 대로 하면 잠시 옆으로 덜 샌다
+    const guard = sideGuard > 0 ? R*2.2 : R;
+    if(c.y < SIDE_OPEN || sideGuard > 0){
+      if(c.x < guard){ c.x = guard; c.vx = Math.abs(c.vx) * 0.4; }
+      if(c.x > W - guard){ c.x = W - guard; c.vx = -Math.abs(c.vx) * 0.4; }
     }
     // 뒷벽
     if(c.y < pusher.min + R){ c.y = pusher.min + R; }
@@ -523,16 +545,26 @@ function drop(){
   credits--;
   leftEl.textContent = credits;
 
+  // 뒤에서 두드린다. 완전 랜덤은 아니고 동전을 어느 정도 쓰면 온다 (형 지시)
+  if(nextTapAt === 0) nextTapAt = 8 + Math.floor(Math.random()*4);
+  if(50 - credits >= nextTapAt && tapUsed < 3){
+    tapUsed++;
+    nextTapAt += 11 + Math.floor(Math.random()*5);
+    setTimeout(knock, 700);
+  }
+
   /* 타이밍 — 실제 고수들이 쓰는 방법('워터폴').
      밀개가 뒤로 다 물러났을 때 넣으면 밀개가 앞으로 나오며 힘을 최대로 전한다.
      아무 때나 넣는 것과 달라야 실력이 된다 */
   const back = (pusher.y - pusher.min) / (pusher.max - pusher.min);   // 0=완전히 뒤
   addCoin(dropX, pusher.min + R + 2);
   const c = coins[coins.length - 1];
-  if(back < 0.25){
-    c.vy = 0.26;                      // 뒤로 물러났을 때 = 잘 넣은 것
+  const window_ = hintTimer > 0 ? 0.42 : 0.25;      // 알려준 대로 하면 판정이 넉넉해진다
+  if(back < window_){
+    c.vy = hintTimer > 0 ? 0.34 : 0.26;
     hintEl.textContent = "좋은 타이밍";
   }
+  if(towerAim > 0 && Math.abs(dropX - tower.x) < R*2) c.vy += 0.1;   // 밑동 조준
   clink();
   if(credits === 0){
     dropBtn.disabled = true;
@@ -610,7 +642,7 @@ const OPENING = [
   "실컷 해봐라!",
   "으하하하하",
   "…",
-  "동전 서른 개가 손에 쥐어져 있다."
+  "만원어치 동전이 손에 쥐어져 있다."
 ];
 const ENDING_LOSS = [
   "동전이 다 떨어졌다.",
@@ -640,6 +672,7 @@ function talk(lines, done){
     setTimeout(() => {
       talkLine.textContent = lines[i];
       talkLine.classList.add("on");
+      babble(1 + Math.floor(lines[i].length / 9));   // 글자 수만큼 옹알거린다
     }, 260);
   };
   show();
@@ -657,6 +690,94 @@ function talk(lines, done){
 }
 
 let seenOpening = false;
+
+/* ── 옹알거림 ──
+   형: "옹알거리는 소리 TTS 빠르게 재생". 심즈처럼 말은 안 들리고 소리만 난다.
+   실제 말을 알아듣게 하면 자막을 읽을 이유가 없어진다 */
+const BABBLE = ["바라라","무무","니야","도도","라리루","뭐뭐","쿠쿠","시이"];
+function babble(n){
+  if(!window.speechSynthesis) return;
+  try{
+    speechSynthesis.cancel();
+    for(let i = 0; i < (n || 2); i++){
+      const u = new SpeechSynthesisUtterance(BABBLE[Math.floor(Math.random()*BABBLE.length)]);
+      u.lang = "ko-KR"; u.rate = 2.6; u.pitch = 0.55; u.volume = 0.35;
+      speechSynthesis.speak(u);
+    }
+  }catch(e){}
+}
+
+/* 뒤에서 툭툭 — 전화가 아니라 사람이 두드린다 (형 지시) */
+function tapSound(){
+  try{
+    const c = actx();
+    for(let i = 0; i < 2; i++){
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = "sine"; o.frequency.value = 150;
+      const t = c.currentTime + i*0.17;
+      g.gain.setValueAtTime(0.09, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+      o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + 0.11);
+    }
+  }catch(e){}
+}
+
+/* ── 뒤에 있는 사람 ──
+   형 설계: 툭툭 두드린다 → 본 체 할까 못 본 체 할까 →
+   본 체 하면 방법을 알려주겠다며 코인을 요구한다 */
+const OFFERS = [
+  { say:"밀개가 뒤로 다 빠졌을 때 넣어. 그때가 제일 세게 밀려.",
+    cost:3, apply:()=>{ hintTimer = 60*45; } },
+  { say:"가운데만 노리지 마. 옆으로 새면 그건 네 돈이 아니야.",
+    cost:2, apply:()=>{ sideGuard = 60*40; } },
+  { say:"탑 밑동을 쳐. 위를 쳐봐야 안 넘어가.",
+    cost:4, apply:()=>{ towerAim = 60*50; } },
+  { say:"흔들기. 아껴봐야 소용없어. 지금 눌러.",
+    cost:2, apply:()=>{ shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기"; } },
+];
+let hintTimer = 0, sideGuard = 0, towerAim = 0;
+let tapUsed = 0, nextTapAt = 0;
+
+const choiceEl  = document.getElementById("choice");
+const choiceLine= document.getElementById("choiceLine");
+const chA = document.getElementById("chA"), chB = document.getElementById("chB");
+
+function ask(text, aLabel, bLabel, onA, onB){
+  playing = false;                       // 고르는 동안 판은 멈춘다
+  choiceLine.textContent = text;
+  chA.textContent = aLabel; chB.textContent = bLabel;
+  choiceEl.classList.remove("hide");
+  babble(2);
+  const close = (fn) => {
+    choiceEl.classList.add("hide");
+    chA.onclick = chB.onclick = null;
+    playing = true;
+    fn && fn();
+  };
+  chA.onclick = () => close(onA);
+  chB.onclick = () => close(onB);
+}
+
+function knock(){
+  tapSound();
+  ask("툭, 툭.\n\n뒤에서 누군가 두드렸다.",
+      "돌아본다", "못 본 체한다",
+      () => {
+        const o = OFFERS[Math.floor(Math.random()*OFFERS.length)];
+        ask("\"" + o.say + "\"\n\n\"동전 " + o.cost + "개.\"",
+            "동전 " + o.cost + "개를 준다", "됐다고 한다",
+            () => {
+              if(credits >= o.cost){
+                credits -= o.cost; leftEl.textContent = credits;
+                o.apply(); hintEl.textContent = "…알려줬다";
+              }else{
+                hintEl.textContent = "줄 동전이 없다";
+              }
+            },
+            () => { hintEl.textContent = "돌아앉았다"; });
+      },
+      () => { hintEl.textContent = "못 본 체했다"; });
+}
 
 /* 떨어지는 장면 — 형이 그린 그림 그대로.
    동전과 함께 르통통씨가 떨어진다. 그림 파일은 안 쓰고 도형으로 그린다(파일 하나로 끝내려고) */
@@ -729,11 +850,12 @@ ob.onclick = () => {
 };
 
 function startRound(){
-  score = 0; credits = 30; playing = true;
+  score = 0; credits = 50; playing = true;
   scoreEl.textContent = 0; leftEl.textContent = credits;
   dropBtn.disabled = false;
   hintEl.textContent = "떨어뜨릴 자리를 누르세요";
   shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
+  hintTimer = sideGuard = towerAim = 0; tapUsed = 0; nextTapAt = 0;
   seed();
 }
 
