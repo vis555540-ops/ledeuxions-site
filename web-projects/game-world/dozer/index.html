@@ -112,7 +112,8 @@
 
 <header>
   <div class="stats">
-    <span class="gold">동전 <b id="left">50</b><span style="color:#6B7787"> / <b id="goal">40</b></span></span>
+    <span class="gold">동전 <b id="left">50</b></span>
+    <span>번 것 <b id="earn">0</b><span style="color:#6B7787"> / <b id="goal">40</b></span></span>
     <span>최고 <b id="best">0</b></span>
   </div>
 </header>
@@ -170,6 +171,7 @@ const cv = document.getElementById("cv");
 const ctx = cv.getContext("2d");
 const scoreEl = null;
 const leftEl  = document.getElementById("left");
+const earnEl  = document.getElementById("earn");
 const bestEl  = document.getElementById("best");
 const hintEl  = document.getElementById("hint");
 const dropBtn = document.getElementById("dropBtn");
@@ -189,7 +191,7 @@ const BEST_KEY = "gw_dozer_best";
 let best = Number(localStorage.getItem(BEST_KEY) || 0);
 bestEl.textContent = best;
 
-let coins = [], score = 0, credits = 50, dropX = W/2, playing = false;
+let coins = [], score = 0, earned = 0, credits = 50, dropX = W/2, playing = false;
 /* ── 단계 ── 형이 짠 구조. 잘될수록 뜯어간다
    1차 40 채우면 "빌려준 거니까" 하고 다 가져간다
    2차 동전을 두 개씩 넣어야 한다. 사장이 값을 올렸다
@@ -385,7 +387,9 @@ function step(){
   if(got || gotStar){
     const gain = got + gotStar * 10;
     credits += gain;                  // 딴 동전이 곧 내 동전이다 (형: "어차피 코인 합치자")
-    score += gain;                    // 순위표에 올릴 누적치
+    earned  += gain;                  // 이 판에서 벌어들인 양 (목표 판정)
+    score   += gain;                  // 순위표에 올릴 누적치
+    earnEl.textContent = earned;
     leftEl.textContent = credits;
     checkStage();
     ding(got + gotStar);
@@ -476,15 +480,16 @@ let stageBusy = false;
 function checkStage(){
   if(stageBusy) return;
   const st = STAGES[stage];
-  if(credits < st.goal) return;   // 가진 동전이 목표에 닿으면 넘어간다
+  if(earned < st.goal) return;   // '벌어들인' 동전이 목표에 닿아야 한다
   stageBusy = true;
   playing = false;
   setTimeout(() => {
     talk(st.done, () => {
       if(stage === 0){
-        credits = Math.max(0, credits - STAGES[0].goal);   // 빌려준 만큼 가져간다
+        credits = Math.max(0, credits - 50);   // 처음 빌려준 만원어치를 가져간다
         leftEl.textContent = credits;
       }
+      earned = 0; earnEl.textContent = 0;      // 다음 목표는 새로 센다
       stage++;
       if(stage >= STAGES.length){
         clearGame();
@@ -1082,7 +1087,8 @@ ob.onclick = () => {
 };
 
 function startRound(){
-  score = 0; credits = 50; playing = true; stage = 0; stageBusy = false;
+  score = 0; earned = 0; credits = 50; playing = true; stage = 0; stageBusy = false;
+  earnEl.textContent = 0;
   document.getElementById('goal').textContent = STAGES[0].goal;
   leftEl.textContent = credits;
   dropBtn.disabled = false;
