@@ -242,7 +242,14 @@ function seed(){
   coins = [];
   tower = { x: W/2, y: 132, h: 3, lean: 0, shake: 0, timer: 0, falling: 0 };
   for(let i = 0; i < 40; i++){
-    addCoin(14 + Math.random()*(W-28), 74 + Math.random()*(H-116));
+    let x, y, tries = 0;
+    do{
+      x = 14 + Math.random()*(W-28);
+      y = 74 + Math.random()*(H-116);
+      tries++;
+    // 탑 둘레는 비워둔다. 안 그러면 탑이 동전에 파묻혀 안 보인다
+    }while(tries < 20 && Math.abs(x - W/2) < R*2.4 && y < 175);
+    addCoin(x, y);
   }
   // 특별 동전 두 개 — 이게 떨어지면 크게 준다
   addCoin(W/2 - 22, H - 74, "star");
@@ -369,7 +376,7 @@ function step(){
     leftEl.textContent = credits;
     checkStage();
     ding(got + gotStar);
-    if(tower >= 3) hintEl.textContent = tower + "층 탑이 무너졌습니다!";
+    if(tower >= 3) hintEl.textContent = "쌓인 동전 " + tower + "개가 한꺼번에!";
     else if(gotStar) hintEl.textContent = "별 동전! " + (gotStar*10) + "개";
     else if(got >= 3) hintEl.textContent = got + "개가 한꺼번에!";
     else hintEl.textContent = "+" + gain;
@@ -432,7 +439,7 @@ function collapse(){
                 kind: "coin", stack: 1 };
     coins.push(c);
   }
-  hintEl.textContent = n + "층 탑이 무너졌습니다!";
+  hintEl.textContent = "탑이 무너졌다! " + n + "층";
   ding(5);
   tower.h = 0; tower.lean = 0; tower.shake = 0; tower.timer = 0;
 }
@@ -526,19 +533,6 @@ function draw(){
   ctx.fillStyle = "#46566B"; ctx.fillRect(0, py - 4, W, 4);
   ctx.fillStyle = "#5C7089"; ctx.fillRect(0, py - 18, W, 1);
 
-  // 탑 — 도트로. 층마다 조금씩 앞으로 밀린다
-  if(tower.h > 0){
-    const shaking = tower.falling > 0;
-    const lean = shaking ? tower.lean + (26 - tower.falling) * 0.05 : tower.lean;
-    for(let L = 0; L < tower.h; L++){
-      const off = Math.round(lean * L * 1.6 + (shaking ? Math.sin(L + tower.falling) : 0));
-      pixCoin(Math.round(tower.x + off), Math.round(tower.y - L*2.6), false);
-    }
-    ctx.fillStyle = tower.lean > LEAN_LIMIT*0.65 ? "#FF8A5C" : "#FFE9A8";
-    ctx.font = "7px monospace"; ctx.textAlign = "center";
-    ctx.fillText(tower.h, Math.round(tower.x), Math.round(tower.y - tower.h*2.6 - 8));
-  }
-
   // 동전 — 도트로 찍는다. 그라데이션 없이 색 세 개로만
   const sorted = coins.slice().sort((a,b) => a.y - b.y);
   for(const c of sorted){
@@ -552,6 +546,19 @@ function draw(){
       ctx.font = "6px monospace"; ctx.textAlign = "center";
       ctx.fillText(layers, Math.round(c.x), Math.round(c.y - layers*2 - 7));
     }
+  }
+
+  // 탑 — 도트로. 층마다 조금씩 앞으로 밀린다
+  if(tower.h > 0){
+    const shaking = tower.falling > 0;
+    const lean = shaking ? tower.lean + (26 - tower.falling) * 0.05 : tower.lean;
+    for(let L = 0; L < tower.h; L++){
+      const off = Math.round(lean * L * 1.6 + (shaking ? Math.sin(L + tower.falling) : 0));
+      pixCoin(Math.round(tower.x + off), Math.round(tower.y - L*2.6), false);
+    }
+    ctx.fillStyle = tower.lean > LEAN_LIMIT*0.65 ? "#FF8A5C" : "#FFE9A8";
+    ctx.font = "7px monospace"; ctx.textAlign = "center";
+    ctx.fillText(tower.h, Math.round(tower.x), Math.round(tower.y - tower.h*2.6 - 8));
   }
 
   // 넣을 자리 표시
