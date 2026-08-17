@@ -223,7 +223,8 @@ function fit(){
   const pad = 16;
   const availW = wrap.clientWidth - pad, availH = wrap.clientHeight - pad;
   let scale = Math.min(availW / W, availH / H);
-  scale = Math.max(1, Math.floor(scale));      // 정수배
+  scale = Math.max(1, Math.min(3, Math.floor(scale)));   // 정수배, 최대 3배
+  // 폰 세로 화면에서 판이 너무 커지면 점수판과 버튼이 밀려 안 보인다
   cv.width = W; cv.height = H;                 // 실제 픽셀 수는 그대로
   cv.style.width  = (W * scale) + "px";
   cv.style.height = (H * scale) + "px";
@@ -553,7 +554,9 @@ function draw(){
     const shaking = tower.falling > 0;
     const lean = shaking ? tower.lean + (26 - tower.falling) * 0.05 : tower.lean;
     for(let L = 0; L < tower.h; L++){
-      const off = Math.round(lean * L * 1.6 + (shaking ? Math.sin(L + tower.falling) : 0));
+      // 기울되 판 안에 머물게 한다. 안 그러면 탑이 화면 밖으로 뻗는다
+      const raw = lean * L * 1.6 + (shaking ? Math.sin(L + tower.falling) * 1.5 : 0);
+      const off = Math.round(Math.max(-R*2.5, Math.min(R*2.5, raw)));
       pixCoin(Math.round(tower.x + off), Math.round(tower.y - L*2.6), false);
     }
     ctx.fillStyle = tower.lean > LEAN_LIMIT*0.65 ? "#FF8A5C" : "#FFE9A8";
