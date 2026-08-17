@@ -87,6 +87,7 @@
 
 <footer>
   <button class="drop" id="dropBtn">동전 넣기</button>
+  <button class="drop" id="shakeBtn" style="max-width:130px;background:linear-gradient(180deg,#7C8CA0,#5B6A7D);color:#0E141B">흔들기</button>
 </footer>
 
 <div class="over" id="over">
@@ -128,6 +129,7 @@ const W = 300;          // 판 가로
 const H = 420;          // 판 세로. y가 클수록 앞(떨어지는 쪽)
 const EDGE = H - 8;     // 이 선을 넘으면 떨어진다
 const R = 15;           // 동전 반지름
+const SIDE_OPEN = 250;  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
 
 const BEST_KEY = "gw_dozer_best";
 let best = Number(localStorage.getItem(BEST_KEY) || 0);
@@ -186,9 +188,12 @@ function step(){
     c.vx *= 0.86;  c.vy *= 0.86;      // 마찰
     c.x += c.vx;   c.y += c.vy;
 
-    // 옆벽
-    if(c.x < R){ c.x = R; c.vx = Math.abs(c.vx) * 0.4; }
-    if(c.x > W - R){ c.x = W - R; c.vx = -Math.abs(c.vx) * 0.4; }
+    // 옆벽 — 뒤쪽은 막혀 있고 앞쪽(SIDE_OPEN 아래)은 열려 있다.
+    // 열린 데로 빠지면 내 돈이 안 된다. 이게 이 게임의 긴장이다 (이음이 찾아준 실제 룰)
+    if(c.y < SIDE_OPEN){
+      if(c.x < R){ c.x = R; c.vx = Math.abs(c.vx) * 0.4; }
+      if(c.x > W - R){ c.x = W - R; c.vx = -Math.abs(c.vx) * 0.4; }
+    }
     // 뒷벽
     if(c.y < pusher.min + R){ c.y = pusher.min + R; }
   }
@@ -217,14 +222,19 @@ function step(){
   }
 
   // 떨어진 동전 거두기
-  let got = 0, gotStar = 0;
+  let got = 0, gotStar = 0, lost = 0;
   coins = coins.filter(c => {
     if(c.y > EDGE){
       if(c.kind === "star"){ gotStar++; } else { got++; }
       return false;
     }
+    if(c.x < -R || c.x > W + R){ lost++; return false; }   // 옆으로 빠짐 = 손실
     return true;
   });
+  if(lost && !got && !gotStar){
+    hintEl.textContent = "옆으로 " + lost + "개 빠졌습니다";
+    thud();
+  }
   if(got || gotStar){
     const gain = got + gotStar * 10;
     score += gain;
@@ -313,6 +323,16 @@ function ding(n){
     }
   }catch(e){}
 }
+function thud(){
+  try{
+    const c = actx(), o = c.createOscillator(), g = c.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(180, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(70, c.currentTime + 0.2);
+    g.gain.setValueAtTime(0.05, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.22);
+    o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 0.23);
+  }catch(e){}
+}
 function clink(){
   try{
     const c = actx(), o = c.createOscillator(), g = c.createGain();
@@ -353,6 +373,26 @@ function drop(){
 }
 dropBtn.onclick = drop;
 
+/* 흔들기 — 실제 기계에도 있는 기능. 다만 계속 누르면 게임이 아니게 되므로 쿨다운을 둔다 */
+const shakeBtn = document.getElementById("shakeBtn");
+let shakeReady = true;
+shakeBtn.onclick = () => {
+  if(!playing || !shakeReady) return;
+  shakeReady = false;
+  shakeBtn.disabled = true;
+  for(const c of coins){
+    c.vx += (Math.random() - 0.5) * 2.4;
+    c.vy += Math.random() * 0.9;        // 앞으로만 살짝. 뒤로 가면 이상하다
+  }
+  thud();
+  hintEl.textContent = "흔들었습니다";
+  let n = 6;
+  const t = setInterval(() => {
+    n--; shakeBtn.textContent = n > 0 ? n + "초" : "흔들기";
+    if(n <= 0){ clearInterval(t); shakeReady = true; shakeBtn.disabled = false; }
+  }, 1000);
+};
+
 function checkEnd(){
   // 더 이상 점수가 오를 가망이 없으면 끝낸다
   const near = coins.filter(c => c.y > EDGE - 60).length;
@@ -388,6 +428,7 @@ ob.onclick = () => {
   scoreEl.textContent = 0; leftEl.textContent = credits;
   dropBtn.disabled = false;
   hintEl.textContent = "떨어뜨릴 자리를 누르세요";
+  shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
   seed();
   over.classList.add("hide");
 };
