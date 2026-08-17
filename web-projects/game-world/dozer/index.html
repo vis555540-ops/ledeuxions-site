@@ -1,3 +1,26 @@
+function knock(){
+  tapSound();
+  ask("툭, 툭.\n\n뒤에서 누군가 두드렸다.",
+      "돌아본다", "못 본 체한다",
+      () => {
+        const o = OFFERS[Math.floor(Math.random()*OFFERS.length)];
+        // 신뢰도는 자막으로만. 숫자는 안 보여준다 (형 지시)
+        const t = TRUST[Math.floor(Math.random()*TRUST.length)];
+        ask('"' + o.say + '"\n\n"동전 ' + o.cost + '개."\n\n' + t.line,
+            "동전 " + o.cost + "개를 준다", "됐다고 한다",
+            () => {
+              if(credits >= o.cost){
+                credits -= o.cost; leftEl.textContent = credits;
+                startOrder(o, t);
+              }else{
+                hintEl.textContent = "줄 동전이 없다";
+              }
+            },
+            () => { hintEl.textContent = "돌아앉았다"; });
+      },
+      () => { hintEl.textContent = "못 본 체했다"; });
+}
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -239,6 +262,7 @@ function step(){
   if(pusher.y > pusher.max) pusher.dir = -1;
   if(pusher.y < pusher.min) pusher.dir = 1;
 
+  orderTick();
   if(hintTimer > 0) hintTimer--;
   if(sideGuard > 0) sideGuard--;
   if(towerAim > 0) towerAim--;
@@ -556,6 +580,24 @@ function drop(){
   /* 타이밍 — 실제 고수들이 쓰는 방법('워터폴').
      밀개가 뒤로 다 물러났을 때 넣으면 밀개가 앞으로 나오며 힘을 최대로 전한다.
      아무 때나 넣는 것과 달라야 실력이 된다 */
+  // 시킨 대로 하는지 본다
+  if(order){
+    const back0 = (pusher.y - pusher.min) / (pusher.max - pusher.min);
+    if(order.cmd === "wait"){
+      if(order.step === 1){ failOrder("기다리라고 했는데"); }
+      else { order.step = 1; order.last = order.t; } // 넣었다. 이제 손대지 말아야 한다
+    }else if(order.cmd === "shakedrop"){
+      if(order.step === 1 && order.t - order.last < 60) clearOrder();
+      else failOrder("순서가 틀렸다");
+    }else if(order.cmd === "timing3"){
+      if(back0 < 0.3){ order.step++; if(order.step >= 3) clearOrder(); }
+      else failOrder("때가 아니었다");
+    }else if(order.cmd === "tower3"){
+      if(Math.abs(dropX - tower.x) < R*2.2){ order.step++; if(order.step >= 3) clearOrder(); }
+      else failOrder("빗나갔다");
+    }
+  }
+
   const back = (pusher.y - pusher.min) / (pusher.max - pusher.min);   // 0=완전히 뒤
   addCoin(dropX, pusher.min + R + 2);
   const c = coins[coins.length - 1];
@@ -587,6 +629,7 @@ shakeBtn.onclick = () => {
   }
   thud();
   hintEl.textContent = "흔들었습니다";
+  if(order && order.cmd === "shakedrop"){ order.step = 1; order.last = order.t; }
   let n = 6;
   const t = setInterval(() => {
     n--; shakeBtn.textContent = n > 0 ? n + "초" : "흔들기";
@@ -725,16 +768,61 @@ function tapSound(){
 /* ── 뒤에 있는 사람 ──
    형 설계: 툭툭 두드린다 → 본 체 할까 못 본 체 할까 →
    본 체 하면 방법을 알려주겠다며 코인을 요구한다 */
+/* 뒤에 있는 사람이 시키는 것 = 커맨드.
+   형 설계: "동전 넣고 몇 초 대기", "흔들고 동전 바로 넣기" 같은 순서를 알려주고 코인을 받는다 */
 const OFFERS = [
-  { say:"밀개가 뒤로 다 빠졌을 때 넣어. 그때가 제일 세게 밀려.",
-    cost:3, apply:()=>{ hintTimer = 60*45; } },
-  { say:"가운데만 노리지 마. 옆으로 새면 그건 네 돈이 아니야.",
-    cost:2, apply:()=>{ sideGuard = 60*40; } },
-  { say:"탑 밑동을 쳐. 위를 쳐봐야 안 넘어가.",
-    cost:4, apply:()=>{ towerAim = 60*50; } },
-  { say:"흔들기. 아껴봐야 소용없어. 지금 눌러.",
-    cost:2, apply:()=>{ shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기"; } },
+  { say:"동전 넣고 세 셀 때까지 손대지 마. 그때 밀개가 문다.",
+    cmd:"wait", cost:3, ok:"밀린다… 밀린다!" },
+  { say:"흔들고 바로 넣어. 흔들린 김에 같이 넘어가.",
+    cmd:"shakedrop", cost:4, ok:"우르르 넘어간다" },
+  { say:"밀개가 뒤로 다 빠졌을 때만 넣어. 세 번 연속으로.",
+    cmd:"timing3", cost:4, ok:"세 번 다 물었다" },
+  { say:"탑 밑동만 노려. 세 번 쳐.",
+    cmd:"tower3", cost:5, ok:"탑이 흔들린다" },
 ];
+
+/* 신뢰도 — 자막으로만 알려준다. 숫자는 절대 안 보여준다 (형 지시) */
+const TRUST = [
+  { line:"딱히 신뢰가 가지 않는다.",                          p:0.50 },
+  { line:"해볼 만한 걸?",                                     p:0.70 },
+  { line:"오락실 사장님 아들이군. 용돈이 모자랐나 보네.",      p:0.96 },
+];
+
+/* 지금 받은 지시를 지키는지 지켜본다 */
+let order = null;   // {cmd, p, ok, step, t}
+function startOrder(o, trust){
+  order = { cmd:o.cmd, p:trust.p, ok:o.ok, step:0, t:0, last:0 };
+  hintEl.textContent = "시킨 대로 해본다";
+}
+function orderTick(){
+  if(!order) return;
+  order.t++;
+  if(order.cmd === "wait" && order.step === 1 && order.t - order.last > 180){ clearOrder(); return; }
+  if(order.t > 60*22){ failOrder("때를 놓쳤다"); }
+}
+function failOrder(msg){
+  order = null;
+  hintEl.textContent = msg;
+  thud();
+}
+function clearOrder(){
+  // 지시를 지켰다. 다만 지켰다고 늘 되는 건 아니다 — 그게 이 사람의 말값이다
+  const good = Math.random() < order.p;
+  const txt = order.ok;
+  order = null;
+  if(good){
+    hintEl.textContent = txt;
+    for(let i = 0; i < 5; i++){
+      coins.push({ x: 20 + Math.random()*(W-40), y: EDGE - 20 - Math.random()*30,
+                   vx:0, vy: 0.5 + Math.random()*0.5, kind:"coin", stack:1 });
+    }
+    ding(4);
+  }else{
+    hintEl.textContent = "아무 일도 없었다";
+    thud();
+  }
+}
+
 let hintTimer = 0, sideGuard = 0, towerAim = 0;
 let tapUsed = 0, nextTapAt = 0;
 
@@ -855,7 +943,7 @@ function startRound(){
   dropBtn.disabled = false;
   hintEl.textContent = "떨어뜨릴 자리를 누르세요";
   shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
-  hintTimer = sideGuard = towerAim = 0; tapUsed = 0; nextTapAt = 0;
+  hintTimer = sideGuard = towerAim = 0; tapUsed = 0; nextTapAt = 0; order = null;
   seed();
 }
 
