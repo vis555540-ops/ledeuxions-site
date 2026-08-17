@@ -129,6 +129,7 @@ const W = 300;          // 판 가로
 const H = 420;          // 판 세로. y가 클수록 앞(떨어지는 쪽)
 const EDGE = H - 8;     // 이 선을 넘으면 떨어진다
 const R = 15;           // 동전 반지름
+const LIP_FORCE = 0.09;  // 앞 턱을 넘는 데 필요한 힘 (배당률을 정하는 값)
 const SIDE_OPEN = 250;  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
 
 const BEST_KEY = "gw_dozer_best";
@@ -185,8 +186,18 @@ function step(){
       c.y = pusher.y + R;
       c.vy = Math.max(c.vy, pusher.speed);
     }
-    c.vx *= 0.86;  c.vy *= 0.86;      // 마찰
+    c.vx *= 0.86;  c.vy *= 0.86;      // 운동마찰
+    // 정지마찰 — 힘이 약하면 아예 안 움직인다. 실제 기계가 그래서 잘 안 떨어진다
+    if(Math.abs(c.vx) < 0.035) c.vx = 0;
+    if(Math.abs(c.vy) < 0.035) c.vy = 0;
     c.x += c.vx;   c.y += c.vy;
+
+    // 앞 턱(lip) — 실제 기계에는 앞에 턱이 있다. 걸쳐 있다가 뒤에서 밀어야 넘어간다.
+    // 이 턱이 '아슬아슬하게 걸린 동전'을 만든다. 이 게임의 재미는 거기서 나온다
+    if(c.y > EDGE - R*1.2 && c.y < EDGE){
+      c.vy *= 0.55;
+      if(c.vy < LIP_FORCE) c.vy = 0;    // 미는 힘이 모자라면 턱에 걸린다
+    }
 
     // 옆벽 — 뒤쪽은 막혀 있고 앞쪽(SIDE_OPEN 아래)은 열려 있다.
     // 열린 데로 빠지면 내 돈이 안 된다. 이게 이 게임의 긴장이다 (이음이 찾아준 실제 룰)
