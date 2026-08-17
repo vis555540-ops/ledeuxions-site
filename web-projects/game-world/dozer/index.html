@@ -52,6 +52,25 @@
   .drop:disabled{filter:grayscale(.7) brightness(.7); box-shadow:none}
   .hint{text-align:center; font-size:13px; color:var(--muted); padding:0 14px 10px; flex:0 0 auto}
 
+  /* 대화는 무조건 검은 화면에서만. 게임 화면 위에 겹치지 않는다 (형 지시) */
+  .talk{
+    position:fixed; inset:0; background:#000; z-index:40;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:32px; text-align:center; cursor:pointer;
+  }
+  .talk.hide{display:none}
+  .talk-line{
+    font-size:clamp(17px,4.6vw,23px); line-height:1.9; color:#D8DEE6;
+    max-width:520px; letter-spacing:-.01em; min-height:3em;
+    opacity:0; transition:opacity .55s ease;
+  }
+  .talk-line.on{opacity:1}
+  .talk-next{
+    position:absolute; bottom:34px; font-size:12.5px; color:#4A525C; letter-spacing:.02em;
+    opacity:0; animation:fadeIn .6s ease 1.4s forwards;
+  }
+  @keyframes fadeIn{to{opacity:1}}
+
   .over{
     position:fixed; inset:0; background:rgba(14,18,24,.95); z-index:30;
     display:flex; align-items:center; justify-content:center; padding:26px; text-align:center;
@@ -89,6 +108,11 @@
   <button class="drop" id="dropBtn">동전 넣기</button>
   <button class="drop" id="shakeBtn" style="max-width:130px;background:linear-gradient(180deg,#7C8CA0,#5B6A7D);color:#0E141B">흔들기</button>
 </footer>
+
+<div id="talk" class="talk hide">
+  <div class="talk-line" id="talkLine"></div>
+  <div class="talk-next">눌러서 넘기기</div>
+</div>
 
 <div class="over" id="over">
   <div class="card">
@@ -567,6 +591,11 @@ function checkEnd(){
 
 async function gameOver(){
   playing = false;
+  // 끝 대사도 검은 화면에서. 결과판은 그 다음에 보여준다
+  talk(ENDING_LOSS, () => showResult());
+}
+
+async function showResult(){
   if(score > best){
     best = score;
     localStorage.setItem(BEST_KEY, best);
@@ -587,16 +616,71 @@ async function gameOver(){
   }
 }
 
+/* ── 검은 화면 대화 ──
+   형 지시: 스토리는 조금만. 명시하지 말고 짐작하게. 대화는 무조건 검은 화면에서.
+   ⚠️ 아래 대사는 맺음이 쓴 초안이다. 형이 고치면 그걸로 바꾼다 */
+const OPENING = [
+  "동전 서른 개.",
+  "그거면 충분하다고 했다.",
+  "누가 그랬는지는 기억나지 않는다.",
+  "앞줄이 곧 떨어질 것처럼 걸쳐 있다.",
+  "언제부터 저러고 있었는지 모르겠다."
+];
+const ENDING_LOSS = [
+  "동전이 떨어졌다.",
+  "앞줄은 아직 그대로 걸쳐 있다.",
+  "조금만 더 있었으면 됐을 것이다.",
+  "늘 그렇게 보인다."
+];
+
+const talkEl = document.getElementById("talk");
+const talkLine = document.getElementById("talkLine");
+
+function talk(lines, done){
+  let i = 0;
+  talkEl.classList.remove("hide");
+  const show = () => {
+    talkLine.classList.remove("on");
+    setTimeout(() => {
+      talkLine.textContent = lines[i];
+      talkLine.classList.add("on");
+    }, 260);
+  };
+  show();
+  const next = () => {
+    i++;
+    if(i >= lines.length){
+      talkEl.removeEventListener("pointerdown", next);
+      talkEl.classList.add("hide");
+      done && done();
+      return;
+    }
+    show();
+  };
+  talkEl.addEventListener("pointerdown", next);
+}
+
+let seenOpening = false;
+
 ob.onclick = () => {
   if(window.Arcade) Arcade.ensureName();
+  over.classList.add("hide");
+  if(!seenOpening){
+    seenOpening = true;
+    talk(OPENING, startRound);
+    return;
+  }
+  startRound();
+};
+
+function startRound(){
   score = 0; credits = 30; playing = true;
   scoreEl.textContent = 0; leftEl.textContent = credits;
   dropBtn.disabled = false;
   hintEl.textContent = "떨어뜨릴 자리를 누르세요";
   shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
   seed();
-  over.classList.add("hide");
-};
+}
 
 /* ── 진행 ── */
 function loop(){
