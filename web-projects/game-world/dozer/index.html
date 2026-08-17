@@ -217,7 +217,7 @@ let deck = { off: 0, dir: 1, max: 16, speed: 0.5 };   // 판이 밀려나간 정
    기계가 저절로 쌓고, 반 개씩 어긋나게 올려서 앞으로만 넘어지게 만들어져 있다. */
 let tower = { x: W/2, y: 112, h: 0, lean: 0, shake: 0, timer: 0, falling: 0 };
 const TOWER_MAX = 16;      // 최대 층
-const LEAN_LIMIT = 1.0;    // 이만큼 기울면 무너진다
+const LEAN_LIMIT = 0.8;    // 이만큼 기울면 무너진다
 
 /* ── 화면 맞추기 ── */
 /* 픽셀 감성 — 캔버스는 작게(W×H) 두고 CSS로만 키운다.
@@ -421,7 +421,9 @@ function updateTower(){
   if(tower.timer > need && tower.h < TOWER_MAX){ tower.timer = 0; tower.h++; }
   // 반 개씩 어긋나게 쌓이므로 높이 자체가 기울기가 된다 (실제 바벨이 그렇다).
   // 흔들림은 여기에 얹히는 것이고, 흔들림만 시간이 지나면 가라앉는다
-  tower.lean = tower.h * 0.055 + tower.shake;
+  // 저절로는 안 무너진다. 사람이 쳐야 흔들리고, 높을수록 잘 흔들린다
+  // (전에는 높이만으로 기울어져서 가만히 둬도 무너졌다 — 형: "가만히 있어도 부자되겠네욤")
+  tower.lean = tower.shake;
 
   if(tower.h === 0) return;
 
@@ -430,14 +432,14 @@ function updateTower(){
     if(Math.abs(c.x - tower.x) < R*2.2 && Math.abs(c.y - tower.y) < R*1.8){
       const hit = Math.abs(c.vy) + Math.abs(c.vx);
       if(hit > 0.04){
-        tower.shake += hit * 0.11 * (1 + tower.h / 12);   // 높을수록 잘 넘어간다
+        tower.shake += hit * 0.5 * (0.4 + tower.h / 8);   // 높을수록 잘 넘어간다
         c.vy *= 0.3;                                     // 부딪히면 동전은 힘을 잃는다
         c.vx *= 0.3;
       }
     }
   }
   // 밀개가 밑동까지 밀고 오면 크게 흔들린다
-  if(deck.dir > 0 && tower.h > 0) tower.shake += 0.004;   // 판이 밀 때마다 조금씩 흔들린다
+
 
   tower.shake *= 0.997;           // 흔들림만 가라앉는다. 기울기는 높이가 만든 것이라 안 없어진다
   if(tower.lean > LEAN_LIMIT){ tower.falling = 26; shakeSound(); }
