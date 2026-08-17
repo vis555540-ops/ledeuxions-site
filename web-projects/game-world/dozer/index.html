@@ -205,7 +205,11 @@ const STAGES = [
 ];
 let stage = 0;
 const COIN_WON = 200;   // 동전 한 개 값. 만원이면 50개 (형: '시작할 때 만원 주고')
-let pusher = { y: 30, dir: 1, min: 22, max: 96, speed: 0.5 };
+/* 실제 기계는 밀개(배리케이드)가 고정이고 판이 앞뒤로 움직인다.
+   판이 앞으로 나올 때 밀개 밑을 지나며 동전이 앞으로 밀려난다.
+   형: "물리 문제가 아니라 부장이 이 게임을 모르네" — 맞는 말이었다 */
+const PUSH_Y = 34;          // 밀개가 서 있는 자리 (고정)
+let deck = { off: 0, dir: 1, max: 16, speed: 0.5 };   // 판이 밀려나간 정도
 
 /* ── 동전 탑 (히든 보너스) ──
    형 지시: 코인도저 기본 필드 + 별도 탑 구조물, 무너뜨리면 히든 보너스.
@@ -262,10 +266,12 @@ function seed(){
    2) 겹친 동전끼리 서로 밀어낸다 (여러 번 반복해야 안정된다)
    3) 마찰로 속도를 죽인다. 안 그러면 영원히 미끄러진다 */
 function step(){
-  // 밀개 왕복
-  pusher.y += pusher.speed * pusher.dir;
-  if(pusher.y > pusher.max) pusher.dir = -1;
-  if(pusher.y < pusher.min) pusher.dir = 1;
+  // 판이 앞뒤로 움직인다. 앞으로 나올 때만 동전이 밀린다
+  const prevOff = deck.off;
+  deck.off += deck.speed * deck.dir;
+  if(deck.off > deck.max) deck.dir = -1;
+  if(deck.off < 0) deck.dir = 1;
+  const advance = deck.off - prevOff;
 
   // 배운 '기다리기' — 넣고 3초 손대지 않으면 앞줄이 스스로 밀린다
   if(ready("wait") && lastDropAt && performance.now() - lastDropAt > 3000){
@@ -284,11 +290,11 @@ function step(){
       if(c.y >= c.fallTo){ c.y = c.fallTo; c.vy = 0; c.fallTo = 0; clink(); }
       continue;
     }
-    // 밀개에 눌린 동전
-    if(pusher.dir > 0 && c.y - R < pusher.y && c.y > pusher.y - 30){
-      c.y = pusher.y + R;
-      c.vy = Math.max(c.vy, pusher.speed * STAGES[stage].push);
-    }
+    /* 판 위의 동전은 판과 함께 앞뒤로 같이 움직인다.
+       그래서 판 왕복만으로는 아무것도 안 떨어진다 — 실제 기계가 그렇다.
+       앞으로 나아가는 힘은 '새로 넣은 동전이 뒤에서 밀어주는 것'에서만 나온다.
+       형: "물리 문제가 아니라 부장이 이 게임을 모르네" */
+    c.y += advance * STAGES[stage].push;
     const dr = STAGES[stage].drag;
     c.vx *= dr;  c.vy *= dr;          // 운동마찰. 단계가 오르면 동전이 무거워진다
     // 정지마찰 — 힘이 약하면 아예 안 움직인다. 실제 기계가 그래서 잘 안 떨어진다
@@ -310,8 +316,8 @@ function step(){
       if(c.x < guard){ c.x = guard; c.vx = Math.abs(c.vx) * 0.4; }
       if(c.x > W - guard){ c.x = W - guard; c.vx = -Math.abs(c.vx) * 0.4; }
     }
-    // 뒷벽 = 판 맨 위. 동전은 여기 떨어져 밀개가 밀어줄 때까지 기다린다
-    if(c.y < R + 1){ c.y = R + 1; }
+    // 밀개보다 뒤로는 못 간다
+    if(c.y < PUSH_Y + R){ c.y = PUSH_Y + R; }
   }
 
   // 겹침 풀기 — 반복할수록 자연스럽지만 무거워진다. 4번이면 충분하다
@@ -431,7 +437,7 @@ function updateTower(){
     }
   }
   // 밀개가 밑동까지 밀고 오면 크게 흔들린다
-  if(pusher.dir > 0 && pusher.y > tower.y - R*2.5) tower.shake += 0.02;
+  if(deck.dir > 0 && tower.h > 0) tower.shake += 0.004;   // 판이 밀 때마다 조금씩 흔들린다
 
   tower.shake *= 0.997;           // 흔들림만 가라앉는다. 기울기는 높이가 만든 것이라 안 없어진다
   if(tower.lean > LEAN_LIMIT){ tower.falling = 26; shakeSound(); }
@@ -536,8 +542,8 @@ function draw(){
   ctx.fillStyle = "#C99A2E";
   for(let x = 0; x < W; x += 4) ctx.fillRect(x, EDGE, 2, 1);
 
-  // 밀개
-  const py = Math.round(pusher.y);
+  // 밀개 (고정)
+  const py = PUSH_Y;
   ctx.fillStyle = "#2E3947"; ctx.fillRect(0, py - 18, W, 18);
   ctx.fillStyle = "#46566B"; ctx.fillRect(0, py - 4, W, 4);
   ctx.fillStyle = "#5C7089"; ctx.fillRect(0, py - 18, W, 1);
@@ -673,9 +679,9 @@ function drop(){
   /* 타이밍 — 실제 고수들이 쓰는 방법('워터폴').
      밀개가 뒤로 다 물러났을 때 넣으면 밀개가 앞으로 나오며 힘을 최대로 전한다.
      아무 때나 넣는 것과 달라야 실력이 된다 */
-  const back = (pusher.y - pusher.min) / (pusher.max - pusher.min);   // 0=완전히 뒤
+  const back = deck.off / deck.max;   // 0 = 판이 다 물러난 때 (지금 넣으면 길게 밀린다)
   // 위에서 떨어져 밀개 바로 뒤에 앉는다 (형: '동전을 넣으면 위에서 안 떨어짐')
-  addCoin(dropX, -R, null, R + 3);   // 늘 맨 뒤. 밀개가 뒤로 물러났다가 밀고 나온다
+  addCoin(dropX, -R, null, PUSH_Y + R + 1);   // 밀개 바로 앞. 여기서부터 밀려 나간다
   const c = coins[coins.length - 1];
 
   /* ── 배운 것은 조건이 맞을 때만 듣는다 (형 지시) ──
