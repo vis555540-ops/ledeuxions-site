@@ -216,9 +216,12 @@ let deck = { off: 0, dir: 1, max: 16, speed: 0.5 };   // 판이 밀려나간 정
    형 지시: 코인도저 기본 필드 + 별도 탑 구조물, 무너뜨리면 히든 보너스.
    실제 바벨의 메달타워를 따랐다 —
    기계가 저절로 쌓고, 반 개씩 어긋나게 올려서 앞으로만 넘어지게 만들어져 있다. */
-let tower = { x: W/2, y: 112, h: 0, lean: 0, shake: 0, timer: 0, falling: 0 };
+/* 탑은 저절로 자라지 않는다. 조건을 채우면 기계가 미리 쌓아둔 탑을 판에 내보낸다.
+   (실제 코인도저: "a pre-built stack vended onto the pusher deck as a reward for a bonus objective")
+   형: "해금 1차 조건 / 아예 따로 쌓아서 내릴 것 / 좀 흔든다고 무너질 정도는 아닐 것 / 1스테이지 40개짜리 하나" */
+let tower = { x: W/2, y: 112, h: 0, coins: 0, lean: 0, shake: 0, falling: 0 };
 const TOWER_MAX = 16;      // 최대 층
-const LEAN_LIMIT = 0.8;    // 이만큼 기울면 무너진다
+const LEAN_LIMIT = 1.6;    // 이만큼 기울면 무너진다
 
 /* ── 화면 맞추기 ── */
 /* 픽셀 감성 — 캔버스는 작게(W×H) 두고 CSS로만 키운다.
@@ -246,7 +249,7 @@ function addCoin(x, y, kind, fallTo){
 /* 처음에 깔려 있는 동전. 빈 판에서 시작하면 재미가 없다 */
 function seed(){
   coins = [];
-  tower = { x: W/2, y: 112, h: 3, lean: 0, shake: 0, timer: 0, falling: 0 };
+  tower = { x: W/2, y: 112, h: 0, coins: 0, lean: 0, shake: 0, falling: 0 };   // 처음엔 탑이 없다
   for(let i = 0; i < 58; i++){
     let x, y, tries = 0;
     do{
@@ -417,10 +420,7 @@ function pixCoin(x, y, isStar){
 function updateTower(){
   if(tower.falling > 0){ tower.falling--; if(tower.falling === 0) collapse(); return; }
 
-  // 저절로 쌓인다. 높아질수록 느리게 (안 그러면 금방 천장을 친다)
-  tower.timer++;
-  const need = 55 + tower.h * 6;
-  if(tower.timer > need && tower.h < TOWER_MAX){ tower.timer = 0; tower.h++; }
+
   // 반 개씩 어긋나게 쌓이므로 높이 자체가 기울기가 된다 (실제 바벨이 그렇다).
   // 흔들림은 여기에 얹히는 것이고, 흔들림만 시간이 지나면 가라앉는다
   // 저절로는 안 무너진다. 사람이 쳐야 흔들리고, 높을수록 잘 흔들린다
@@ -434,7 +434,7 @@ function updateTower(){
     if(Math.abs(c.x - tower.x) < R*2.2 && Math.abs(c.y - tower.y) < R*1.8){
       const hit = Math.abs(c.vy) + Math.abs(c.vx);
       if(hit > 0.04){
-        tower.shake += hit * 0.5 * (0.4 + tower.h / 8);   // 높을수록 잘 넘어간다
+        tower.shake += hit * 0.16 * (0.5 + tower.h / 16);   // 형: 좀 흔든다고 무너지면 안 된다   // 높을수록 잘 넘어간다
         c.vy *= 0.3;                                     // 부딪히면 동전은 힘을 잃는다
         c.vx *= 0.3;
       }
@@ -447,20 +447,30 @@ function updateTower(){
   if(tower.lean > LEAN_LIMIT){ tower.falling = 26; shakeSound(); }
 }
 
+/* 조건을 채우면 미리 쌓아둔 탑을 판에 내보낸다 */
+function vendTower(nCoins){
+  tower.coins = nCoins;
+  tower.h = Math.max(6, Math.round(nCoins / 3));   // 40개면 13층쯤
+  tower.lean = 0; tower.shake = 0; tower.falling = 0;
+  hintEl.textContent = "탑이 나왔다 — " + nCoins + "개";
+  ding(3);
+}
+
 /* 탑이 무너진다 — 쌓인 만큼 동전이 앞으로 쏟아진다 */
 function collapse(){
-  const n = tower.h;
-  for(let i = 0; i < n * 2; i++){
-    const c = { x: tower.x + (Math.random()-0.5) * R*3,
-                y: tower.y + 10 + Math.random() * 40,
+  const n = tower.coins || tower.h;
+  for(let i = 0; i < n; i++){
+    // 형: "내리 칠때마다 면적이 엄청 커진다"
+    const c = { x: tower.x + (Math.random()-0.5) * W * 0.8,
+                y: tower.y + 6 + Math.random() * 70,
                 vx: (Math.random()-0.5) * 1.2,
                 vy: 1.2 + Math.random() * 1.6,          // 앞으로 쏟아진다
                 kind: "coin", stack: 1 };
     coins.push(c);
   }
-  hintEl.textContent = "탑이 무너졌다! " + n + "층";
+  hintEl.textContent = "탑이 무너졌다! 동전 " + n + "개";
   ding(5);
-  tower.h = 0; tower.lean = 0; tower.shake = 0; tower.timer = 0;
+  tower.h = 0; tower.coins = 0; tower.lean = 0; tower.shake = 0;
 }
 
 function shakeSound(){
@@ -496,6 +506,7 @@ function checkStage(){
         return;
       }
       document.getElementById("goal").textContent = STAGES[stage].goal;
+      if(stage === 1) setTimeout(() => vendTower(40), 900);   // 1차를 넘으면 40개짜리 탑 하나
       hintEl.textContent = "동전 " + STAGES[stage].per + "개씩 들어갑니다";
       stageBusy = false;
       playing = true;
