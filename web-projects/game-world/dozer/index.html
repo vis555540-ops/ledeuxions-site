@@ -250,10 +250,10 @@ function seed(){
     let x, y, tries = 0;
     do{
       x = 14 + Math.random()*(W-28);
-      y = 74 + Math.random()*(H-110);
+      y = (PUSH_Y + R + 2) + Math.random()*(H - PUSH_Y - 50);
       tries++;
     // 탑 둘레는 비워둔다. 안 그러면 탑이 동전에 파묻혀 안 보인다
-    }while(tries < 20 && Math.abs(x - W/2) < R*2.4 && y < 175);
+    }while(tries < 20 && Math.abs(x - W/2) < R*2.4 && y < 150);
     addCoin(x, y);
   }
   // 특별 동전 두 개 — 이게 떨어지면 크게 준다
