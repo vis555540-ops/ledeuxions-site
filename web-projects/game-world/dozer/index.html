@@ -112,8 +112,7 @@
 
 <header>
   <div class="stats">
-    <span class="gold">딴 돈 <b id="score">0</b></span>
-    <span>남은 동전 <b id="left">50</b></span>
+    <span class="gold">동전 <b id="left">50</b><span style="color:#6B7787"> / <b id="goal">40</b></span></span>
     <span>최고 <b id="best">0</b></span>
   </div>
 </header>
@@ -169,7 +168,7 @@
 
 const cv = document.getElementById("cv");
 const ctx = cv.getContext("2d");
-const scoreEl = document.getElementById("score");
+const scoreEl = null;
 const leftEl  = document.getElementById("left");
 const bestEl  = document.getElementById("best");
 const hintEl  = document.getElementById("hint");
@@ -385,9 +384,8 @@ function step(){
   }
   if(got || gotStar){
     const gain = got + gotStar * 10;
-    score += gain;                    // 누적 (목표 판정용)
-    credits += gain;                  // 딴 동전은 다시 내 손에 들어온다. 그래서 계속 하게 된다
-    scoreEl.textContent = score;
+    credits += gain;                  // 딴 동전이 곧 내 동전이다 (형: "어차피 코인 합치자")
+    score += gain;                    // 순위표에 올릴 누적치
     leftEl.textContent = credits;
     checkStage();
     ding(got + gotStar);
@@ -478,13 +476,14 @@ let stageBusy = false;
 function checkStage(){
   if(stageBusy) return;
   const st = STAGES[stage];
-  if(score < st.goal) return;
+  if(credits < st.goal) return;   // 가진 동전이 목표에 닿으면 넘어간다
   stageBusy = true;
   playing = false;
   setTimeout(() => {
     talk(st.done, () => {
       if(stage === 0){
-        score = 0; scoreEl.textContent = 0;      // 빌려준 거라며 다 가져간다
+        credits = Math.max(0, credits - STAGES[0].goal);   // 빌려준 만큼 가져간다
+        leftEl.textContent = credits;
       }
       stage++;
       if(stage >= STAGES.length){
@@ -503,7 +502,7 @@ function clearGame(){
   talk(["하하하하", "행복하다…", "하하하…"], () => talk(["…", "꿈에서 깼다."], () => {
     document.querySelector(".card h2").textContent = "끝까지 갔다";
     document.querySelector(".card p").innerHTML =
-      `백이십을 채웠습니다.<br>딴 돈 <b style="color:var(--gold)">${score}</b>개`;
+      `동전 백이십 개를 모았습니다.<br>모은 동전 <b style="color:var(--gold)">${score}</b>개`;
     document.getElementById("ob").textContent = "다시";
     over.classList.remove("hide");
     if(window.Arcade) Arcade.submit("dozer", score).catch(()=>{});
@@ -683,7 +682,11 @@ function drop(){
      아무 때나 넣는 것과 달라야 실력이 된다 */
   const back = deck.off / deck.max;   // 0 = 판이 다 물러난 때 (지금 넣으면 길게 밀린다)
   // 위에서 떨어져 밀개 바로 뒤에 앉는다 (형: '동전을 넣으면 위에서 안 떨어짐')
-  addCoin(dropX, -R, null, PUSH_Y + R + 1);   // 밀개 바로 앞. 여기서부터 밀려 나간다
+  // 낸 만큼 떨어뜨린다. 두 개를 내면 두 개가 들어간다
+  // (전에는 두 개 내고 하나만 넣어서 무조건 손해였다)
+  for(let k = 0; k < per; k++){
+    addCoin(dropX + (k - (per-1)/2) * R * 1.6, -R - k*R*2, null, PUSH_Y + R + 1);
+  }
   const c = coins[coins.length - 1];
 
   /* ── 배운 것은 조건이 맞을 때만 듣는다 (형 지시) ──
@@ -1078,7 +1081,7 @@ ob.onclick = () => {
 function startRound(){
   score = 0; credits = 50; playing = true; stage = 0; stageBusy = false;
   document.getElementById('goal').textContent = STAGES[0].goal;
-  scoreEl.textContent = 0; leftEl.textContent = credits;
+  leftEl.textContent = credits;
   dropBtn.disabled = false;
   hintEl.textContent = "떨어뜨릴 자리를 누르세요";
   shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
