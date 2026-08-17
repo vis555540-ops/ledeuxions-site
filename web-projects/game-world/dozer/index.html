@@ -565,7 +565,7 @@ function draw(){
   if(playing && credits > 0){
     const dx = Math.round(dropX);
     ctx.fillStyle = "#C99A2E";
-    for(let y = 2; y < pusher.min - 3; y += 4) ctx.fillRect(dx, y, 1, 2);
+    for(let y = 2; y < pusher.y - R - 2; y += 4) ctx.fillRect(dx, y, 1, 2);
     ctx.fillRect(dx-2, 2, 5, 2);
   }
 }
@@ -642,7 +642,8 @@ function drop(){
      밀개가 뒤로 다 물러났을 때 넣으면 밀개가 앞으로 나오며 힘을 최대로 전한다.
      아무 때나 넣는 것과 달라야 실력이 된다 */
   const back = (pusher.y - pusher.min) / (pusher.max - pusher.min);   // 0=완전히 뒤
-  addCoin(dropX, pusher.min + R + 2);
+  // 동전은 밀개 바로 뒤에 떨어진다. 그래야 밀개가 밀고 나간다 (형 지적)
+  addCoin(dropX, Math.max(R + 1, pusher.y - R - 1));
   const c = coins[coins.length - 1];
 
   /* ── 배운 것은 조건이 맞을 때만 듣는다 (형 지시) ──
