@@ -1,0 +1,11 @@
+# 게임·도구 페이지는 자주 고친다. 브라우저가 옛 파일을 붙들면
+# 형이 이미 고친 문제를 다시 신고하게 된다 (2026-08-18 실제로 그랬다).
+# HTML 만 캐시를 짧게 둔다. 이미지·스크립트 파일은 그대로 캐시해도 된다.
+/web-projects/game-world/*
+  Cache-Control: no-cache, must-revalidate
+
+/web-projects/*/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/*.html
+  Cache-Control: no-cache, must-revalidate
