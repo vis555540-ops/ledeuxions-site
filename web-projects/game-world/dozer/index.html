@@ -183,7 +183,7 @@ const H = 272;          // 판 세로. y가 클수록 앞(떨어지는 쪽)
 const EDGE = H - 5;     // 이 선을 넘으면 떨어진다
 const R = 7;           // 동전 반지름
 const MAX_STACK = 6;     // 탑 최대 높이
-const LIP_FORCE = 0.045;  // 앞 턱을 넘는 데 필요한 힘 (배당률을 정하는 값)
+const LIP_FORCE = 0.02;  // 앞 턱을 넘는 데 필요한 힘 (배당률을 정하는 값)
 const SIDE_OPEN = 160;  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
 
 const BEST_KEY = "gw_dozer_best";
@@ -242,7 +242,7 @@ function addCoin(x, y, kind, fallTo){
 function seed(){
   coins = [];
   tower = { x: W/2, y: 112, h: 3, lean: 0, shake: 0, timer: 0, falling: 0 };
-  for(let i = 0; i < 78; i++){
+  for(let i = 0; i < 58; i++){
     let x, y, tries = 0;
     do{
       x = 14 + Math.random()*(W-28);
@@ -299,7 +299,7 @@ function step(){
     // 앞 턱(lip) — 실제 기계에는 앞에 턱이 있다. 걸쳐 있다가 뒤에서 밀어야 넘어간다.
     // 이 턱이 '아슬아슬하게 걸린 동전'을 만든다. 이 게임의 재미는 거기서 나온다
     if(c.y > EDGE - R*1.2 && c.y < EDGE){
-      c.vy *= 0.55;
+      c.vy *= 0.85;
       if(c.vy < LIP_FORCE) c.vy = 0;    // 미는 힘이 모자라면 턱에 걸린다
     }
 
@@ -310,12 +310,12 @@ function step(){
       if(c.x < guard){ c.x = guard; c.vx = Math.abs(c.vx) * 0.4; }
       if(c.x > W - guard){ c.x = W - guard; c.vx = -Math.abs(c.vx) * 0.4; }
     }
-    // 뒷벽
-    if(c.y < pusher.min + R){ c.y = pusher.min + R; }
+    // 뒷벽 = 판 맨 위. 동전은 여기 떨어져 밀개가 밀어줄 때까지 기다린다
+    if(c.y < R + 1){ c.y = R + 1; }
   }
 
   // 겹침 풀기 — 반복할수록 자연스럽지만 무거워진다. 4번이면 충분하다
-  for(let it = 0; it < 4; it++){
+  for(let it = 0; it < 8; it++){
     for(let i = 0; i < coins.length; i++){
       for(let j = i+1; j < coins.length; j++){
         const a = coins[i], b = coins[j];
@@ -330,7 +330,7 @@ function step(){
           a.x -= ux*push; a.y -= uy*push;
           b.x += ux*push; b.y += uy*push;
           // 밀린 만큼 앞으로 가려는 힘이 전달된다
-          const share = push * 0.35;
+          const share = push * 0.55;
           a.vx -= ux*share; a.vy -= uy*share;
           b.vx += ux*share; b.vy += uy*share;
         }
@@ -586,12 +586,19 @@ function draw(){
     ctx.fillText(tower.h, tower.x, ty - 9);
   }
 
-  // 넣을 자리 표시
-  if(playing && credits > 0){
+  // 투입구 — 동전이 어디서 떨어지는지 보이게 (형: "동전 어디에서 떨어지는거 모르시는거에요?")
+  ctx.fillStyle = "#2A3340";
+  ctx.fillRect(0, 0, W, R*2 + 4);
+  ctx.fillStyle = "#1A222C";
+  for(let x = 4; x < W; x += 12) ctx.fillRect(x, 2, 6, 2);
+  if(playing){
     const dx = Math.round(dropX);
+    ctx.fillStyle = "#F2C14E";
+    ctx.fillRect(dx - 6, 1, 12, R*2 + 2);      // 열린 투입구
+    ctx.fillStyle = "#1A222C";
+    ctx.fillRect(dx - 4, 3, 8, R*2 - 2);
     ctx.fillStyle = "#C99A2E";
-    for(let y = 2; y < pusher.y - R - 2; y += 4) ctx.fillRect(dx, y, 1, 2);
-    ctx.fillRect(dx-2, 2, 5, 2);
+    ctx.fillRect(dx - 1, R*2 + 5, 2, 3);       // 여기로 떨어진다는 표시
   }
 }
 
@@ -668,7 +675,7 @@ function drop(){
      아무 때나 넣는 것과 달라야 실력이 된다 */
   const back = (pusher.y - pusher.min) / (pusher.max - pusher.min);   // 0=완전히 뒤
   // 위에서 떨어져 밀개 바로 뒤에 앉는다 (형: '동전을 넣으면 위에서 안 떨어짐')
-  addCoin(dropX, -R, null, Math.max(R + 1, pusher.y - R - 1));
+  addCoin(dropX, -R, null, R + 3);   // 늘 맨 뒤. 밀개가 뒤로 물러났다가 밀고 나온다
   const c = coins[coins.length - 1];
 
   /* ── 배운 것은 조건이 맞을 때만 듣는다 (형 지시) ──
@@ -1002,7 +1009,7 @@ function fallScene(done){
   fc.classList.remove("hide");
 
   const bits = [];
-  for(let i = 0; i < 78; i++){
+  for(let i = 0; i < 58; i++){
     bits.push({ x: Math.random()*w, y: -Math.random()*h*1.2,
                 v: 2 + Math.random()*3.4, r: 6 + Math.random()*7,
                 a: Math.random()*6.28, s: (Math.random()-0.5)*0.14 });
