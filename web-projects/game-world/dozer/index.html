@@ -434,7 +434,7 @@ function updateTower(){
     if(Math.abs(c.x - tower.x) < R*2.2 && Math.abs(c.y - tower.y) < R*1.8){
       const hit = Math.abs(c.vy) + Math.abs(c.vx);
       if(hit > 0.04){
-        tower.shake += hit * 0.16 * (0.5 + tower.h / 16);   // 형: 좀 흔든다고 무너지면 안 된다   // 높을수록 잘 넘어간다
+        tower.shake += hit * 0.35 * (0.5 + tower.h / 16);   // 형: 좀 흔든다고 무너지면 안 된다   // 높을수록 잘 넘어간다
         c.vy *= 0.3;                                     // 부딪히면 동전은 힘을 잃는다
         c.vx *= 0.3;
       }
