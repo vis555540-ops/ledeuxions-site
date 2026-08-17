@@ -1,26 +1,3 @@
-function knock(){
-  tapSound();
-  ask("툭, 툭.\n\n뒤에서 누군가 두드렸다.",
-      "돌아본다", "못 본 체한다",
-      () => {
-        const o = OFFERS[Math.floor(Math.random()*OFFERS.length)];
-        // 신뢰도는 자막으로만. 숫자는 안 보여준다 (형 지시)
-        const t = TRUST[Math.floor(Math.random()*TRUST.length)];
-        ask('"' + o.say + '"\n\n"동전 ' + o.cost + '개."\n\n' + t.line,
-            "동전 " + o.cost + "개를 준다", "됐다고 한다",
-            () => {
-              if(credits >= o.cost){
-                credits -= o.cost; leftEl.textContent = credits;
-                startOrder(o, t);
-              }else{
-                hintEl.textContent = "줄 동전이 없다";
-              }
-            },
-            () => { hintEl.textContent = "돌아앉았다"; });
-      },
-      () => { hintEl.textContent = "못 본 체했다"; });
-}
-
 <!doctype html>
 <html lang="ko">
 <head>
