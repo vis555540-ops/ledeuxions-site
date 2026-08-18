@@ -1159,7 +1159,9 @@ function fallScene(done){
 }
 
 ob.onclick = () => {
-  if(window.Arcade) Arcade.ensureName();
+  /* 시작할 때 이름을 묻지 않는다. 점수를 낼 때 Arcade.submit 이 알아서 묻는다.
+     인앱 브라우저(텔레그램 등)에서 localStorage·prompt 가 막히면 여기서 예외가 나
+     시작 버튼이 통째로 죽었다. 2026-08-18 형이 폰에서 발견. */
   over.classList.add("hide");
   if(!seenOpening){
     seenOpening = true;
