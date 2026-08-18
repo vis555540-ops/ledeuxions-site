@@ -1,28 +1,37 @@
 /* 게임월드 공용 아케이드 모듈 — 이름(1회 입력) + 전세계 랭킹.
    백엔드: Cloudflare Worker (api.ledeuxions.com) /score, /leaderboard  (KV 저장)
-   각 게임에서: 시작 시 Arcade.ensureName(), 신기록 시 Arcade.submit(game, score). */
+   각 게임에서: 시작 시 Arcade.ensureName(), 신기록 시 Arcade.submit(game, score).
+   v2 (2026-08-19): 인앱 브라우저(텔레그램·카카오톡 등)에서 localStorage/prompt 차단 대응 (try/catch). */
 (function () {
     const API = window.__ARCADE_API || "https://api.ledeuxions.com";
     const KEY = "gw_player";
+    let memName = ""; // localStorage 죽었을 때 이 세션 동안만 유지할 fallback
+
+    function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* 인앱 등 차단 무시 */ } }
 
     function name() {
-        return localStorage.getItem(KEY) || "";
+        return lsGet(KEY) || memName || "";
     }
 
     // 최초 1회만 이름 입력받아 저장. 이후엔 저장된 값 반환.
+    // 인앱 브라우저에서 prompt 차단되면 익명 이름으로 fallback.
     function ensureName() {
-        let n = localStorage.getItem(KEY);
+        let n = lsGet(KEY) || memName;
         if (!n) {
-            n = (window.prompt("게임에 쓸 이름을 정해줘! 🌍\n(한 번만 입력하면 계속 저장돼요)", "") || "").trim().slice(0, 16);
+            try {
+                n = (window.prompt("게임에 쓸 이름을 정해줘! 🌍\n(한 번만 입력하면 계속 저장돼요)", "") || "").trim().slice(0, 16);
+            } catch (e) { n = ""; }
             if (!n) n = "익명" + Math.floor(Math.random() * 1000);
-            localStorage.setItem(KEY, n);
+            memName = n;
+            lsSet(KEY, n);
         }
         return n;
     }
 
     function setName(n) {
         n = (n || "").trim().slice(0, 16);
-        if (n) localStorage.setItem(KEY, n);
+        if (n) { memName = n; lsSet(KEY, n); }
         return n;
     }
 
