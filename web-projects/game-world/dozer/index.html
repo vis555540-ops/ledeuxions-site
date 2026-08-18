@@ -209,6 +209,7 @@ const COIN_WON = 200;   // 동전 한 개 값. 만원이면 50개 (형: '시작�
 /* 실제 기계는 밀개(배리케이드)가 고정이고 판이 앞뒤로 움직인다.
    판이 앞으로 나올 때 밀개 밑을 지나며 동전이 앞으로 밀려난다.
    형: "물리 문제가 아니라 부장이 이 게임을 모르네" — 맞는 말이었다 */
+let deckAdvance = 0;
 const PUSH_Y = 34;          // 밀개가 서 있는 자리 (고정)
 let deck = { off: 0, dir: 1, max: 16, speed: 0.5 };   // 판이 밀려나간 정도
 
@@ -276,6 +277,7 @@ function step(){
   if(deck.off > deck.max) deck.dir = -1;
   if(deck.off < 0) deck.dir = 1;
   const advance = deck.off - prevOff;
+  deckAdvance = advance;
 
   // 배운 '기다리기' — 넣고 3초 손대지 않으면 앞줄이 스스로 밀린다
   if(ready("wait") && lastDropAt && performance.now() - lastDropAt > 3000){
@@ -419,37 +421,39 @@ function pixCoin(x, y, isStar){
 /* ── 탑 ── */
 function updateTower(){
   if(tower.falling > 0){ tower.falling--; if(tower.falling === 0) collapse(); return; }
-
-
-  // 반 개씩 어긋나게 쌓이므로 높이 자체가 기울기가 된다 (실제 바벨이 그렇다).
-  // 흔들림은 여기에 얹히는 것이고, 흔들림만 시간이 지나면 가라앉는다
-  // 저절로는 안 무너진다. 사람이 쳐야 흔들리고, 높을수록 잘 흔들린다
-  // (전에는 높이만으로 기울어져서 가만히 둬도 무너졌다 — 형: "가만히 있어도 부자되겠네욤")
-  tower.lean = tower.shake;
-
   if(tower.h === 0) return;
 
-  // 동전이 밑동을 치면 흔들린다
+  /* 탑도 판 위에 놓인 물건이다. 판이 움직이면 같이 움직이고,
+     뒤에서 동전이 밀면 앞으로 나아간다. 다만 무거워서 아주 조금씩만 밀린다.
+     형: "원래 안 무너져" → 흔들어 무너뜨리는 게 아니라 밀어서 절벽 너머로 보내는 것이다.
+     그래서 40개짜리는 무겁고, 오래 걸리고, 그만큼 크게 준다 */
+  tower.y += deckAdvance;                       // 판과 함께 앞뒤로
+
+  const weight = 1 / (1 + tower.coins / 90);    // 40개면 0.69배. 무겁지만 통째로 밀린다
   for(const c of coins){
-    if(Math.abs(c.x - tower.x) < R*2.2 && Math.abs(c.y - tower.y) < R*1.8){
-      const hit = Math.abs(c.vy) + Math.abs(c.vx);
-      if(hit > 0.04){
-        tower.shake += hit * 0.35 * (0.5 + tower.h / 16);   // 형: 좀 흔든다고 무너지면 안 된다   // 높을수록 잘 넘어간다
-        c.vy *= 0.3;                                     // 부딪히면 동전은 힘을 잃는다
-        c.vx *= 0.3;
+    if(c.fallTo) continue;
+    if(Math.abs(c.x - tower.x) < R * 3.2 && c.y < tower.y && c.y > tower.y - R * 3){
+      const push = Math.max(0, c.vy) * weight;
+      if(push > 0.002){
+        tower.y += push;
+        tower.shake += push * 0.25;             // 밀릴 때 조금 흔들린다
+        c.vy *= 0.35;                           // 무거운 걸 밀었으니 동전은 힘을 잃는다
       }
+      if(c.y > tower.y - R*2) c.y = tower.y - R*2;   // 탑을 뚫고 지나가지 못한다
     }
   }
-  // 밀개가 밑동까지 밀고 오면 크게 흔들린다
 
+  tower.shake *= 0.99;
+  tower.lean = tower.shake;
 
-  tower.shake *= 0.997;           // 흔들림만 가라앉는다. 기울기는 높이가 만든 것이라 안 없어진다
-  if(tower.lean > LEAN_LIMIT){ tower.falling = 26; shakeSound(); }
+  // 절벽까지 밀려가면 넘어간다
+  if(tower.y > EDGE - R*1.5){ tower.falling = 26; shakeSound(); }
 }
 
 /* 조건을 채우면 미리 쌓아둔 탑을 판에 내보낸다 */
 function vendTower(nCoins){
   tower.coins = nCoins;
+  tower.y = PUSH_Y + (EDGE - PUSH_Y) * 0.42;   // 판 중간쯤에 놓인다
   tower.h = Math.max(6, Math.round(nCoins / 3));   // 40개면 13층쯤
   tower.lean = 0; tower.shake = 0; tower.falling = 0;
   hintEl.textContent = "탑이 나왔다 — " + nCoins + "개";
