@@ -35,7 +35,17 @@
   .stats b{color:var(--ink); font-size:19px; font-weight:800}
   .stats .gold b{color:var(--gold)}
 
-  .wrap{flex:1; display:flex; align-items:center; justify-content:center; min-height:0; padding:8px 10px 0}
+  .wrap{flex:1; display:flex; align-items:center; justify-content:center; min-height:0; padding:8px 10px 0; gap:14px}
+  /* 옆자리 — 넓은 화면에서만 게임 옆에 선다. 폰에서는 감춘다(게임을 가리면 안 된다) */
+  .side{display:none; flex-direction:column; gap:8px; width:210px; flex:0 0 auto}
+  .side a{
+    display:block; text-decoration:none; padding:9px 11px;
+    background:#171E27; border:1px solid #2B3542; color:#D8DEE6;
+  }
+  .side a:hover{border-color:#C99A2E}
+  .side b{display:block; font-size:13.5px; color:#F2C14E; margin-bottom:2px}
+  .side span{display:block; font-size:11.5px; color:#8FA0B3; line-height:1.5}
+  @media (min-width: 760px){ .side{display:flex} }
   canvas{
     image-rendering: pixelated;              /* 도트가 뭉개지지 않게 */
     image-rendering: crisp-edges;
@@ -52,6 +62,10 @@
   }
   .drop:active{transform:translate(2px,2px); box-shadow:1px 1px 0 #7A5E15}
   .drop:disabled{filter:grayscale(.7) brightness(.7); box-shadow:none}
+  .links{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; padding:8px 12px 2px; flex:0 0 auto}
+  .links a{font-size:11px; color:#8FA0B3; text-decoration:none; border:1px solid #2B3542; padding:3px 8px}
+  .links a:active{color:#F2C14E}
+  @media (min-width: 760px){ .links{display:none} }
   .skills{display:flex; gap:5px; flex-wrap:wrap; justify-content:center; padding:0 12px 4px; flex:0 0 auto}
   .skill.off{color:#5A6572; border-color:#232D39; background:#101820}
   .skill{
@@ -118,8 +132,30 @@
   </div>
 </header>
 
-<div class="wrap"><canvas id="cv"></canvas></div>
+<div class="wrap">
+  <canvas id="cv"></canvas>
+  <aside class="side" id="side">
+    <a href="https://pdf300.com/" target="_blank" rel="noopener">
+      <b>PDF300</b><span>PDF 압축·병합·변환 24가지</span>
+    </a>
+    <a href="/web-projects/inspection-score/">
+      <b>점검 점수 계산기</b><span>소규모 노후건축물 등급 산정</span>
+    </a>
+    <a href="/web-projects/">
+      <b>LeDeuxions 도구</b><span>브라우저에서 바로 쓰는 것들</span>
+    </a>
+    <a href="/">
+      <b>ledeuxions.com</b><span>만든 것들이 모여 있는 곳</span>
+    </a>
+  </aside>
+</div>
 
+<nav class="links" id="links">
+  <a href="https://pdf300.com/" target="_blank" rel="noopener">PDF300</a>
+  <a href="/web-projects/inspection-score/">점검 점수 계산기</a>
+  <a href="/web-projects/">도구 모음</a>
+  <a href="/">ledeuxions.com</a>
+</nav>
 <div class="skills" id="skills"></div>
 <div class="hint" id="hint">떨어뜨릴 자리를 누르세요</div>
 
