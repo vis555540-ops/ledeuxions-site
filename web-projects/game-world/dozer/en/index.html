@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>동전 밀기 — 오락실 코인도저 | 게임월드</title>
-<meta name="description" content="오락실에 있던 그 기계. 동전을 넣어 쌓고, 밀개가 밀어 떨어뜨립니다. 한 번에 우르르 떨어질 때가 제일 좋습니다.">
+<title>Coin Push — Arcade Coin Pusher | Game World</title>
+<meta name="description" content="That machine from the arcade. Drop coins, let them pile up, and the deck pushes them over the edge. Nothing beats a whole row going at once.">
 <meta name="theme-color" content="#0E1218">
-<link rel="canonical" href="https://ledeuxions.com/web-projects/game-world/dozer/">
+<link rel="canonical" href="https://ledeuxions.com/web-projects/game-world/dozer/en/">
 <link rel="alternate" hreflang="ko" href="https://ledeuxions.com/web-projects/game-world/dozer/">
 <link rel="alternate" hreflang="en" href="https://ledeuxions.com/web-projects/game-world/dozer/en/">
 <link rel="alternate" hreflang="x-default" href="https://ledeuxions.com/web-projects/game-world/dozer/">
@@ -32,7 +32,7 @@
     background:rgba(23,30,39,.88); border:1px solid var(--line); border-radius:0; padding:6px 10px; box-shadow:2px 2px 0 #0A0E13;
   }
   .back.r{left:auto; right:12px}
-  .lang{position:fixed; top:14px; right:88px; z-index:20; color:#8FA0B3; text-decoration:none;
+  .lang{position:fixed; top:14px; right:104px; z-index:20; color:#8FA0B3; text-decoration:none;
         font-size:12px; font-weight:700; border:1px solid #2B3542; padding:5px 8px; background:rgba(23,30,39,.88)}
 
   header{padding:52px 14px 6px; text-align:center; flex:0 0 auto}
@@ -127,15 +127,15 @@
 </head>
 <body>
 
-<a class="back" href="../">← 게임월드</a>
-<a class="back r" href="../ranking/">🏆 순위</a>
-<a class="lang" href="en/">EN</a>
+<a class="back" href="../../">← Game World</a>
+<a class="back r" href="../../ranking/">🏆 Ranking</a>
+<a class="lang" href="../">한국어</a>
 
 <header>
   <div class="stats">
-    <span class="gold">동전 <b id="left">50</b></span>
-    <span>번 것 <b id="earn">0</b><span style="color:#6B7787"> / <b id="goal">40</b></span></span>
-    <span>최고 <b id="best">0</b></span>
+    <span class="gold">Coins <b id="left">50</b></span>
+    <span>Earned <b id="earn">0</b><span style="color:#6B7787"> / <b id="goal">40</b></span></span>
+    <span>Best <b id="best">0</b></span>
   </div>
 </header>
 
@@ -143,32 +143,32 @@
   <canvas id="cv"></canvas>
   <aside class="side" id="side">
     <a href="https://pdf300.com/" target="_blank" rel="noopener">
-      <b>PDF300</b><span>PDF 압축·병합·변환 24가지</span>
+      <b>PDF300</b><span>24 PDF tools — compress, merge, convert</span>
     </a>
     <a href="/web-projects/inspection-score/">
-      <b>점검 점수 계산기</b><span>소규모 노후건축물 등급 산정</span>
+      <b>Building Check Calculator</b><span>Korean small-building inspection scoring</span>
     </a>
     <a href="/web-projects/">
-      <b>LeDeuxions 도구</b><span>브라우저에서 바로 쓰는 것들</span>
+      <b>LeDeuxions Tools</b><span>Things that run in your browser</span>
     </a>
     <a href="/">
-      <b>ledeuxions.com</b><span>만든 것들이 모여 있는 곳</span>
+      <b>ledeuxions.com</b><span>Everything we've built</span>
     </a>
   </aside>
 </div>
 
 <nav class="links" id="links">
   <a href="https://pdf300.com/" target="_blank" rel="noopener">PDF300</a>
-  <a href="/web-projects/inspection-score/">점검 점수 계산기</a>
-  <a href="/web-projects/">도구 모음</a>
+  <a href="/web-projects/inspection-score/">Check Calculator</a>
+  <a href="/web-projects/">Tools</a>
   <a href="/">ledeuxions.com</a>
 </nav>
 <div class="skills" id="skills"></div>
-<div class="hint" id="hint">떨어뜨릴 자리를 누르세요</div>
+<div class="hint" id="hint">Tap where you want it to drop</div>
 
 <footer>
-  <button class="drop" id="dropBtn">동전 넣기</button>
-  <button class="drop" id="shakeBtn" style="max-width:130px;background:linear-gradient(180deg,#7C8CA0,#5B6A7D);color:#0E141B">흔들기</button>
+  <button class="drop" id="dropBtn">Drop a coin</button>
+  <button class="drop" id="shakeBtn" style="max-width:130px;background:linear-gradient(180deg,#7C8CA0,#5B6A7D);color:#0E141B">Shake</button>
 </footer>
 
 <canvas id="fall" class="fall hide"></canvas>
@@ -183,27 +183,27 @@
 
 <div id="talk" class="talk hide">
   <div class="talk-line" id="talkLine"></div>
-  <div class="talk-next">눌러서 넘기기</div>
+  <div class="talk-next">tap to continue</div>
 </div>
 
 <div class="over" id="over">
   <div class="card">
-    <h2>동전 밀기</h2>
+    <h2>Coin Push</h2>
     <p>
-      오락실에 있던 그 기계입니다.<br>
-      동전을 넣으면 쌓이고, 밀개가 앞으로 밀어 떨어뜨립니다.<br>
-      앞으로 떨어진 동전이 내 돈이 됩니다.
+      That machine from the arcade.<br>
+      Drop a coin, it piles up, and the deck pushes the pile forward.<br>
+      Whatever goes over the front edge is yours.
     </p>
     <div class="rank" id="orank"></div>
-    <button class="big" id="ob">시작</button>
+    <button class="big" id="ob">Start</button>
     <div class="tip">
-      한 번에 우르르 떨어질 때가 제일 좋습니다.<br>
-      그래서 바로 안 넣고 쌓이길 기다리는 게 낫습니다.
+      Nothing beats a whole row going at once.<br>
+      Which is why waiting often beats dropping.
     </div>
   </div>
 </div>
 
-<script src="../arcade.js"></script>
+<script src="../../arcade.js"></script>
 <script>
 /* 동전 밀기 — 오락실 코인도저
    형이 유튜브로 보내준 그 기계. 2026-08-17.
@@ -800,7 +800,7 @@ shakeBtn.onclick = () => {
   hintEl.textContent = T.shook;
   let n = 6;
   const t = setInterval(() => {
-    n--; shakeBtn.textContent = n > 0 ? n + "초" : "흔들기";
+    n--; shakeBtn.textContent = n > 0 ? n + "s" : "Shake";
     if(n <= 0){ clearInterval(t); shakeReady = true; shakeBtn.disabled = false; }
   }, 1000);
 };
@@ -846,57 +846,57 @@ async function showResult(){
    형 지시: 스토리는 조금만. 명시하지 말고 짐작하게. 대화는 무조건 검은 화면에서.
    ⚠️ 아래 대사는 맺음이 쓴 초안이다. 형이 고치면 그걸로 바꾼다 */
 
-/* ── 말 ──
-   영어판(en/)은 이 덩어리만 다르다. 게임 로직은 똑같다.
-   형이 쓴 대사는 뜻이 죽지 않게 옮겼다 */
+/* ── words ──
+   The Korean build lives one folder up. Only this block differs.
+   Hyung wrote the Korean lines; these keep the same bite. */
 const T = {
-  lang: "ko",
-  opening: ["너 이 게임 좋아하지?", "실컷 해봐라!", "으하하하하", "…", "만원어치 동전이 손에 쥐어져 있다."],
-  endLoss: ["동전이 다 떨어졌다.", "앞줄은 아직 그대로 걸쳐 있다.", "발밑이 열린다.", "동전과 함께 떨어진다."],
-  endWake: ["…", "꿈에서 깼다."],
-  endWin:  ["하하하하", "행복하다…", "하하하…"],
-  knock:   "툭, 툭.\n\n뒤에서 누군가 두드렸다.",
-  look: "돌아본다", ignore: "못 본 체한다",
-  thugHit: (n) => "돌아보자마자 맞았다.\n\n동전 " + n + "개를 쓸어 가고\n하나만 남겨두고 사라졌다.",
-  thugEmpty: "돌아보자마자 맞았다.\n\n주머니엔 아무것도 없었다.",
-  secret: (c, line) => '"비밀 하나 알려줄게."\n\n"동전 ' + c + '개."\n\n' + line,
-  pay: (c) => "동전 " + c + "개를 준다", refuse: "됐다고 한다",
-  memorized: "외웠다", nothing: "\"…\"\n\n말을 하려다 말고 그냥 가버렸다.",
-  noCoin: "줄 동전이 없다", turnedAway: "돌아앉았다", ignored: "못 본 체했다",
-  wasted: "돈만 날렸다", nowUsable: (t) => t + " — 이제 언제든 된다",
-  nothingLeft: "더 알려줄 게 없다는 얼굴이다",
-  dropHere: "떨어뜨릴 자리를 누르세요", goodTiming: "좋은 타이밍",
-  sideLost: (n) => "옆으로 " + n + "개 빠졌습니다",
-  towerOut: (n) => "탑이 나왔다 — " + n + "개",
-  towerFell: (n) => "탑이 무너졌다! 동전 " + n + "개",
-  manyAtOnce: (n) => "쌓인 동전 " + n + "개가 한꺼번에!",
-  starCoin: (n) => "별 동전! " + n + "개",
-  shook: "흔들었습니다", perStage: (n) => "동전 " + n + "개씩 들어갑니다",
-  noCoinsLeft: "넣을 동전이 없습니다. 남은 게 떨어지길 기다리세요",
+  lang: "en",
+  opening: ["You like this game, don't you?", "Go on then. Knock yourself out.", "Hahahaha", "…", "Ten thousand won of coins sits in your hand."],
+  endLoss: ["The coins are gone.", "The front row still hangs there.", "The floor opens.", "You fall with the coins."],
+  endWake: ["…", "You wake up."],
+  endWin:  ["Hahaha", "I'm happy…", "haha…"],
+  knock:   "Tap. Tap.\n\nSomeone taps you on the shoulder.",
+  look: "Turn around", ignore: "Pretend you didn't hear",
+  thugHit: (n) => "He hits you before you finish turning.\n\nHe sweeps " + n + " coins off the tray\nand leaves you exactly one.",
+  thugEmpty: "He hits you before you finish turning.\n\nYour pockets were already empty.",
+  secret: (c, line) => '"Let me tell you a secret."\n\n"' + c + ' coins."\n\n' + line,
+  pay: (c) => "Hand over " + c + " coins", refuse: "Tell him no",
+  memorized: "Got it", nothing: '"…"\n\nHe opens his mouth, thinks better of it, and walks off.',
+  noCoin: "Nothing left to give", turnedAway: "You turn back to the machine", ignored: "You pretend you didn't hear",
+  wasted: "That was money for nothing", nowUsable: (t) => t + " — you can do this anytime now",
+  nothingLeft: "He looks like he has nothing left to tell you",
+  dropHere: "Tap where you want it to drop", goodTiming: "Good timing",
+  sideLost: (n) => n + " slipped off the side",
+  towerOut: (n) => "A tower comes out — " + n + " coins",
+  towerFell: (n) => "The tower went over! " + n + " coins",
+  manyAtOnce: (n) => n + " stacked coins at once!",
+  starCoin: (n) => "Star coin! " + n,
+  shook: "You shook it", perStage: (n) => n + " coins go in per drop",
+  noCoinsLeft: "No coins left to drop. Wait for the rest to fall",
   theEnd: "The END",
   stageDone: [
-    ['"빌려준 거니까."', '"이건 받아간다?"', "동전이 전부 쓸려 나갔다."],
-    ['"아 맞다."', '"동전 이번에는 두 개 넣어야 한다?"', '"사장님이 너무 잘된다고 값을 올렸대."'],
-    ["동전이 무거워진 것 같다.", "기분 탓인가."]
+    ['"That was a loan, you know."', '"I\'ll be taking it back."', "Every coin is swept away."],
+    ['"Oh, right."', '"It\'s two coins a drop now."', '"Boss raised the price. Said business was too good."'],
+    ["The coins feel heavier.", "Maybe it's nothing."]
   ],
-  trust: ["딱히 신뢰가 가지 않는다.", "해볼 만한 걸?", "오락실 사장님 아들이군. 용돈이 모자랐나 보네."],
+  trust: ["You don't quite believe him.", "Might be worth a try.", "Ah — the owner's son. Short on pocket money, is he."],
   skills: [
-    ["동전 넣고 세 셀 때까지 손대지 마. 그때 밀개가 문다.", "넣고 3초 기다리기"],
-    ["흔들고 바로 넣어. 흔들린 김에 같이 넘어가.", "흔든 직후 넣기"],
-    ["밀개가 뒤로 다 빠졌을 때 넣어. 앞으로 나올 때 넣으면 튕겨.", "밀개가 뒤로 갔을 때 넣기"],
-    ["위를 쳐봐야 소용없어. 탑은 밑동을 무너뜨리는 거야.", "탑 밑동 노리기"],
-    ["가운데만 넣어. 옆으로 새면 그건 네 돈이 아니야.", "가운데로 넣기"]
+    ["Drop one and don't touch it for three counts. That's when the deck bites.", "Wait 3s after dropping"],
+    ["Shake it, then drop right away. Ride the shake.", "Drop right after shaking"],
+    ["Drop when the deck is all the way back. Drop as it comes forward and it bounces off.", "Drop when the deck is back"],
+    ["Hitting the top does nothing. You take a tower out from under it.", "Aim at the tower's base"],
+    ["Keep to the middle. Anything that slides off the side was never yours.", "Drop down the middle"]
   ],
-  fired: ["때를 맞췄다", "가운데로 똑바로", "밑동을 쳤다", "흔든 틈에 밀어 넣었다", "기다린 값이 나왔다"],
-  cleared: (n) => `동전 백이십 개를 모았습니다.<br>모은 동전 <b style="color:var(--gold)">${n}</b>개`,
-  babble: ["바라라","무무","니야","도도","라리루","뭐뭐","쿠쿠","시이"],
-  overTitle: "동전 밀기",
-  overBody: "오락실에 있던 그 기계입니다.<br>동전을 넣으면 쌓이고, 밀개가 앞으로 밀어 떨어뜨립니다.<br>앞으로 떨어진 동전이 내 돈이 됩니다.",
-  endTitle: "끝",
-  endBody: (s, b) => `동전 <b style="color:var(--gold)">${s}</b>개 · 최고 <b>${b}</b>개`,
-  thugRegret: "괜히 돌아봤다",
-  rank: (t, r) => `전체 ${t}명 중 ${r}위`,
-  clearTitle: "끝까지 갔다", retry: "다시",
+  fired: ["Timed it right", "Straight down the middle", "Hit the base", "Slipped it in on the shake", "The wait paid off"],
+  cleared: (n) => `You gathered 120 coins.<br>Total collected: <b style="color:var(--gold)">${n}</b>`,
+  babble: ["ba ra ra","mu mu","ni ya","do do","ra ri ru","mwo mwo","ku ku","shi i"],
+  overTitle: "Coin Push",
+  overBody: "That machine from the arcade.<br>Drop a coin, it piles up, and the deck pushes the pile forward.<br>Whatever goes over the front edge is yours.",
+  endTitle: "Done",
+  endBody: (s, b) => `Coins <b style="color:var(--gold)">${s}</b> · Best <b>${b}</b>`,
+  thugRegret: "Shouldn't have turned around",
+  rank: (t, r) => `#${r} of ${t}`,
+  clearTitle: "You made it out", retry: "Again",
 };
 
 /* 이야기는 형이 짰다 (2026-08-17). 꿈인지 현실인지 모르는 채로 시작하고,
@@ -1176,7 +1176,7 @@ function startRound(){
   leftEl.textContent = credits;
   dropBtn.disabled = false;
   hintEl.textContent = T.dropHere;
-  shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
+  shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "Shake";
   shakeAt = lastDropAt = 0; tapUsed = 0; nextTapAt = 0; dropCount = 0;
   learned.clear(); renderSkills();
   seed();
