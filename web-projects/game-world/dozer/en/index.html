@@ -980,11 +980,12 @@ function tapSound(){
 /* 스킬은 다섯 개. 한 번 배우면 계속 쓸 수 있다.
    손님은 방법을 알려줄 뿐이고, 그다음은 사람이 외워서 하는 것이다 (형 지시) */
 const SKILL_META = [
-  { id:"wait",   cost:3, cool:6  },
-  { id:"shake",  cost:4, cool:12 },
-  { id:"timing", cost:4, cool:8  },
-  { id:"tower",  cost:5, cool:20 },
-  { id:"center", cost:3, cool:5  },
+  /* 세게 만든 만큼 오래 기다린다 — 형: "쿨타임 좀 길게 가자 쎄니까 15초?" */
+  { id:"wait",   cost:3, cool:15 },
+  { id:"shake",  cost:4, cool:15 },
+  { id:"timing", cost:4, cool:15 },
+  { id:"tower",  cost:5, cool:22 },
+  { id:"center", cost:3, cool:15 },
 ];
 const SKILLS = SKILL_META.map((m, i) => ({ ...m, say: T.skills[i][0], tip: T.skills[i][1] }));
 const learned = new Set();
