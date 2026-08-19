@@ -804,7 +804,8 @@ const shakeBtn = document.getElementById("shakeBtn");
 let shakeReady = true;
 shakeBtn.onclick = () => {
   if(!playing || !shakeReady) return;
-  tryCommand();                       // 3초 안에 두 번이면 손버릇이 나간다
+  // 흔들기 자체는 눈치가 살짝만 오르고 곧 내려간다 (형 지시)
+  if(!tryCommand()){ addEyes(4); setTimeout(() => addEyes(-3), 1800); }
   shakeReady = false;
   shakeBtn.disabled = true;
   for(const c of coins){
@@ -868,7 +869,8 @@ async function showResult(){
 const T = {
   lang: "ko",
   opening: ["너 이 게임 좋아하지?", "실컷 해봐라!", "으하하하하", "…", "만원어치 동전이 손에 쥐어져 있다.",
-             "…", "…괜찮다.", "나에겐, 남들은 모르는 기술이 있으니까."],
+             "…", "…괜찮다.", "나에겐, 남들은 모르는 기술이 있으니까.",
+             "…중앙 관통.", "가운데 제일 앞의 한 개를, 밀어서 떨어뜨린다."],
   endLoss: ["동전이 다 떨어졌다.", "앞줄은 아직 그대로 걸쳐 있다.", "발밑이 열린다.", "동전과 함께 떨어진다."],
   endWake: ["…", "꿈에서 깼다."],
   endWin:  ["하하하하", "행복하다…", "하하하…"],
@@ -1021,9 +1023,20 @@ function castSkill(id){
   if(id === "center"){
     /* 형: "다른 애들도 해당돼야지" "일자로 쏘는 건 아직 약해" "시원한 맛이 없어"
        -> 판 위 전부에 걸린다. 가운데일수록 더 세게 밀리고, 가장자리 것도 가운데로 모인다. */
-    /* 형: "가운데로 모아지는 게 아니라 대포처럼 펑펑 쏘게"
-       옆으로 모으지 않는다. 앞으로 쏜다. */
-    for(const c of coins){ c.vy += 4.2; c.vx *= 0.6; }
+    /* 형: "동전 하나가 포옹 나가야 할 것 같은데"
+       판 전체를 미는 게 아니다. 한가운데에 있는 것 중 제일 앞의 한 개만 쏜다. */
+    let pick = null, bestScore = -1;
+    for(const c of coins){
+      const mid = 1 - Math.abs(c.x - W/2) / (W/2);   // 가운데일수록 1
+      const front = c.y / H;                          // 앞일수록 1
+      const sc = mid * 1.2 + front;
+      if(sc > bestScore){ bestScore = sc; pick = c; }
+    }
+    if(pick){
+      pick.vy += 7.5; pick.vx = (W/2 - pick.x) * 0.06;
+      for(const c of coins) if(c !== pick && Math.abs(c.x - pick.x) < R*2.2) c.vy += 1.0;
+      thud();
+    }
     hintEl.textContent = "…중앙 관통";
   } else if(id === "timing"){
     for(const c of coins) c.vy += 4.6;              // 판 위 전부를 대포처럼 쏜다
