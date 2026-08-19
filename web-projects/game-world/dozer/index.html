@@ -241,11 +241,11 @@ let coins = [], score = 0, earned = 0, credits = 50, dropX = W/2, playing = fals
    3차 동전이 무거워진다. 120 이면 끝 */
 const STAGES = [
   { goal:40,  per:1, drag:0.91, push:1.0,
-    done: T.stageDone[0] },
+  },
   { goal:80,  per:2, drag:0.91, push:1.0,
-    done: T.stageDone[1] },
+  },
   { goal:120, per:2, drag:0.87, push:0.72,
-    done: T.stageDone[2] },
+  },
 ];
 let stage = 0;
 const COIN_WON = 200;   // 동전 한 개 값. 만원이면 50개 (형: '시작할 때 만원 주고')
@@ -995,6 +995,11 @@ function useSkill(id){
 }
 
 /* 신뢰도 — 자막으로만 알려준다. 숫자는 절대 안 보여준다 (형 지시) */
+/* STAGES 의 done 문구는 여기서 채운다.
+   const T 는 아래쪽에 있어서 STAGES 를 만들 때는 아직 못 쓴다.
+   거기서 T 를 바로 쓰면 페이지 전체 스크립트가 죽는다 (2026-08-19). */
+STAGES.forEach((s, i) => { s.done = T.stageDone[i]; });
+
 const TRUST = T.trust.map((line, i) => ({ line, p: [0.50, 0.70, 0.96][i] }));
 
 const choiceEl  = document.getElementById("choice");
