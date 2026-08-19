@@ -815,7 +815,7 @@ shakeBtn.onclick = () => {
   thud();
   shakeAt = performance.now();
   hintEl.textContent = T.shook;
-  let n = 6;
+  let n = 2;      // 연달아 두 번 눌러야 손버릇이 나가므로 짧게 (형 지시)
   const t = setInterval(() => {
     n--; shakeBtn.textContent = n > 0 ? n + "초" : "흔들기";
     if(n <= 0){ clearInterval(t); shakeReady = true; shakeBtn.disabled = false; }
@@ -1211,10 +1211,10 @@ function knock(){
               "듣는다", "됐다",
               () => {
                 secretsSold++;
-                ask('"흔들기를 세 셀 안에 두 번 눌러봐."\n\n"판이 통째로 들썩인다."\n\n"…기술 목록엔 없는 거야."',
+                ask('"흔들기를 연달아 두 번 눌러봐."\n\n"쿵, 쿵 — 판이 통째로 들썩인다."\n\n"…기술 목록엔 없는 거야."',
                     "외웠다", "외웠다",
-                    () => { hintEl.textContent = "흔들기 → 흔들기 (3초 안에)"; },
-                    () => { hintEl.textContent = "흔들기 → 흔들기 (3초 안에)"; });
+                    () => { hintEl.textContent = "흔들기를 연달아 두 번"; },
+                    () => { hintEl.textContent = "흔들기를 연달아 두 번"; });
               },
               () => { hintEl.textContent = "…못 본 체했다"; });
           return;
