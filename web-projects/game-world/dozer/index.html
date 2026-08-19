@@ -325,13 +325,6 @@ function step(){
   const advance = deck.off - prevOff;
   deckAdvance = advance;
 
-  // 배운 '기다리기' — 넣고 3초 손대지 않으면 앞줄이 스스로 밀린다
-  if(ready("wait") && lastDropAt && performance.now() - lastDropAt > 3000){
-    lastDropAt = 0; useSkill("wait");
-    for(const c of coins) if(c.y > EDGE - 40) c.vy += 0.16;
-    hintEl.textContent = T.fired[4];
-  }
-
   updateTower();
 
   for(const c of coins){
@@ -593,7 +586,8 @@ function renderSkills(){
     b.className = "skill" + (left > 0 ? " off" : "");
     b.textContent = left > 0 ? k.tip + " " + left : k.tip;
     b.title = k.say;
-    b.style.cursor = "default";
+    b.style.cursor = "pointer";
+    b.onclick = () => castSkill(k.id);
     el.appendChild(b);
   });
 }
@@ -774,17 +768,10 @@ function drop(){
   }
   const c = coins[coins.length - 1];
 
-  /* ── 배운 것은 조건이 맞을 때만 듣는다 (형 지시) ──
-     배웠다고 늘 되는 게 아니라, 그 순간에 맞게 해야 한다 */
+  /* 배운 기술은 눌러서 쓴다 — 형 지시 (2026-08-19).
+     전에는 조건이 맞으면 저절로 걸렸는데, 눌러도 아무 일이 없어
+     쓴 줄도 몰랐다. 이제 버튼을 누르면 그 자리에서 밀린다. */
   let fired = "";
-  if(ready("timing") && back < 0.3){ c.vy += 0.75; fired = T.fired[0]; useSkill("timing"); }
-  if(ready("center") && Math.abs(dropX - W/2) < W*0.22){ c.vy += 0.55; c.vx *= 0.25; fired = T.fired[1]; useSkill("center"); }
-  if(ready("tower") && tower.h > 0 && Math.abs(dropX - tower.x) < R*2.2){
-    tower.shake += 0.16; fired = T.fired[2]; useSkill("tower");
-  }
-  if(ready("shake") && shakeAt && (performance.now() - shakeAt) < 1200){
-    c.vy += 0.7; fired = T.fired[3]; useSkill("shake");
-  }
   if(fired) hintEl.textContent = fired;
   lastDropAt = performance.now();
   const window_ = hintTimer > 0 ? 0.42 : 0.25;      // 알려준 대로 하면 판정이 넉넉해진다
@@ -1009,6 +996,36 @@ const skillOf = id => SKILLS.find(k => k.id === id);
 function ready(id){
   return learned.has(id) && (!cooldown[id] || performance.now() > cooldown[id]);
 }
+
+/* ── 기술 쓰기 (눌러서) ──────────────────────────────
+   형: "눌러 써야지 않을까" / "스킬 파워는 거의 밀어서 주욱 밀 수 있게"
+   누르면 그 자리에서 판 위 동전이 앞으로 밀린다. 쿨다운이 끝나야 다시 쓴다. */
+function castSkill(id){
+  if(!playing) return;
+  if(!learned.has(id)) return;
+  if(!ready(id)){ hintEl.textContent = "아직 못 쓴다"; return; }
+  if(!coins.length){ hintEl.textContent = "동전을 먼저 넣으세요"; return; }
+
+  if(id === "center"){
+    for(const c of coins) if(Math.abs(c.x - W/2) < W*0.34){ c.vy += 0.9; c.vx *= 0.3; }
+    hintEl.textContent = "가운데를 밀었다";
+  } else if(id === "timing"){
+    for(const c of coins) if(c.y > PUSH_Y + R*2) c.vy += 0.8;
+    hintEl.textContent = "때를 맞춰 밀었다";
+  } else if(id === "shake"){
+    for(const c of coins){ c.vx += (Math.random()-0.5) * 1.4; c.vy += 0.75; }
+    hintEl.textContent = "흔들어서 밀었다";
+  } else if(id === "tower"){
+    if(tower.h > 0) tower.shake += 0.5;
+    for(const c of coins) if(Math.abs(c.x - tower.x) < R*4) c.vy += 0.6;
+    hintEl.textContent = "밑동을 쳤다";
+  } else if(id === "wait"){
+    for(const c of coins) if(c.y > EDGE - 60) c.vy += 1.1;
+    hintEl.textContent = "앞줄을 밀어냈다";
+  }
+  useSkill(id);
+}
+
 function useSkill(id){
   cooldown[id] = performance.now() + skillOf(id).cool * 1000;
   renderSkills();
