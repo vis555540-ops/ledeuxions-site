@@ -788,6 +788,7 @@ function drop(){
      쓴 줄도 몰랐다. 이제 버튼을 누르면 그 자리에서 밀린다. */
   let fired = "";
   if(fired) hintEl.textContent = fired;
+  addEyes(-6);            // 형: 돈을 넣고 하면 사장님은 좋아하지
   lastDropAt = performance.now();
   /* 예전에 있던 hintTimer·towerAim 을 지우면서 이 줄들만 남아
      동전을 넣을 때마다 예외가 났다. 그 아래 '동전 없음 -> 엔딩' 이 통째로 안 돌았다.
@@ -813,6 +814,8 @@ const shakeBtn = document.getElementById("shakeBtn");
 let shakeReady = true;
 shakeBtn.onclick = () => {
   if(!playing || !shakeReady) return;
+  /* 형: "빨간색 구간일 때 못 흔드는 게 나을 것 같아" */
+  if(eyes > 75){ hintEl.textContent = "…사장이 이쪽을 보고 있다"; return; }
   // 흔들기 자체는 눈치가 살짝만 오르고 곧 내려간다 (형 지시)
   if(!tryCommand()){ addEyes(4); setTimeout(() => addEyes(-3), 1800); }
   shakeReady = false;
@@ -1100,12 +1103,12 @@ function addEyes(n){
 /* 눈치가 꽉 차면 쫓겨난다 — 형 지시 (2026-08-19): "검은 화면 디엔드 쫓겨남" */
 let kicked = false;
 function checkEyes(){
-  if(kicked || eyes < 100 || !playing) return;
+  if(kicked || eyes < 99.5 || !playing) return;
   kicked = true; playing = false;
   dropBtn.disabled = true; shakeBtn.disabled = true;
   talk(T.kicked, () => theEnd());
 }
-function coolEyes(){ if(eyes > 0) addEyes(-0.004); }   // 가만두면 식는다 (초당 0.25쯤)
+function coolEyes(){ if(eyes > 0) addEyes(-0.03); }   // 가만두면 식는다 (초당 2쯤)
 
 /* ── 손버릇(커맨드) ──
    기술 목록에 없는 것. 뒤에 있는 사람이 첫 거래에서 알려준다.
