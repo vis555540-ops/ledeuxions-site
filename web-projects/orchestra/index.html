@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12151c">
+<title>🎩 맺음 오케스트라 — 팀 지휘 대시보드</title>
+<style>
+    :root{
+        --bg:#0e1117; --panel:#161b24; --panel2:#1d2430; --line:#2a3340;
+        --text:#e7ecf3; --muted:#8b97a7; --accent:#d97757; --accent2:#5b8def;
+        --ok:#3fb27f; --busy:#e0a93f; --wait:#5a6474;
+        --opus:#c07cf0; --sonnet:#5bb8e0;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:radial-gradient(1200px 600px at 50% -5%, #1a2130 0%, var(--bg) 60%);
+        color:var(--text);font-family:'Segoe UI',-apple-system,'Apple SD Gothic Neo',sans-serif;
+        min-height:100vh;padding:28px 18px 48px;}
+    .wrap{max-width:1000px;margin:0 auto;}
+    header.top{text-align:center;margin-bottom:8px;}
+    header.top h1{font-size:1.9rem;letter-spacing:-.5px;}
+    header.top p{color:var(--muted);margin-top:6px;font-size:.95rem;}
+    .live{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:5px 14px;
+        background:rgba(63,178,127,.12);border:1px solid rgba(63,178,127,.35);border-radius:999px;
+        font-size:.82rem;color:var(--ok);}
+    .live .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 1.4s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.7);}}
+
+    /* 사장 */
+    .boss{margin:30px auto 0;max-width:440px;background:linear-gradient(160deg,#241a2e,#1a1622);
+        border:1px solid #3a2b4a;border-radius:18px;padding:20px 22px;position:relative;box-shadow:0 10px 40px rgba(160,80,240,.12);}
+    .boss .badge-model{position:absolute;top:16px;right:16px;font-size:.68rem;font-weight:700;letter-spacing:.05em;
+        color:var(--opus);background:rgba(192,124,240,.14);border:1px solid rgba(192,124,240,.4);padding:3px 9px;border-radius:6px;}
+    .boss .who{display:flex;align-items:center;gap:12px;}
+    .boss .ava{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#c07cf0,#8a4fd0);
+        display:grid;place-items:center;font-size:1.5rem;}
+    .boss h2{font-size:1.15rem;}
+    .boss .role{color:var(--muted);font-size:.82rem;margin-top:2px;}
+    .boss .task{margin-top:14px;padding:11px 13px;background:rgba(255,255,255,.03);border-radius:10px;
+        font-size:.9rem;border-left:3px solid var(--opus);}
+    .boss .task b{color:var(--opus);}
+
+    .stem{width:2px;height:26px;background:var(--line);margin:0 auto;}
+    .rail{height:2px;background:var(--line);max-width:760px;margin:0 auto 0;border-radius:2px;}
+
+    /* 팀원 그리드 */
+    .team{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:26px;}
+    .member{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px;
+        position:relative;transition:transform .15s;}
+    .member:hover{transform:translateY(-3px);}
+    .member .top-row{display:flex;align-items:center;gap:11px;}
+    .member .ava{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:1.25rem;
+        background:linear-gradient(135deg,#2a3340,#1d2430);}
+    .member h3{font-size:1rem;}
+    .member .sub{color:var(--muted);font-size:.76rem;margin-top:1px;}
+    .member .badge-model{position:absolute;top:14px;right:14px;font-size:.62rem;font-weight:700;
+        color:var(--sonnet);background:rgba(91,184,224,.12);border:1px solid rgba(91,184,224,.35);padding:2px 7px;border-radius:5px;}
+    .status{display:inline-flex;align-items:center;gap:6px;margin-top:13px;font-size:.78rem;font-weight:600;}
+    .status .s-dot{width:8px;height:8px;border-radius:50%;}
+    .status.ok{color:var(--ok);} .status.ok .s-dot{background:var(--ok);}
+    .status.busy{color:var(--busy);} .status.busy .s-dot{background:var(--busy);animation:pulse 1.2s infinite;}
+    .member .doing{margin-top:9px;font-size:.82rem;color:var(--text);}
+    .member .doing span{color:var(--muted);}
+    .member .result{margin-top:10px;padding:9px 11px;background:var(--panel2);border-radius:9px;
+        font-size:.8rem;line-height:1.5;color:#cbd4e0;border:1px solid var(--line);}
+    .member .result .q{color:var(--accent);font-weight:600;}
+
+    /* 사장 판단 */
+    .verdict{margin-top:30px;background:linear-gradient(160deg,#1a2230,#141a24);
+        border:1px solid #2c3a4d;border-radius:16px;padding:20px 22px;}
+    .verdict h3{font-size:1.05rem;display:flex;align-items:center;gap:8px;}
+    .verdict .pick{margin-top:12px;padding:12px 14px;background:rgba(217,119,87,.1);
+        border:1px solid rgba(217,119,87,.35);border-radius:10px;font-size:.92rem;}
+    .verdict .pick b{color:var(--accent);}
+    .verdict .flow{margin-top:12px;font-size:.86rem;color:var(--muted);}
+    .verdict .flow b{color:var(--text);}
+    footer{text-align:center;margin-top:30px;color:var(--muted);font-size:.78rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <header class="top">
+        <h1>🎩 맺음 오케스트라</h1>
+        <p>사장(부장)이 팀원들을 지휘하는 실시간 대시보드</p>
+        <div class="live"><span class="dot"></span>LIVE · 방금 첫 작업 완료</div>
+    </header>
+
+    <!-- 사장 -->
+    <div class="boss">
+        <span class="badge-model">OPUS · 사장</span>
+        <div class="who">
+            <div class="ava">🎩</div>
+            <div>
+                <h2>맥부장</h2>
+                <div class="role">오케스트레이터 · 지휘 / 배포 / 취합 / 판단</div>
+            </div>
+        </div>
+        <div class="task">지금: <b>SNS 첫 게시물 3버전</b>을 팀원들에게 분배 → 결과 취합 → 전략 판단 중</div>
+    </div>
+
+    <div class="stem"></div>
+    <div class="rail"></div>
+
+    <!-- 팀원 -->
+    <div class="team">
+        <div class="member">
+            <span class="badge-model">SONNET</span>
+            <div class="top-row">
+                <div class="ava">💻</div>
+                <div><h3>팀원 A</h3><div class="sub">기술 담당</div></div>
+            </div>
+            <div class="status ok"><span class="s-dot"></span>완료</div>
+            <div class="doing"><span>작업:</span> SNS 첫글 · AI 기술 관점</div>
+            <div class="result"><span class="q">"AI 둘이서 하루 만에 웹게임 6개를 만들었습니다"</span><br>기술 스택(Worker+KV/canvas)·캐러셀 5장 구성 + 형 역할 표기 주의까지 챙김</div>
+        </div>
+
+        <div class="member">
+            <span class="badge-model">SONNET</span>
+            <div class="top-row">
+                <div class="ava">🔖</div>
+                <div><h3>팀원 B</h3><div class="sub">활용팁 담당</div></div>
+            </div>
+            <div class="status ok"><span class="s-dot"></span>완료</div>
+            <div class="doing"><span>작업:</span> SNS 첫글 · AI 활용팁 관점</div>
+            <div class="result"><span class="q">"AI한테 '알아서 해줘' 하면 반은 망합니다"</span><br>실사용 3팁(맥락·일임·쪼개기) 캐러셀 + 저장 유도 톤</div>
+        </div>
+
+        <div class="member">
+            <span class="badge-model">SONNET</span>
+            <div class="top-row">
+                <div class="ava">🍉</div>
+                <div><h3>팀원 C</h3><div class="sub">스토리 담당</div></div>
+            </div>
+            <div class="status ok"><span class="s-dot"></span>완료</div>
+            <div class="doing"><span>작업:</span> SNS 첫글 · 제작기 스토리</div>
+            <div class="result"><span class="q">"쉬는 날 던진 한마디가, 하루 만에 게임이 됐다"</span><br>딸 수박🍉 이야기·이름 유래 + 음성권 배려(텍스트 인용)</div>
+        </div>
+    </div>
+
+    <!-- 사장 판단 -->
+    <div class="verdict">
+        <h3>🧠 사장(부장) 취합·판단</h3>
+        <div class="pick">첫 게시물 추천 → <b>Ⓒ 스토리 버전</b>. 첫 글은 '우리가 누구인지' 소개+감성 후킹이 팔로우 유도에 최적.</div>
+        <div class="flow">📌 순서 전략: <b>①스토리(소개)</b> → <b>②활용팁(저장·확산)</b> → <b>③기술(전문성)</b></div>
+    </div>
+
+    <footer>🐟 맺음(Maejeum) — 부장 & 이음 · 팀원 3명 동시 가동 · 총 75k 토큰 · 39초</footer>
+</div>
+</body>
+</html>

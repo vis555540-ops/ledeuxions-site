@@ -1,0 +1,36 @@
+{
+  "communities": {
+    "0": [
+      "arcade",
+      "arcade_name",
+      "arcade_ranktext",
+      "arcade_setname",
+      "arcade_top"
+    ],
+    "1": [
+      "arcade_ensurename",
+      "arcade_submit"
+    ]
+  },
+  "cohesion": {
+    "0": 0.4,
+    "1": 1.0
+  },
+  "gods": [
+    {
+      "id": "arcade_ensurename",
+      "label": "ensureName()",
+      "degree": 2
+    },
+    {
+      "id": "arcade_submit",
+      "label": "submit()",
+      "degree": 2
+    }
+  ],
+  "surprises": [],
+  "tokens": {
+    "input": 4096,
+    "output": 236
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "arcade.js",
+      "file_type": "code",
+      "source_file": "arcade.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "arcade",
+      "community": 0,
+      "norm_label": "arcade.js"
+    },
+    {
+      "label": "name()",
+      "file_type": "code",
+      "source_file": "arcade.js",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "arcade_name",
+      "community": 0,
+      "norm_label": "name()"
+    },
+    {
+      "label": "ensureName()",
+      "file_type": "code",
+      "source_file": "arcade.js",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "arcade_ensurename",
+      "community": 1,
+      "norm_label": "ensurename()"
+    },
+    {
+      "label": "setName()",
+      "file_type": "code",
+      "source_file": "arcade.js",
+      "source_location": "L23",
+      "_origin": "ast",
+      "id": "arcade_setname",
+      "community": 0,
+      "norm_label": "setname()"
+    },
+    {
+      "label": "submit()",
+      "file_type": "code",
+      "source_file": "arcade.js",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "arcade_submit",
+      "community": 1,
+      "norm_label": "submit()"
+    },
+    {
+      "label": "top()",
+      "file_type": "code",
+      "source_file": "arcade.js",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "arcade_top",
+      "community": 0,
+      "norm_label": "top()"
+    },
+    {
+      "label": "rankText()",
+      "file_type": "code",
+      "source_file": "arcade.js",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "arcade_ranktext",
+      "community": 0,
+      "norm_label": "ranktext()"
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "arcade.js",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "arcade",
+      "target": "arcade_ensurename",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "arcade.js",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "arcade",
+      "target": "arcade_name",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "arcade.js",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "arcade",
+      "target": "arcade_ranktext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "arcade.js",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "arcade",
+      "target": "arcade_setname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "arcade.js",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "arcade",
+      "target": "arcade_submit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "arcade.js",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "arcade",
+      "target": "arcade_top",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "arcade.js",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "arcade_submit",
+      "target": "arcade_ensurename",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": [],
+  "built_at_commit": "1f62c173ab4b249237a87f0158d3bf94a57255c0"
+}
