@@ -1010,24 +1010,22 @@ function castSkill(id){
   if(id === "center"){
     /* 형: "다른 애들도 해당돼야지" "일자로 쏘는 건 아직 약해" "시원한 맛이 없어"
        -> 판 위 전부에 걸린다. 가운데일수록 더 세게 밀리고, 가장자리 것도 가운데로 모인다. */
-    for(const c of coins){
-      const d = Math.abs(c.x - W/2) / (W/2);        // 0 = 한가운데, 1 = 가장자리
-      c.vy += 2.2 - d * 0.9;
-      c.vx = (W/2 - c.x) * 0.05;                    // 가운데로 모아준다
-    }
+    /* 형: "가운데로 모아지는 게 아니라 대포처럼 펑펑 쏘게"
+       옆으로 모으지 않는다. 앞으로 쏜다. */
+    for(const c of coins){ c.vy += 4.2; c.vx *= 0.6; }
     hintEl.textContent = "가운데를 밀었다";
   } else if(id === "timing"){
-    for(const c of coins) c.vy += 2.4;              // 판 위 전부를 한 번에 민다
+    for(const c of coins) c.vy += 4.6;              // 판 위 전부를 대포처럼 쏜다
     hintEl.textContent = "때를 맞춰 밀었다";
   } else if(id === "shake"){
-    for(const c of coins){ c.vx += (Math.random()-0.5) * 3.2; c.vy += 1.9; }
+    for(const c of coins){ c.vx += (Math.random()-0.5) * 3.4; c.vy += 3.6; }
     hintEl.textContent = "흔들어서 밀었다";
   } else if(id === "tower"){
     if(tower.h > 0) tower.shake += 1.1;
-    for(const c of coins) c.vy += (Math.abs(c.x - tower.x) < R*5) ? 2.4 : 1.2;
+    for(const c of coins) c.vy += (Math.abs(c.x - tower.x) < R*5) ? 4.4 : 2.6;
     hintEl.textContent = "밑동을 쳤다";
   } else if(id === "wait"){
-    for(const c of coins) c.vy += (c.y > EDGE - 80) ? 2.8 : 1.4;
+    for(const c of coins) c.vy += (c.y > EDGE - 80) ? 5.0 : 3.0;
     hintEl.textContent = "앞줄을 밀어냈다";
   }
   useSkill(id);
