@@ -458,16 +458,37 @@ function step(){
 
 /* 도트로 찍는 동전 — 안티에일리어싱 없이 네모로만 그린다 */
 function pixCoin(x, y, isStar){
-  const body = isStar ? "#4E8CD8" : "#E0B040";
-  const lite = isStar ? "#9FD0FF" : "#FFE9A8";
-  const dark = isStar ? "#25507F" : "#8C6A18";
-  const r = R;
-  ctx.fillStyle = dark;  ctx.fillRect(x-r,   y-r+2, r*2,   r+1);   // 아래 그림자
-  ctx.fillStyle = body;  ctx.fillRect(x-r,   y-r,   r*2,   r);     // 몸통
-  ctx.fillStyle = body;  ctx.fillRect(x-r+1, y-r-1, r*2-2, 1);
-  ctx.fillStyle = lite;  ctx.fillRect(x-r+2, y-r+1, r-1,   1);     // 빛
-  ctx.fillStyle = dark;  ctx.fillRect(x-r,   y+1,   r*2,   1);
+  /* 형이 고른 3번 — 옆에서 본 원기둥. 두께가 보인다 (2026-08-19)
+     그림 파일 대신 코드로 둔다. 파일 하나로 돌아야 어디든 올릴 수 있다.
+     14 x 7. 한 줄씩 그린다. k=테두리 y=금 l=빛 d=그늘 */
+  const P = isStar
+    ? { k:"#1B3A5C", y:"#4E8CD8", l:"#9FD0FF", d:"#25507F" }
+    : { k:"#7A5A10", y:"#E0B040", l:"#FFE9A8", d:"#8C6A18" };
+  const rows = [
+    "..kkkkkkkkkk..",
+    ".kyylllyyyyyk.",
+    "kyyyyyyyyyyyyk",
+    "kdyyyyyyyyyydk",
+    "kddddddddddddk",
+    ".kkddddddddkk.",
+    "..kkkkkkkkkk..",
+  ];
+  const x0 = Math.round(x) - 7, y0 = Math.round(y) - 3;
+  for(let ry = 0; ry < rows.length; ry++){
+    const row = rows[ry];
+    let rx = 0;
+    while(rx < row.length){
+      const ch = row[rx];
+      if(ch === "."){ rx++; continue; }
+      let run = 1;                                   // 같은 색은 이어서 한 번에 (빠르다)
+      while(rx + run < row.length && row[rx + run] === ch) run++;
+      ctx.fillStyle = P[ch];
+      ctx.fillRect(x0 + rx, y0 + ry, run, 1);
+      rx += run;
+    }
+  }
 }
+
 
 /* ── 탑 ── */
 function updateTower(){
