@@ -230,7 +230,7 @@ const MAX_STACK = 6;     // 탑 최대 높이
 const LIP_FORCE = 0.02;  // 앞 턱을 넘는 데 필요한 힘 (배당률을 정하는 값)
 const SIDE_OPEN = 160;
 const RAMP_W = R * 2.4;   // 가이드 판이 닿는 폭
-const RAMP_K = 0.012;     // 안쪽으로 되돌리는 힘. 키우면 덜 빠진다  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
+const RAMP_K = 0.019;     // 안쪽으로 되돌리는 힘. 키우면 덜 빠진다  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
 
 const BEST_KEY = "gw_dozer_best";
 let best = Number(localStorage.getItem(BEST_KEY) || 0);
@@ -867,7 +867,8 @@ async function showResult(){
    형이 쓴 대사는 뜻이 죽지 않게 옮겼다 */
 const T = {
   lang: "ko",
-  opening: ["너 이 게임 좋아하지?", "실컷 해봐라!", "으하하하하", "…", "만원어치 동전이 손에 쥐어져 있다."],
+  opening: ["너 이 게임 좋아하지?", "실컷 해봐라!", "으하하하하", "…", "만원어치 동전이 손에 쥐어져 있다.",
+             "…", "나는 남들은 모르는 기술이 있다."],
   endLoss: ["동전이 다 떨어졌다.", "앞줄은 아직 그대로 걸쳐 있다.", "발밑이 열린다.", "동전과 함께 떨어진다."],
   endWake: ["…", "꿈에서 깼다."],
   endWin:  ["하하하하", "행복하다…", "하하하…"],
@@ -1201,7 +1202,12 @@ function startRound(){
   hintEl.textContent = T.dropHere;
   shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
   shakeAt = lastDropAt = 0; tapUsed = 0; nextTapAt = 0; dropCount = 0;
-  learned.clear(); renderSkills();
+  learned.clear();
+  /* 꿈이니까 처음부터 하나는 알고 있다 — 형 지시 (2026-08-19)
+     '나는 남들은 모르는 기술이 있다'
+     가운데로 넣기를 준다. 옆으로 새는 게 이 게임에서 제일 크게 잃는 길이라서다. */
+  learned.add("center");
+  renderSkills();
   seed();
 }
 
