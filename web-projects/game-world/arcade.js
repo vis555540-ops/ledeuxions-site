@@ -5,6 +5,17 @@
 (function () {
     const API = window.__ARCADE_API || "https://api.ledeuxions.com";
     const KEY = "gw_player";
+    /* 영어 페이지(lang="en")에서는 영어로 묻는다. 이 모듈은 한/영 양쪽에서 같이 쓰인다.
+       형 2026-08-20: itch 영어판에서 이름 묻는 창만 한글로 떴다 */
+    const EN = (document.documentElement.lang || "").toLowerCase().indexOf("en") === 0;
+    const say = {
+        ask:  EN ? "Pick a name for the leaderboard! \u{1F30D}\n(You only enter this once)"
+                 : "게임에 쓸 이름을 정해줘! \u{1F30D}\n(한 번만 입력하면 계속 저장돼요)",
+        anon: EN ? "Player" : "익명",
+        rank: (r, t) => EN ? "\u{1F30D} World #" + r + "! (of " + t + " players)"
+                           : "\u{1F30D} 세계 " + r + "등! (전체 " + t + "명)",
+    };
+
     let memName = ""; // localStorage 죽었을 때 이 세션 동안만 유지할 fallback
 
     function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -20,9 +31,9 @@
         let n = lsGet(KEY) || memName;
         if (!n) {
             try {
-                n = (window.prompt("게임에 쓸 이름을 정해줘! 🌍\n(한 번만 입력하면 계속 저장돼요)", "") || "").trim().slice(0, 16);
+                n = (window.prompt(say.ask, "") || "").trim().slice(0, 16);
             } catch (e) { n = ""; }
-            if (!n) n = "익명" + Math.floor(Math.random() * 1000);
+            if (!n) n = say.anon + Math.floor(Math.random() * 1000);
             memName = n;
             lsSet(KEY, n);
         }
@@ -60,7 +71,7 @@
     // "🌍 세계 3등! (전체 12명)" 문구
     function rankText(res) {
         if (!res || !res.rank) return "";
-        return "🌍 세계 " + res.rank + "등! (전체 " + res.total + "명)";
+        return say.rank(res.rank, res.total);
     }
 
     window.Arcade = { name: name, ensureName: ensureName, setName: setName, submit: submit, top: top, rankText: rankText };
