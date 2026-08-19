@@ -1033,8 +1033,20 @@ function castSkill(id){
       if(sc > bestScore){ bestScore = sc; pick = c; }
     }
     if(pick){
-      pick.vy += 7.5; pick.vx = (W/2 - pick.x) * 0.06;
-      for(const c of coins) if(c !== pick && Math.abs(c.x - pick.x) < R*2.2) c.vy += 1.0;
+      /* 형: "동전 하나 날아가면서 티디딩 부딪히는 거라고 생각했어"
+         한 발이 앞으로 뚫고 나가면서, 지나가는 길에 있는 것들을 차례로 친다. */
+      pick.vy += 9.5; pick.vx = (W/2 - pick.x) * 0.05;
+      const path = coins
+        .filter(c => c !== pick && c.y > pick.y && Math.abs(c.x - pick.x) < R * 2.6)
+        .sort((a, b) => a.y - b.y);                    // 앞쪽부터 차례로
+      path.forEach((c, i) => {
+        const delay = 70 * (i + 1);                     // 티, 디, 딩
+        setTimeout(() => {
+          c.vy += 3.4 - i * 0.35;
+          c.vx += (c.x - pick.x) * 0.08;
+          if(i < 4) thud();
+        }, delay);
+      });
       thud();
     }
     hintEl.textContent = "…중앙 관통";
