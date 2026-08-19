@@ -40,6 +40,11 @@
          font-variant-numeric:tabular-nums}
   .stats b{color:var(--ink); font-size:19px; font-weight:800}
   .stats .gold b{color:var(--gold)}
+  .eyes{position:relative; width:min(260px,72vw); height:12px; margin:8px auto 0;
+        border:1px solid #2C3742; border-radius:7px; background:#151C24; overflow:hidden}
+  .eyes i{display:block; height:100%; width:0%; background:#3FA45B; transition:width .25s, background .35s}
+  .eyes em{position:absolute; inset:0; font-style:normal; font-size:9.5px; line-height:12px;
+           text-align:center; color:#8FA0B3; letter-spacing:1px}
 
   .wrap{flex:1; display:flex; align-items:center; justify-content:center; min-height:0; padding:8px 10px 0; gap:14px}
   /* 옆자리 — 넓은 화면에서만 게임 옆에 선다. 폰에서는 감춘다(게임을 가리면 안 된다) */
@@ -137,6 +142,8 @@
     <span>번 것 <b id="earn">0</b><span style="color:#6B7787"> / <b id="goal">40</b></span></span>
     <span>최고 <b id="best">0</b></span>
   </div>
+  <!-- 사장님 눈치 — 형 지시 (2026-08-19). 기술·커맨드를 쓸수록 차오르고 가만두면 내려간다 -->
+  <div class="eyes" id="eyesWrap"><i id="eyesBar"></i><em id="eyesTxt">사장님 눈치</em></div>
 </header>
 
 <div class="wrap">
@@ -326,6 +333,7 @@ function step(){
   const advance = deck.off - prevOff;
   deckAdvance = advance;
 
+  coolEyes();
   updateTower();
 
   for(const c of coins){
@@ -796,6 +804,7 @@ const shakeBtn = document.getElementById("shakeBtn");
 let shakeReady = true;
 shakeBtn.onclick = () => {
   if(!playing || !shakeReady) return;
+  tryCommand();                       // 3초 안에 두 번이면 손버릇이 나간다
   shakeReady = false;
   shakeBtn.disabled = true;
   for(const c of coins){
@@ -1032,7 +1041,45 @@ function castSkill(id){
   useSkill(id);
 }
 
+
+/* ── 사장님 눈치 ── 형 지시 (2026-08-19)
+   "기술 계속 쓰면 게이지 차는데 초록에서 빨간색, 시간 따라 조금씩 떨어지게"
+   "돈 안 넣고 흔들기만 하면 올라가게"                                        */
+let eyes = 0;                       // 0 ~ 100
+const eyesBar = document.getElementById("eyesBar");
+const eyesTxt = document.getElementById("eyesTxt");
+function addEyes(n){
+  eyes = Math.max(0, Math.min(100, eyes + n));
+  if(!eyesBar) return;
+  eyesBar.style.width = eyes + "%";
+  eyesBar.style.background = eyes > 75 ? "#C4453B" : eyes > 45 ? "#D9A441" : "#3FA45B";
+  if(eyesTxt) eyesTxt.textContent = eyes > 75 ? "사장님이 보고 있다" : "사장님 눈치";
+}
+function coolEyes(){ if(eyes > 0) addEyes(-0.25); }   // 가만두면 식는다
+
+/* ── 손버릇(커맨드) ──
+   기술 목록에 없는 것. 뒤에 있는 사람이 첫 거래에서 알려준다.
+   흔들기를 3초 안에 두 번 -> 판이 통째로 들썩이고 앞으로 조금 밀린다 */
+let shakeTaps = [];
+function tryCommand(){
+  const now = performance.now();
+  shakeTaps = shakeTaps.filter(t => now - t < 3000);
+  shakeTaps.push(now);
+  if(shakeTaps.length >= 2){
+    shakeTaps = [];
+    // 쿵, 쿵 — 두 번 들렸다 내려앉는다
+    for(const c of coins){ c.vy += 0.9; c.vx += (Math.random()-0.5) * 0.6; }
+    setTimeout(() => { for(const c of coins) c.vy += 0.9; thud(); }, 220);
+    thud();
+    addEyes(14);
+    hintEl.textContent = "쿵, 쿵 — 판이 들썩였다";
+    return true;
+  }
+  return false;
+}
+
 function useSkill(id){
+  addEyes(12);
   cooldown[id] = performance.now() + skillOf(id).cool * 1000;
   renderSkills();
 }
@@ -1122,13 +1169,24 @@ function knock(){
            "첫번째 힌트주는 사람은 타이밍 고정에 확실한, 딸 수 있는 편법 알려주고"
            첫 손님한테는 진짜를 판다. 그래야 두 번째 제안을 믿게 된다.
            그 뒤부터는 반반이다. */
-        const first = (secretsSold === 0);
-        const o = first
-          ? (SKILLS.find(k => k.id === "timing" && !learned.has(k.id)) || left[0])
-          : left[Math.floor(Math.random()*left.length)];
-        const t = first
-          ? { line: TRUST[2].line, p: 1 }
-          : TRUST[Math.floor(Math.random()*TRUST.length)];
+        /* 형 지시 (2026-08-19): 첫 거래는 기술이 아니라 '손버릇'을 알려준다.
+           "아, 이 게임엔 커맨드가 따로 있구나" 를 여기서 알게 하는 것이 목적이다. */
+        if(secretsSold === 0){
+          ask('"비밀 하나 알려줄게. 공짜다."',
+              "듣는다", "됐다",
+              () => {
+                secretsSold++;
+                ask('"흔들기를 세 셀 안에 두 번 눌러봐."\n\n"판이 통째로 들썩인다."\n\n"…기술 목록엔 없는 거야."',
+                    "외웠다", "외웠다",
+                    () => { hintEl.textContent = "흔들기 → 흔들기 (3초 안에)"; },
+                    () => { hintEl.textContent = "흔들기 → 흔들기 (3초 안에)"; });
+              },
+              () => { hintEl.textContent = "…못 본 체했다"; });
+          return;
+        }
+        const first = false;
+        const o = left[Math.floor(Math.random()*left.length)];
+        const t = TRUST[Math.floor(Math.random()*TRUST.length)];
         ask(T.secret(o.cost, t.line),
             T.pay(o.cost), T.refuse,
             () => {
@@ -1244,6 +1302,7 @@ function startRound(){
      가운데로 넣기를 준다. 옆으로 새는 게 이 게임에서 제일 크게 잃는 길이라서다. */
   learned.add("center");
   secretsSold = 0;
+  eyes = 0; addEyes(0);
   renderSkills();
   seed();
 }
