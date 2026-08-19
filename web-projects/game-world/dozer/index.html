@@ -1040,12 +1040,13 @@ function castSkill(id){
          속도를 낮추고, 앞에 걸린 것부터 먼저 밀어 길을 낸다. */
       const path = coins
         .filter(c => c !== pick && c.y > pick.y && Math.abs(c.x - pick.x) < R * 2.8)
-        .sort((a, b) => a.y - b.y);                    // 앞쪽부터
+        .sort((a, b) => a.y - b.y)
+        .slice(0, 10);            // 타이머를 너무 많이 만들지 않는다 (느린 기계에서 죽는다)
       path.forEach((c, i) => {
         setTimeout(() => {
           c.vy += 3.6 - i * 0.3;
           c.vx += (c.x - pick.x) * 0.10;
-          if(i < 5) thud();
+          if(i < 3) thud();
         }, 45 * i);                                     // 티 디 딩 — 앞에서부터 번지듯
       });
       pick.vy += 4.6; pick.vx = (W/2 - pick.x) * 0.05;  // 뒤따라 밀고 들어간다
