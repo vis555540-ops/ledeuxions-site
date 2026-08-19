@@ -741,7 +741,19 @@ cv.addEventListener("pointermove", e => {
 
 function drop(){
   const per = STAGES[stage].per;
-  if(!playing || credits < per) return;
+  if(!playing) return;
+  /* 동전이 모자라면 조용히 무시하지 않는다 — 형: "동전도 안 들어가서" (2026-08-19)
+     왜 안 되는지 말해주고, 정말 한 푼도 없으면 판을 끝낸다. */
+  if(credits < per){
+    hintEl.textContent = "No coins left";
+    if(credits <= 0){
+      playing = false;
+      dropBtn.disabled = true; shakeBtn.disabled = true;
+      hintEl.textContent = "…pockets empty";
+      setTimeout(() => { if(typeof gameOver === "function") gameOver(); else theEnd(); }, 900);
+    }
+    return;
+  }
   credits -= per;
   leftEl.textContent = credits;
 

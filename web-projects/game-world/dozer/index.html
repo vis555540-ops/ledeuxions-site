@@ -756,7 +756,19 @@ cv.addEventListener("pointermove", e => {
 
 function drop(){
   const per = STAGES[stage].per;
-  if(!playing || credits < per) return;
+  if(!playing) return;
+  /* 동전이 모자라면 조용히 무시하지 않는다 — 형: "동전도 안 들어가서" (2026-08-19)
+     왜 안 되는지 말해주고, 정말 한 푼도 없으면 판을 끝낸다. */
+  if(credits < per){
+    hintEl.textContent = "동전이 없다";
+    if(credits <= 0){
+      playing = false;
+      dropBtn.disabled = true; shakeBtn.disabled = true;
+      hintEl.textContent = "…주머니가 비었다";
+      setTimeout(() => { if(typeof gameOver === "function") gameOver(); else theEnd(); }, 900);
+    }
+    return;
+  }
   credits -= per;
   leftEl.textContent = credits;
 
@@ -1106,7 +1118,13 @@ function checkEyes(){
   if(kicked || eyes < 99.5 || !playing) return;
   kicked = true; playing = false;
   dropBtn.disabled = true; shakeBtn.disabled = true;
-  talk(T.kicked, () => theEnd());
+  /* 여기서 대사가 안 뜨면 조작만 막히고 화면은 그대로라
+     '동전도 안 들어가고 쫓겨나지도 않는' 상태가 된다 (형이 겪은 것).
+     그래서 실패해도 반드시 끝으로 보낸다. */
+  let shown = false;
+  try { talk(T.kicked, () => { shown = true; theEnd(); }); }
+  catch(e){ theEnd(); return; }
+  setTimeout(() => { if(!shown) theEnd(); }, 7000);
 }
 function coolEyes(){ if(eyes > 0) addEyes(-0.03); }   // 가만두면 식는다 (초당 2쯤)
 
