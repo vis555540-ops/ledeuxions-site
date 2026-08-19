@@ -333,7 +333,7 @@ function step(){
   const advance = deck.off - prevOff;
   deckAdvance = advance;
 
-  coolEyes();
+  coolEyes(); checkEyes();
   updateTower();
 
   for(const c of coins){
@@ -891,6 +891,7 @@ const T = {
   shook: "흔들었습니다", perStage: (n) => "동전 " + n + "개씩 들어갑니다",
   noCoinsLeft: "넣을 동전이 없습니다. 남은 게 떨어지길 기다리세요",
   theEnd: "The END",
+  kicked: ["어깨를 붙잡혔다.", "\"손버릇이 고약하네.\"", "\"나가.\"", "…", "문 밖으로 밀려났다."],
   stageDone: [
     ['"빌려준 거니까."', '"이건 받아간다?"', "동전이 전부 쓸려 나갔다."],
     ['"아 맞다."', '"동전 이번에는 두 개 넣어야 한다?"', '"사장님이 너무 잘된다고 값을 올렸대."'],
@@ -1054,6 +1055,15 @@ function addEyes(n){
   eyesBar.style.width = eyes + "%";
   eyesBar.style.background = eyes > 75 ? "#C4453B" : eyes > 45 ? "#D9A441" : "#3FA45B";
   if(eyesTxt) eyesTxt.textContent = eyes > 75 ? "사장님이 보고 있다" : "사장님 눈치";
+}
+
+/* 눈치가 꽉 차면 쫓겨난다 — 형 지시 (2026-08-19): "검은 화면 디엔드 쫓겨남" */
+let kicked = false;
+function checkEyes(){
+  if(kicked || eyes < 100 || !playing) return;
+  kicked = true; playing = false;
+  dropBtn.disabled = true; shakeBtn.disabled = true;
+  talk(T.kicked, () => theEnd());
 }
 function coolEyes(){ if(eyes > 0) addEyes(-0.25); }   // 가만두면 식는다
 
@@ -1302,7 +1312,7 @@ function startRound(){
      가운데로 넣기를 준다. 옆으로 새는 게 이 게임에서 제일 크게 잃는 길이라서다. */
   learned.add("center");
   secretsSold = 0;
-  eyes = 0; addEyes(0);
+  eyes = 0; kicked = false; addEyes(0);
   renderSkills();
   seed();
 }
