@@ -238,6 +238,7 @@ let best = Number(localStorage.getItem(BEST_KEY) || 0);
 bestEl.textContent = best;
 
 let coins = [], score = 0, earned = 0, credits = 50, dropX = W/2, playing = false;
+let secretsSold = 0;   // 뒤에 있는 사람에게서 몇 번 샀는가
 /* ── 단계 ── 형이 짠 구조. 잘될수록 뜯어간다
    1차 40 채우면 "빌려준 거니까" 하고 다 가져간다
    2차 동전을 두 개씩 넣어야 한다. 사장이 값을 올렸다
@@ -1113,13 +1114,23 @@ function knock(){
           hintEl.textContent = T.nothingLeft;
           return;
         }
-        const o = left[Math.floor(Math.random()*left.length)];
-        const t = TRUST[Math.floor(Math.random()*TRUST.length)];
+        /* 첫 번째로 파는 비밀은 확실하다 — 형 지시 (2026-08-19)
+           "첫번째 힌트주는 사람은 타이밍 고정에 확실한, 딸 수 있는 편법 알려주고"
+           첫 손님한테는 진짜를 판다. 그래야 두 번째 제안을 믿게 된다.
+           그 뒤부터는 반반이다. */
+        const first = (secretsSold === 0);
+        const o = first
+          ? (SKILLS.find(k => k.id === "timing" && !learned.has(k.id)) || left[0])
+          : left[Math.floor(Math.random()*left.length)];
+        const t = first
+          ? { line: TRUST[2].line, p: 1 }
+          : TRUST[Math.floor(Math.random()*TRUST.length)];
         ask(T.secret(o.cost, t.line),
             T.pay(o.cost), T.refuse,
             () => {
               if(credits >= o.cost){
                 credits -= o.cost; leftEl.textContent = credits;
+                secretsSold++;
                 // 신뢰도만큼만 진짜다. 헛돈일 수도 있다
                 if(Math.random() < t.p){
                   learned.add(o.id);
@@ -1223,7 +1234,8 @@ function startRound(){
   shakeAt = lastDropAt = 0; tapUsed = 0; nextTapAt = 0; dropCount = 0;
   learned.clear();
   /* You already know one trick - it's a dream after all. */
-  learned.add("center"); renderSkills();
+  learned.add("center");
+  secretsSold = 0; renderSkills();
   seed();
 }
 
