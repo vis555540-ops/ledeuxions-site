@@ -228,7 +228,9 @@ const EDGE = H - 5;     // 이 선을 넘으면 떨어진다
 const R = 7;           // 동전 반지름
 const MAX_STACK = 6;     // 탑 최대 높이
 const LIP_FORCE = 0.02;  // 앞 턱을 넘는 데 필요한 힘 (배당률을 정하는 값)
-const SIDE_OPEN = 160;  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
+const SIDE_OPEN = 160;
+const RAMP_W = R * 2.4;   // 가이드 판이 닿는 폭
+const RAMP_K = 0.012;     // 안쪽으로 되돌리는 힘. 키우면 덜 빠진다  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
 
 const BEST_KEY = "gw_dozer_best";
 let best = Number(localStorage.getItem(BEST_KEY) || 0);
@@ -364,6 +366,13 @@ function step(){
     if(c.y < SIDE_OPEN){
       if(c.x < guard){ c.x = guard; c.vx = Math.abs(c.vx) * 0.4; }
       if(c.x > W - guard){ c.x = W - guard; c.vx = -Math.abs(c.vx) * 0.4; }
+    } else {
+      /* 45도 가이드 판 — 형이 알려준 실물 구조 (2026-08-19).
+         실제 기계는 열린 구간 옆에 비스듬한 철판이 있어서
+         옆으로 가던 동전을 안쪽으로 되돌린다. 그래서 다 빠지지 않는다.
+         완전히 막지는 않는다. 빠르게 밀린 동전은 여전히 넘어간다 — 그게 긴장이다. */
+      if(c.x < RAMP_W){ c.vx += (RAMP_W - c.x) * RAMP_K; }
+      if(c.x > W - RAMP_W){ c.vx -= (c.x - (W - RAMP_W)) * RAMP_K; }
     }
     // 밀개보다 뒤로는 못 간다
     if(c.y < PUSH_Y + R){ c.y = PUSH_Y + R; }
@@ -599,6 +608,13 @@ function draw(){
   ctx.fillStyle = "#2A1A18";
   ctx.fillRect(0, SIDE_OPEN, 2, H - SIDE_OPEN);
   ctx.fillRect(W-2, SIDE_OPEN, 2, H - SIDE_OPEN);
+  // 45도 가이드 판 — 비스듬히 놓인 철판
+  ctx.fillStyle = "#39434E";
+  for(let y = SIDE_OPEN; y < H; y += 3){
+    const w = Math.max(1, RAMP_W - (y - SIDE_OPEN) * 0.06);
+    ctx.fillRect(2, y, w * 0.18, 1);
+    ctx.fillRect(W - 2 - w * 0.18, y, w * 0.18, 1);
+  }
 
   // 떨어지는 선 — 점선을 직접 찍는다
   ctx.fillStyle = "#3A2F14";
