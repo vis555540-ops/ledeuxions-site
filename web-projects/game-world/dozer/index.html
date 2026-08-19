@@ -47,6 +47,9 @@
            text-align:center; color:#8FA0B3; letter-spacing:1px}
 
   .wrap{flex:1; display:flex; align-items:center; justify-content:center; min-height:0; padding:8px 10px 0; gap:14px}
+  /* 옆자리는 메인이 아니다. 게임에서 떼어 오른쪽으로 물린다 (형 지시 2026-08-19) */
+  @media (min-width: 980px){ .side{margin-left:56px} }
+  @media (min-width: 1240px){ .side{margin-left:120px} }
   /* 옆자리 — 넓은 화면에서만 게임 옆에 선다. 폰에서는 감춘다(게임을 가리면 안 된다) */
   .side{display:none; flex-direction:column; gap:8px; width:210px; flex:0 0 auto}
   .side a{
@@ -172,6 +175,10 @@
   <button class="drop" id="dropBtn">동전 넣기</button>
   <button class="drop" id="shakeBtn" style="max-width:130px;background:linear-gradient(180deg,#7C8CA0,#5B6A7D);color:#0E141B">흔들기</button>
 </footer>
+<div style="text-align:center; margin:10px 0 2px">
+  <a href="../" style="display:inline-block; padding:8px 16px; border:1px solid #2C3742;
+     border-radius:9px; color:#C99A2E; text-decoration:none; font-size:13px">게임 더 하기 →</a>
+</div>
 <nav class="links" id="links">
   <a href="https://pdf300.com/" target="_blank" rel="noopener">PDF300</a>
   <a href="/web-projects/inspection-score/">점검 점수 계산기</a>
