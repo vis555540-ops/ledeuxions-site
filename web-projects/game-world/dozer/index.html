@@ -616,6 +616,18 @@ function draw(){
   ctx.fillStyle = "#212B36";
   for(let y = 4; y < H; y += 8) for(let x = 4; x < W; x += 8) ctx.fillRect(x, y, 1, 1);
 
+  // 쫓겨나면 판 위에 바로 적는다 (대사가 늦거나 실패해도 보이게)
+  if(typeof kicked !== "undefined" && kicked){
+    ctx.fillStyle = "rgba(0,0,0,.72)"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#C4453B";
+    ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
+    ctx.fillText("나가.", W/2, H/2 - 8);
+    ctx.fillStyle = "#8FA0B3"; ctx.font = "9px monospace";
+    ctx.fillText("손버릇이 고약하네", W/2, H/2 + 10);
+    ctx.textAlign = "start";
+    return;
+  }
+
   // 옆이 열린 구간 표시 — 여기로 빠지면 잃는다
   ctx.fillStyle = "#2A1A18";
   ctx.fillRect(0, SIDE_OPEN, 2, H - SIDE_OPEN);
