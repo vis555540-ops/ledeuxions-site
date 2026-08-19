@@ -3,417 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FAF9F5">
-<meta name="description" content="LeDeuxions의 정적 웹 유틸리티 모음. PDF, HEIC, 도장, 미디어 변환 등 브라우저에서 끝나는 도구들.">
-<meta property="og:title" content="LeDeuxions Web Tools">
-<meta property="og:description" content="브라우저에서 끝나는 정적 유틸리티 모음.">
+<meta name="theme-color" content="#f3f2f2">
+<meta name="description" content="LeDeuxions의 웹 도구 — 브라우저에서 끝나는 유틸리티. 업로드도, 설치도 없이.">
+<meta property="og:title" content="Tools — LeDeuxions">
+<meta property="og:description" content="브라우저에서 끝나는 유틸리티 모음.">
 <title>웹 도구 — LeDeuxions</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="../assets/css/claude-design.css">
-<style>
-    .hub-hero {
-        padding: var(--space-8) 0 var(--space-7);
-        text-align: center;
-    }
-    .hub-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: var(--space-5);
-        margin-bottom: var(--space-7);
-    }
-    .tool-card {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-3);
-        padding: var(--space-6);
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        text-decoration: none;
-        color: inherit;
-        transition: all .25s var(--ease);
-        position: relative;
-        overflow: hidden;
-    }
-    .tool-card:hover {
-        border-color: var(--accent);
-        box-shadow: var(--shadow-md);
-        transform: translateY(-3px);
-        color: inherit;
-    }
-    .tool-card-icon {
-        width: 56px; height: 56px;
-        background: var(--accent-soft);
-        color: var(--accent-deep);
-        border-radius: var(--radius-md);
-        display: grid; place-items: center;
-        font-size: 1.6rem;
-    }
-    .tool-card h3 {
-        font-family: var(--font-serif);
-        font-size: 1.35rem;
-        margin: 0;
-        color: var(--text-primary);
-    }
-    .tool-card p {
-        color: var(--text-secondary);
-        font-size: 0.93rem;
-        margin: 0 0 var(--space-2);
-        line-height: 1.55;
-    }
-    .tool-card-meta {
-        display: flex;
-        gap: var(--space-2);
-        flex-wrap: wrap;
-        margin-top: auto;
-        padding-top: var(--space-3);
-    }
-    .tool-card-arrow {
-        position: absolute;
-        top: var(--space-5); right: var(--space-5);
-        color: var(--text-muted);
-        font-size: 1.2rem;
-        transition: transform .2s var(--ease), color .2s var(--ease);
-    }
-    .tool-card:hover .tool-card-arrow {
-        color: var(--accent);
-        transform: translate(3px, -3px);
-    }
-    .feature-strip {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: var(--space-5);
-        padding: var(--space-6);
-        background: var(--bg-sunken);
-        border-radius: var(--radius-lg);
-        margin: var(--space-7) 0;
-    }
-    .feature-strip-item {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    .feature-strip-item .ico {
-        width: 36px; height: 36px;
-        background: var(--bg-card);
-        border-radius: var(--radius-sm);
-        display: grid; place-items: center;
-        margin-bottom: var(--space-2);
-        color: var(--accent);
-    }
-    .feature-strip-item h4 {
-        font-family: var(--font-sans);
-        font-size: 0.95rem;
-        margin: 0;
-        font-weight: 600;
-    }
-    .feature-strip-item p {
-        font-size: 0.83rem;
-        color: var(--text-muted);
-        margin: 0;
-    }
-</style>
+<link rel="stylesheet" href="../assets/css/ledeuxions-classical.css">
 </head>
 <body>
-
-<!-- Navbar -->
-<nav class="nav">
-    <div class="nav-inner">
-        <a href="/" class="nav-brand">
-            <span class="nav-brand-mark">L</span>
-            <span>LeDeuxions</span>
-        </a>
-        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        </button>
-        <div class="nav-links" data-nav-menu>
-            <a href="/" class="nav-link" data-nav-link>홈</a>
-            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
-            <a href="/work/" class="nav-link" data-nav-link>작품</a>
-            <a href="/history/" class="nav-link" data-nav-link>이야기</a>
-            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
-        </div>
-    </div>
+<div class="page">
+<header class="site-head">
+<a href="/" class="wordmark">Ledeuxions</a>
+<nav class="gnav">
+<a href="/work/">Work</a>
+<a href="/history/">Story</a>
+<a href="/web-projects/" aria-current="page">Tools</a>
+<a href="/contact/">Contact</a>
 </nav>
-
-<header class="hub-hero container">
-    <div class="eyebrow" style="margin-bottom:12px;">Web Toolkit</div>
-    <h1>브라우저에서 <em style="font-style:italic;color:var(--accent);">끝나는</em> 도구들</h1>
-    <p class="lead" style="max-width:640px;margin:0 auto;">
-        설치, 회원가입, 업로드 모두 없습니다.<br>
-        파일은 당신의 기기를 떠나지 않고, 처리는 즉시 끝납니다.
-    </p>
 </header>
-
-<main class="container">
-
-    <!-- Tool cards -->
-    <div class="hub-grid">
-
-        <a href="paycheck/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">⚖️</div>
-            <h3>내가 제대로 돈을 받고 있을까?</h3>
-            <p>용역금액 · 투입 인원 · 기간 · 내 월급을 넣으면, 내가 회사에 얼마를 만들어주고 얼마를 받는지 보여줍니다. 연봉 비교가 아닙니다.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">급여 점검</span>
-            </div>
-        </a>
-
-        <a href="game-world/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🎮</div>
-            <h3>게임월드</h3>
-            <p>브라우저에서 바로 즐기는 미니게임 모음. 건축 타워 빌더로 시작 — 앞으로 계속 늘어나요.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">미니게임</span>
-            </div>
-        </a>
-
-        <a href="qr/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🔳</div>
-            <h3>QR 코드 생성기</h3>
-            <p>URL · 텍스트 · WiFi · 전화번호를 QR로. 색·여백·오류복원 조절, 고해상도 PNG·SVG 저장.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">PNG · SVG</span>
-            </div>
-        </a>
-
-        <a href="video-compress/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🎬</div>
-            <h3>동영상 압축기</h3>
-            <p>MP4 · MOV · WebM 용량을 브라우저에서 바로 줄입니다. 화질·해상도 조절, 업로드 없음.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">FFmpeg.wasm</span>
-            </div>
-        </a>
-
-        <a href="inspection-score/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🏢</div>
-            <h3>점검 점수·등급 계산기</h3>
-            <p>소규모 노후건축물 점검표의 중항목 평균·가중치를 적용해 대항목 점수와 등급을 계산합니다. 계산 과정을 보여줘 검산할 수 있습니다.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">매뉴얼 산식</span>
-            </div>
-        </a>
-
-        <a href="pdf300/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">📄</div>
-            <h3>PDF 도구 모음</h3>
-            <p>병합 · 분할 · 회전 · 이미지로 추출 · 이미지를 PDF로. 한 페이지에 모은 PDF 워크플로.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">PDF-lib.js</span>
-            </div>
-        </a>
-
-        <a href="imgworks/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🖼️</div>
-            <h3>ImgWorks · 이미지 도구</h3>
-            <p>포맷 변환 · 압축 · 리사이즈 · 자르기 · 회전 · 워터마크 · 필터 · EXIF 제거. 8개 기능 한 곳에.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">Canvas API</span>
-            </div>
-        </a>
-
-        <a href="nukki/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🪄</div>
-            <h3>배경 제거 · 누끼 따기</h3>
-            <p>사진 배경을 AI로 자동 제거하고 투명 PNG로 저장. 설치 없이 브라우저에서 바로, 사용량 제한 없음.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">브라우저 AI</span>
-            </div>
-        </a>
-
-        <a href="freecomfortlab/audio-editor.html" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🎙️</div>
-            <h3>오디오 편집기</h3>
-            <p>자르기 · 합치기 · 속도 · 페이드 · 반전 · 정규화. 파형 표시 + MP3 출력.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">Web Audio</span>
-            </div>
-        </a>
-
-        <a href="videotools/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🎬</div>
-            <h3>동영상 도구</h3>
-            <p>압축 · 트리밍 · GIF 변환 · 음성 추출. ffmpeg가 브라우저 안에서 돕니다.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">ffmpeg.wasm</span>
-            </div>
-        </a>
-
-        <a href="charcount/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🔤</div>
-            <h3>글자수 세기</h3>
-            <p>공백 포함/제외 · 바이트 · 원고지 · 자소서/SNS 제한 체크를 실시간으로.</p>
-            <div class="tool-card-meta">
-                <span class="badge">완전 정적</span>
-                <span class="badge badge-neutral">실시간</span>
-            </div>
-        </a>
-
-        <a href="/photo-revive/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">✨</div>
-            <h3>Photo Revive · 얼굴 복원</h3>
-            <p>오래된 사진, 흐릿한 얼굴을 AI로 복원. 처리 후 즉시 삭제. 하루 2장 무료.</p>
-            <div class="tool-card-meta">
-                <span class="badge">AI · 서버</span>
-                <span class="badge badge-neutral">GFPGAN</span>
-            </div>
-        </a>
-
-        <a href="stamp/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🔖</div>
-            <h3>도장 추출기</h3>
-            <p>스캔본에서 도장 배경을 자동으로 제거하고, 깨끗한 투명 PNG로 저장합니다.</p>
-            <div class="tool-card-meta">
-                <span class="badge">배경 제거</span>
-                <span class="badge badge-neutral">PNG · PDF</span>
-            </div>
-        </a>
-
-        <a href="iphone-heic/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🖼️</div>
-            <h3>HEIC → JPG/PNG</h3>
-            <p>아이폰 사진 일괄 변환, 품질·크기·포맷 조절, ZIP 묶음 다운로드까지.</p>
-            <div class="tool-card-meta">
-                <span class="badge">일괄 변환</span>
-                <span class="badge badge-neutral">JPG · PNG · WebP</span>
-            </div>
-        </a>
-
-        <a href="freecomfortlab/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🎧</div>
-            <h3>미디어 변환 랩</h3>
-            <p>오디오 → MP3, 비디오 → MP3, 카카오톡 영상 처리. 클라이언트 측 미디어 도구 모음.</p>
-            <div class="tool-card-meta">
-                <span class="badge">FFmpeg.wasm</span>
-                <span class="badge badge-neutral">오프라인 가능</span>
-            </div>
-        </a>
-
-        <a href="paintcomfortfro/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">🎨</div>
-            <h3>Paint & Present</h3>
-            <p>그리고, 발표하고, 저장합니다. 6개 언어 지원의 캔버스 + 프레젠테이션 도구.</p>
-            <div class="tool-card-meta">
-                <span class="badge">Canvas</span>
-                <span class="badge badge-neutral">다국어</span>
-            </div>
-        </a>
-
-        <a href="/applications/" class="tool-card">
-            <span class="tool-card-arrow">↗</span>
-            <div class="tool-card-icon">📱</div>
-            <h3>Applications</h3>
-            <p>설치형 앱 버전 모음. PWA로 홈 화면에 추가해 오프라인에서도 쓸 수 있습니다.</p>
-            <div class="tool-card-meta">
-                <span class="badge">PWA</span>
-                <span class="badge badge-neutral">오프라인</span>
-            </div>
-        </a>
-
-    </div>
-
-    <!-- Feature strip -->
-    <section class="feature-strip">
-        <div class="feature-strip-item">
-            <div class="ico">🔒</div>
-            <h4>업로드 없음</h4>
-            <p>모든 처리는 브라우저 안에서 끝납니다.</p>
-        </div>
-        <div class="feature-strip-item">
-            <div class="ico">⚡</div>
-            <h4>설치 불필요</h4>
-            <p>탭만 열면 바로 작업 시작.</p>
-        </div>
-        <div class="feature-strip-item">
-            <div class="ico">📐</div>
-            <h4>일관된 디자인</h4>
-            <p>모든 도구가 같은 시각 언어를 씁니다.</p>
-        </div>
-        <div class="feature-strip-item">
-            <div class="ico">🌍</div>
-            <h4>다국어</h4>
-            <p>한국어 · 영어 자동 감지.</p>
-        </div>
-    </section>
-
+<main class="wrap">
+<section class="band band-end">
+<div>
+<div class="kicker">Chapter III — Tools</div>
+<h1 class="display">브라우저에서<br>끝나는 도구들</h1>
+<p class="lede lede-just" style="margin-top:24px">설치도, 회원가입도, 업로드도 없습니다. 파일은 당신의 기기를 떠나지 않고 처리는 그 자리에서 끝납니다. 작업실에서 쓰던 방식을 그대로 옮겨 둔 것들입니다.</p>
+</div>
+<figure class="plate">
+<img src="../assets/img/work-house.jpg" alt="도판" style="aspect-ratio:16/10">
+<figcaption>Plate — Working Method</figcaption>
+</figure>
+</section>
+<section class="section-index">
+<a href="pdf300/" class="row has-meta">
+<span class="num">01</span>
+<span><span class="name">PDF 도구 모음</span><span class="desc">병합 · 분할 · 회전 · 이미지 추출 — 한 페이지에 모은 워크플로.</span></span>
+<span class="meta">완전 정적</span>
+<span class="arrow">→</span>
+</a>
+<a href="imgworks/" class="row has-meta">
+<span class="num">02</span>
+<span><span class="name">ImgWorks · 이미지</span><span class="desc">변환 · 압축 · 리사이즈 · 워터마크 · EXIF 제거.</span></span>
+<span class="meta">Canvas API</span>
+<span class="arrow">→</span>
+</a>
+<a href="stamp/" class="row has-meta">
+<span class="num">03</span>
+<span><span class="name">도장 추출기</span><span class="desc">스캔본에서 배경을 지우고 깨끗한 투명 PNG로.</span></span>
+<span class="meta">PNG · PDF</span>
+<span class="arrow">→</span>
+</a>
+<a href="iphone-heic/" class="row has-meta">
+<span class="num">04</span>
+<span><span class="name">HEIC → JPG</span><span class="desc">아이폰 사진 일괄 변환, ZIP 묶음 저장까지.</span></span>
+<span class="meta">일괄 변환</span>
+<span class="arrow">→</span>
+</a>
+<a href="freecomfortlab/" class="row has-meta">
+<span class="num">05</span>
+<span><span class="name">미디어 변환 랩</span><span class="desc">오디오 · 비디오 · MP3, 브라우저 안의 ffmpeg.</span></span>
+<span class="meta">ffmpeg.wasm</span>
+<span class="arrow">→</span>
+</a>
+<a href="videotools/" class="row has-meta">
+<span class="num">06</span>
+<span><span class="name">동영상 도구</span><span class="desc">압축 · 트리밍 · GIF 변환 · 음성 추출.</span></span>
+<span class="meta">ffmpeg.wasm</span>
+<span class="arrow">→</span>
+</a>
+<a href="nukki/" class="row has-meta">
+<span class="num">07</span>
+<span><span class="name">배경 제거 · 누끼</span><span class="desc">사진 배경을 자동으로 지우고 투명 PNG로 저장.</span></span>
+<span class="meta">브라우저 AI</span>
+<span class="arrow">→</span>
+</a>
+<a href="qr/" class="row has-meta">
+<span class="num">08</span>
+<span><span class="name">QR 코드 생성기</span><span class="desc">URL · 텍스트 · WiFi · 전화번호를 고해상도 PNG·SVG로.</span></span>
+<span class="meta">PNG · SVG</span>
+<span class="arrow">→</span>
+</a>
+<a href="charcount/" class="row has-meta">
+<span class="num">09</span>
+<span><span class="name">글자수 세기</span><span class="desc">공백 포함/제외 · 바이트 · 원고지 · 제한 체크.</span></span>
+<span class="meta">실시간</span>
+<span class="arrow">→</span>
+</a>
+<a href="inspection-score/" class="row has-meta">
+<span class="num">10</span>
+<span><span class="name">점검 점수·등급 계산기</span><span class="desc">소규모 노후건축물 점검표의 가중치를 적용해 등급까지.</span></span>
+<span class="meta">매뉴얼 산식</span>
+<span class="arrow">→</span>
+</a>
+<a href="paycheck/" class="row has-meta">
+<span class="num">11</span>
+<span><span class="name">내가 제대로 받고 있을까</span><span class="desc">용역금액·인원·기간으로 보는 내 몫의 계산.</span></span>
+<span class="meta">급여 점검</span>
+<span class="arrow">→</span>
+</a>
+<a href="paintcomfortfro/" class="row has-meta">
+<span class="num">12</span>
+<span><span class="name">Paint &amp; Present</span><span class="desc">그리고, 발표하고, 저장하는 캔버스.</span></span>
+<span class="meta">Canvas</span>
+<span class="arrow">→</span>
+</a>
+<a href="/photo-revive/" class="row has-meta">
+<span class="num">13</span>
+<span><span class="name">Photo Revive · 얼굴 복원</span><span class="desc">오래된 사진의 흐릿한 얼굴을 복원. 처리 후 즉시 삭제.</span></span>
+<span class="meta">AI · 서버</span>
+<span class="arrow">→</span>
+</a>
+<a href="game-world/" class="row has-meta">
+<span class="num">14</span>
+<span><span class="name">게임월드</span><span class="desc">브라우저에서 바로 즐기는 미니게임 모음.</span></span>
+<span class="meta">미니게임</span>
+<span class="arrow">→</span>
+</a>
+<a href="/applications/" class="row has-meta">
+<span class="num">15</span>
+<span><span class="name">설치형 앱</span><span class="desc">홈 화면에 두고 오프라인에서 쓰는 PWA 모음.</span></span>
+<span class="meta">PWA</span>
+<span class="arrow">→</span>
+</a>
+<p class="footnote">PDF 도구는 영어판 <a href="https://pdf300.com/">PDF300</a>에서도 쓸 수 있습니다 — 원하는 용량에 맞춘 압축까지 24개 기능.</p>
+</section>
 </main>
-
-<!-- Footer -->
-<footer class="site-footer">
-    <div class="site-footer-inner">
-        <div class="site-footer-grid">
-            <div>
-                <div class="nav-brand" style="margin-bottom:12px;">
-                    <span class="nav-brand-mark">L</span>
-                    <span>LeDeuxions</span>
-                </div>
-                <p style="font-size:.9rem;color:var(--text-muted);max-width:300px;">
-                    건축가의 시선으로 일상의 도구를 짓습니다.
-                </p>
-            </div>
-            <div>
-                <h4>도구</h4>
-                <ul>
-                    <li><a href="pdf300/">PDF 도구</a></li>
-                    <li><a href="inspection-score/">점검 점수 계산기</a></li>
-                    <li><a href="stamp/">도장 추출기</a></li>
-                    <li><a href="iphone-heic/">HEIC 변환</a></li>
-                    <li><a href="freecomfortlab/">미디어 변환</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>둘러보기</h4>
-                <ul>
-                    <li><a href="/">홈</a></li>
-                    <li><a href="/work/">작품</a></li>
-                    <li><a href="/history/">이야기</a></li>
-                    <li><a href="/contact/">연락</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>약관</h4>
-                <ul>
-                    <li><a href="/privacy/">개인정보</a></li>
-                    <li><a href="/terms/">이용약관</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="site-footer-bottom">
-            <span>© 2005–2026 LeDeuxions.</span>
-            <span class="mono" style="font-size:.78rem;">v2026.05</span>
-        </div>
-    </div>
+<footer class="site-foot">
+<div class="wrap">
+<span class="wordmark">Ledeuxions</span>
+<span class="spacer">© 2005–2026</span>
+<a href="/privacy/">Privacy</a>
+<a href="/terms/">Terms</a>
+</div>
 </footer>
-
-<script src="../assets/js/common.js"></script>
+</div>
 </body>
 </html>

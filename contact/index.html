@@ -3,159 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FAF9F5">
-<meta name="description" content="LeDeuxions 연락처. 일정 예약, 이메일, 작업 문의.">
+<meta name="theme-color" content="#f3f2f2">
+<meta name="description" content="LeDeuxions 연락처. 작업 의뢰, 협업 제안, 일정 예약.">
+<meta property="og:title" content="Contact — LeDeuxions">
+<meta property="og:description" content="작업 의뢰, 협업 제안, 그리고 그저 안부까지.">
 <title>연락 — LeDeuxions</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="../assets/css/claude-design.css">
-<style>
-    .contact-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
-    .contact-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--space-5);
-    }
-    @media (min-width: 920px) {
-        .contact-grid { grid-template-columns: 1fr 1.4fr; align-items: start; }
-    }
-    .contact-info { display: flex; flex-direction: column; gap: var(--space-3); }
-    .info-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: var(--space-5);
-        display: flex;
-        gap: var(--space-3);
-        align-items: flex-start;
-    }
-    .info-card .ico {
-        width: 44px; height: 44px;
-        background: var(--accent-soft);
-        color: var(--accent-deep);
-        border-radius: var(--radius-md);
-        display: grid; place-items: center;
-        font-size: 1.2rem;
-        flex-shrink: 0;
-    }
-    .info-card h4 {
-        font-family: var(--font-sans);
-        font-size: 0.92rem;
-        font-weight: 600;
-        margin: 0 0 4px;
-    }
-    .info-card p {
-        margin: 0;
-        font-size: 0.92rem;
-        color: var(--text-secondary);
-    }
-    .info-card a { color: var(--accent); font-weight: 500; }
-    .calendar-frame {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        min-height: 600px;
-    }
-    .calendar-frame iframe {
-        width: 100%;
-        height: 600px;
-        border: 0;
-    }
-</style>
+<link rel="stylesheet" href="../assets/css/ledeuxions-classical.css">
 </head>
 <body>
-
-<nav class="nav">
-    <div class="nav-inner">
-        <a href="/" class="nav-brand">
-            <span class="nav-brand-mark">L</span>
-            <span>LeDeuxions</span>
-        </a>
-        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        </button>
-        <div class="nav-links" data-nav-menu>
-            <a href="/" class="nav-link" data-nav-link>홈</a>
-            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
-            <a href="/work/" class="nav-link" data-nav-link>작품</a>
-            <a href="/history/" class="nav-link" data-nav-link>이야기</a>
-            <a href="/contact/" class="nav-link active" data-nav-link>연락</a>
-        </div>
-    </div>
+<div class="page">
+<header class="site-head">
+<a href="/" class="wordmark">Ledeuxions</a>
+<nav class="gnav">
+<a href="/work/">Work</a>
+<a href="/history/">Story</a>
+<a href="/web-projects/">Tools</a>
+<a href="/contact/" aria-current="page">Contact</a>
 </nav>
-
-<header class="contact-hero container-narrow">
-    <div class="eyebrow" style="margin-bottom:12px;">Contact</div>
-    <h1>이야기를 <em style="color:var(--accent);font-style:italic;">시작</em>해요</h1>
-    <p class="lead">작업 의뢰, 협업 제안, 그리고 그저 안부까지. 어떤 메시지든 환영입니다.</p>
 </header>
-
-<main class="container" style="padding-bottom:var(--space-9);">
-
-<div class="contact-grid">
-
-    <div class="contact-info">
-
-        <div class="info-card">
-            <div class="ico">✉️</div>
-            <div>
-                <h4>이메일</h4>
-                <p><a href="mailto:vis555540@gmail.com">vis555540@gmail.com</a></p>
-                <p style="font-size:.8rem;color:var(--text-muted);margin-top:6px;">평일 48시간 내 답신.</p>
-            </div>
-        </div>
-
-        <div class="info-card">
-            <div class="ico">🏠</div>
-            <div>
-                <h4>스튜디오</h4>
-                <p>대한민국, 서울</p>
-                <p style="font-size:.8rem;color:var(--text-muted);margin-top:6px;">방문은 사전 예약제.</p>
-            </div>
-        </div>
-
-        <div class="info-card">
-            <div class="ico">📅</div>
-            <div>
-                <h4>미팅 예약</h4>
-                <p>오른쪽 캘린더에서 직접 선택하세요.</p>
-            </div>
-        </div>
-
-        <div class="info-card">
-            <div class="ico">🔗</div>
-            <div>
-                <h4>외부 채널</h4>
-                <p>
-                    <a href="https://ledeuxions.blogspot.com/" target="_blank" rel="noopener">Portfolio</a> ·
-                    <a href="https://ledeuxions-column.blogspot.com/" target="_blank" rel="noopener">Column</a>
-                </p>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="calendar-frame">
-        <iframe src="https://calendar.google.com/calendar/embed?height=600&wkst=1&bgcolor=%23FAF9F5&ctz=Asia%2FSeoul&showTitle=0&showPrint=0&showCalendars=0&mode=AGENDA"
-                title="LeDeuxions Calendar"
-                loading="lazy"></iframe>
-    </div>
-
+<main class="wrap">
+<section class="band band-end">
+<div>
+<div class="kicker">Chapter IV — Contact</div>
+<h1 class="display">이야기를<br>시작해요</h1>
+<p class="lede lede-just" style="margin-top:24px">작업 의뢰, 협업 제안, 그리고 그저 안부까지. 어떤 메시지든 환영입니다. 평일 48시간 안에 답신합니다.</p>
 </div>
-
+<dl class="ledger">
+<dt>Email</dt>
+<dd><a href="mailto:vis555540@gmail.com">vis555540@gmail.com</a></dd>
+<dt>Studio</dt>
+<dd>대한민국, 서울 — 방문은 사전 예약제</dd>
+<dt>Elsewhere</dt>
+<dd><a href="https://ledeuxions.blogspot.com/" target="_blank" rel="noopener">Portfolio</a> · <a href="https://ledeuxions-column.blogspot.com/" target="_blank" rel="noopener">Column</a></dd>
+</dl>
+</section>
+<section class="section-index">
+<div class="index-head">
+<h2>Calendar</h2>
+<span class="note">가능한 시간을 직접 골라 주세요</span>
+</div>
+<div class="frame">
+<iframe src="https://calendar.google.com/calendar/embed?height=600&amp;wkst=1&amp;bgcolor=%23f3f2f2&amp;ctz=Asia%2FSeoul&amp;showTitle=0&amp;showPrint=0&amp;showCalendars=0&amp;mode=AGENDA" title="LeDeuxions Calendar" loading="lazy"></iframe>
+</div>
+<p class="footnote">캘린더가 보이지 않으면 <a href="mailto:vis555540@gmail.com">메일</a>로 원하는 시간대를 알려 주세요. 도구에 대한 문의라면 해당 도구 페이지의 링크를 함께 적어 주시면 빠릅니다.</p>
+</section>
 </main>
-
-<footer class="site-footer">
-    <div class="site-footer-inner">
-        <div class="site-footer-bottom">
-            <span>© 2005–2026 LeDeuxions.</span>
-            <span class="mono" style="font-size:.78rem;">v2026.05</span>
-        </div>
-    </div>
+<footer class="site-foot">
+<div class="wrap">
+<span class="wordmark">Ledeuxions</span>
+<span class="spacer">© 2005–2026</span>
+<a href="/privacy/">Privacy</a>
+<a href="/terms/">Terms</a>
+</div>
 </footer>
-
-<script src="../assets/js/common.js"></script>
+</div>
 </body>
 </html>
