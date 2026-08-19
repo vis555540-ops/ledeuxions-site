@@ -157,12 +157,7 @@
   </aside>
 </div>
 
-<nav class="links" id="links">
-  <a href="https://pdf300.com/" target="_blank" rel="noopener">PDF300</a>
-  <a href="/web-projects/inspection-score/">Check Calculator</a>
-  <a href="/web-projects/">Tools</a>
-  <a href="/">ledeuxions.com</a>
-</nav>
+
 <div class="skills" id="skills"></div>
 <div class="hint" id="hint">Tap where you want it to drop</div>
 
@@ -170,6 +165,12 @@
   <button class="drop" id="dropBtn">Drop a coin</button>
   <button class="drop" id="shakeBtn" style="max-width:130px;background:linear-gradient(180deg,#7C8CA0,#5B6A7D);color:#0E141B">Shake</button>
 </footer>
+<nav class="links" id="links">
+  <a href="https://pdf300.com/" target="_blank" rel="noopener">PDF300</a>
+  <a href="/web-projects/inspection-score/">Check Calculator</a>
+  <a href="/web-projects/">Tools</a>
+  <a href="/">ledeuxions.com</a>
+</nav>
 
 <canvas id="fall" class="fall hide"></canvas>
 
@@ -588,6 +589,8 @@ function renderSkills(){
     const left = cooldown[k.id] ? Math.ceil((cooldown[k.id] - performance.now())/1000) : 0;
     b.className = "skill" + (left > 0 ? " off" : "");
     b.textContent = left > 0 ? k.tip + " " + left : k.tip;
+    b.title = k.say;
+    b.style.cursor = "default";
     el.appendChild(b);
   });
 }
@@ -770,13 +773,13 @@ function drop(){
   /* ── 배운 것은 조건이 맞을 때만 듣는다 (형 지시) ──
      배웠다고 늘 되는 게 아니라, 그 순간에 맞게 해야 한다 */
   let fired = "";
-  if(ready("timing") && back < 0.3){ c.vy += 0.22; fired = T.fired[0]; useSkill("timing"); }
-  if(ready("center") && Math.abs(dropX - W/2) < W*0.22){ c.vy += 0.1; c.vx *= 0.4; fired = T.fired[1]; useSkill("center"); }
+  if(ready("timing") && back < 0.3){ c.vy += 0.75; fired = T.fired[0]; useSkill("timing"); }
+  if(ready("center") && Math.abs(dropX - W/2) < W*0.22){ c.vy += 0.55; c.vx *= 0.25; fired = T.fired[1]; useSkill("center"); }
   if(ready("tower") && tower.h > 0 && Math.abs(dropX - tower.x) < R*2.2){
-    tower.shake += 0.05; fired = T.fired[2]; useSkill("tower");
+    tower.shake += 0.16; fired = T.fired[2]; useSkill("tower");
   }
   if(ready("shake") && shakeAt && (performance.now() - shakeAt) < 1200){
-    c.vy += 0.18; fired = T.fired[3]; useSkill("shake");
+    c.vy += 0.7; fired = T.fired[3]; useSkill("shake");
   }
   if(fired) hintEl.textContent = fired;
   lastDropAt = performance.now();
