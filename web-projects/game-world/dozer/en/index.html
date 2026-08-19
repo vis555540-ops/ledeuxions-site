@@ -545,6 +545,9 @@ function checkStage(){
     talk(st.done, () => {
       if(stage === 0){
         credits = Math.max(0, credits - 50);   // 처음 빌려준 만원어치를 가져간다
+      /* 다 가져가면 넣을 동전이 없어 아무것도 못 하고 멈춘다.
+         한 판 더 해볼 만큼은 남겨준다 (2026-08-19). */
+      if(credits < 6) credits = 6;
         leftEl.textContent = credits;
       }
       earned = 0; earnEl.textContent = 0;      // 다음 목표는 새로 센다
@@ -771,12 +774,11 @@ function drop(){
   let fired = "";
   if(fired) hintEl.textContent = fired;
   lastDropAt = performance.now();
-  const window_ = hintTimer > 0 ? 0.42 : 0.25;      // 알려준 대로 하면 판정이 넉넉해진다
+  const window_ = 0.25;   /* hintTimer 를 지우면서 남은 참조 때문에 죽고 있었다 */
   if(back < window_){
-    c.vy = hintTimer > 0 ? 0.34 : 0.26;
+    c.vy = 0.26;
     hintEl.textContent = T.goodTiming;
   }
-  if(towerAim > 0 && Math.abs(dropX - tower.x) < R*2) c.vy += 0.1;   // 밑동 조준
   if(credits < STAGES[stage].per){
     dropBtn.disabled = true;
     hintEl.textContent = T.noCoinsLeft;
