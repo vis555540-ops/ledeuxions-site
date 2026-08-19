@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Coin Push — Arcade Coin Pusher | Game World</title>
-<meta name="description" content="That machine from the arcade. Drop coins, let them pile up, and the deck pushes them over the edge. Nothing beats a whole row going at once.">
+<title>Coin Pusher — The Arcade Dream | Game World</title>
+<meta name="description" content="That machine from the arcade. Drop a coin, it piles up, and the deck pushes it over the edge. The best part is when a whole pile goes at once.">
 <meta name="theme-color" content="#0E1218">
-<link rel="canonical" href="https://ledeuxions.com/web-projects/game-world/dozer/en/">
+<link rel="canonical" href="https://ledeuxions.com/web-projects/game-world/dozer/">
 <link rel="alternate" hreflang="ko" href="https://ledeuxions.com/web-projects/game-world/dozer/">
 <link rel="alternate" hreflang="en" href="https://ledeuxions.com/web-projects/game-world/dozer/en/">
 <link rel="alternate" hreflang="x-default" href="https://ledeuxions.com/web-projects/game-world/dozer/">
@@ -31,8 +31,9 @@
     color:var(--muted); text-decoration:none; font-size:14px; font-weight:600;
     background:rgba(23,30,39,.88); border:1px solid var(--line); border-radius:0; padding:6px 10px; box-shadow:2px 2px 0 #0A0E13;
   }
-  .back.r{left:auto; right:12px}
-  .lang{position:fixed; top:14px; right:104px; z-index:20; color:#8FA0B3; text-decoration:none;
+  .topright{position:fixed; top:12px; right:12px; z-index:20; display:flex; gap:8px; align-items:center}
+  .back.r{position:static; left:auto; right:auto}
+  .lang{position:static; z-index:20; color:#8FA0B3; text-decoration:none;
         font-size:12px; font-weight:700; border:1px solid #2B3542; padding:5px 8px; background:rgba(23,30,39,.88)}
 
   header{padding:52px 14px 6px; text-align:center; flex:0 0 auto}
@@ -40,6 +41,11 @@
          font-variant-numeric:tabular-nums}
   .stats b{color:var(--ink); font-size:19px; font-weight:800}
   .stats .gold b{color:var(--gold)}
+  .eyes{position:relative; width:min(260px,72vw); height:12px; margin:8px auto 0;
+        border:1px solid #2C3742; border-radius:7px; background:#151C24; overflow:hidden}
+  .eyes i{display:block; height:100%; width:0%; background:#3FA45B; transition:width .25s, background .35s}
+  .eyes em{position:absolute; inset:0; font-style:normal; font-size:9.5px; line-height:12px;
+           text-align:center; color:#8FA0B3; letter-spacing:1px}
 
   .wrap{flex:1; display:flex; align-items:center; justify-content:center; min-height:0; padding:8px 10px 0; gap:14px}
   /* 옆자리는 메인이 아니다. 게임에서 떼어 오른쪽으로 물린다 (형 지시 2026-08-19) */
@@ -132,8 +138,10 @@
 <body>
 
 <a class="back" href="../../">← Game World</a>
-<a class="back r" href="../../ranking/">🏆 Ranking</a>
-<a class="lang" href="../">한국어</a>
+<div class="topright">
+  <a class="lang" href="../">한국어</a>
+  <a class="back r" href="../../ranking/">🏆 Ranking</a>
+</div>
 
 <header>
   <div class="stats">
@@ -141,6 +149,8 @@
     <span>Earned <b id="earn">0</b><span style="color:#6B7787"> / <b id="goal">40</b></span></span>
     <span>Best <b id="best">0</b></span>
   </div>
+  <!-- 사장님 눈치 — 형 지시 (2026-08-19). 기술·커맨드를 쓸수록 차오르고 가만두면 내려간다 -->
+  <div class="eyes" id="eyesWrap"><i id="eyesBar"></i><em id="eyesTxt">Owner watching</em></div>
 </header>
 
 <div class="wrap">
@@ -150,13 +160,13 @@
       <b>PDF300</b><span>24 PDF tools — compress, merge, convert</span>
     </a>
     <a href="/web-projects/inspection-score/">
-      <b>Building Check Calculator</b><span>Korean small-building inspection scoring</span>
+      <b>Check Calculator</b><span>Building inspection scoring</span>
     </a>
     <a href="/web-projects/">
-      <b>LeDeuxions Tools</b><span>Things that run in your browser</span>
+      <b>LeDeuxions Tools</b><span>Free tools that run in your browser</span>
     </a>
     <a href="/">
-      <b>ledeuxions.com</b><span>Everything we've built</span>
+      <b>ledeuxions.com</b><span>Everything we have built</span>
     </a>
   </aside>
 </div>
@@ -170,7 +180,7 @@
   <button class="drop" id="shakeBtn" style="max-width:130px;background:linear-gradient(180deg,#7C8CA0,#5B6A7D);color:#0E141B">Shake</button>
 </footer>
 <div style="text-align:center; margin:10px 0 2px">
-  <a href="../" style="display:inline-block; padding:8px 16px; border:1px solid #2C3742;
+  <a href="../../" style="display:inline-block; padding:8px 16px; border:1px solid #2C3742;
      border-radius:9px; color:#C99A2E; text-decoration:none; font-size:13px">More games →</a>
 </div>
 <!-- 광고는 게임과 조작 버튼 아래에만 둔다. 게임을 가리면 안 된다 (2026-08-20) -->
@@ -214,8 +224,8 @@
     <div class="rank" id="orank"></div>
     <button class="big" id="ob">Start</button>
     <div class="tip">
-      Nothing beats a whole row going at once.<br>
-      Which is why waiting often beats dropping.
+      The best part is when a whole pile goes over at once.<br>
+      So it pays to wait and let them stack up.
     </div>
   </div>
 </div>
@@ -246,8 +256,8 @@ const R = 7;           // 동전 반지름
 const MAX_STACK = 6;     // 탑 최대 높이
 const LIP_FORCE = 0.006;  // 앞 턱을 넘는 데 필요한 힘 (배당률을 정하는 값)
 const SIDE_OPEN = 160;
-const RAMP_W = R * 2.4;
-const RAMP_K = 0.019;  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
+const RAMP_W = R * 2.4;   // 가이드 판이 닿는 폭
+const RAMP_K = 0.019;     // 안쪽으로 되돌리는 힘. 키우면 덜 빠진다  // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
 
 const BEST_KEY = "gw_dozer_best";
 let best = Number(localStorage.getItem(BEST_KEY) || 0);
@@ -342,6 +352,7 @@ function step(){
   const advance = deck.off - prevOff;
   deckAdvance = advance;
 
+  coolEyes(); checkEyes();
   updateTower();
 
   for(const c of coins){
@@ -365,6 +376,9 @@ function step(){
     c.x += c.vx;   c.y += c.vy;
 
     // 앞 턱(lip) — 실제 기계에는 앞에 턱이 있다. 걸쳐 있다가 뒤에서 밀어야 넘어간다.
+    // 관통 중인 동전은 스스로 밀고 나간다 (형: 동전이 날아가면서 부딪히는 것)
+    if(c.boost > 0){ c.boost--; c.vy += 0.42; }
+
     // 이 턱이 '아슬아슬하게 걸린 동전'을 만든다. 이 게임의 재미는 거기서 나온다
     if(c.y > EDGE - R*1.2 && c.y < EDGE){
       c.vy *= 0.85;
@@ -378,7 +392,10 @@ function step(){
       if(c.x < guard){ c.x = guard; c.vx = Math.abs(c.vx) * 0.4; }
       if(c.x > W - guard){ c.x = W - guard; c.vx = -Math.abs(c.vx) * 0.4; }
     } else {
-      /* 45-degree guide plates, like the real machine (2026-08-19) */
+      /* 45도 가이드 판 — 형이 알려준 실물 구조 (2026-08-19).
+         실제 기계는 열린 구간 옆에 비스듬한 철판이 있어서
+         옆으로 가던 동전을 안쪽으로 되돌린다. 그래서 다 빠지지 않는다.
+         완전히 막지는 않는다. 빠르게 밀린 동전은 여전히 넘어간다 — 그게 긴장이다. */
       if(c.x < RAMP_W){ c.vx += (RAMP_W - c.x) * RAMP_K; }
       if(c.x > W - RAMP_W){ c.vx -= (c.x - (W - RAMP_W)) * RAMP_K; }
     }
@@ -639,10 +656,23 @@ function draw(){
   ctx.fillStyle = "#212B36";
   for(let y = 4; y < H; y += 8) for(let x = 4; x < W; x += 8) ctx.fillRect(x, y, 1, 1);
 
+  // 쫓겨나면 판 위에 바로 적는다 (대사가 늦거나 실패해도 보이게)
+  if(typeof kicked !== "undefined" && kicked){
+    ctx.fillStyle = "rgba(0,0,0,.72)"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#C4453B";
+    ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
+    ctx.fillText("나가.", W/2, H/2 - 8);
+    ctx.fillStyle = "#8FA0B3"; ctx.font = "9px monospace";
+    ctx.fillText("손버릇이 고약하네", W/2, H/2 + 10);
+    ctx.textAlign = "start";
+    return;
+  }
+
   // 옆이 열린 구간 표시 — 여기로 빠지면 잃는다
   ctx.fillStyle = "#2A1A18";
   ctx.fillRect(0, SIDE_OPEN, 2, H - SIDE_OPEN);
   ctx.fillRect(W-2, SIDE_OPEN, 2, H - SIDE_OPEN);
+  // 45도 가이드 판 — 비스듬히 놓인 철판
   ctx.fillStyle = "#39434E";
   for(let y = SIDE_OPEN; y < H; y += 3){
     const w = Math.max(1, RAMP_W - (y - SIDE_OPEN) * 0.06);
@@ -782,11 +812,11 @@ function drop(){
   /* 동전이 모자라면 조용히 무시하지 않는다 — 형: "동전도 안 들어가서" (2026-08-19)
      왜 안 되는지 말해주고, 정말 한 푼도 없으면 판을 끝낸다. */
   if(credits < per){
-    hintEl.textContent = "No coins left";
+    hintEl.textContent = "동전이 없다";
     if(credits <= 0){
       playing = false;
       dropBtn.disabled = true; shakeBtn.disabled = true;
-      hintEl.textContent = "…pockets empty";
+      hintEl.textContent = "…주머니가 비었다";
       setTimeout(() => { if(typeof gameOver === "function") gameOver(); else theEnd(); }, 900);
     }
     return;
@@ -822,12 +852,17 @@ function drop(){
      쓴 줄도 몰랐다. 이제 버튼을 누르면 그 자리에서 밀린다. */
   let fired = "";
   if(fired) hintEl.textContent = fired;
+  addEyes(-6);            // 형: 돈을 넣고 하면 사장님은 좋아하지
   lastDropAt = performance.now();
-  const window_ = 0.25;   /* hintTimer 를 지우면서 남은 참조 때문에 죽고 있었다 */
+  /* 예전에 있던 hintTimer·towerAim 을 지우면서 이 줄들만 남아
+     동전을 넣을 때마다 예외가 났다. 그 아래 '동전 없음 -> 엔딩' 이 통째로 안 돌았다.
+     형이 동전 0 인데 아무 일도 안 일어난다고 한 게 이것이다 (2026-08-19). */
+  const window_ = 0.25;
   if(back < window_){
     c.vy = 0.26;
     hintEl.textContent = T.goodTiming;
   }
+
   if(credits < STAGES[stage].per){
     dropBtn.disabled = true;
     hintEl.textContent = T.noCoinsLeft;
@@ -843,6 +878,10 @@ const shakeBtn = document.getElementById("shakeBtn");
 let shakeReady = true;
 shakeBtn.onclick = () => {
   if(!playing || !shakeReady) return;
+  /* 형: "빨간색 구간일 때 못 흔드는 게 나을 것 같아" */
+  if(eyes > 75){ hintEl.textContent = "…사장이 이쪽을 보고 있다"; return; }
+  // 흔들기 자체는 눈치가 살짝만 오르고 곧 내려간다 (형 지시)
+  if(!tryCommand()){ addEyes(4); setTimeout(() => addEyes(-3), 1800); }
   shakeReady = false;
   shakeBtn.disabled = true;
   for(const c of coins){
@@ -852,9 +891,9 @@ shakeBtn.onclick = () => {
   thud();
   shakeAt = performance.now();
   hintEl.textContent = T.shook;
-  let n = 6;
+  let n = 2;      // 연달아 두 번 눌러야 손버릇이 나가므로 짧게 (형 지시)
   const t = setInterval(() => {
-    n--; shakeBtn.textContent = n > 0 ? n + "s" : "Shake";
+    n--; shakeBtn.textContent = n > 0 ? n + "초" : "흔들기";
     if(n <= 0){ clearInterval(t); shakeReady = true; shakeBtn.disabled = false; }
   }, 1000);
 };
@@ -900,13 +939,15 @@ async function showResult(){
    형 지시: 스토리는 조금만. 명시하지 말고 짐작하게. 대화는 무조건 검은 화면에서.
    ⚠️ 아래 대사는 맺음이 쓴 초안이다. 형이 고치면 그걸로 바꾼다 */
 
-/* ── words ──
-   The Korean build lives one folder up. Only this block differs.
-   Hyung wrote the Korean lines; these keep the same bite. */
+/* ── 말 ──
+   영어판(en/)은 이 덩어리만 다르다. 게임 로직은 똑같다.
+   형이 쓴 대사는 뜻이 죽지 않게 옮겼다 */
 const T = {
   lang: "en",
-  opening: ["You like this game, don't you?", "Go on then. Knock yourself out.", "Hahahaha", "…", "Ten thousand won of coins sits in your hand.",
-             "…", "I know a trick nobody else does."],
+  opening: ["You like this game, don't you?", "Go on then. Knock yourself out.", "Hahahaha", "…",
+             "Ten thousand won of coins sits in your hand.",
+             "…", "…It's fine.", "Because I know a technique nobody else does.",
+             "…Center Pierce.", "You push the frontmost coin in the middle, and it goes over."],
   endLoss: ["The coins are gone.", "The front row still hangs there.", "The floor opens.", "You fall with the coins."],
   endWake: ["…", "You wake up."],
   endWin:  ["Hahaha", "I'm happy…", "haha…"],
@@ -918,7 +959,7 @@ const T = {
   pay: (c) => "Hand over " + c + " coins", refuse: "Tell him no",
   memorized: "Got it", nothing: '"…"\n\nHe opens his mouth, thinks better of it, and walks off.',
   noCoin: "Nothing left to give", turnedAway: "You turn back to the machine", ignored: "You pretend you didn't hear",
-  wasted: "That was money for nothing", nowUsable: (t) => t + " — you can do this anytime now",
+  wasted: "That was money for nothing", nowUsable: (t) => t + " — you can use this anytime now",
   nothingLeft: "He looks like he has nothing left to tell you",
   dropHere: "Tap where you want it to drop", goodTiming: "Good timing",
   sideLost: (n) => n + " slipped off the side",
@@ -929,6 +970,7 @@ const T = {
   shook: "You shook it", perStage: (n) => n + " coins go in per drop",
   noCoinsLeft: "No coins left to drop. Wait for the rest to fall",
   theEnd: "The END",
+  kicked: ["A hand closes on your shoulder.", '"Sticky fingers, you."', '"Out."', "…", "You are pushed out the door."],
   stageDone: [
     ['"That was a loan, you know."', '"I\'ll be taking it back."', "Every coin is swept away."],
     ['"Oh, right."', '"It\'s two coins a drop now."', '"Boss raised the price. Said business was too good."'],
@@ -936,14 +978,14 @@ const T = {
   ],
   trust: ["You don't quite believe him.", "Might be worth a try.", "Ah — the owner's son. Short on pocket money, is he."],
   skills: [
-    ["Drop one and don't touch it for three counts. That's when the deck bites.", "Wait 3s after dropping"],
-    ["Shake it, then drop right away. Ride the shake.", "Drop right after shaking"],
-    ["Drop when the deck is all the way back. Drop as it comes forward and it bounces off.", "Drop when the deck is back"],
-    ["Hitting the top does nothing. You take a tower out from under it.", "Aim at the tower's base"],
-    ["Keep to the middle. Anything that slides off the side was never yours.", "Drop down the middle"]
+    ["…Do not touch it for three counts. That silence is what bites the deck.", "Three Seconds of Silence"],
+    ["Do not waste the moment it shakes. The tremor is an opening.", "Inheritance of the Tremor"],
+    ["The instant the deck draws back. That is the only gap there is.", "The Instant's Gap"],
+    ["No tower falls from a blow to its crown. …It is the base.", "Collapse of the Base"],
+    ["Pierce through the center. What slid off the side was never yours.", "Center Pierce"]
   ],
-  fired: ["Timed it right", "Straight down the middle", "Hit the base", "Slipped it in on the shake", "The wait paid off"],
-  cleared: (n) => `You gathered 120 coins.<br>Total collected: <b style="color:var(--gold)">${n}</b>`,
+  fired: ["…You saw through it", "Pierced", "The base rang out", "You rode the tremor", "The silence paid"],
+  cleared: (n) => `You gathered one hundred and twenty coins.<br>Total collected: <b style="color:var(--gold)">${n}</b>`,
   babble: ["ba ra ra","mu mu","ni ya","do do","ra ri ru","mwo mwo","ku ku","shi i"],
   overTitle: "Coin Push",
   overBody: "That machine from the arcade.<br>Drop a coin, it piles up, and the deck pushes the pile forward.<br>Whatever goes over the front edge is yours.",
@@ -1052,41 +1094,126 @@ function ready(id){
 function castSkill(id){
   if(!playing) return;
   if(!learned.has(id)) return;
-  if(!ready(id)){ hintEl.textContent = "Not ready yet"; return; }
-  if(!coins.length){ hintEl.textContent = "Drop a coin first"; return; }
+  if(!ready(id)){ hintEl.textContent = "…아직이다"; return; }
+  if(!coins.length){ hintEl.textContent = "…판이 비어 있다"; return; }
 
   if(id === "center"){
     /* 형: "다른 애들도 해당돼야지" "일자로 쏘는 건 아직 약해" "시원한 맛이 없어"
        -> 판 위 전부에 걸린다. 가운데일수록 더 세게 밀리고, 가장자리 것도 가운데로 모인다. */
-    /* 형: "가운데로 모아지는 게 아니라 대포처럼 펑펑 쏘게"
-       옆으로 모으지 않는다. 앞으로 쏜다. */
-    for(const c of coins){ c.vy += 4.2; c.vx *= 0.6; }
-    hintEl.textContent = "Pushed the middle";
+    /* 형: "동전 하나가 포옹 나가야 할 것 같은데"
+       판 전체를 미는 게 아니다. 한가운데에 있는 것 중 제일 앞의 한 개만 쏜다. */
+    let pick = null, bestScore = -1;
+    for(const c of coins){
+      const mid = 1 - Math.abs(c.x - W/2) / (W/2);   // 가운데일수록 1
+      const front = c.y / H;                          // 앞일수록 1
+      const sc = mid * 1.2 + front;
+      if(sc > bestScore){ bestScore = sc; pick = c; }
+    }
+    if(pick){
+      /* 형: "동전 하나 날아가면서 티디딩 부딪히는 거라고 생각했어"
+         한 발이 앞으로 뚫고 나가면서, 지나가는 길에 있는 것들을 차례로 친다. */
+      /* 형: "그냥 뛰어넘어서 떨어지는 것 같아"
+         빠르면 한 칸에 훌쩍 지나가 부딪히질 않는다.
+         속도를 낮추고, 앞에 걸린 것부터 먼저 밀어 길을 낸다. */
+      const path = coins
+        .filter(c => c !== pick && c.y > pick.y && Math.abs(c.x - pick.x) < R * 2.8)
+        .sort((a, b) => a.y - b.y)
+        .slice(0, 10);            // 타이머를 너무 많이 만들지 않는다 (느린 기계에서 죽는다)
+      path.forEach((c, i) => {
+        setTimeout(() => {
+          c.vy += 3.6 - i * 0.3;
+          c.vx += (c.x - pick.x) * 0.10;
+          if(i < 3) thud();
+        }, 45 * i);                                     // 티 디 딩 — 앞에서부터 번지듯
+      });
+      /* 한 번 세게 튕기면 뛰어넘고, 약하게 하면 안 나간다.
+         그래서 '계속 미는 힘'을 준다. 앞을 밀어내며 스스로 나아간다. */
+      pick.vy += 2.2; pick.vx = (W/2 - pick.x) * 0.05;
+      pick.boost = 26;          // 프레임 수. step 에서 매번 조금씩 더 민다
+      thud();
+    }
+    hintEl.textContent = "…중앙 관통";
   } else if(id === "timing"){
     for(const c of coins) c.vy += 4.6;              // 판 위 전부를 대포처럼 쏜다
-    hintEl.textContent = "Pushed on the beat";
+    hintEl.textContent = "…찰나를 잡았다";
   } else if(id === "shake"){
     for(const c of coins){ c.vx += (Math.random()-0.5) * 3.4; c.vy += 3.6; }
-    hintEl.textContent = "Shook it forward";
+    hintEl.textContent = "…진동, 계승";
   } else if(id === "tower"){
     if(tower.h > 0) tower.shake += 1.1;
     for(const c of coins) c.vy += (Math.abs(c.x - tower.x) < R*5) ? 4.4 : 2.6;
-    hintEl.textContent = "Hit the base";
+    hintEl.textContent = "…밑동이 울렸다";
   } else if(id === "wait"){
     for(const c of coins) c.vy += (c.y > EDGE - 80) ? 5.0 : 3.0;
-    hintEl.textContent = "Front row shoved";
+    hintEl.textContent = "…침묵의 값";
   }
   useSkill(id);
 }
 
+
+/* ── 사장님 눈치 ── 형 지시 (2026-08-19)
+   "기술 계속 쓰면 게이지 차는데 초록에서 빨간색, 시간 따라 조금씩 떨어지게"
+   "돈 안 넣고 흔들기만 하면 올라가게"                                        */
+let eyes = 0;                       // 0 ~ 100
+const eyesBar = document.getElementById("eyesBar");
+const eyesTxt = document.getElementById("eyesTxt");
+function addEyes(n){
+  eyes = Math.max(0, Math.min(100, eyes + n));
+  if(!eyesBar) return;
+  eyesBar.style.width = eyes + "%";
+  eyesBar.style.background = eyes > 75 ? "#C4453B" : eyes > 45 ? "#D9A441" : "#3FA45B";
+  if(eyesTxt) eyesTxt.textContent = eyes > 75 ? "사장님이 보고 있다" : "사장님 눈치";
+}
+
+/* 눈치가 꽉 차면 쫓겨난다 — 형 지시 (2026-08-19): "검은 화면 디엔드 쫓겨남" */
+let kicked = false;
+function checkEyes(){
+  if(kicked || eyes < 99.5 || !playing) return;
+  kicked = true; playing = false;
+  dropBtn.disabled = true; shakeBtn.disabled = true;
+  /* 여기서 대사가 안 뜨면 조작만 막히고 화면은 그대로라
+     '동전도 안 들어가고 쫓겨나지도 않는' 상태가 된다 (형이 겪은 것).
+     그래서 실패해도 반드시 끝으로 보낸다. */
+  hintEl.textContent = "…어깨를 붙잡혔다";     // 대사가 늦어도 상태는 바로 보이게
+  if(eyesTxt) eyesTxt.textContent = "쫓겨났다";
+  let shown = false;
+  try { talk(T.kicked, () => { shown = true; theEnd(); }); }
+  catch(e){ theEnd(); return; }
+  setTimeout(() => { if(!shown) theEnd(); }, 2500);
+}
+function coolEyes(){ if(eyes > 0) addEyes(-0.03); }   // 가만두면 식는다 (초당 2쯤)
+
+/* ── 손버릇(커맨드) ──
+   기술 목록에 없는 것. 뒤에 있는 사람이 첫 거래에서 알려준다.
+   흔들기를 3초 안에 두 번 -> 판이 통째로 들썩이고 앞으로 조금 밀린다 */
+let shakeTaps = [];
+function tryCommand(){
+  const now = performance.now();
+  shakeTaps = shakeTaps.filter(t => now - t < 3000);
+  shakeTaps.push(now);
+  if(shakeTaps.length >= 2){
+    shakeTaps = [];
+    // 쿵, 쿵 — 두 번 들렸다 내려앉는다
+    for(const c of coins){ c.vy += 0.9; c.vx += (Math.random()-0.5) * 0.6; }
+    setTimeout(() => { for(const c of coins) c.vy += 0.9; thud(); }, 220);
+    thud();
+    addEyes(50);      // 형: 연속 두 번 쿠쿵은 주인 눈치가 반절 오른다
+    hintEl.textContent = "쿵, 쿵 — 판이 들썩였다";
+    return true;
+  }
+  return false;
+}
+
 function useSkill(id){
+  addEyes(12);
   cooldown[id] = performance.now() + skillOf(id).cool * 1000;
   renderSkills();
 }
 
 /* 신뢰도 — 자막으로만 알려준다. 숫자는 절대 안 보여준다 (형 지시) */
-/* STAGES 의 done 은 여기서 채운다. const T 가 아래에 있어서
-   STAGES 를 만들 때 T 를 쓰면 스크립트 전체가 죽는다 (2026-08-19). */
+/* STAGES 의 done 문구는 여기서 채운다.
+   const T 는 아래쪽에 있어서 STAGES 를 만들 때는 아직 못 쓴다.
+   거기서 T 를 바로 쓰면 페이지 전체 스크립트가 죽는다 (2026-08-19). */
 STAGES.forEach((s, i) => { s.done = T.stageDone[i]; });
 
 const TRUST = T.trust.map((line, i) => ({ line, p: [0.50, 0.70, 0.96][i] }));
@@ -1168,13 +1295,24 @@ function knock(){
            "첫번째 힌트주는 사람은 타이밍 고정에 확실한, 딸 수 있는 편법 알려주고"
            첫 손님한테는 진짜를 판다. 그래야 두 번째 제안을 믿게 된다.
            그 뒤부터는 반반이다. */
-        const first = (secretsSold === 0);
-        const o = first
-          ? (SKILLS.find(k => k.id === "timing" && !learned.has(k.id)) || left[0])
-          : left[Math.floor(Math.random()*left.length)];
-        const t = first
-          ? { line: TRUST[2].line, p: 1 }
-          : TRUST[Math.floor(Math.random()*TRUST.length)];
+        /* 형 지시 (2026-08-19): 첫 거래는 기술이 아니라 '손버릇'을 알려준다.
+           "아, 이 게임엔 커맨드가 따로 있구나" 를 여기서 알게 하는 것이 목적이다. */
+        if(secretsSold === 0){
+          ask('"비밀 하나 알려줄게. 공짜다."',
+              "듣는다", "됐다",
+              () => {
+                secretsSold++;
+                ask('"흔들기를 연달아 두 번 눌러봐."\n\n"쿵, 쿵 — 판이 통째로 들썩인다."\n\n"…기술 목록엔 없는 거야."',
+                    "외웠다", "외웠다",
+                    () => { hintEl.textContent = "흔들기를 연달아 두 번"; },
+                    () => { hintEl.textContent = "흔들기를 연달아 두 번"; });
+              },
+              () => { hintEl.textContent = "…못 본 체했다"; });
+          return;
+        }
+        const first = false;
+        const o = left[Math.floor(Math.random()*left.length)];
+        const t = TRUST[Math.floor(Math.random()*TRUST.length)];
         ask(T.secret(o.cost, t.line),
             T.pay(o.cost), T.refuse,
             () => {
@@ -1263,7 +1401,9 @@ function fallScene(done){
 }
 
 ob.onclick = () => {
-  if(window.Arcade) Arcade.ensureName();
+  /* 시작할 때 이름을 묻지 않는다. 점수를 낼 때 Arcade.submit 이 알아서 묻는다.
+     인앱 브라우저(텔레그램 등)에서 localStorage·prompt 가 막히면 여기서 예외가 나
+     시작 버튼이 통째로 죽었다. 2026-08-18 형이 폰에서 발견. */
   over.classList.add("hide");
   if(!seenOpening){
     seenOpening = true;
@@ -1280,12 +1420,16 @@ function startRound(){
   leftEl.textContent = credits;
   dropBtn.disabled = false;
   hintEl.textContent = T.dropHere;
-  shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "Shake";
+  shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = "흔들기";
   shakeAt = lastDropAt = 0; tapUsed = 0; nextTapAt = 0; dropCount = 0;
   learned.clear();
-  /* You already know one trick - it's a dream after all. */
+  /* 꿈이니까 처음부터 하나는 알고 있다 — 형 지시 (2026-08-19)
+     '나는 남들은 모르는 기술이 있다'
+     가운데로 넣기를 준다. 옆으로 새는 게 이 게임에서 제일 크게 잃는 길이라서다. */
   learned.add("center");
-  secretsSold = 0; renderSkills();
+  secretsSold = 0;
+  eyes = 0; kicked = false; addEyes(0);
+  renderSkills();
   seed();
 }
 
