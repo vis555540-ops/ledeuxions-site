@@ -1121,10 +1121,12 @@ function checkEyes(){
   /* 여기서 대사가 안 뜨면 조작만 막히고 화면은 그대로라
      '동전도 안 들어가고 쫓겨나지도 않는' 상태가 된다 (형이 겪은 것).
      그래서 실패해도 반드시 끝으로 보낸다. */
+  hintEl.textContent = "…어깨를 붙잡혔다";     // 대사가 늦어도 상태는 바로 보이게
+  if(eyesTxt) eyesTxt.textContent = "쫓겨났다";
   let shown = false;
   try { talk(T.kicked, () => { shown = true; theEnd(); }); }
   catch(e){ theEnd(); return; }
-  setTimeout(() => { if(!shown) theEnd(); }, 7000);
+  setTimeout(() => { if(!shown) theEnd(); }, 2500);
 }
 function coolEyes(){ if(eyes > 0) addEyes(-0.03); }   // 가만두면 식는다 (초당 2쯤)
 
