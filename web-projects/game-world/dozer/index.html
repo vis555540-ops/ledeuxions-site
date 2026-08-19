@@ -859,7 +859,7 @@ async function showResult(){
 const T = {
   lang: "ko",
   opening: ["너 이 게임 좋아하지?", "실컷 해봐라!", "으하하하하", "…", "만원어치 동전이 손에 쥐어져 있다.",
-             "…", "나는 남들은 모르는 기술이 있다."],
+             "…", "…괜찮다.", "나에겐, 남들은 모르는 기술이 있으니까."],
   endLoss: ["동전이 다 떨어졌다.", "앞줄은 아직 그대로 걸쳐 있다.", "발밑이 열린다.", "동전과 함께 떨어진다."],
   endWake: ["…", "꿈에서 깼다."],
   endWin:  ["하하하하", "행복하다…", "하하하…"],
@@ -889,13 +889,13 @@ const T = {
   ],
   trust: ["딱히 신뢰가 가지 않는다.", "해볼 만한 걸?", "오락실 사장님 아들이군. 용돈이 모자랐나 보네."],
   skills: [
-    ["동전 넣고 세 셀 때까지 손대지 마. 그때 밀개가 문다.", "넣고 3초 기다리기"],
-    ["흔들고 바로 넣어. 흔들린 김에 같이 넘어가.", "흔든 직후 넣기"],
-    ["밀개가 뒤로 다 빠졌을 때 넣어. 앞으로 나올 때 넣으면 튕겨.", "밀개가 뒤로 갔을 때 넣기"],
-    ["위를 쳐봐야 소용없어. 탑은 밑동을 무너뜨리는 거야.", "탑 밑동 노리기"],
-    ["가운데만 넣어. 옆으로 새면 그건 네 돈이 아니야.", "가운데로 넣기"]
+    ["…셋을 세는 동안 손대지 마라. 그 침묵이 판을 문다.", "삼초의 침묵"],
+    ["흔들린 순간을 놓치지 마라. 흔들림은 기회다.", "진동 계승"],
+    ["밀개가 물러난 그 찰나. 거기가 유일한 틈이다.", "찰나의 틈"],
+    ["위를 쳐서 무너지는 탑은 없다. …밑동이다.", "밑동 붕괴"],
+    ["중앙을 꿰뚫어라. 옆으로 샌 건 처음부터 네 것이 아니었다.", "중앙 관통"]
   ],
-  fired: ["때를 맞췄다", "가운데로 똑바로", "밑동을 쳤다", "흔든 틈에 밀어 넣었다", "기다린 값이 나왔다"],
+  fired: ["…간파했다", "관통했다", "밑동이 울렸다", "진동을 이어받았다", "침묵이 값을 했다"],
   cleared: (n) => `동전 백이십 개를 모았습니다.<br>모은 동전 <b style="color:var(--gold)">${n}</b>개`,
   babble: ["바라라","무무","니야","도도","라리루","뭐뭐","쿠쿠","시이"],
   overTitle: "동전 밀기",
@@ -1005,8 +1005,8 @@ function ready(id){
 function castSkill(id){
   if(!playing) return;
   if(!learned.has(id)) return;
-  if(!ready(id)){ hintEl.textContent = "아직 못 쓴다"; return; }
-  if(!coins.length){ hintEl.textContent = "동전을 먼저 넣으세요"; return; }
+  if(!ready(id)){ hintEl.textContent = "…아직이다"; return; }
+  if(!coins.length){ hintEl.textContent = "…판이 비어 있다"; return; }
 
   if(id === "center"){
     /* 형: "다른 애들도 해당돼야지" "일자로 쏘는 건 아직 약해" "시원한 맛이 없어"
@@ -1014,20 +1014,20 @@ function castSkill(id){
     /* 형: "가운데로 모아지는 게 아니라 대포처럼 펑펑 쏘게"
        옆으로 모으지 않는다. 앞으로 쏜다. */
     for(const c of coins){ c.vy += 4.2; c.vx *= 0.6; }
-    hintEl.textContent = "가운데를 밀었다";
+    hintEl.textContent = "…중앙 관통";
   } else if(id === "timing"){
     for(const c of coins) c.vy += 4.6;              // 판 위 전부를 대포처럼 쏜다
-    hintEl.textContent = "때를 맞춰 밀었다";
+    hintEl.textContent = "…찰나를 잡았다";
   } else if(id === "shake"){
     for(const c of coins){ c.vx += (Math.random()-0.5) * 3.4; c.vy += 3.6; }
-    hintEl.textContent = "흔들어서 밀었다";
+    hintEl.textContent = "…진동, 계승";
   } else if(id === "tower"){
     if(tower.h > 0) tower.shake += 1.1;
     for(const c of coins) c.vy += (Math.abs(c.x - tower.x) < R*5) ? 4.4 : 2.6;
-    hintEl.textContent = "밑동을 쳤다";
+    hintEl.textContent = "…밑동이 울렸다";
   } else if(id === "wait"){
     for(const c of coins) c.vy += (c.y > EDGE - 80) ? 5.0 : 3.0;
-    hintEl.textContent = "앞줄을 밀어냈다";
+    hintEl.textContent = "…침묵의 값";
   }
   useSkill(id);
 }
