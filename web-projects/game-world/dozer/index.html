@@ -1035,18 +1035,20 @@ function castSkill(id){
     if(pick){
       /* 형: "동전 하나 날아가면서 티디딩 부딪히는 거라고 생각했어"
          한 발이 앞으로 뚫고 나가면서, 지나가는 길에 있는 것들을 차례로 친다. */
-      pick.vy += 9.5; pick.vx = (W/2 - pick.x) * 0.05;
+      /* 형: "그냥 뛰어넘어서 떨어지는 것 같아"
+         빠르면 한 칸에 훌쩍 지나가 부딪히질 않는다.
+         속도를 낮추고, 앞에 걸린 것부터 먼저 밀어 길을 낸다. */
       const path = coins
-        .filter(c => c !== pick && c.y > pick.y && Math.abs(c.x - pick.x) < R * 2.6)
-        .sort((a, b) => a.y - b.y);                    // 앞쪽부터 차례로
+        .filter(c => c !== pick && c.y > pick.y && Math.abs(c.x - pick.x) < R * 2.8)
+        .sort((a, b) => a.y - b.y);                    // 앞쪽부터
       path.forEach((c, i) => {
-        const delay = 70 * (i + 1);                     // 티, 디, 딩
         setTimeout(() => {
-          c.vy += 3.4 - i * 0.35;
-          c.vx += (c.x - pick.x) * 0.08;
-          if(i < 4) thud();
-        }, delay);
+          c.vy += 3.6 - i * 0.3;
+          c.vx += (c.x - pick.x) * 0.10;
+          if(i < 5) thud();
+        }, 45 * i);                                     // 티 디 딩 — 앞에서부터 번지듯
       });
+      pick.vy += 4.6; pick.vx = (W/2 - pick.x) * 0.05;  // 뒤따라 밀고 들어간다
       thud();
     }
     hintEl.textContent = "…중앙 관통";
@@ -1106,7 +1108,7 @@ function tryCommand(){
     for(const c of coins){ c.vy += 0.9; c.vx += (Math.random()-0.5) * 0.6; }
     setTimeout(() => { for(const c of coins) c.vy += 0.9; thud(); }, 220);
     thud();
-    addEyes(14);
+    addEyes(50);      // 형: 연속 두 번 쿠쿵은 주인 눈치가 반절 오른다
     hintEl.textContent = "쿵, 쿵 — 판이 들썩였다";
     return true;
   }
