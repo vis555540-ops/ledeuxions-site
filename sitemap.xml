@@ -307,4 +307,10 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://ledeuxions.com/%EA%B8%80/pdf-%EC%9A%A9%EB%9F%89-%EC%A0%95%ED%99%95%ED%9E%88-%EB%A7%9E%EC%B6%94%EA%B8%B0/</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
