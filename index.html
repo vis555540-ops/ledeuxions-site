@@ -3,397 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FAF9F5">
-<meta name="description" content="LeDeuxions — 건축가의 시선, 아버지의 손길. 예술과 철학, 그리고 일상을 다듬는 웹 도구 모음.">
-<meta name="keywords" content="LeDeuxions, 르두시옹, 포트폴리오, 웹 유틸리티, PDF, HEIC, 도장, 미디어 변환">
+<meta name="theme-color" content="#f3f2f2">
+<meta name="description" content="LeDeuxions — 건축가의 시선, 아버지의 손길. 건축과 회화, 그리고 일상을 다듬는 도구들.">
 <meta property="og:title" content="LeDeuxions — The Clear Vision">
-<meta property="og:description" content="건축가의 시선, 아버지의 손길. 예술과 철학, 그리고 일상을 다듬는 웹 도구 모음.">
+<meta property="og:description" content="건축과 회화 사이의 한 시선. 2014년부터 쌓아가는 기록.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://ledeuxions.com/">
 <title>LeDeuxions — The Clear Vision</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/css/claude-design.css">
-<style>
-    /* Page-specific touches */
-    .hero-portrait {
-        position: relative;
-        max-width: 920px;
-        margin: 0 auto var(--space-6);
-        border-radius: var(--radius-xl);
-        overflow: hidden;
-        aspect-ratio: 16 / 9;
-        background: linear-gradient(135deg, #2A2622 0%, #4A3328 100%);
-        box-shadow: var(--shadow-lg);
-    }
-    .hero-portrait img {
-        width: 100%; height: 100%;
-        object-fit: cover;
-        opacity: .55;
-        mix-blend-mode: luminosity;
-    }
-    .hero-portrait::after {
-        content: "";
-        position: absolute; inset: 0;
-        background: linear-gradient(180deg, transparent 40%, rgba(31,30,27,.5) 100%);
-    }
-    .hero-portrait-quote {
-        position: absolute;
-        left: var(--space-5); right: var(--space-5); bottom: var(--space-5);
-        color: #FAF9F5;
-        font-family: var(--font-serif);
-        font-style: italic;
-        font-size: clamp(1rem, 2vw, 1.3rem);
-        line-height: 1.5;
-        text-shadow: 0 2px 12px rgba(0,0,0,.4);
-    }
-    .twin-cards {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: var(--space-5);
-        max-width: 1080px;
-        margin: 0 auto;
-    }
-    @media (min-width: 760px) { .twin-cards { grid-template-columns: 1fr 1fr; } }
-
-    .twin-card {
-        border-radius: var(--radius-xl);
-        padding: var(--space-7) var(--space-6);
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4);
-        position: relative;
-        overflow: hidden;
-    }
-    .twin-card.dark {
-        background: linear-gradient(160deg, #2A2622 0%, #1F1E1B 100%);
-        color: var(--text-inverse);
-    }
-    .twin-card.light {
-        background: var(--bg-card);
-        color: var(--text-primary);
-        border: 1px solid var(--border);
-    }
-    .twin-card .eyebrow { color: var(--accent); }
-    .twin-card.dark .eyebrow { color: #E8A788; }
-
-    .twin-title {
-        font-family: var(--font-serif);
-        font-size: clamp(1.8rem, 3vw, 2.4rem);
-        line-height: 1.1;
-        font-weight: 500;
-        letter-spacing: -0.015em;
-        margin: 0;
-    }
-    .twin-card.dark .twin-title em { color: #E8A788; font-style: italic; }
-    .twin-card.light .twin-title em { color: var(--accent); font-style: italic; }
-
-    .twin-quote {
-        font-family: var(--font-serif);
-        font-style: italic;
-        font-size: 1.05rem;
-        opacity: .85;
-        line-height: 1.55;
-        margin: 0;
-    }
-    .twin-card.dark .twin-quote { color: #DDD8CE; }
-    .twin-card.light .twin-quote { color: var(--text-secondary); }
-
-    .twin-actions {
-        margin-top: auto;
-        display: flex;
-        gap: var(--space-3);
-        flex-wrap: wrap;
-    }
-
-    .tools-section {
-        padding: var(--space-9) 0 var(--space-7);
-    }
-    .tools-header {
-        max-width: 720px;
-        margin: 0 auto var(--space-7);
-        text-align: center;
-    }
-    .tool-mini-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: var(--space-4);
-    }
-    .tool-mini {
-        display: flex;
-        gap: var(--space-3);
-        align-items: flex-start;
-        padding: var(--space-4);
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        transition: all .2s var(--ease);
-        text-decoration: none;
-        color: inherit;
-    }
-    .tool-mini:hover {
-        border-color: var(--accent);
-        box-shadow: var(--shadow-sm);
-        transform: translateY(-2px);
-        color: inherit;
-    }
-    .tool-mini-icon {
-        flex: 0 0 40px;
-        height: 40px;
-        background: var(--accent-soft);
-        color: var(--accent-deep);
-        border-radius: var(--radius-md);
-        display: grid; place-items: center;
-        font-size: 1.2rem;
-    }
-    .tool-mini-body h4 {
-        font-family: var(--font-sans);
-        font-size: 0.98rem;
-        font-weight: 600;
-        margin: 0 0 4px;
-    }
-    .tool-mini-body p {
-        font-size: 0.85rem;
-        margin: 0;
-        color: var(--text-muted);
-        line-height: 1.45;
-    }
-
-    .quote-strip {
-        background: var(--bg-sunken);
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-        padding: var(--space-7) 0;
-        text-align: center;
-    }
-    .quote-strip p {
-        max-width: 720px;
-        margin: 0 auto;
-        font-family: var(--font-serif);
-        font-style: italic;
-        font-size: clamp(1.15rem, 2.4vw, 1.6rem);
-        line-height: 1.45;
-        color: var(--text-primary);
-    }
-    .quote-strip cite {
-        display: block;
-        margin-top: var(--space-3);
-        font-family: var(--font-sans);
-        font-style: normal;
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-    }
-</style>
+<link rel="stylesheet" href="assets/css/ledeuxions-classical.css">
 </head>
 <body>
-
-<!-- Navbar -->
-<nav class="nav">
-    <div class="nav-inner">
-        <a href="/" class="nav-brand">
-            <span class="nav-brand-mark">L</span>
-            <span>LeDeuxions</span>
-        </a>
-        <button class="nav-toggle" data-nav-toggle aria-label="메뉴 열기">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        </button>
-        <div class="nav-links" data-nav-menu>
-            <a href="/" class="nav-link" data-nav-link>홈</a>
-            <a href="web-projects/" class="nav-link" data-nav-link>웹 도구</a>
-            <a href="work/" class="nav-link" data-nav-link>작품</a>
-            <a href="history/" class="nav-link" data-nav-link>이야기</a>
-            <a href="contact/" class="nav-link" data-nav-link>연락</a>
-        </div>
-    </div>
+<div class="page">
+<header class="site-head">
+<a href="/" class="wordmark">Ledeuxions</a>
+<nav class="gnav">
+<a href="/work/">Work</a>
+<a href="/history/">Story</a>
+<a href="/web-projects/">Tools</a>
+<a href="/contact/">Contact</a>
 </nav>
-
-<!-- Hero -->
-<header class="hero container">
-    <div class="hero-eyebrow eyebrow">Architect · Artist · Father</div>
-    <h1 class="hero-title">상처난 벽에 <em>빛</em>을 설계합니다</h1>
-    <p class="hero-lead">
-        예술과 건축을 가로지르는 시선, 그리고 가족을 지키는 손에서 자란 도구들.
-        LeDeuxions의 작업과 일상에 쓰이는 정적 웹 유틸리티 모음을 한 곳에 모았습니다.
-    </p>
-    <div class="hero-cta">
-        <a href="web-projects/" class="btn btn-primary btn-lg">웹 도구 살펴보기</a>
-        <a href="work/" class="btn btn-secondary btn-lg">포트폴리오</a>
-    </div>
 </header>
-
-<!-- Twin cards -->
-<section class="container section">
-    <div class="twin-cards">
-
-        <article class="twin-card dark">
-            <span class="eyebrow">LeDeuxions</span>
-            <h2 class="twin-title">건축가의 <em>시선</em></h2>
-            <p class="twin-quote">
-                "고통을 외면하지 않는 시선. 상처난 벽에 빛을 설계합니다."
-            </p>
-            <div class="twin-actions">
-                <a href="https://ledeuxions.blogspot.com/" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Portfolio →</a>
-                <a href="https://ledeuxions-column.blogspot.com/" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="color:#E8A788">Column →</a>
-            </div>
-        </article>
-
-        <article class="twin-card light">
-            <span class="eyebrow">Father's Room</span>
-            <h2 class="twin-title">아버지의 <em>손길</em></h2>
-            <p class="twin-quote">
-                "가족을 지키는 현실의 건축. 단단하고 유용한 도구들을 만듭니다."
-            </p>
-            <div class="twin-actions">
-                <a href="web-projects/" class="btn btn-primary btn-sm">Web Projects →</a>
-                <a href="applications/" class="btn btn-secondary btn-sm">Applications →</a>
-                <a href="work/" class="btn btn-ghost btn-sm">More →</a>
-            </div>
-        </article>
-
-    </div>
+<main>
+<section class="wrap band">
+<figure class="plate">
+<img src="assets/img/portrait-studio.png" alt="작업실의 초상" style="aspect-ratio:4/3;object-position:50% 42%">
+<figcaption>Plate I — Studio, 2025</figcaption>
+</figure>
+<div>
+<div class="kicker">Est. 2014 — Architect · Artist</div>
+<h1 class="display">상처난 벽에<br>빛을 설계합니다</h1>
+<hr class="rule">
+<p class="lede">건축과 그림 사이에서 하나의 시선을 붙듭니다. 도면이 끝나는 자리에서 캔버스가 시작되고, 그 둘이 남긴 습관으로 도구를 만듭니다. LeDeuxions는 그 기록의 이름입니다.</p>
+<div class="links">
+<a href="/work/">작품 보기</a>
+<a href="/history/" class="quiet">이야기</a>
+</div>
+</div>
 </section>
-
-<!-- Tools mini-grid -->
-<section class="tools-section">
-    <div class="container">
-        <div class="tools-header">
-            <div class="eyebrow" style="margin-bottom:12px;">Toolkit</div>
-            <h2>브라우저에서 끝나는 작업들</h2>
-            <p class="lead">서버에 파일을 올리지 않고, 모든 처리는 당신의 브라우저에서 끝납니다.</p>
-        </div>
-        <div class="tool-mini-grid">
-
-            <a href="web-projects/pdf300/" class="tool-mini">
-                <div class="tool-mini-icon">📄</div>
-                <div class="tool-mini-body">
-                    <h4>PDF 도구</h4>
-                    <p>병합 · 분할 · 회전 · 이미지 변환</p>
-                </div>
-            </a>
-
-            <a href="web-projects/stamp/" class="tool-mini">
-                <div class="tool-mini-icon">🔖</div>
-                <div class="tool-mini-body">
-                    <h4>도장 추출기</h4>
-                    <p>배경 자동 제거 · PNG 저장</p>
-                </div>
-            </a>
-
-            <a href="web-projects/iphone-heic/" class="tool-mini">
-                <div class="tool-mini-icon">🖼️</div>
-                <div class="tool-mini-body">
-                    <h4>HEIC → JPG</h4>
-                    <p>아이폰 사진 일괄 변환</p>
-                </div>
-            </a>
-
-            <a href="web-projects/freecomfortlab/" class="tool-mini">
-                <div class="tool-mini-icon">🎧</div>
-                <div class="tool-mini-body">
-                    <h4>미디어 변환</h4>
-                    <p>오디오 · 비디오 · MP3</p>
-                </div>
-            </a>
-
-            <a href="web-projects/paintcomfortfro/" class="tool-mini">
-                <div class="tool-mini-icon">🎨</div>
-                <div class="tool-mini-body">
-                    <h4>Paint & Present</h4>
-                    <p>그리고 발표하는 캔버스</p>
-                </div>
-            </a>
-
-            <a href="web-projects/inspection-score/" class="tool-mini">
-                <div class="tool-mini-icon">📐</div>
-                <div class="tool-mini-body">
-                    <h4>점검 점수 계산기</h4>
-                    <p>소규모 노후건축물 등급 산정</p>
-                </div>
-            </a>
-
-            <a href="web-projects/game-world/" class="tool-mini">
-                <div class="tool-mini-icon">🕹️</div>
-                <div class="tool-mini-body">
-                    <h4>게임월드</h4>
-                    <p>동전 밀기 · 버텨라 — 브라우저에서 바로</p>
-                </div>
-            </a>
-
-            <a href="web-projects/" class="tool-mini">
-                <div class="tool-mini-icon">→</div>
-                <div class="tool-mini-body">
-                    <h4>전체 도구 보기</h4>
-                    <p>모든 유틸리티 한 곳에</p>
-                </div>
-            </a>
-
-        </div>
-
-        <p class="lead" style="margin-top:28px; text-align:center;">
-            PDF 도구는 영어판 <a href="https://pdf300.com/">PDF300</a>에서도 쓸 수 있습니다 —
-            <a href="https://pdf300.com/compress-pdf-to-size/">원하는 용량(KB)에 맞춰 PDF 압축</a>하기까지 24개 기능을 제공합니다.
-        </p>
-    </div>
+</main>
+<section class="colophon">
+<div class="wrap">
+<div class="ghost">01</div>
+<div>
+<div class="kicker">The House Story</div>
+<p class="pull">하나의 이름이 브랜드가 되는 데는 시간이 필요합니다. 우리는 아직 그 시간을 쌓는 중입니다.</p>
+<p>2014년의 첫 도면부터 오늘의 작업실까지, 남은 것은 완성된 건물이 아니라 손에 익은 방식입니다. 해마다 하나의 장(章)을 더합니다 — 도면 하나, 그림 하나, 그리고 누군가의 하루를 조금 가볍게 만드는 도구 하나.</p>
+<div class="chapters">
+<span>Chapter I · 도면</span>
+<span>Chapter II · 캔버스</span>
+<span>Chapter III · 도구</span>
+</div>
+</div>
+</div>
 </section>
-
-<!-- Quote -->
-<section class="quote-strip">
-    <div class="container">
-        <p>
-            "도구는 결국, 누군가의 하루를 조금 더 가볍게 만드는 일이다."
-            <cite>— LeDeuxions</cite>
-        </p>
-    </div>
+<main class="wrap">
+<section class="band">
+<div>
+<div class="kicker">Plate II — Selected Work</div>
+<h2 class="display-sm">흰 벽, 열린 모서리</h2>
+<p class="lede lede-just" style="margin-top:22px">경사지에 앉은 단독주택. 잘린 지붕선이 남쪽 빛을 안으로 끌어들이고, 아래층 그림자는 작업 공간이 됩니다. 도판은 작품 페이지에서 이어집니다.</p>
+<div class="links"><a href="/work/">전체 작품 →</a></div>
+</div>
+<figure class="plate">
+<img src="assets/img/work-house.jpg" alt="주택 외관" style="aspect-ratio:4/3">
+</figure>
 </section>
-
-<!-- Footer -->
-<footer class="site-footer">
-    <div class="site-footer-inner">
-        <div class="site-footer-grid">
-            <div>
-                <div class="nav-brand" style="margin-bottom:12px;">
-                    <span class="nav-brand-mark">L</span>
-                    <span>LeDeuxions</span>
-                </div>
-                <p style="font-size:.9rem;color:var(--text-muted);max-width:300px;">
-                    건축가의 시선으로 일상의 도구를 짓습니다. 한국에서, 가족과 함께.
-                </p>
-            </div>
-            <div>
-                <h4>둘러보기</h4>
-                <ul>
-                    <li><a href="/">홈</a></li>
-                    <li><a href="web-projects/">웹 도구</a></li>
-                    <li><a href="work/">작품</a></li>
-                    <li><a href="history/">이야기</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>외부</h4>
-                <ul>
-                    <li><a href="https://ledeuxions.blogspot.com/" target="_blank" rel="noopener">Portfolio</a></li>
-                    <li><a href="https://ledeuxions-column.blogspot.com/" target="_blank" rel="noopener">Column</a></li>
-                    <li><a href="contact/">Contact</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>약관</h4>
-                <ul>
-                    <li><a href="privacy/">개인정보</a></li>
-                    <li><a href="terms/">이용약관</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="site-footer-bottom">
-            <span>© 2005–2026 LeDeuxions. All rights reserved.</span>
-            <span class="mono" style="font-size:.78rem;">v2026.05 · Made with care.</span>
-        </div>
-    </div>
+<section class="section-index">
+<div class="index-head">
+<h2>Index</h2>
+<span class="note">각 갈래로 들어가는 문</span>
+</div>
+<a href="/web-projects/" class="row">
+<span class="num">01</span>
+<span><span class="name">웹 도구</span><span class="desc">브라우저에서 끝나는 유틸리티 — 업로드도, 설치도 없이.</span></span>
+<span class="arrow">→</span>
+</a>
+<a href="/applications/" class="row">
+<span class="num">02</span>
+<span><span class="name">앱</span><span class="desc">홈 화면에 두고 오프라인에서도 쓰는 설치형 도구.</span></span>
+<span class="arrow">→</span>
+</a>
+<a href="/work/" class="row">
+<span class="num">03</span>
+<span><span class="name">작품</span><span class="desc">건축과 회화, 그리고 그 사이의 도면들.</span></span>
+<span class="arrow">→</span>
+</a>
+<a href="/history/" class="row">
+<span class="num">04</span>
+<span><span class="name">이야기</span><span class="desc">연도별로 쌓아 올리는 기록 — 이 집의 장(章)들.</span></span>
+<span class="arrow">→</span>
+</a>
+<a href="/contact/" class="row">
+<span class="num">05</span>
+<span><span class="name">연락</span><span class="desc">협업, 의뢰, 그리고 조용한 안부.</span></span>
+<span class="arrow">→</span>
+</a>
+</section>
+</main>
+<footer class="site-foot">
+<div class="wrap">
+<span class="wordmark">Ledeuxions</span>
+<span class="spacer">© 2005–2026</span>
+<a href="/privacy/">Privacy</a>
+<a href="/terms/">Terms</a>
+</div>
 </footer>
-
-<script src="assets/js/common.js"></script>
+</div>
 </body>
 </html>

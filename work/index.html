@@ -3,179 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FAF9F5">
-<meta name="description" content="LeDeuxions의 작품과 작업 — 건축, 글쓰기, 웹 프로젝트.">
+<meta name="theme-color" content="#f3f2f2">
+<meta name="description" content="LeDeuxions의 작품과 작업 — 건축, 그리고 일상을 다듬은 도구들.">
+<meta property="og:title" content="Work — LeDeuxions">
+<meta property="og:description" content="일상의 필요에서 시작해, 실제로 쓰일 형태로 다듬은 것들.">
 <title>작품 — LeDeuxions</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="../assets/css/claude-design.css">
-<style>
-    .work-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
-    .work-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: var(--space-5);
-        margin-bottom: var(--space-7);
-    }
-    .work-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        display: flex; flex-direction: column;
-        transition: all .25s var(--ease);
-    }
-    .work-card:hover {
-        border-color: var(--accent);
-        box-shadow: var(--shadow-md);
-        transform: translateY(-3px);
-    }
-    .work-card .body {
-        padding: var(--space-5);
-        flex: 1;
-        display: flex; flex-direction: column;
-    }
-    .work-card .tag {
-        font-family: var(--font-mono);
-        font-size: 0.72rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--accent);
-        margin-bottom: var(--space-2);
-    }
-    .work-card h2 {
-        font-family: var(--font-serif);
-        font-size: 1.5rem;
-        margin: 0 0 var(--space-3);
-        color: var(--text-primary);
-    }
-    .work-card p {
-        margin: 0;
-        flex: 1;
-        color: var(--text-secondary);
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
-    .work-card .foot {
-        padding: var(--space-4) var(--space-5);
-        background: var(--bg-sunken);
-        border-top: 1px solid var(--border);
-    }
-    .work-card.coming { opacity: .6; }
-    .work-card.coming .foot .btn { background: var(--bg-card); color: var(--text-muted); cursor: not-allowed; }
-</style>
+<link rel="stylesheet" href="../assets/css/ledeuxions-classical.css">
 </head>
 <body>
-
-<nav class="nav">
-    <div class="nav-inner">
-        <a href="/" class="nav-brand">
-            <span class="nav-brand-mark">L</span>
-            <span>LeDeuxions</span>
-        </a>
-        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        </button>
-        <div class="nav-links" data-nav-menu>
-            <a href="/" class="nav-link" data-nav-link>홈</a>
-            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
-            <a href="/work/" class="nav-link active" data-nav-link>작품</a>
-            <a href="/history/" class="nav-link" data-nav-link>이야기</a>
-            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
-        </div>
-    </div>
+<div class="page">
+<header class="site-head">
+<a href="/" class="wordmark">Ledeuxions</a>
+<nav class="gnav">
+<a href="/work/" aria-current="page">Work</a>
+<a href="/history/">Story</a>
+<a href="/web-projects/">Tools</a>
+<a href="/contact/">Contact</a>
 </nav>
-
-<header class="work-hero container-narrow">
-    <div class="eyebrow" style="margin-bottom:12px;">Work & Utilities</div>
-    <h1>매일을 다듬는 <em style="color:var(--accent);font-style:italic;">도구들</em></h1>
-    <p class="lead">일상의 필요에서 시작해, 실제로 쓰일 만한 형태로 다듬은 작은 프로젝트들.</p>
 </header>
-
-<main class="container" style="padding-bottom:var(--space-9);">
-
-<div class="work-grid">
-
-    <article class="work-card">
-        <div class="body">
-            <div class="tag">Document</div>
-            <h2>PDF 300</h2>
-            <p>병합, 분할, 회전, 이미지 변환까지. PDF에 필요한 거의 모든 정적 처리를 하나의 페이지에서.</p>
-        </div>
-        <div class="foot">
-            <a href="/web-projects/pdf300/" class="btn btn-dark btn-block">바로가기 →</a>
-        </div>
-    </article>
-
-    <article class="work-card">
-        <div class="body">
-            <div class="tag">Identity</div>
-            <h2>Stamp Maker</h2>
-            <p>이름만 입력해 즉시 만드는 도장. 또는 찍힌 사진에서 깨끗하게 추출하는 투명 PNG.</p>
-        </div>
-        <div class="foot">
-            <a href="/web-projects/stamp/" class="btn btn-dark btn-block">바로가기 →</a>
-        </div>
-    </article>
-
-    <article class="work-card">
-        <div class="body">
-            <div class="tag">Photo</div>
-            <h2>HEIC Converter</h2>
-            <p>아이폰 사진을 JPG/PNG/WebP로 일괄 변환. 크기·품질·접미사까지 세밀하게.</p>
-        </div>
-        <div class="foot">
-            <a href="/web-projects/iphone-heic/" class="btn btn-dark btn-block">바로가기 →</a>
-        </div>
-    </article>
-
-    <article class="work-card">
-        <div class="body">
-            <div class="tag">Media</div>
-            <h2>FreeComfortLab</h2>
-            <p>오디오 → MP3, 비디오 → MP3 등 미디어 변환 도구의 실험실.</p>
-        </div>
-        <div class="foot">
-            <a href="/web-projects/freecomfortlab/" class="btn btn-dark btn-block">바로가기 →</a>
-        </div>
-    </article>
-
-    <article class="work-card">
-        <div class="body">
-            <div class="tag">Creative</div>
-            <h2>Paint & Present</h2>
-            <p>그리고, 발표하고, 저장합니다. 다국어 캔버스 + 프레젠테이션 도구.</p>
-        </div>
-        <div class="foot">
-            <a href="/web-projects/paintcomfortfro/" class="btn btn-dark btn-block">바로가기 →</a>
-        </div>
-    </article>
-
-    <article class="work-card coming">
-        <div class="body">
-            <div class="tag">Soon</div>
-            <h2>다음 프로젝트</h2>
-            <p>더 많은 유용한 도구가 준비 중입니다. 도구는 결국 누군가의 하루를 가볍게 만드는 일.</p>
-        </div>
-        <div class="foot">
-            <button class="btn btn-block" disabled>준비 중</button>
-        </div>
-    </article>
-
+<main class="wrap">
+<section class="band band-end">
+<div>
+<div class="kicker">Chapter II — Work</div>
+<h1 class="display">쓰이기 위해<br>다듬은 것들</h1>
+<p class="lede lede-just" style="margin-top:24px">일상의 필요에서 시작해, 실제로 손에 쥐어지는 형태까지 밀고 간 작업들. 건축에서 배운 순서가 그대로 남아 있습니다 — 문제를 먼저 그리고, 필요한 것만 세운다.</p>
 </div>
-
+<figure class="plate">
+<img src="../assets/img/work-house.jpg" alt="흰 벽, 열린 모서리 — 단독주택" style="aspect-ratio:16/10">
+<figcaption>Plate II — House, Exterior</figcaption>
+</figure>
+</section>
+<section class="section-index">
+<div class="index-head">
+<h2>Selected</h2>
+<span class="note">Document · Identity · Photo · Media</span>
+</div>
+<a href="/web-projects/pdf300/" class="row has-meta">
+<span class="num">01</span>
+<span><span class="name">PDF 300</span><span class="desc">병합 · 분할 · 회전 · 이미지 변환. PDF에 필요한 거의 모든 정적 처리를 한 페이지에서.</span></span>
+<span class="meta">Document</span>
+<span class="arrow">→</span>
+</a>
+<a href="/web-projects/stamp/" class="row has-meta">
+<span class="num">02</span>
+<span><span class="name">Stamp Maker</span><span class="desc">이름만 입력해 즉시 만드는 도장. 또는 찍힌 사진에서 깨끗하게 추출하는 투명 PNG.</span></span>
+<span class="meta">Identity</span>
+<span class="arrow">→</span>
+</a>
+<a href="/web-projects/iphone-heic/" class="row has-meta">
+<span class="num">03</span>
+<span><span class="name">HEIC Converter</span><span class="desc">아이폰 사진을 JPG · PNG · WebP로 일괄 변환. 크기 · 품질 · 접미사까지 세밀하게.</span></span>
+<span class="meta">Photo</span>
+<span class="arrow">→</span>
+</a>
+<a href="/web-projects/freecomfortlab/" class="row has-meta">
+<span class="num">04</span>
+<span><span class="name">FreeComfortLab</span><span class="desc">오디오와 비디오를 MP3로. 미디어 변환 도구의 실험실.</span></span>
+<span class="meta">Media</span>
+<span class="arrow">→</span>
+</a>
+<a href="/web-projects/paintcomfortfro/" class="row has-meta">
+<span class="num">05</span>
+<span><span class="name">Paint &amp; Present</span><span class="desc">그리고, 발표하고, 저장합니다. 다국어 캔버스 + 프레젠테이션 도구.</span></span>
+<span class="meta">Creative</span>
+<span class="arrow">→</span>
+</a>
+<p class="footnote">다음 장은 아직 비어 있습니다. 도구는 결국 누군가의 하루를 조금 가볍게 만드는 일이라, 필요가 먼저 도착할 때까지 기다립니다. — <a href="/contact/">함께 만들기</a></p>
+</section>
 </main>
-
-<footer class="site-footer">
-    <div class="site-footer-inner">
-        <div class="site-footer-bottom">
-            <span>© 2005–2026 LeDeuxions.</span>
-            <span><a href="/contact/">함께 만들기 →</a></span>
-        </div>
-    </div>
+<footer class="site-foot">
+<div class="wrap">
+<span class="wordmark">Ledeuxions</span>
+<span class="spacer">© 2005–2026</span>
+<a href="/privacy/">Privacy</a>
+<a href="/terms/">Terms</a>
+</div>
 </footer>
-
-<script src="../assets/js/common.js"></script>
+</div>
 </body>
 </html>

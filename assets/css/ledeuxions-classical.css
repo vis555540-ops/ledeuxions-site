@@ -1,0 +1,120 @@
+/* LeDeuxions — Classical gate pages. Tokens + the gate/index patterns.
+   Load this on the gate pages only (/, /web-projects/, /applications/, /work/, /history/, /contact/). */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Lora:wght@400;600&family=Nanum+Myeongjo:wght@400;700&display=swap');
+:root{
+--color-bg:#f3f2f2;--color-surface:#eae9e9;--color-text:#201f1d;--color-accent:#b68235;
+--color-accent-400:#e1ad66;--color-accent-700:#7d5411;--color-accent-900:#3a270d;
+--color-colophon:#1a1917;--color-colophon-text:#ece9e4;
+--color-divider:color-mix(in srgb,#201f1d 16%,transparent);
+--font-heading:"Cormorant Garamond","Nanum Myeongjo",serif;
+--font-body:"Lora","Nanum Myeongjo",serif;
+--space-1:4.6px;--space-2:9.2px;--space-3:13.8px;--space-4:18.4px;--space-6:27.6px;--space-8:36.8px;
+--measure:1140px;--gutter:44px}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);font-size:15px;line-height:1.55}
+a{color:var(--color-accent-700);text-decoration:none;text-underline-offset:3px}
+a:hover{color:var(--color-accent-900)}
+img{display:block;max-width:100%}
+figure{margin:0}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+::selection{background:color-mix(in srgb,var(--color-accent) 30%,transparent)}
+.wrap{width:100%;max-width:var(--measure);margin:0 auto;padding:0 var(--gutter)}
+/* — head / foot — */
+.site-head{width:100%;max-width:var(--measure);margin:0 auto;padding:30px var(--gutter) 22px;display:flex;align-items:baseline;gap:44px;border-bottom:1px solid var(--color-divider)}
+.wordmark{font-family:var(--font-heading);font-weight:400;font-size:16px;letter-spacing:.44em;text-transform:uppercase;color:var(--color-text);margin-right:auto}
+.gnav{display:flex;gap:28px;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+.gnav a{color:color-mix(in srgb,var(--color-text) 62%,transparent);padding-bottom:3px;border-bottom:1px solid transparent}
+.gnav a:hover,.gnav a[aria-current=page]{color:var(--color-accent-700);border-bottom-color:var(--color-accent)}
+.site-foot{border-top:1px solid var(--color-divider);margin-top:auto}
+.site-foot .wrap{padding-top:30px;padding-bottom:30px;display:flex;align-items:baseline;gap:28px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 48%,transparent);font-variant-numeric:tabular-nums}
+.site-foot .wordmark{letter-spacing:.4em;font-size:11px}
+.site-foot .spacer{margin-right:auto}
+.site-foot a{color:inherit}
+.site-foot a:hover{color:var(--color-accent-700)}
+/* — editorial primitives — */
+.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--color-accent-700);font-variant-numeric:tabular-nums}
+.display{font-family:var(--font-heading);font-weight:400;font-size:clamp(34px,4.4vw,58px);line-height:1.08;letter-spacing:-.02em;word-break:keep-all;line-break:strict;margin:22px 0 0}
+.display-sm{font-family:var(--font-heading);font-weight:400;font-size:clamp(28px,3.2vw,40px);line-height:1.12;word-break:keep-all;line-break:strict;margin:20px 0 0}
+.rule{width:56px;height:1px;background:var(--color-accent);margin:28px 0;border:0}
+.lede{font-size:15.5px;line-height:1.72;max-width:34em;margin:0;word-break:keep-all;text-wrap:pretty;color:color-mix(in srgb,var(--color-text) 82%,transparent)}
+.lede-just{text-align:justify}
+.links{display:flex;gap:26px;margin-top:34px;font-size:13px;letter-spacing:.06em}
+.links a{border-bottom:1px solid var(--color-accent);padding-bottom:3px}
+.links a.quiet{color:color-mix(in srgb,var(--color-text) 70%,transparent);border-bottom-color:var(--color-divider)}
+.links a.quiet:hover{color:var(--color-text);border-bottom-color:var(--color-text)}
+/* — plate: every photograph is matted like a tipped-in book plate — */
+.plate img{width:100%;object-fit:cover;filter:sepia(.22) saturate(.82) contrast(1.05);border:8px solid var(--color-surface);outline:1px solid var(--color-divider)}
+.plate figcaption{margin-top:10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 48%,transparent);font-variant-numeric:tabular-nums}
+/* — two-up editorial band; collapses to one column on its own — */
+.band{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:64px;align-items:center;padding-block:88px 96px}
+.band-end{align-items:end;padding-block:76px 60px;border-bottom:1px solid var(--color-text)}
+/* — colophon: the dark story band, gold ghost numeral — */
+.colophon{background:var(--color-colophon);color:var(--color-colophon-text);padding:96px 0}
+.colophon .wrap{display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:start}
+.colophon .ghost{font-family:var(--font-heading);font-size:96px;line-height:.8;color:color-mix(in srgb,var(--color-accent) 42%,transparent);font-variant-numeric:tabular-nums}
+.colophon .kicker{color:var(--color-accent-400)}
+.colophon .pull{font-family:var(--font-heading);font-weight:400;font-size:clamp(22px,2.6vw,30px);line-height:1.36;word-break:keep-all;margin:20px 0 0;max-width:26em;text-wrap:pretty}
+.colophon p{font-size:14px;line-height:1.78;max-width:38em;margin:24px 0 0;color:color-mix(in srgb,#ece9e4 72%,transparent);text-align:justify;word-break:keep-all;text-wrap:pretty}
+.chapters{display:flex;flex-wrap:wrap;gap:32px;margin-top:36px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:color-mix(in srgb,#ece9e4 55%,transparent);font-variant-numeric:tabular-nums}
+/* — the quiet numbered index (replaces card grids) — */
+.index-head{display:flex;align-items:baseline;gap:20px;border-bottom:1px solid var(--color-text);padding-bottom:14px}
+.index-head h2{font-family:var(--font-heading);font-weight:400;font-size:22px;letter-spacing:.16em;text-transform:uppercase;margin:0}
+.index-head .note{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent);margin-left:auto}
+.row{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:clamp(14px,2.4vw,28px);align-items:baseline;padding:26px 4px;border-bottom:1px solid var(--color-divider);color:var(--color-text)}
+.row.has-meta{grid-template-columns:56px minmax(0,1fr) auto auto}
+.row:hover{background:color-mix(in srgb,var(--color-accent) 6%,transparent);color:var(--color-text)}
+.row .num{font-family:var(--font-heading);font-size:15px;letter-spacing:.1em;color:var(--color-accent);font-variant-numeric:tabular-nums}
+.row .name{font-family:var(--font-heading);font-size:24px}
+.row .desc{display:block;font-size:13.5px;line-height:1.6;word-break:keep-all;margin-top:6px;color:color-mix(in srgb,var(--color-text) 62%,transparent)}
+.row .meta{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 45%,transparent)}
+.row .arrow{font-size:13px;color:color-mix(in srgb,var(--color-text) 45%,transparent)}
+.footnote{margin:44px 0 0;font-size:13px;line-height:1.7;max-width:44em;color:color-mix(in srgb,var(--color-text) 60%,transparent);word-break:keep-all;text-wrap:pretty}
+.footnote a{border-bottom:1px solid var(--color-accent)}
+.row.is-quiet{color:color-mix(in srgb,var(--color-text) 55%,transparent);cursor:default}
+.row.is-quiet:hover{background:none;color:color-mix(in srgb,var(--color-text) 55%,transparent)}
+/* — chronology entry: year in the numeral slot, prose in the name slot — */
+.row.entry{grid-template-columns:80px minmax(0,1fr);cursor:default}
+.row.entry:hover{background:none}
+.row.entry .num{font-size:16px;letter-spacing:.06em}
+.row .body{display:block;font-size:14.5px;line-height:1.78;margin-top:8px;max-width:44em;word-break:keep-all;text-align:justify;text-wrap:pretty;color:color-mix(in srgb,var(--color-text) 76%,transparent)}
+.row .body em{font-style:italic;color:var(--color-accent-700)}
+/* — definition ledger: label / value rows, for contact and regards — */
+.ledger{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 clamp(18px,3vw,36px);align-items:baseline}
+.ledger dt{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 48%,transparent);padding:18px 0;border-top:1px solid var(--color-divider)}
+.ledger dd{margin:0;font-family:var(--font-heading);font-size:20px;padding:18px 0;border-top:1px solid var(--color-divider);word-break:keep-all}
+.ledger dt:first-of-type,.ledger dd:first-of-type{border-top:0}
+.regards{margin:20px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 clamp(18px,3vw,36px);align-items:baseline}
+.regards dt{font-family:var(--font-heading);font-size:19px;letter-spacing:.02em;color:var(--color-accent-400);padding:20px 0;border-top:1px solid color-mix(in srgb,#ece9e4 18%,transparent)}
+.regards dd{margin:0;padding:20px 0;border-top:1px solid color-mix(in srgb,#ece9e4 18%,transparent);font-size:14px;line-height:1.76;max-width:40em;color:color-mix(in srgb,#ece9e4 78%,transparent)}
+.regards dt:first-of-type,.regards dd:first-of-type{border-top:0}
+.regards .gloss{display:block;margin-top:8px;font-size:11px;letter-spacing:.06em;color:color-mix(in srgb,#ece9e4 48%,transparent)}
+.prose p{font-size:15px;line-height:1.82;max-width:36em;margin:0 0 20px;text-align:justify;word-break:keep-all;text-wrap:pretty;color:color-mix(in srgb,var(--color-text) 82%,transparent)}
+.prose p:last-of-type{margin-bottom:0}
+/* — embed frame, matted like a plate — */
+.frame{margin-top:28px;border:8px solid var(--color-surface);outline:1px solid var(--color-divider);background:var(--color-bg)}
+.frame iframe{display:block;width:100%;height:600px;border:0}
+.page{min-height:100vh;display:flex;flex-direction:column}
+.section-index{padding:8px 0 104px}
+/* — small screens: the fixed gutter and the 320px two-up minimum both have to give — */
+@media (max-width:760px){
+:root{--gutter:22px}
+.site-head{flex-wrap:wrap;gap:16px 26px;padding:24px var(--gutter) 16px}
+.wordmark{margin-right:0;font-size:14px;letter-spacing:.36em}
+.gnav{flex-wrap:wrap;gap:22px}
+.band{grid-template-columns:minmax(0,1fr);gap:44px;padding-block:56px 60px}
+.band-end{padding-block:48px 44px}
+.colophon{padding:64px 0}
+.colophon .wrap{grid-template-columns:minmax(0,1fr);gap:18px}
+.colophon .ghost{font-size:64px}
+/* justified setting opens rivers at this measure — set ragged-right instead */
+.lede-just,.colophon p,.prose p,.row .body{text-align:left}
+.row{grid-template-columns:44px minmax(0,1fr) auto;gap:12px}
+.row.has-meta{grid-template-columns:44px minmax(0,1fr) auto}
+.row.has-meta .meta{grid-column:2;margin-top:10px}
+.row.entry{grid-template-columns:56px minmax(0,1fr)}
+.row .name{font-size:20px}
+.section-index{padding-bottom:64px}
+.site-foot .wrap{flex-wrap:wrap;gap:12px 22px}
+.site-foot .spacer{margin-right:0}
+}

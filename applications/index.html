@@ -3,126 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FAF9F5">
-<meta name="description" content="LeDeuxions의 설치형 애플리케이션 — 자동화 시스템과 PWA 도구 모음.">
-<title>Applications — LeDeuxions</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<meta name="theme-color" content="#f3f2f2">
+<meta name="description" content="LeDeuxions의 설치형 애플리케이션 — 홈 화면에 두고 오프라인에서 쓰는 PWA와 로컬 자동화 도구.">
+<meta property="og:title" content="Applications — LeDeuxions">
+<meta property="og:description" content="홈 화면에 두고 오프라인에서 쓰는 도구들.">
+<title>앱 — LeDeuxions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="../assets/css/claude-design.css">
-<style>
-    .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
-    .apps-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: var(--space-5);
-    }
-    .app-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: var(--space-6);
-        display: flex; flex-direction: column;
-        gap: var(--space-3);
-        transition: all .25s var(--ease);
-    }
-    .app-card:hover {
-        border-color: var(--accent);
-        box-shadow: var(--shadow-md);
-        transform: translateY(-3px);
-    }
-    .app-card .ico {
-        width: 56px; height: 56px;
-        background: var(--accent-soft);
-        color: var(--accent-deep);
-        border-radius: var(--radius-md);
-        display: grid; place-items: center;
-        font-size: 1.5rem;
-    }
-    .app-card h2 {
-        font-family: var(--font-serif);
-        font-size: 1.4rem;
-        margin: 0;
-    }
-    .app-card p {
-        margin: 0;
-        flex: 1;
-        color: var(--text-secondary);
-    }
-    .meta-row { display: flex; gap: 6px; flex-wrap: wrap; }
-</style>
+<link rel="stylesheet" href="../assets/css/ledeuxions-classical.css">
 </head>
 <body>
-
-<nav class="nav">
-    <div class="nav-inner">
-        <a href="/" class="nav-brand">
-            <span class="nav-brand-mark">L</span>
-            <span>LeDeuxions</span>
-        </a>
-        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        </button>
-        <div class="nav-links" data-nav-menu>
-            <a href="/" class="nav-link" data-nav-link>홈</a>
-            <a href="/web-projects/" class="nav-link" data-nav-link>웹 도구</a>
-            <a href="/applications/" class="nav-link active" data-nav-link>Applications</a>
-            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
-        </div>
-    </div>
+<div class="page">
+<header class="site-head">
+<a href="/" class="wordmark">Ledeuxions</a>
+<nav class="gnav">
+<a href="/work/">Work</a>
+<a href="/history/">Story</a>
+<a href="/web-projects/" aria-current="page">Tools</a>
+<a href="/contact/">Contact</a>
 </nav>
-
-<header class="app-hero container-narrow">
-    <div class="eyebrow" style="margin-bottom:12px;">Applications</div>
-    <h1>설치형 <em style="color:var(--accent);font-style:italic;">앱</em>들</h1>
-    <p class="lead">홈 화면에 추가해 오프라인에서도 동작하는 PWA, 그리고 로컬에서 동작하는 자동화 도구들.</p>
 </header>
-
-<main class="container" style="padding-bottom:var(--space-9);">
-
-<div class="apps-grid">
-
-    <a href="iphoneheic/" class="app-card" style="text-decoration:none;color:inherit;">
-        <div class="ico">📱</div>
-        <h2>iPhone HEIC Converter (PWA)</h2>
-        <p>홈 화면에 추가해 오프라인에서도 HEIC를 JPG로 변환합니다. iOS 14+ 권장.</p>
-        <div class="meta-row">
-            <span class="badge">PWA</span>
-            <span class="badge badge-neutral">오프라인</span>
-        </div>
-    </a>
-
-    <div class="app-card">
-        <div class="ico">⚙️</div>
-        <h2>AIDEUX Automation</h2>
-        <p>메일·파일·웹 작업을 자동 처리하는 개인 자동화 시스템. 로컬 머신에서 실행됩니다.</p>
-        <div class="meta-row">
-            <span class="badge badge-neutral">Local</span>
-        </div>
-    </div>
-
-    <div class="app-card">
-        <div class="ico">📂</div>
-        <h2>Document Utility Scripts</h2>
-        <p>PDF·이미지·오디오 파일을 빠르게 처리하는 명령행 스크립트 묶음.</p>
-        <div class="meta-row">
-            <span class="badge badge-neutral">CLI</span>
-        </div>
-    </div>
-
+<main class="wrap">
+<section class="band band-end">
+<div>
+<div class="kicker">Chapter III — Applications</div>
+<h1 class="display">홈 화면에<br>두는 도구들</h1>
+<p class="lede lede-just" style="margin-top:24px">브라우저 탭이 아니라 기기 안에 자리를 잡는 것들. 한 번 설치하면 네트워크 없이도 동작하고, 매일 쓰는 자리에 그대로 남습니다.</p>
 </div>
-
+<figure class="plate">
+<img src="../assets/img/work-house.jpg" alt="도판" style="aspect-ratio:16/10">
+<figcaption>Plate — Installed, Offline</figcaption>
+</figure>
+</section>
+<section class="section-index">
+<a href="iphoneheic/" class="row has-meta">
+<span class="num">01</span>
+<span><span class="name">iPhone HEIC Converter</span><span class="desc">홈 화면에 추가해 오프라인에서도 HEIC를 JPG로 변환합니다. iOS 14 이상 권장.</span></span>
+<span class="meta">PWA · 오프라인</span>
+<span class="arrow">→</span>
+</a>
+<span class="row has-meta is-quiet">
+<span class="num">02</span>
+<span><span class="name">AIDEUX Automation</span><span class="desc">메일 · 파일 · 웹 작업을 자동 처리하는 개인 자동화 시스템. 로컬 머신에서 실행됩니다.</span></span>
+<span class="meta">Local</span>
+<span class="arrow" aria-hidden="true"></span>
+</span>
+<span class="row has-meta is-quiet">
+<span class="num">03</span>
+<span><span class="name">Document Utility Scripts</span><span class="desc">PDF · 이미지 · 오디오를 빠르게 처리하는 명령행 스크립트 묶음.</span></span>
+<span class="meta">CLI</span>
+<span class="arrow" aria-hidden="true"></span>
+</span>
+<p class="footnote">02 · 03은 공개 배포본이 아닙니다 — 작업실에서 쓰는 내부 도구의 기록으로 남겨 둡니다. 브라우저에서 바로 쓰는 도구는 <a href="/web-projects/">웹 도구</a>에 모여 있습니다.</p>
+</section>
 </main>
-
-<footer class="site-footer">
-    <div class="site-footer-inner">
-        <div class="site-footer-bottom">
-            <span>© 2005–2026 LeDeuxions.</span>
-            <span><a href="/web-projects/">웹 도구 →</a></span>
-        </div>
-    </div>
+<footer class="site-foot">
+<div class="wrap">
+<span class="wordmark">Ledeuxions</span>
+<span class="spacer">© 2005–2026</span>
+<a href="/privacy/">Privacy</a>
+<a href="/terms/">Terms</a>
+</div>
 </footer>
-
-<script src="../assets/js/common.js"></script>
+</div>
 </body>
 </html>
