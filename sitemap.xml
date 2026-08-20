@@ -337,4 +337,10 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://ledeuxions.com/%EA%B8%80/%EA%B7%B8%EB%A6%BC%EC%9E%90-adoration-et-de-louange/</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
