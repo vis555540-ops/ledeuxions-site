@@ -361,4 +361,22 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://ledeuxions.com/%EA%B8%80/%EC%A2%85%EA%B5%90%EC%8B%9C%EC%84%A4-%EC%A2%85%EA%B5%90%EC%9D%98-%EB%B3%B8%EC%A7%88/</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/%EA%B8%80/%EA%B3%B5%EC%9B%90-%EB%A7%B5%ED%95%91/</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/%EA%B8%80/2013-%ED%94%84%EB%9E%91%EC%8A%A4%EC%97%90%EC%84%9C-%EA%B5%90%EC%88%98%EB%8B%98%EA%BB%98/</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
