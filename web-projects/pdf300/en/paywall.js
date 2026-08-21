@@ -11,11 +11,14 @@
  *    지금 켜면 손님이 막히는데 살 방법이 없어서 손해만 난다.
  */
 window.PDF300_PAYWALL = {
-    enabled: false,
+    enabled: true,                            // 2026-08-21 켬 (형 「PDF300도 부탁해」)
     freePerDay: 5,
     gateway: 'https://api.ledeuxions.com',
     direct: 'https://pdf.ledeuxions.com',
-    checkout: { dayPass: '', monthly: '' }   // 상점 Publish 후 URL 넣기
+    checkout: {
+        dayPass: 'https://payhip.com/b/Bj4Ze',   // 하루 이용권 $0.99 — 페이힙, PayPal 연결됨
+        monthly: ''
+    }
 };
 
 /* 하루 이용권 열쇠 (2026-08-21)

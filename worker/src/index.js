@@ -243,12 +243,46 @@ function mintPassCode() {
     return "PDF300-" + out;          // 예: PDF300-K7QM-3XT9-BR2H-WY4N
 }
 
+// 페이힙이 판 열쇠인가 물어본다.
+// 페이힙이 손님한테 열쇠를 만들어 주는데, 그 열쇠는 우리가 만든 게 아니라서
+// 우리 창고에 없다. 그래서 페이힙한테 직접 물어본다.
+// (이걸 안 하면 손님이 0.99 달러를 내고도 계속 막힌다.)
+async function askPayhip(env, code) {
+    if (!env.PAYHIP_SECRET) return false;
+    try {
+        const r = await fetch(
+            "https://payhip.com/api/v2/license/verify?license_key=" + encodeURIComponent(code),
+            { headers: { "product-secret-key": env.PAYHIP_SECRET } }
+        );
+        if (!r.ok) return false;
+        const d = await r.json();
+        // 실측 (2026-08-21): 없는 열쇠는 {"data":[],"error":true} 로 돌아온다.
+        // 그래서 error 가 참이거나 data 가 비어 있으면 무조건 아니다.
+        if (!d || d.error === true) return false;
+        const dat = d.data;
+        if (!dat) return false;
+        if (Array.isArray(dat)) return dat.length > 0;
+        if (dat.enabled === false) return false;      // 우리가 꺼둔 열쇠
+        return !!(dat.license_key || dat.id || dat.enabled === true);
+    } catch (e) {
+        return false;   // 페이힙이 안 되면 막지 말고 그냥 모르는 열쇠로 둔다
+    }
+}
+
 // 열쇠가 살아 있나. 살아 있으면 남은 시간을 준다.
 // 처음 쓰는 순간 시계가 돌기 시작한다.
 async function checkPass(env, raw) {
     const code = (raw || "").trim().toUpperCase();
     if (!code) return null;
-    const rec = await env.KV.get(`pass:${code}`, "json");
+    let rec = await env.KV.get(`pass:${code}`, "json");
+
+    if (!rec) {
+        // 우리 창고에 없다 → 페이힙이 판 것인지 물어본다
+        if (await askPayhip(env, code)) {
+            rec = { minted: Date.now(), firstUse: null, hours: PASS_HOURS, note: "payhip" };
+            await env.KV.put(`pass:${code}`, JSON.stringify(rec));
+        }
+    }
     if (!rec) return { ok: false, reason: "unknown" };
 
     const now = Date.now();
@@ -364,6 +398,28 @@ async function handleHit(request, env, origin) {
         return json({ ok: true, skipped: "ours" }, 200, h);   // 우리는 안 센다
     }
 
+    // 🚨 기계인지 사람인지 갈라 센다.
+    //    2026-08-14 에 "실사용 하루 2~3건"이라고 했던 게 우리 자신이었다.
+    //    2026-08-21 첫날 숫자를 보니 이번엔 크롤러였다. 같은 실수 세 번 하지 않는다.
+    const ua = (request.headers.get("User-Agent") || "").toLowerCase();
+    // ⚠️ 그냥 "bot" 으로 거르면 안 된다 — Cubot 같은 진짜 폰 이름에 bot 이 들어간다.
+    //    아는 로봇 이름과 확실한 표시만 본다.
+    const 기계 = !ua || new RegExp([
+        "googlebot","bingbot","yandex","duckduckbot","baiduspider","applebot","petalbot",
+        "semrushbot","ahrefsbot","mj12bot","dotbot","gptbot","claudebot","ccbot","bytespider",
+        "amazonbot","facebookexternalhit","whatsapp","telegrambot","discordbot","slackbot",
+        "linkedinbot","twitterbot","pinterest","embedly","slurp",
+        "crawler","crawling","spider","headless","lighthouse","pagespeed","gtmetrix",
+        "curl/","wget","python-requests","python-urllib","go-http","java/","axios","node-fetch",
+        "\\bbot/"
+    ].join("|")).test(ua);
+    if (기계) {
+        const bk = `hitbot:${사이트}:${날}`;
+        await env.KV.put(bk, String(Number(await env.KV.get(bk) || 0) + 1),
+                         { expirationTtl: 60 * 60 * 24 * 400 });
+        return json({ ok: true, counted: "bot" }, 200, h);
+    }
+
     const 살 = 60 * 60 * 24 * 400;   // 400일 보관
 
     // 그날 다른 사람 수 — IP 를 해시해서 표시만 남긴다 (IP 자체는 저장 안 함)
@@ -405,7 +461,8 @@ async function handleHitStats(request, env, origin) {
         for (const 날 of 날들) {
             const v = Number(await env.KV.get(`hit:${사이트}:${날}`) || 0);
             const u = Number(await env.KV.get(`hituv:${사이트}:${날}`) || 0);
-            if (v || u) 답[사이트][날] = { 방문: v, 사람: u };
+            const b = Number(await env.KV.get(`hitbot:${사이트}:${날}`) || 0);
+            if (v || u || b) 답[사이트][날] = { 방문: v, 사람: u, 기계: b };
         }
     }
     return json({ ok: true, days: 며칠, stats: 답 }, 200, h);
