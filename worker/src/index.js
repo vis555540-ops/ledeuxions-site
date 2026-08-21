@@ -73,8 +73,8 @@ function corsHeaders(origin) {
     return {
         "Access-Control-Allow-Origin": origin || "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
-        "Access-Control-Expose-Headers": "X-Result-KB, X-Orig-KB, X-Hit-Target, X-DPI, X-Quality, X-Elapsed, X-Quota-Used, X-Quota-Limit, X-Plan, Content-Disposition",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key, X-Pass",
+        "Access-Control-Expose-Headers": "X-Pass-Ends, X-Result-KB, X-Orig-KB, X-Hit-Target, X-DPI, X-Quality, X-Elapsed, X-Quota-Used, X-Quota-Limit, X-Plan, Content-Disposition",
         "Vary": "Origin",
     };
 }
@@ -213,11 +213,70 @@ async function handleShareBonus(request, env, origin) {
     return json({ ok: true, bonus: SHARE_BONUS_PER_DAY }, 200, h);
 }
 
+// ─────────────────────────────────────────────────────────────
+// 하루 이용권 (day pass)  — 2026-08-21
+//
+// 왜 필요한가: 결제창은 이미 있었지만 "돈 낸 사람을 풀어주는" 장치가 없었다.
+//   그대로 켰으면 손님이 0.99 달러를 내고도 계속 막혔을 것이다.
+//
+// 어떻게 도는가:
+//   1. 열쇠를 미리 찍어둔다 (POST /admin/pass/mint, 내부 키 필요)
+//   2. 페이힙 같은 데서 판다 → 손님이 열쇠를 받는다
+//   3. 손님이 사이트에 열쇠를 넣으면 브라우저가 X-Pass 헤더로 보낸다
+//   4. 처음 쓴 순간부터 24시간 무제한. 그 전엔 시계가 안 간다(사놓고 나중에 써도 손해 없음)
+//
+// KV: pass:{code} → { minted, firstUse, hours, note }
+// ─────────────────────────────────────────────────────────────
+const PASS_HOURS = 24;
+
+// 헷갈리는 글자(0/O, 1/I/L) 뺀 32자
+const PASS_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+
+function mintPassCode() {
+    const b = new Uint8Array(16);
+    crypto.getRandomValues(b);
+    let out = "";
+    for (let i = 0; i < 16; i++) {
+        out += PASS_ALPHABET[b[i] % PASS_ALPHABET.length];
+        if (i % 4 === 3 && i !== 15) out += "-";
+    }
+    return "PDF300-" + out;          // 예: PDF300-K7QM-3XT9-BR2H-WY4N
+}
+
+// 열쇠가 살아 있나. 살아 있으면 남은 시간을 준다.
+// 처음 쓰는 순간 시계가 돌기 시작한다.
+async function checkPass(env, raw) {
+    const code = (raw || "").trim().toUpperCase();
+    if (!code) return null;
+    const rec = await env.KV.get(`pass:${code}`, "json");
+    if (!rec) return { ok: false, reason: "unknown" };
+
+    const now = Date.now();
+    const hours = rec.hours || PASS_HOURS;
+
+    if (!rec.firstUse) {                       // 첫 사용 — 지금부터 시계 시작
+        rec.firstUse = now;
+        await env.KV.put(`pass:${code}`, JSON.stringify(rec),
+                         { expirationTtl: Math.ceil(hours * 3600) + 86400 });
+        return { ok: true, code, endsAt: now + hours * 3600e3, fresh: true };
+    }
+    const endsAt = rec.firstUse + hours * 3600e3;
+    if (now >= endsAt) return { ok: false, reason: "expired", endsAt };
+    return { ok: true, code, endsAt, fresh: false };
+}
+
 // 익명 사용자용 pdf300 서버도구 프록시 (IP 기준 일일 무료 한도)
 // KV: anon:{ip}:{date} → 그날 사용 횟수
 async function handleAnonPdfCall(tool, req, env, origin) {
     const h = corsHeaders(origin);
     const ip = req.headers.get("CF-Connecting-IP") || "unknown";
+
+    // 하루 이용권을 들고 왔으면 세지 않는다
+    const pass = await checkPass(env, req.headers.get("X-Pass"));
+    if (pass && pass.ok) {
+        return await passThrough(tool, req, env, h, pass);
+    }
+
     const key = `anon:${ip}:${todayKey()}`;
     const used = Number((await env.KV.get(key)) || 0);
     const bonus = Number((await env.KV.get(`anonbonus:${ip}:${todayKey()}`)) || 0);
@@ -230,6 +289,7 @@ async function handleAnonPdfCall(tool, req, env, origin) {
             message: `You have used all ${allowance} free server-tool runs for today. ` +
                      `Browser tools stay free and unlimited.`,
             upgrade_url: "https://pdf300.com/pricing",
+            pass_hint: "Already bought a day pass? Enter your key to unlock.",
         }, 429, h);
     }
 
@@ -257,6 +317,161 @@ async function handleAnonPdfCall(tool, req, env, origin) {
     resp.headers.set("X-Quota-Used", String(upstream.ok ? used + 1 : used));
     resp.headers.set("X-Quota-Limit", String(allowance));
     resp.headers.set("X-Plan", "anonymous");
+    return resp;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 우리 계수기 (2026-08-21)
+//
+// 왜: 형이 "들어온 숫자 좀" 물었는데 볼 방법이 없었다.
+//     클라우드플레어 화면은 권한이 있어야 하고, 게이트웨이엔 아무것도 안 남는다
+//     (결제벽이 꺼져 있어서 손님이 게이트웨이를 안 거친다).
+//
+// 어떻게: 우리 페이지가 /hit 를 한 번 부른다. 쿠키 없음. 남의 서비스 없음.
+//   KV: hit:{사이트}:{날짜}        → 그날 방문 수
+//       hituv:{사이트}:{날짜}      → 그날 다른 사람 수 (IP 를 해시해서 셈, IP 자체는 저장 안 함)
+//       hitp:{사이트}:{날짜}:{쪽}  → 쪽별
+//
+// 🚨 우리 집 IP 는 세지 않는다.
+//    (2026-08-14 에 "하루 2~3건 실사용"이라고 했던 게 사실은 우리가 우리를 본 것이었다.
+//     같은 실수 두 번 하지 않는다.)
+// ─────────────────────────────────────────────────────────────
+const 우리사이트 = ["pdf300", "ledeuxions"];
+
+async function 우리인가(env, ip) {
+    if (!ip || ip === "unknown") return false;
+    const 목록 = (await env.KV.get("hit:ours")) || "";       // 줄바꿈으로 구분된 우리 IP
+    return 목록.split(/\s+/).filter(Boolean).includes(ip);
+}
+
+async function 해시(s) {
+    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(b)).slice(0, 8)
+        .map(x => x.toString(16).padStart(2, "0")).join("");
+}
+
+async function handleHit(request, env, origin) {
+    const h = corsHeaders(origin);
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    let body = {};
+    try { body = await request.json(); } catch (e) {}
+
+    const 사이트 = 우리사이트.includes(String(body.site)) ? String(body.site) : "ledeuxions";
+    const 쪽 = String(body.path || "/").slice(0, 120);
+    const 날 = todayKey();
+
+    if (await 우리인가(env, ip)) {
+        return json({ ok: true, skipped: "ours" }, 200, h);   // 우리는 안 센다
+    }
+
+    const 살 = 60 * 60 * 24 * 400;   // 400일 보관
+
+    // 그날 다른 사람 수 — IP 를 해시해서 표시만 남긴다 (IP 자체는 저장 안 함)
+    const 표 = `hituvx:${사이트}:${날}:${await 해시(ip + 날)}`;
+    const 처음 = (await env.KV.get(표)) === null;
+    if (처음) {
+        await env.KV.put(표, "1", { expirationTtl: 60 * 60 * 30 });
+        const uk = `hituv:${사이트}:${날}`;
+        await env.KV.put(uk, String(Number(await env.KV.get(uk) || 0) + 1), { expirationTtl: 살 });
+    }
+
+    const hk = `hit:${사이트}:${날}`;
+    await env.KV.put(hk, String(Number(await env.KV.get(hk) || 0) + 1), { expirationTtl: 살 });
+
+    const pk = `hitp:${사이트}:${날}:${쪽}`;
+    await env.KV.put(pk, String(Number(await env.KV.get(pk) || 0) + 1), { expirationTtl: 살 });
+
+    return json({ ok: true }, 200, h);
+}
+
+// 숫자 보기 — 우리만 (내부 키 필요)
+async function handleHitStats(request, env, origin) {
+    const h = corsHeaders(origin);
+    const given = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (!env.INTERNAL_API_KEY || given !== env.INTERNAL_API_KEY) {
+        return json({ error: "nope" }, 401, h);
+    }
+    const url = new URL(request.url);
+    const 며칠 = Math.max(1, Math.min(60, Number(url.searchParams.get("days")) || 14));
+
+    const 날들 = [];
+    for (let i = 0; i < 며칠; i++) {
+        날들.push(new Date(Date.now() - i * 86400e3).toISOString().slice(0, 10));
+    }
+    const 답 = {};
+    for (const 사이트 of 우리사이트) {
+        답[사이트] = {};
+        for (const 날 of 날들) {
+            const v = Number(await env.KV.get(`hit:${사이트}:${날}`) || 0);
+            const u = Number(await env.KV.get(`hituv:${사이트}:${날}`) || 0);
+            if (v || u) 답[사이트][날] = { 방문: v, 사람: u };
+        }
+    }
+    return json({ ok: true, days: 며칠, stats: 답 }, 200, h);
+}
+
+// 손님이 열쇠를 넣었을 때 — 살아 있나 답해준다
+async function handlePassCheck(request, env, origin) {
+    const h = corsHeaders(origin);
+    let body = {};
+    try { body = await request.json(); } catch (e) {}
+    const r = await checkPass(env, body.code);
+    if (!r) return json({ ok: false, reason: "empty" }, 400, h);
+    if (!r.ok) {
+        const 말 = r.reason === "expired"
+            ? "This pass has already been used up. It lasts 24 hours from first use."
+            : "We could not find that pass. Check for typos, or contact us with your order number.";
+        return json({ ok: false, reason: r.reason, message: 말 }, 200, h);
+    }
+    return json({
+        ok: true, code: r.code, endsAt: new Date(r.endsAt).toISOString(),
+        message: r.fresh
+            ? "Pass activated. Server tools are unlimited for the next 24 hours."
+            : "Pass is active.",
+    }, 200, h);
+}
+
+// 열쇠 찍기 — 우리만 쓴다. 찍어서 페이힙에 올린다.
+async function handlePassMint(request, env, origin) {
+    const h = corsHeaders(origin);
+    const given = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (!env.INTERNAL_API_KEY || given !== env.INTERNAL_API_KEY) {
+        return json({ error: "nope" }, 401, h);
+    }
+    let body = {};
+    try { body = await request.json(); } catch (e) {}
+    const n = Math.max(1, Math.min(500, Number(body.count) || 1));
+    const hours = Math.max(1, Math.min(24 * 31, Number(body.hours) || PASS_HOURS));
+    const note = String(body.note || "").slice(0, 80);
+
+    const codes = [];
+    for (let i = 0; i < n; i++) {
+        const code = mintPassCode();
+        await env.KV.put(`pass:${code}`, JSON.stringify({
+            minted: Date.now(), firstUse: null, hours, note,
+        }));   // 안 쓰면 안 지워진다. 산 사람이 언제 써도 되게.
+        codes.push(code);
+    }
+    return json({ ok: true, count: codes.length, hours, codes }, 200, h);
+}
+
+// 이용권 손님 — 세지 않고 그냥 보낸다
+async function passThrough(tool, req, env, h, pass) {
+    const upstreamHeaders = new Headers();
+    const ct = req.headers.get("Content-Type");
+    if (ct) upstreamHeaders.set("Content-Type", ct);
+    let upstream;
+    try {
+        upstream = await fetch(upstreamUrlFor(env, tool), {
+            method: "POST", headers: upstreamHeaders, body: req.body,
+        });
+    } catch (e) {
+        return json({ error: "backend unreachable", detail: String(e) }, 502, h);
+    }
+    const resp = new Response(upstream.body, upstream);
+    Object.keys(h).forEach(k => resp.headers.set(k, h[k]));
+    resp.headers.set("X-Plan", "daypass");
+    resp.headers.set("X-Pass-Ends", new Date(pass.endsAt).toISOString());
     return resp;
 }
 
@@ -498,6 +713,23 @@ export default {
             const tool = url.pathname.slice(4);
             return handleApiCall(tool, request, env, origin);
         }
+        // 우리 계수기
+        if (url.pathname === "/hit" && request.method === "POST") {
+            return await handleHit(request, env, origin);
+        }
+        if (url.pathname === "/admin/hits" && request.method === "GET") {
+            return await handleHitStats(request, env, origin);
+        }
+
+        // 하루 이용권 — 손님이 열쇠가 살아 있나 확인할 때
+        if (url.pathname === "/pass/check" && request.method === "POST") {
+            return await handlePassCheck(request, env, origin);
+        }
+        // 하루 이용권 — 열쇠 찍기 (우리만. 내부 키 필요)
+        if (url.pathname === "/admin/pass/mint" && request.method === "POST") {
+            return await handlePassMint(request, env, origin);
+        }
+
         if (url.pathname === "/share-bonus" && request.method === "POST") {
             return handleShareBonus(request, env, origin);
         }
