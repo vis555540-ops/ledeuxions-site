@@ -388,7 +388,8 @@ async function handleHit(request, env, origin) {
 async function handleHitStats(request, env, origin) {
     const h = corsHeaders(origin);
     const given = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
-    if (!env.INTERNAL_API_KEY || given !== env.INTERNAL_API_KEY) {
+    // 관리용 열쇠는 따로 둔다. INTERNAL_API_KEY 는 백엔드와 공유하므로 건드리지 않는다.
+    if (!env.ADMIN_KEY || given !== env.ADMIN_KEY) {
         return json({ error: "nope" }, 401, h);
     }
     const url = new URL(request.url);
@@ -435,7 +436,8 @@ async function handlePassCheck(request, env, origin) {
 async function handlePassMint(request, env, origin) {
     const h = corsHeaders(origin);
     const given = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
-    if (!env.INTERNAL_API_KEY || given !== env.INTERNAL_API_KEY) {
+    // 관리용 열쇠는 따로 둔다. INTERNAL_API_KEY 는 백엔드와 공유하므로 건드리지 않는다.
+    if (!env.ADMIN_KEY || given !== env.ADMIN_KEY) {
         return json({ error: "nope" }, 401, h);
     }
     let body = {};

@@ -15,8 +15,38 @@ window.PDF300_PAYWALL = {
     freePerDay: 5,
     gateway: 'https://api.ledeuxions.com',
     direct: 'https://pdf.ledeuxions.com',
-    checkout: { dayPass: '', monthly: '' }   // 레몬즙 Publish 후 URL 넣기
+    checkout: { dayPass: '', monthly: '' }   // 상점 Publish 후 URL 넣기
 };
+
+/* 하루 이용권 열쇠 (2026-08-21)
+ * 산 사람을 풀어주는 장치. 이게 없으면 손님이 0.99 달러를 내고도 계속 막힌다.
+ * 열쇠는 이 브라우저에만 저장한다. 서버는 열쇠가 처음 쓰인 시각만 안다. */
+window.PDF300_PASS = (function () {
+    var KEY = 'pdf300_pass';
+    function 읽기() {
+        try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; }
+    }
+    function 쓰기(v) {
+        try { v ? localStorage.setItem(KEY, JSON.stringify(v)) : localStorage.removeItem(KEY); } catch (e) {}
+    }
+    function 살아있나() {
+        var p = 읽기();
+        if (!p || !p.code) return null;
+        if (p.endsAt && new Date(p.endsAt).getTime() <= Date.now()) { 쓰기(null); return null; }
+        return p;
+    }
+    function 넣기(code) {
+        return fetch(window.PDF300_PAYWALL.gateway + '/pass/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code })
+        }).then(function (r) { return r.json(); }).then(function (d) {
+            if (d && d.ok) { 쓰기({ code: d.code, endsAt: d.endsAt }); }
+            return d;
+        });
+    }
+    return { get: 살아있나, set: 넣기, clear: function () { 쓰기(null); } };
+})();
 
 (function () {
     'use strict';
@@ -82,10 +112,36 @@ window.PDF300_PAYWALL = {
             '</ul>' +
             '<div class="pw-row">' + buttons +
             '<button class="pw-close" id="pw-x">Close</button></div>' +
+            '<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border,rgba(255,255,255,.1))">' +
+            '<p style="margin:0 0 8px;font-size:.86rem">Already bought a day pass? Enter your key.</p>' +
+            '<div class="pw-row">' +
+            '<input id="pw-key" placeholder="PDF300-XXXX-XXXX-XXXX-XXXX" ' +
+            'style="flex:2;min-width:190px;padding:11px 12px;border-radius:10px;border:1px solid ' +
+            'var(--border,rgba(255,255,255,.15));background:transparent;color:inherit;font-size:.9rem">' +
+            '<button class="pw-buy" id="pw-use" style="flex:1;min-width:100px">Unlock</button>' +
+            '</div><p id="pw-msg" style="margin:8px 0 0;font-size:.84rem"></p></div>' +
             '</div>';
         document.body.appendChild(back);
         function close() { if (back.parentNode) back.parentNode.removeChild(back); }
         back.querySelector('#pw-x').onclick = close;
+
+        var 칸 = back.querySelector('#pw-key');
+        var 말 = back.querySelector('#pw-msg');
+        function 풀기() {
+            var v = (칸.value || '').trim();
+            if (!v) { 말.textContent = 'Enter the key from your purchase email.'; return; }
+            말.textContent = 'Checking...';
+            window.PDF300_PASS.set(v).then(function (d) {
+                if (d && d.ok) {
+                    말.textContent = d.message || 'Unlocked.';
+                    setTimeout(function () { close(); location.reload(); }, 900);
+                } else {
+                    말.textContent = (d && d.message) || 'That key did not work.';
+                }
+            }).catch(function () { 말.textContent = 'Could not reach the server. Try again.'; });
+        }
+        back.querySelector('#pw-use').onclick = 풀기;
+        칸.addEventListener('keydown', function (e) { if (e.key === 'Enter') 풀기(); });
         var ok = back.querySelector('#pw-ok');
         if (ok) ok.onclick = close;
         back.addEventListener('click', function (e) { if (e.target === back) close(); });
@@ -118,6 +174,13 @@ window.PDF300_PAYWALL = {
             var tool = TOOL_OF[path];
             if (tool) {                       // /health 등은 그대로 직통
                 var target = CFG.gateway + '/v1/' + tool;
+                var 표 = window.PDF300_PASS.get();
+                if (표) {                      // 이용권이 있으면 같이 보낸다
+                    init = init || {};
+                    var h2 = new Headers(init.headers || {});
+                    h2.set('X-Pass', 표.code);
+                    init = Object.assign({}, init, { headers: h2 });
+                }
                 return origFetch(target, init).then(function (res) {
                     if (res.status === 429) {
                         res.clone().json().then(showLimit).catch(function () { showLimit(null); });
