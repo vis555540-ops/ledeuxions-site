@@ -4,6 +4,7 @@ import * as input from './input.js';
 import * as save from './save.js';
 import * as audio from './audio.js';
 import * as juice from './juice.js';
+import titleScene from './scenes/title.js';
 import playScene from './scenes/play.js';
 import gameoverScene from './scenes/gameover.js';
 
@@ -31,7 +32,7 @@ export const game = {
   save: save.load(),
   debug: new URLSearchParams(location.search).get('debug') === '1',
   fps: 0,
-  scenesByName: { play: playScene, gameover: gameoverScene },
+  scenesByName: { title: titleScene, play: playScene, gameover: gameoverScene },
 };
 
 export function pushScene(s, arg) {
@@ -51,9 +52,9 @@ game.push = pushScene; game.pop = popScene; game.replace = replaceScene;
 function top() { return game.scenes[game.scenes.length - 1]; }
 
 input.init(canvas, {
-  onJump(dir) { const s = top(); if (s && s.input) s.input(game, 'jump' + dir); },
-  onTap(x, y) { const s = top(); if (s && s.tap) s.tap(game, x, y); },
-  onKey(k)    { const s = top(); if (s && s.key) s.key(game, k); },
+  onPress(x, y)  { const s = top(); if (s && s.onPress) s.onPress(game, x, y); },
+  onRelease()    { const s = top(); if (s && s.onRelease) s.onRelease(game); },
+  onKey(k)       { const s = top(); if (s && s.key) s.key(game, k); },
   onFirstGesture() { audio.unlock(); },
 });
 
@@ -92,7 +93,7 @@ function drawDebug(c) {
 }
 
 audio.setMute(!!game.save.mute);
-replaceScene(playScene);
+replaceScene(titleScene);   // §22.5 BOOT → TITLE → PLAY
 requestAnimationFrame(loop);
 
 if (DEBUG.CHEAT) console.warn('DEBUG.CHEAT 가 켜져 있다 — 배포 전 false 로 되돌릴 것');

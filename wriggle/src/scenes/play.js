@@ -6,10 +6,11 @@ import * as render from '../render.js';
 import * as juice from '../juice.js';
 import * as audio from '../audio.js';
 import * as save from '../save.js';
-import { hit, dirOf } from '../input.js';
+import { hit } from '../input.js';
+import * as entities from '../entities.js';
 import gameover from './gameover.js';
 
-let w = null, p = null, t = 0, tutorialT = 0, milestone = 0, runT = 0;
+let w = null, p = null, t = 0, tutorialT = 0, milestone = 0, runT = 0, cards = null;
 
 const scene = {
   enter(game) {
@@ -18,6 +19,7 @@ const scene = {
     p = player.create(game.save);
     t = 0; runT = 0; milestone = 0;
     tutorialT = game.save.st.deaths === 0 ? 2 : 0;   // §20.5 첫 사망 전까지만
+    cards = entities.spawnStartCards();              // §22.4 고르는 것이 출발 신호
     audio.heartbeat(false);
   },
 
@@ -38,6 +40,11 @@ const scene = {
     const ratio = p.moist / p.moistMax;
     audio.heartbeat(ratio < M.WARN_BLINK / 100);
 
+    if (cards) {
+      const got = entities.updateCards(cards, p, w.cameraY);
+      if (got) cards = null;                      // 하나 집으면 나머지는 사라진다
+    }
+
     const m = Math.floor(w.altM / JUICE.MILESTONE_M);
     if (m > milestone) { milestone = m; juice.flash(C.accent, 0.1); }
 
@@ -45,15 +52,15 @@ const scene = {
     if (!p.alive) die(game);
   },
 
-  input(game, kind) { if (p && p.alive) player.jump(p, kind === 'jumpLeft' ? 'Left' : 'Right'); },
-
-  tap(game, x, y) {
+  onPress(game, x, y) {
     if (hit(UI.MUTE, x, y)) {                 // §20.5 음소거 사각형은 점프로 안 센다
       const m = !audio.isMuted(); audio.setMute(m); save.setMute(m); audio.play('ui');
       return;
     }
-    if (p && p.alive) player.jump(p, dirOf(x));
+    if (p && p.alive) player.press(p, x);
   },
+
+  onRelease() { if (p && p.alive) player.release(p); },
 
   render(game, ctx) {
     const off = juice.offset();
@@ -63,6 +70,7 @@ const scene = {
     for (const pl of w.platforms) render.platform(ctx, pl, w.cameraY);
     for (const d of w.drops) if (!d.taken) render.drop(ctx, d, w.cameraY, t);
     juice.drawParticles(ctx, w.cameraY);
+    if (cards) for (const c of cards.list) render.card(ctx, c, w.cameraY, entities.cardLabel(c.id));
     render.worm(ctx, p, w.cameraY, t);
 
     ctx.restore();
@@ -107,7 +115,7 @@ function hud(ctx) {
 
   if (tutorialT > 0) {
     render.text(ctx, '화면 왼쪽/오른쪽을 탭', CANVAS.W / 2, 420, 12, C.uiText);
-    render.text(ctx, '탭한 쪽으로 뛴다', CANVAS.W / 2, 440, 10, C.uiBorder);
+    render.text(ctx, '탭한 쪽으로 뛴다 · 꾹 누르면 높이!', CANVAS.W / 2, 440, 9, C.uiBorder);
   }
 }
 

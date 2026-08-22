@@ -6,12 +6,25 @@
 ## 지금 상태
 
 ```
-Phase: 0 (구현 완료 · 실기기 확인 대기)
-완료 파일: index.html, src/{config,main,input,save,juice,audio,render,player,world}.js,
-          src/scenes/{play,gameover}.js
-다음 작업: 형 실기기 확인 → Phase 1 (물방울 EXP·레벨업 카드·특성·타이틀)
+Phase: 0.5 (§22 v4.1 반영 완료 · 실기기 확인 대기)
+완료 파일: index.html, src/{config,main,input,save,juice,audio,render,player,world,entities}.js,
+          src/scenes/{title,play,gameover}.js
+다음 작업: 형 실기기 확인 → Phase 1 (레벨업 카드·특성 4종·게임필)
 막힌 것: 없음
 ```
+
+## §22 (v4.1) 반영 내역 — 형 1차 플레이테스트 결과
+
+| 절 | 문제 | 조치 |
+|---|---|---|
+| 22.1 | 점프 궤적이 하나뿐 | 가변 높이(pointerup 절삭) + 가변 각도(탭 x) + 입력버퍼 0.10s + 코요테 0.06s |
+| 22.2 | 발판이 좁고 초반이 어렵다 | `DIFF` 난이도 곡선 4구간. 초반 폭 80~88 |
+| 22.3 | 못 닿는 발판이 나온다 | REACH 물리표 클램프 + 벽 탈출 규칙 + 5번째마다 안전 발판 |
+| 22.4 | 특성 시스템을 모른다 | 시작 카드 3장. **고르기 전엔 수분이 안 준다** |
+| 22.5 | 타이틀 없음 | `scenes/title.js`. BOOT → TITLE → PLAY |
+
+검증: `node /tmp/wtest2.mjs` — 6종 통과 (짧은탭 87px vs 꾹 195px, 중앙 vx144 vs 가장자리 276,
+카드 전 수분 정지, 못 닿는 발판 0, 안전발판 4/21, 초반 폭 84~88)
 
 ## 검증 방법 (감으로 튜닝하지 않는다)
 

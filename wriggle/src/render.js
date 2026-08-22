@@ -116,6 +116,18 @@ export function button(ctx, rect, label, pressed = false, size = 14) {
   text(ctx, label, x + w / 2, y + dy + h / 2 + size * 0.36, size);
 }
 
+
+export function card(ctx, c, cameraY, label) {
+  const w = 64, h = 48;
+  const x = R(c.x - w / 2), y = R(c.y - h / 2 - cameraY);
+  if (y < -h || y > CANVAS.H) return;
+  ctx.fillStyle = C.uiPanel; ctx.fillRect(x, y, w, h);
+  ctx.strokeStyle = C.accent; ctx.lineWidth = 1;
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  text(ctx, label.icon, x + w / 2, y + 24, 14, C.uiText);
+  text(ctx, label.name, x + w / 2, y + 40, 8, C.uiBorder);
+}
+
 export function hash(n) {
   const s = Math.sin(n * 12.9898) * 43758.5453;
   return s - Math.floor(s);

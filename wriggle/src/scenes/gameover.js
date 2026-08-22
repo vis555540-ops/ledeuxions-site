@@ -16,14 +16,12 @@ const scene = {
 
   update() {},
 
-  tap(game, x, y) {
-    if (hit(UI.GAMEOVER.RETRY, x, y) || hit(UI.GAMEOVER.CHALLENGE, x, y)) restart(game);
-    else restart(game);          // 어디를 눌러도 재시작 — 마찰 0
+  onPress(game, x, y) {
+    if (y > UI.GAMEOVER.MENU_Y - 14) { toTitle(game); return; }   // §22.5 메뉴로
+    restart(game);                                                // 그 외 아무 데나 = 재시작
   },
 
   key(game) { restart(game); },
-
-  input(game) { restart(game); },
 
   render(game, ctx) {
     const { run, settled } = data;
@@ -47,7 +45,8 @@ const scene = {
 
     render.button(ctx, UI.GAMEOVER.RETRY, '다시 하기', pressed === 'retry', 14);
     render.button(ctx, UI.GAMEOVER.CHALLENGE, `${run.time.toFixed(1)}초`, false, 12);
-    render.text(ctx, '아무 데나 눌러도 다시 시작', CANVAS.W / 2, UI.GAMEOVER.MENU_Y, 9, C.uiBorder);
+    render.text(ctx, '아무 데나 눌러도 다시 시작', CANVAS.W / 2, UI.GAMEOVER.MENU_Y - 16, 9, C.uiBorder);
+    render.text(ctx, '메뉴로', CANVAS.W / 2, UI.GAMEOVER.MENU_Y + 8, 11, C.uiText);
   },
 
   debugInfo() { return { alt: Math.floor(data.run.altM) + 'm', cause: data.run.cause }; },
@@ -57,6 +56,12 @@ async function restart(game) {
   audio.play('ui');
   const play = (await import('./play.js')).default;
   game.replace(play);
+}
+
+async function toTitle(game) {
+  audio.play('ui');
+  const title = (await import('./title.js')).default;
+  game.replace(title);
 }
 
 export default scene;

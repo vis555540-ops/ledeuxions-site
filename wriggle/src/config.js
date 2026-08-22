@@ -3,10 +3,34 @@ export const CANVAS = { W: 360, H: 640, FPS: 60 };
 
 export const DEBUG = { CHEAT: false };
 
+// §22.1 점프 개편 — 궤적이 하나뿐이라 지루했다. 세기와 각도를 손가락이 정한다.
 export const PHYS = {
-  GRAVITY: 2000, JUMP_VY: -900, JUMP_VX: 260,
+  GRAVITY: 2000,
+  JUMP_VY: -900,          // 최대(꾹 누름) 점프
+  JUMP_CUT_VY: -380,      // 손을 뗀 순간 vy < 이 값이면 vy를 이 값으로 절삭
+  JUMP_VX_MAX: 280,       // 화면 끝 탭
+  JUMP_VX_MIN: 140,       // 중앙 근처 탭
   MAX_FALL: 1400, WALL_BOUNCE: 0.9,
+  BUFFER_SEC: 0.10,       // 입력 버퍼: 착지 전 선입력 유효 시간
+  COYOTE_SEC: 0.06,       // 발판 이탈 직후 점프 유예
 };
+
+// §22.2 난이도 곡선 — 고정 GAP/폭 폐기. altM 미만 구간에 적용
+export const DIFF = [
+  { upTo:  150, w:[80,88], gap:[55, 75], dxMax:  90 },
+  { upTo:  400, w:[64,76], gap:[60, 90], dxMax: 120 },
+  { upTo: 1500, w:[56,68], gap:[60,105], dxMax: 140 },
+  { upTo: Infinity, w:[48,64], gap:[60,110], dxMax: 150 },
+];
+
+// §22.3 도달 보장 — 최대 점프 기준 간격별 도달 가능 수평거리 (선형 보간)
+export const REACH = { 60:150, 75:135, 90:115, 105:95, 110:85 };
+export const SAFE_EVERY = 5;              // 다섯 번째 발판은 항상 사다리
+export const SAFE_PLATFORM = { w:88, dxMax:60, gapMax:80 };
+export const WALL_ESCAPE_PX = 60;         // 벽에서 이 거리 안이면 다음은 중앙 방향
+
+// §22.4 시작 특성 카드
+export const START_CARDS = { POOL:['wiggle','feel','cuticle'], Y_OFFSET:-220, REPOS_Y:-350, MAX_REPOS:3 };
 
 export const WORLD = {
   PX_PER_M: 10,            // 10px = 1m
@@ -59,6 +83,22 @@ export const ENEMY = {
 };
 
 export const COMBO = { SHOW_FROM: 3 };
+
+export const TRAITS = [
+  { id:'wiggle', name:'꿈틀 도약', icon:'꿈틀', max:2, desc:['공중 점프 +1','공중 점프 +2'], air:[1,2] },
+  { id:'shot',   name:'점액 분사', icon:'점액', max:2, desc:['점프 시 좌우 점액탄 (쿨 0.8s)','쿨타임 0.4s'], cool:[0.8,0.4] },
+  { id:'feel',   name:'촉수 감각', icon:'촉수', max:2, desc:['물방울 흡인 반경 90','흡인 반경 140'], radius:[90,140] },
+  { id:'cuticle',name:'두꺼운 각피', icon:'각피', max:2, desc:['건조 속도 -15%','건조 속도 -25%'], mult:[0.85,0.75] },
+  { id:'pouch',  name:'물주머니', icon:'주머', max:2, desc:['최대 수분 +30','최대 수분 +50'], add:[30,50] },
+  { id:'molt',   name:'허물 벗기', icon:'허물', max:2, desc:['수분 0 시 1회 50% 회복+무적 2s','부활 2회'], lives:[1,2] },
+  { id:'humus',  name:'부엽토', icon:'부엽', max:2, desc:['착지 시 15% 코인','착지 시 25% 코인'], rate:[0.15,0.25] },
+  { id:'dash',   name:'점액 가속', icon:'가속', max:2, desc:['콤보 5 도달 시 1.5s 무적+가속 (쿨 10s)','콤보 4 트리거, 쿨 8s'],
+    trigger:[5,4], cool:[10,8], boostVy:-600, dur:1.5 },
+];
+export const FILLER_CARD = { id:'dew', name:'이슬', icon:'이슬', moist:25 };
+
+export const LEVEL_CARD = { W:64, H:48, X:[60,180,300] };
+
 
 export const COLORS = {
   bgTop:'#241811', bgBottom:'#17100b',

@@ -1,5 +1,5 @@
 // player.js — 지렁이 물리·수분·콤보. 히트박스 12×14 (§8.1).
-import { PHYS, MOIST, WORLD, CANVAS, SKINS, JUICE } from './config.js';
+import { PHYS, MOIST, WORLD, CANVAS, SKINS, JUICE, TRAITS } from './config.js';
 import * as juice from './juice.js';
 import * as audio from './audio.js';
 
@@ -14,18 +14,52 @@ export function create(save) {
     moist: MOIST.START, moistMax: MOIST.MAX,
     combo: 1, comboMax: 1, iframe: 0, squash: 1, squashT: 0,
     drops: 0, wallHits: 0, dryTimer: 0, dryCounted: false,
+    holding: false, coyote: 0, buffer: 0, bufferX: 0,
+    airLeft: 0, traits: {}, moistFrozen: true,   // 시작 카드 집기 전엔 안 마른다 (§22.4)
     skin, alive: true, cause: null, t: 0,
   };
 }
 
-export function jump(p, dir) {
-  if (!p.grounded) return;
+// §22.1 탭 x 가 각도를 정한다. 중앙=수직에 가깝게, 가장자리=멀리.
+function vxFromTap(tapX) {
+  const t = Math.min(1, Math.abs(tapX - CANVAS.W / 2) / (CANVAS.W / 2));
+  const mag = PHYS.JUMP_VX_MIN + (PHYS.JUMP_VX_MAX - PHYS.JUMP_VX_MIN) * t;
+  return tapX < CANVAS.W / 2 ? -mag : mag;
+}
+
+export function press(p, tapX) {
+  p.holding = true;
+  const canGround = p.grounded || p.coyote > 0;
+  if (canGround) { doJump(p, tapX); return; }
+  if (p.airLeft > 0) { p.airLeft--; doJump(p, tapX); return; }
+  p.buffer = PHYS.BUFFER_SEC; p.bufferX = tapX;      // 선입력 버퍼
+}
+
+export function release(p) {
+  p.holding = false;
+  if (p.vy < PHYS.JUMP_CUT_VY) p.vy = PHYS.JUMP_CUT_VY;   // 짧게 떼면 낮게 뜬다
+}
+
+function doJump(p, tapX) {
   p.vy = PHYS.JUMP_VY;
-  p.vx = dir === 'Left' ? -PHYS.JUMP_VX : PHYS.JUMP_VX;
-  p.face = dir === 'Left' ? -1 : 1;
-  p.grounded = false;
+  p.vx = vxFromTap(tapX);
+  p.face = p.vx < 0 ? -1 : 1;
+  p.grounded = false; p.coyote = 0; p.buffer = 0;
   p.squashT = JUICE.SQUASH_SEC;
   audio.play('jump');
+}
+
+// 특성 적용 — 시작 카드/레벨업 카드가 공통으로 쓴다
+export function giveTrait(p, id) {
+  const t = TRAITS.find(x => x.id === id);
+  if (!t) return;
+  p.traits[id] = Math.min(t.max, (p.traits[id] || 0) + 1);
+  const lv = p.traits[id];
+  if (id === 'feel')    p.pickupRadius = t.radius[lv - 1];
+  if (id === 'cuticle') p.drainMult = t.mult[lv - 1];
+  if (id === 'pouch')   p.moistMax = MOIST.MAX + t.add[lv - 1];
+  if (id === 'wiggle')  p.airMax = t.air[lv - 1];
+  p.moistFrozen = false;                                   // 고른 순간 출발 (§22.4)
 }
 
 export function damage(p, amt) {
@@ -44,15 +78,20 @@ export function drink(p, amount) {
   juice.flash('#4fc3f7', JUICE.FLASH_DROP);
 }
 
-function drainRate(altM, inFissure) {
+function drainRate(altM, inFissure, mult) {
   const base = MOIST.BASE_DRAIN + (altM / 1000) * MOIST.DRAIN_PER_1000M;
   const r = Math.max(0, Math.min(MOIST.MAX_DRAIN, base));
-  return r * (inFissure ? 3 : 1);
+  return r * (inFissure ? 3 : 1) * (mult || 1);
 }
 
 export function update(p, dt, world) {
   p.t += dt;
   if (p.iframe > 0) p.iframe -= dt;
+  if (p.coyote > 0) p.coyote -= dt;
+  if (p.buffer > 0) {
+    p.buffer -= dt;
+    if (p.grounded) { doJump(p, p.bufferX); }              // 착지 프레임에 자동 점프
+  }
   if (p.squashT > 0) {
     p.squashT -= dt;
     const k = p.squashT / JUICE.SQUASH_SEC;
@@ -89,9 +128,11 @@ function landing(p, world) {
       p.vy = 0; p.vx = 0;
       if (!p.grounded) onLand(p, pl);
       p.grounded = true;
+      p.airLeft = p.airMax || 0;
       return;
     }
   }
+  if (p.grounded) p.coyote = PHYS.COYOTE_SEC;              // 막 떨어진 순간부터 유예 시작
   p.grounded = false;
 }
 
@@ -107,7 +148,7 @@ function onLand(p, pl) {
 }
 
 function moisture(p, dt, world) {
-  const rate = drainRate(world.altM, world.inFissure);
+  const rate = p.moistFrozen ? 0 : drainRate(world.altM, world.inFissure, p.drainMult);
   p.drainNow = rate;
   p.moist = Math.max(0, p.moist - rate * dt);
 
