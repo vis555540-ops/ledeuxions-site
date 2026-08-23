@@ -15,13 +15,33 @@ export const PHYS = {
   COYOTE_SEC: 0.06,       // 발판 이탈 직후 점프 유예
 };
 
-// §22.2 난이도 곡선 — 고정 GAP/폭 폐기. altM 미만 구간에 적용
+// §23.2 시작 굴 (0~60m) — 무작위 없음. 매판 같은 지형이라야 배운다.
+export const START_FUNNEL = {   // GROUND_Y 기준 상대 y. 층당 [xCenter, w]
+  layers: [
+    { dy:  -54, plats: [[62,96],[180,80],[298,96]] },
+    { dy: -108, plats: [[70,88],[180,76],[290,88]] },
+    { dy: -162, plats: [[78,84],[180,72],[282,84]] },
+    { dy: -216, plats: [[88,80],[272,80]] },
+    { dy: -270, plats: [[110,76],[180,72],[250,76]] },
+  ],
+};
+
+// §23.3 밀도 곡선 v2 — 난이도의 1축은 층당 발판 수(lanes). 3→2→1 로 굴이 좁아진다.
 export const DIFF = [
-  { upTo:  150, w:[80,88], gap:[55, 75], dxMax:  90 },
-  { upTo:  400, w:[64,76], gap:[60, 90], dxMax: 120 },
-  { upTo: 1500, w:[56,68], gap:[60,105], dxMax: 140 },
-  { upTo: Infinity, w:[48,64], gap:[60,110], dxMax: 150 },
+  { upTo:  60,  funnel: true },
+  { upTo: 150,  lanes:[3,3], w:[72,88], gap:[55,70] },
+  { upTo: 300,  lanes:[2,3], w:[64,80], gap:[58,80] },
+  { upTo: 600,  lanes:[1,2], w:[60,72], gap:[60,90],  dxMax:130 },
+  { upTo: 1500, lanes:[1,1], w:[56,68], gap:[60,105], dxMax:140 },
+  { upTo: Infinity, lanes:[1,1], w:[48,64], gap:[60,110], dxMax:150 },
 ];
+
+// §23.3 층 슬롯 — [중심x, 지터]
+export const SLOTS = [[60,22],[180,26],[300,22]];
+
+// §23.4 층당 발판이 늘었으므로 물방울 확률을 낮춘다
+export const DROP_RATE_BY_LANES = { 3:0.20, 2:0.28, 1:0.35 };
+export const DROPS_FROM_M = 60;          // 시작 굴에는 물방울이 없다
 
 // §22.3 도달 보장 — 최대 점프 기준 간격별 도달 가능 수평거리 (선형 보간)
 export const REACH = { 60:150, 75:135, 90:115, 105:95, 110:85 };
