@@ -101,13 +101,13 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ledeuxions.com/web-projects/freecomfortlab/audio-to-mp3.html</loc>
+    <loc>https://ledeuxions.com/web-projects/freecomfortlab/audio-to-mp3</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ledeuxions.com/web-projects/freecomfortlab/video-to-mp3.html</loc>
+    <loc>https://ledeuxions.com/web-projects/freecomfortlab/video-to-mp3</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -119,25 +119,25 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ledeuxions.com/web-projects/paintcomfortfro/app.html</loc>
+    <loc>https://ledeuxions.com/web-projects/paintcomfortfro/app</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ledeuxions.com/web-projects/stamp/index_en.html</loc>
+    <loc>https://ledeuxions.com/web-projects/stamp/index_en</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ledeuxions.com/web-projects/freecomfortlab/kakao-video-to-mp3.html</loc>
+    <loc>https://ledeuxions.com/web-projects/freecomfortlab/kakao-video-to-mp3</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ledeuxions.com/web-projects/freecomfortlab/kakao-video-to-video.html</loc>
+    <loc>https://ledeuxions.com/web-projects/freecomfortlab/kakao-video-to-video</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -173,7 +173,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ledeuxions.com/web-projects/freecomfortlab/audio-editor.html</loc>
+    <loc>https://ledeuxions.com/web-projects/freecomfortlab/audio-editor</loc>
     <lastmod>2026-06-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -378,5 +378,15 @@
     <lastmod>2026-08-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/games/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/wriggle/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

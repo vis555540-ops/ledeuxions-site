@@ -55,9 +55,29 @@ def compress_to_target(
         doc.close()
         raise ValueError("empty pdf (0 pages)")
 
+    doc_page_count = doc.page_count
     orig_size = len(pdf_bytes)
     attempts = 0
     best = None  # (dpi, quality, data)
+
+    # 🚨 2026-08-22: 원본이 이미 목표 이하인데도 렌더를 돌려서 파일을 '키워' 보냈다.
+    #    33KB 넣으면 224KB 가 나왔다. 압축 도구가 파일을 키우면 그건 어떤 경우에도 틀렸다.
+    #    원본이 이미 목표 안이면 손대지 않고 그대로 돌려준다.
+    if orig_size <= target:
+        doc.close()
+        return pdf_bytes, {
+            "ok": True,
+            "target_kb": target_kb,
+            "hit_target": True,
+            "orig_kb": round(orig_size / 1024, 1),
+            "out_kb": round(orig_size / 1024, 1),
+            "reduction_pct": 0,
+            "dpi": None,
+            "quality": None,
+            "pages": doc_page_count,
+            "attempts": 0,
+            "note": "already under target - original returned untouched",
+        }
 
     try:
         # --- 1) base_quality 에서 DPI 이진탐색 ---
@@ -89,6 +109,23 @@ def compress_to_target(
             best = (min_dpi, quality_floor_steps[-1], data)
 
         dpi, quality, data = best
+
+        # 🚨 압축했는데 원본보다 커지면 원본을 준다. 손님이 손해 볼 이유가 없다.
+        if len(data) >= orig_size:
+            return pdf_bytes, {
+                "ok": True,
+                "target_kb": target_kb,
+                "hit_target": orig_size <= target,
+                "orig_kb": round(orig_size / 1024, 1),
+                "out_kb": round(orig_size / 1024, 1),
+                "reduction_pct": 0,
+                "dpi": None,
+                "quality": None,
+                "pages": doc_page_count,
+                "attempts": attempts,
+                "note": "compression would enlarge the file - original returned",
+            }
+
         meta = {
             "ok": True,
             "target_kb": target_kb,
