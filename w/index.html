@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>크게 쓰기</title>
+<style>
+  :root{
+    --bg:#14110F; --ink:#F3E9D8; --dim:#9A8F80;
+    --btn:#241F1A; --btn2:#332C25; --line:#3A322A; --key:#F2C14E;
+    --size:34px;
+  }
+  html[data-light="1"]{
+    --bg:#FBF7EF; --ink:#1B1712; --dim:#6B6154;
+    --btn:#EDE4D4; --btn2:#DFD3BE; --line:#D3C6AF; --key:#9A6B00;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    display:flex; flex-direction:column;
+  }
+  header{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    padding:12px 14px; border-bottom:2px solid var(--line);
+  }
+  button{
+    font:inherit; font-size:22px; font-weight:700;
+    color:var(--ink); background:var(--btn);
+    border:2px solid var(--line); border-radius:12px;
+    padding:12px 18px; cursor:pointer; min-height:56px;
+  }
+  button:hover{background:var(--btn2)}
+  button:active{transform:translateY(1px)}
+  .grow{flex:1}
+  #state{font-size:20px; color:var(--dim); white-space:nowrap}
+  textarea{
+    flex:1; width:100%; resize:none; border:0; outline:0;
+    background:transparent; color:var(--ink);
+    font-family:inherit; font-size:var(--size); line-height:1.75;
+    padding:26px 22px; caret-color:var(--key);
+  }
+  footer{
+    padding:10px 16px; border-top:2px solid var(--line);
+    font-size:19px; color:var(--dim);
+    display:flex; gap:18px; flex-wrap:wrap;
+  }
+  b{color:var(--key)}
+  @media (max-width:640px){
+    button{font-size:19px; padding:10px 14px; min-height:50px}
+    #state{font-size:17px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button id="big">글씨 크게 ＋</button>
+  <button id="small">글씨 작게 －</button>
+  <button id="light">밝게 / 어둡게</button>
+  <span class="grow"></span>
+  <span id="state">불러오는 중…</span>
+  <button id="save">파일로 저장</button>
+</header>
+
+<textarea id="t" placeholder="여기에 쓰세요.
+
+쓰는 대로 저장됩니다. 창을 닫았다 다시 열어도 그대로 있어요.
+글씨가 작으면 왼쪽 위 「글씨 크게」를 누르세요."></textarea>
+
+<footer>
+  <span>글자 <b id="n">0</b></span>
+  <span>글씨 크기 <b id="sz">34</b></span>
+  <span id="when"></span>
+</footer>
+
+<script>
+(function(){
+  var t=document.getElementById('t'), state=document.getElementById('state');
+  var nEl=document.getElementById('n'), szEl=document.getElementById('sz'), whenEl=document.getElementById('when');
+  var K='글쓰기_본문', KS='글쓰기_크기', KL='글쓰기_밝기';
+
+  function get(k,d){ try{ var v=localStorage.getItem(k); return v===null?d:v; }catch(e){ return d; } }
+  function set(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
+
+  // 크기
+  var size = parseInt(get(KS,'34'),10); if(!(size>=18&&size<=90)) size=34;
+  function applySize(){
+    document.documentElement.style.setProperty('--size', size+'px');
+    szEl.textContent = size;
+    set(KS, size);
+  }
+  applySize();
+
+  // 밝기
+  if(get(KL,'0')==='1') document.documentElement.setAttribute('data-light','1');
+
+  // 본문 복원
+  t.value = get(K,'');
+  count();
+  state.textContent = t.value ? '저장된 글 불러왔습니다' : '새 글';
+
+  function count(){ nEl.textContent = t.value.length.toLocaleString('ko-KR'); }
+
+  var timer=null;
+  t.addEventListener('input', function(){
+    count();
+    state.textContent = '쓰는 중…';
+    clearTimeout(timer);
+    timer = setTimeout(function(){
+      var ok = set(K, t.value);
+      var d = new Date();
+      var hh = String(d.getHours()).padStart(2,'0'), mm = String(d.getMinutes()).padStart(2,'0');
+      if(ok){
+        state.textContent = '저장됨';
+        whenEl.textContent = '마지막 저장 ' + hh + ':' + mm;
+      }else{
+        state.textContent = '⚠ 저장 안 됨 — 파일로 저장하세요';
+      }
+    }, 800);
+  });
+
+  document.getElementById('big').onclick   = function(){ size = Math.min(90, size+4); applySize(); t.focus(); };
+  document.getElementById('small').onclick = function(){ size = Math.max(18, size-4); applySize(); t.focus(); };
+
+  document.getElementById('light').onclick = function(){
+    var on = document.documentElement.getAttribute('data-light')==='1';
+    if(on){ document.documentElement.removeAttribute('data-light'); set(KL,'0'); }
+    else  { document.documentElement.setAttribute('data-light','1'); set(KL,'1'); }
+    t.focus();
+  };
+
+  document.getElementById('save').onclick = function(){
+    var d=new Date();
+    var name = '글_' + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0')
+             + '_' + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0') + '.txt';
+    var blob = new Blob([t.value], {type:'text/plain;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    state.textContent = '파일로 저장했습니다';
+  };
+
+  // Ctrl/Cmd + 로 크기 조절
+  document.addEventListener('keydown', function(e){
+    if(!(e.ctrlKey||e.metaKey)) return;
+    if(e.key==='='||e.key==='+'){ e.preventDefault(); size=Math.min(90,size+4); applySize(); }
+    if(e.key==='-'){ e.preventDefault(); size=Math.max(18,size-4); applySize(); }
+    if(e.key.toLowerCase()==='s'){ e.preventDefault(); document.getElementById('save').click(); }
+  });
+
+  t.focus();
+})();
+</script>
+<script src="/count.js" defer></script>
+</body>
+</html>
