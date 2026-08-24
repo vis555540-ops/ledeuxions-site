@@ -63,6 +63,7 @@
   <span class="grow"></span>
   <span id="state">불러오는 중…</span>
   <button id="save">파일로 저장</button>
+  <a id="room" href="http://192.168.1.12:8080" style="text-decoration:none"><button>이음이랑 같이 쓰기 →</button></a>
 </header>
 
 <textarea id="t" placeholder="여기에 쓰세요.
@@ -151,6 +152,13 @@
     if(e.key==='-'){ e.preventDefault(); size=Math.max(18,size-4); applySize(); }
     if(e.key.toLowerCase()==='s'){ e.preventDefault(); document.getElementById('save').click(); }
   });
+
+  // 집 안(사설망)에서만 글방 버튼을 보여준다 — 밖에서는 안 열리는 주소다
+  try{
+    var 집 = /^(192\.168\.|10\.|127\.|172\.(1[6-9]|2\d|3[01])\.)/.test(location.hostname)
+             || location.hostname === 'ledeuxions.com';
+    if(!집) document.getElementById('room').style.display='none';
+  }catch(e){}
 
   t.focus();
 })();
