@@ -21,3 +21,13 @@
 /%EC%83%9D%EA%B0%81%EB%93%A4-1/*                                 /history/    301
 /medication-log                                                  /            301
 /medication-log/*                                                /            301
+
+# 2026-08-25 — 검색에는 뜨는데 눌러보면 없던 두 개를 마저 넘긴다.
+#   GVA 에 편지를 보내기 전에 확인하다 찾았다. 남이 우리 이름을 검색해 눌렀을 때
+#   없는 페이지가 뜨면 그것부터가 신뢰를 깎는다.
+/l-histoire-de-ledeuxions                                        /history/    301
+/l-histoire-de-ledeuxions/*                                      /history/    301
+/연락처-1                                                          /contact/    301
+/연락처-1/*                                                        /contact/    301
+/%EC%97%B0%EB%9D%BD%EC%B2%98-1                                   /contact/    301
+/%EC%97%B0%EB%9D%BD%EC%B2%98-1/*                                 /contact/    301
