@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>안전모 새 — 탭 한 번으로 나는 무료 게임 | 게임월드</title>
+<link rel="canonical" href="https://ledeuxions.com/web-projects/game-world/hardhat/">
+<meta name="description" content="탭 한 번으로 날아오릅니다. 설치도 가입도 없이 브라우저에서 바로. 점 하나하나 직접 찍은 픽셀 그림으로 만들었습니다.">
+<meta property="og:title" content="안전모 새 — 탭 한 번으로 나는 무료 게임">
+<meta property="og:description" content="탭 한 번으로 날아오릅니다. 설치 없이 브라우저에서 바로.">
+<meta name="robots" content="index,follow">
+<style>
+  html,body{margin:0;height:100%;background:#0e1114;color:#f3e9d8;font-family:-apple-system,'Noto Sans KR',sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  #wrap{display:flex;align-items:center;justify-content:center;height:100vh}
+  canvas{display:block;image-rendering:pixelated;image-rendering:-moz-crisp-edges;image-rendering:crisp-edges;background:#4a90b8;border:2px solid #3a322a;max-height:100vh;max-width:100vw}
+  #hint{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);color:#9a8f80;font-size:12px;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c" width="180" height="320"></canvas></div>
+<div id="hint">클릭·탭·스페이스 = 날개짓</div>
+<script>
+(() => {
+  const c = document.getElementById('c'), ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const W = c.width, H = c.height;
+
+  // 화면 크게 보이게 CSS로 확대 (실제 픽셀은 180x320)
+  const fit = () => {
+    const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+    c.style.width = (W * Math.floor(s)) + 'px';
+    c.style.height = (H * Math.floor(s)) + 'px';
+  };
+  window.addEventListener('resize', fit); fit();
+
+  // ── 색 팔레트 (부장 카드 톤 정합) ──
+  const COL = {
+    sky:'#4a90b8', skyMid:'#5aa0c8', cloud:'#e8e2d0',
+    hill:'#3a6a55', hillDark:'#2a5040',
+    ground:'#8b6a3a', groundLine:'#6b4a2a',
+    bird:'#f2c14e', birdDark:'#c68a00', birdEye:'#241f1a', birdBeak:'#e07040',
+    pipe:'#4a8f4a', pipeDark:'#356a35', pipeEdge:'#241f1a',
+    text:'#f3e9d8', textDim:'#241f1a',
+  };
+
+  // ── 상태 ──
+  const S = { WAIT:0, PLAY:1, OVER:2 };
+  let state, bird, pipes, ground, score, best = +localStorage.getItem('flappy_best') || 0, frame, particles;
+
+  const GRAV = 0.35, JUMP = -5.5, PIPE_SPEED = 1.5, PIPE_GAP = 78, PIPE_W = 30, PIPE_INTERVAL = 110;
+
+  function reset(){
+    bird = { x: 50, y: H/2, vy: 0, rot: 0, wing: 0 };
+    pipes = [];
+    ground = 0;
+    score = 0;
+    frame = 0;
+    particles = [];
+    state = S.WAIT;
+  }
+  reset();
+
+  // ── 입력 (한 자리) ──
+  const flap = () => {
+    if (state === S.WAIT) { state = S.PLAY; }
+    if (state === S.PLAY) { bird.vy = JUMP; sfx('flap'); puff(bird.x-4, bird.y+4, '#e8e2d0', 4); }
+    else if (state === S.OVER) { reset(); }
+  };
+  c.addEventListener('mousedown', flap);
+  c.addEventListener('touchstart', e => { e.preventDefault(); flap(); }, {passive:false});
+  window.addEventListener('keydown', e => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); flap(); } });
+
+  // ── 사운드 (WebAudio 짧은 톤) ──
+  let ac;
+  function sfx(kind){
+    try {
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ac.createOscillator(), g = ac.createGain();
+      const t = ac.currentTime;
+      if (kind === 'flap'){ o.type='square'; o.frequency.setValueAtTime(520, t); o.frequency.exponentialRampToValueAtTime(720, t+0.08); g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.10); }
+      if (kind === 'score'){ o.type='triangle'; o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(1320, t+0.10); g.gain.setValueAtTime(0.09, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.14); }
+      if (kind === 'hit'){ o.type='sawtooth'; o.frequency.setValueAtTime(240, t); o.frequency.exponentialRampToValueAtTime(60, t+0.20); g.gain.setValueAtTime(0.10, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.22); }
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 0.25);
+    } catch(e){}
+  }
+
+  // ── 파티클 ──
+  function puff(x, y, color, n=6){
+    for (let i=0;i<n;i++) particles.push({ x, y, vx:(Math.random()-0.5)*1.6, vy:(Math.random()-0.5)*1.6-0.4, life:14, color });
+  }
+  function stepParticles(){
+    for (let i=particles.length-1;i>=0;i--){
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.life--;
+      if (p.life <= 0) particles.splice(i,1);
+    }
+  }
+  function drawParticles(){
+    for (const p of particles){ ctx.fillStyle = p.color; ctx.globalAlpha = p.life / 14; ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); }
+    ctx.globalAlpha = 1;
+  }
+
+  // ── 화면 흔들림 ──
+  let shakeT = 0, shakeMag = 0;
+  function shake(mag, dur){ shakeMag = mag; shakeT = dur; }
+
+  // ── 파이프 ──
+  function spawnPipe(){
+    const margin = 40;
+    const topH = margin + Math.floor(Math.random() * (H - 80 - PIPE_GAP - margin*2));
+    pipes.push({ x: W, top: topH, passed: false });
+  }
+  function stepPipes(){
+    if (state !== S.PLAY) return;
+    if (frame % PIPE_INTERVAL === 0) spawnPipe();
+    for (let i=pipes.length-1;i>=0;i--){
+      const p = pipes[i];
+      p.x -= PIPE_SPEED;
+      // 통과
+      if (!p.passed && p.x + PIPE_W < bird.x){
+        p.passed = true; score++; sfx('score');
+        puff(bird.x, bird.y, COL.bird, 6);
+        if (score > best){ best = score; localStorage.setItem('flappy_best', best); }
+      }
+      // 충돌
+      const inX = bird.x + 6 > p.x && bird.x - 6 < p.x + PIPE_W;
+      const hitTop = bird.y - 6 < p.top;
+      const hitBot = bird.y + 6 > p.top + PIPE_GAP;
+      if (inX && (hitTop || hitBot)) die();
+      if (p.x + PIPE_W < 0) pipes.splice(i,1);
+    }
+  }
+  function drawPipes(){
+    for (const p of pipes){
+      // 위 파이프
+      ctx.fillStyle = COL.pipe; ctx.fillRect(p.x, 0, PIPE_W, p.top);
+      ctx.fillStyle = COL.pipeDark; ctx.fillRect(p.x+PIPE_W-4, 0, 4, p.top);
+      ctx.fillStyle = COL.pipeEdge; ctx.fillRect(p.x-2, p.top-6, PIPE_W+4, 6);
+      // 아래 파이프
+      const by = p.top + PIPE_GAP;
+      ctx.fillStyle = COL.pipe; ctx.fillRect(p.x, by, PIPE_W, H-by-24);
+      ctx.fillStyle = COL.pipeDark; ctx.fillRect(p.x+PIPE_W-4, by, 4, H-by-24);
+      ctx.fillStyle = COL.pipeEdge; ctx.fillRect(p.x-2, by, PIPE_W+4, 6);
+    }
+  }
+
+  function die(){
+    if (state !== S.PLAY) return;
+    state = S.OVER; sfx('hit'); shake(3, 12);
+    puff(bird.x, bird.y, COL.bird, 14);
+  }
+
+  // ── 새 ──
+  function stepBird(){
+    if (state === S.WAIT){ bird.y = H/2 + Math.sin(frame/12) * 6; bird.rot = 0; return; }
+    bird.vy += GRAV; bird.y += bird.vy;
+    bird.rot = Math.max(-0.4, Math.min(1.2, bird.vy * 0.09));
+    bird.wing = (frame >> 2) % 3;
+    if (bird.y + 6 >= H - 24){ bird.y = H - 24 - 6; die(); }
+    if (bird.y - 6 < 0){ bird.y = 6; bird.vy = 0; }
+  }
+  // ── 스프라이트 (맺음이 pixelart.py 로 직접 찍음. 20x20, 3프레임) ──
+  const BIRD_SRC = [
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABD0lEQVR4nGNgGHGAEZeEmILOf2zirx5cwakHBFgYcBh2Z6ESNikGlXiG//gMZcRnGKuEDYrc7xdHoIbew+lSRmJdhulS7IYyYjMMpBgZ4Pb+PQxDUcLw+rWLDL6dvAyS5TVoGlsYNpd/xmIkL2EvoxsGA887W8AuhbkeVxgyYdOISwxk2Mv7l+GWYzOQEdl1FotXgNknYiMwFIIMElfUxWC/wheGMPDw1HIUvrxZJDZlWF3Kgq5gpfp/rBaAXATzLoh9J+cPhjq+khuMLIQMQzcUBMBBczKEQWUKC4a3MWIZ3bvoIPwmIzycscU0EzIHpABfeBEyjAFXaQMLaFiswwAs9kkqHNANRQeEii+qAwBpBoTHoUqDoAAAAABJRU5ErkJggg==",
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAA+klEQVR4nGNgGHGAEZeEmILOf2zirx5cwakHBFgYcBh2Z6ESNikGlXiG//gMZcRnGKuEDYrc7xdHoIbew+lSRmJdhulS7IYykWMYCIDUYgtnFmTO9WsXGUgDvMSFIcwFuLwKAkSHocXiFWD2idgIrAa+vH+ZQVxRF6ehjOiGEWMQPkNZkDkPr1xhkCyvwWogzAB0IIYWMVgTNi4AchnM8Ds5fzDk+UpuMKIYeCJYm0HeLBJD4cNTyxkYgpfDXQkO55MhDCpTWDC8jREpYM14QPhNiBZQWONN2CAAUoDNhcQaxoCrtIEFNCwJwQAsBZBUOKAbig4IFV9UBwBUdXcCVOro5QAAAABJRU5ErkJggg==",
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABAklEQVR4nGNgGHGAEZeEmILOf2zirx5cwakHBFgYcBh2Z6ESNikGlXiG//gMZcRnGKuEDYrc7xdHoIbew+lSRmJdhulS7IYykWMYCIDUYgtnFmTO9WsXGUgDvMSFIcwFuLwKAkSHocXiFWD2idgIrAa+vH+ZQVxRF6ehjNgMQwcgw5ENwmcoCzYDVqqjhrU8VmsQDmHAZyC6YSDw8NRysItALgMBEPtOzh8MdXwlNxhZsBkmbxaJYSDMUBAAB83JEAaVKSwY3saIFBAtWV6DYuDzzhawgSAQfpMRHq54EzYMoBsGEwO5mpBhDLjSITYXgrwJS0okFQ4wQ3FpIFR8UR0AALJHgNbY3VGcAAAAAElFTkSuQmCC"
+  ];
+  const birdImg = BIRD_SRC.map(function(s){ var i = new Image(); i.src = s; return i; });
+  function birdReady(){ return birdImg.every(function(i){ return i.complete && i.naturalWidth; }); }
+
+  function drawBird(){
+    ctx.save();
+    ctx.translate(bird.x, bird.y);
+    ctx.rotate(bird.rot);
+    if (birdReady()){
+      // 그림은 20x20 이지만 판정은 그대로(반경 6) — 죽어도 억울하지 않게.
+      ctx.drawImage(birdImg[bird.wing], -10, -10);
+    } else {
+      ctx.fillStyle = COL.bird; ctx.fillRect(-6, -5, 12, 10);
+      ctx.fillStyle = COL.birdBeak; ctx.fillRect(5, -1, 4, 3);
+    }
+    ctx.restore();
+  }
+
+  // ── 배경 ──
+  function drawBg(){
+    // 하늘 그라디언트 (2단)
+    ctx.fillStyle = COL.sky; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = COL.skyMid; ctx.fillRect(0, H*0.55, W, H*0.15);
+    // 구름
+    ctx.fillStyle = COL.cloud;
+    const cs = frame * 0.15;
+    for (let i=0;i<3;i++){
+      const cx = ((i * 70 - cs) % (W + 40) + W + 40) % (W + 40) - 20;
+      const cy = 30 + i * 22;
+      ctx.fillRect(cx, cy, 18, 4); ctx.fillRect(cx+4, cy-3, 10, 4); ctx.fillRect(cx-4, cy+3, 22, 3);
+    }
+    // 산
+    ctx.fillStyle = COL.hillDark;
+    for (let x=0;x<W;x+=24) ctx.fillRect(x, H-70, 24, 40);
+    ctx.fillStyle = COL.hill;
+    for (let x=12;x<W;x+=24) ctx.fillRect(x, H-60, 20, 30);
+  }
+  function drawGround(){
+    ground = (ground + PIPE_SPEED) % 8;
+    ctx.fillStyle = COL.ground; ctx.fillRect(0, H-24, W, 24);
+    ctx.fillStyle = COL.groundLine;
+    for (let x = -ground; x < W; x += 8) ctx.fillRect(x, H-24, 4, 2);
+    ctx.fillRect(0, H-24, W, 2);
+  }
+
+  // ── 텍스트 (내장 렌더링 · 픽셀 폰트 흉내) ──
+  function textPx(s, x, y, size, color){
+    ctx.font = `${size}px monospace`;
+    ctx.fillStyle = color || COL.text;
+    ctx.textBaseline = 'top';
+    ctx.fillText(s, x, y);
+  }
+
+  // ── 게임 루프 ──
+  function loop(){
+    frame++;
+    stepBird(); stepPipes(); stepParticles();
+
+    let ox = 0, oy = 0;
+    if (shakeT > 0){ ox = (Math.random()-0.5) * shakeMag; oy = (Math.random()-0.5) * shakeMag; shakeT--; }
+    ctx.save(); ctx.translate(Math.round(ox), Math.round(oy));
+
+    drawBg(); drawPipes(); drawGround(); drawBird(); drawParticles();
+
+    // UI
+    if (state === S.WAIT){
+      textPx('LeDeuxions', 8, 6, 8, COL.text);
+      textPx('클릭·탭·스페이스', W/2-46, H/2-40, 8, COL.text);
+      textPx('날개짓!', W/2-16, H/2-28, 8, COL.text);
+      textPx('BEST ' + best, W-56, 6, 8, COL.text);
+    }
+    if (state === S.PLAY){
+      textPx(String(score), W/2-4, 10, 16, COL.text);
+    }
+    if (state === S.OVER){
+      ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, H/2-42, W, 82);
+      textPx('게임 오버', W/2-30, H/2-32, 12, COL.text);
+      textPx('점수 ' + score, W/2-26, H/2-12, 10, COL.text);
+      textPx('최고 ' + best, W/2-26, H/2+2, 10, COL.text);
+      textPx('클릭 = 다시', W/2-32, H/2+22, 8, COL.text);
+    }
+
+    ctx.restore();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>
