@@ -303,6 +303,15 @@
     }
 
     /* ========== Server section ========== */
+    /* 하루권 안내 — 막지 않고 알리기만 한다 (2026-08-25 형 결정: 1번) */
+    .support-line { margin-top: .35rem; opacity: .85; }
+    .support-line a {
+      color: var(--accent, #F2C14E);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      white-space: nowrap;
+    }
+    .support-line a:hover { opacity: .8; }
     .server-head {
         display: flex;
         flex-wrap: wrap;
@@ -782,6 +791,7 @@
         <div>
             <h2>⚡ Advanced tools <span class="ws-server-tag">Server</span></h2>
             <p class="server-sub">Heavy jobs like OCR, encryption and repair are handled on our pdf.ledeuxions.com server.</p>
+            <p class="server-sub support-line">These run on a machine someone pays for. They are free to use — if they saved you time, a <a href="https://payhip.com/b/Bj4Ze" target="_blank" rel="noopener">$0.99 day pass</a> helps keep them running.</p>
         </div>
         <div id="server-status" class="server-badge" data-state="checking">
             <span class="dot"></span><span class="txt">Checking server…</span>
