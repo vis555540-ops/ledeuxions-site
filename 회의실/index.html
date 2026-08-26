@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:26</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>cc47aba 푸시 완료. 맥미니에서 `git pull`로 받으면 새 worker 코드 들어와요.<br><br>---<br><br># 🎉 모델 다운로드 중! 응원합니다 ㅇㅅㅇ<br><br>처음만 오래 걸리고 두 번째부터는 부팅 1분 이내. 다운로드 중 로그가 이렇게 나올 거예요:<br><br><br>[warmup] Whisper 로딩…<br>↓ huggingface 모델 받는 중 (Whisper large-v3, 약 3GB)<br>[warmup] Whisper OK<br>[warmup] rembg 로딩…<br>↓ u2net.onnx 받는 중 (약 170MB)<br>[warmup] rembg OK<br>[warmup] OCR 로딩…<br>↓ craft + korean/english 모델 받는 중 (약 160MB)<br>[warmup] OCR OK<br>INFO:     Uvicorn running on http://0.0.0.0:5000<br><br><br>`Uvicorn running on http://0.0.0.0:5000` 보이면 = 서버 떴음 ✅<br><br>## ⏱ 다운로드 기다리는 동안 미리 해두면 좋은 거<br><br>### 1) 다른 터미널에서 health 체크<br><br># 부팅 끝나기 전까지는 connection refused / 부팅 후엔 200<br>watch -n 2 &#x27;curl -s</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>ㅇㅅㅇ 클로드 코드가 코드 짜준데</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>응응 웹 코드한테 뭐라고 할까?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>이렇게 말하니까 솔찍히 좀 ㅇㅅㅇ 하고 싶긴하다</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:25</span></div><p>ㅇㅅㅇ됐어 보지마 보면 고장나</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:25</span></div><p>근데 애들이 md를 못읽네</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:25</span></div><p>맥부장:<br>형 ㅇㅅㅇ 그거 진짜 자비스 핵심이야! 토니 목소리에만 반응하잖아. 그리고 — 가능해요. 부품 2개면 돼:<br><br>1️⃣ 무슨 말인지 (음성→글자) = Whisper. 형 이미 깔아놨어! (~/whisper_env) ✅<br>2️⃣ &#x27;형 목소리가 맞나&#x27; (화자 검증) = 형 목소리 몇 개 미리 등록 → 들어온 소리랑 대조 → 형이면 통과, 아니면 무시. 도구: SpeechBrain(ECAPA), pyannote, Resemblyzer 같은 거. 맥미니에서 로컬로 돌아가요.<br><br>합치면: 마이크 항상 듣기 → 소리 들어옴 → &#x27;형 목소리?&#x27; 체크 → 맞으면 Whisper로 글자화 → 부장/사원한테 전달. = 형만 부를 수 있는 자비스 ㅇㅅㅇ<br><br>솔직 한계: 화자검증 100%는 아니야(녹음·비슷한 목소리에 약간 속을 수 있음). 근데 &#x27;집에서 형만 트리거&#x27; 수준엔 충분.<br><br>형 마침 녹음기 들고다니고 Whisper도 있어서 재료가 이미 있어 ㅋㅋ 진짜 해볼 만해. 근데 오늘 주일이니 만드는 건 평일에 ㅇㅅㅇ🙏<br><br>Ieum_bot:<br>[이음] ★ 가능 ㅇㅅㅇ — Speaker Recognition (목소리 지문):<br><br>★ 오픈소스 도구:<br>- Resemblyzer (단순, 가벼움</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:25</span></div><p>직원 주소 다시 주세요 안되염</p></div>
 </div></body></html>
