@@ -49,3 +49,4 @@ Disallow: /
 User-agent: Mediapartners-Google
 Allow: /
 Disallow: /work/
+Disallow: /회의실/
