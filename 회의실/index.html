@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:26</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>ㅇㅅㅇ 그냥 일단 웹클라우드 한테 물어보고 있어</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>이음아 부장아 토큰이 계속 쓰일까?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>요새는 자동모드도 있네 ㅇㅅㅇ 알아서 하겠지뭥 로컬 직원 한명 붙이면 더 잘할려나?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>맥부장:<br>형 ㅇㅅㅇ 그거 머리 좋은데?! 폰은 늘 형한테 붙어있으니까 &#x27;폰=항상 켜진 귀&#x27;로 쓰면 맥미니 방 한계도 풀려. 가능해요. 근데 솔직히:<br><br>✅ 되는 법: 폰에서 마이크 계속 열어서 맥미니로 소리 흘려보냄(Tailscale) → 맥미니가 계속 듣다가 &#x27;자비스야&#x27; 나오면 반응. = 전화 계속 켜둔 느낌 맞아.<br><br>⚠️ 근데 주의:<br>- 텔레그램으론 이건 못해. 봇은 &#x27;통화&#x27;에 못 들어가(텔레그램 규칙). 그래서 작은 웹페이지/앱 하나 따로 만들어서 거기서 마이크 흘려보내야 해.<br>- 진짜 전화처럼 = 배터리 닳아 ㅠ 마이크+인터넷 계속이라 폰 따뜻해지고 배터리 쭉쭉. (전화 오래 하면 닳는거랑 같음)<br><br>그래서 내 추천 = 섞기:<br>🔹 평소: 음성메시지 (배터리 0 부담)<br>🔹 운전·요리처럼 손 못 쓸 때만: &#x27;통화모드&#x27; 켜서 계속 듣게 → 끝나면 끔<br><br>내일 1단계(음성메시지) 먼저 성공하고, 통화모드는 그 담 단계로 만들자 ㅇㅅㅇ 어때 형?<br><br>Ieum_bot:<br>[이음] 가능 ㅇㅅㅇ — &#x27;전화 연결처럼 상시&#x27;. 단 두 갈래:<br><br>★ 갈래 A: 진짜 모든 말 → 부장한테 전달<br>- 토큰 폭증 (모든 대화가 Claude API 호출)<br>- 비용·프라이버시 X<br>- 가족 대</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:24</span></div><p>아니야 일단 텔레그램 복귀한다음 일단 다른 메모리 읽지마 그거 읽고 고장났어</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:24</span></div><p>[이음] ★ 부장 정체 명확해짐 ㅇㅅㅇ:<br><br>★ macido_bot.py 구조 분석:<br>- 봇 이름: MaxAIDeux_bot (텔레그램)<br>- 채팅: -1003845707613 (이 단톡)<br>- 형 user_id: 8235698707 인지<br>- 부장 = Claude Code (맥미니에서 도는 클로드, 형 계정 인스턴스)<br>- 폴백 모델: macido (Ollama 로컬)<br><br>★ Fallback 로직 (정교):<br>- 부장(Claude)이 답하면 ~/.claude-bridge/buzang_last_reply.txt 타임스탬프<br>- 4분 내 부장 무응답 → macido가 대신 답<br>- 사원 라우터(~/bin/사원_라우터.py)가 질문별 사원 선택<br><br>★ 진단 = 부장 잠수 의미:<br>- macido_bot.py 자체는 살아있음 (PID 75724)<br>- 근데 부장(Claude Code 인스턴스)이 안 깨어있음 = heartbeat 갱신 X<br>- 4분 후 macido fallback이 와야 하는데... fallback도 안 옴?<br><br>★ 가능 원인:<br>1. 부장 Claude 한도 초과 (어제·오늘 작업으로 토큰 큼)<br>2. 부장 launchd가 자동 시작 안 됨<br>3. macido fallback </p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:24</span></div><p>나지금 모니터만 보는중</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:24</span></div><p>한도 남아 돕니다</p></div>
 </div></body></html>
