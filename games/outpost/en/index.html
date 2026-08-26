@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outpost — Merge Tower Defense, Free in Browser | LeDeuxions</title>
+<link rel="canonical" href="https://ledeuxions.com/games/outpost/en/">
+<meta name="description" content="A random soldier every round. Merge three of the same and they rank up. Hold the outpost for 25 waves. Free in your browser, no install, no sign-up.">
+<meta property="og:title" content="Outpost — Merge Tower Defense">
+<meta name="robots" content="index,follow">
+<style>
+    body { margin: 0; padding: 0; background: #222; color: #fff; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; user-select: none; }
+    canvas { background: #111; image-rendering: pixelated; margin-top: 10px; border: 2px solid #555; }
+    #ui { width: 350px; display: flex; justify-content: space-between; margin-top: 10px; padding: 0 5px; box-sizing: border-box; font-size: 14px; font-weight: bold; }
+    #timerBar { width: 350px; height: 6px; background: #555; margin-top: 5px; position: relative; border-radius: 3px; overflow: hidden; }
+    #timerFill { height: 100%; background: #4caf50; width: 0%; transition: width 0.1s linear; }
+    #gacha { width: 350px; display: flex; justify-content: space-between; margin-top: 10px; }
+    .card { background: #333; width: 110px; height: 85px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #666; border-radius: 5px; font-size: 12px; }
+    .card:hover { background: #444; border-color: #888; }
+    .card strong { font-size: 14px; margin-bottom: 4px; color: #ffeb3b; }
+    #controls { width: 350px; display: flex; justify-content: space-between; margin-top: 10px; }
+    button { background: #555; color: white; border: none; padding: 12px; cursor: pointer; flex: 1; margin: 0 4px; font-weight: bold; border-radius: 5px; }
+    button:hover { background: #666; }
+</style>
+</head>
+<body>
+
+<div id="ui">
+    <span id="waveInfo">Wave: 0 / 25</span>
+    <span id="lifeInfo" style="color:#ff6b6b;">Life: 100</span>
+    <span id="goldInfo" style="color:#ffd93b;">Gold: 250</span>
+</div>
+<div id="timerBar"><div id="timerFill"></div></div>
+<canvas style="max-width:100%;height:auto;image-rendering:pixelated" id="gameCanvas" width="480" height="480"></canvas>
+<div id="controls">
+    <button id="btnNextWave">Next Wave (Early: 1.5x)</button>
+    <button id="btnReroll">Reroll (50)</button>
+</div>
+<div id="gacha"></div>
+
+<script>
+// 🚨 Balance Settings
+const CONFIG = {
+    enemyHpMultiplier: 1.10,
+    enemyAtkMultiplier: 1.05,
+    enemyCountIncrease: 1.08,
+    rankAtkMultiplier: 2.2,
+    incomePerWave: 250,
+    gachaCost: 50,
+    gachaCostIncrease: 1.05,
+    missPenalty: 0.5
+};
+
+const TOWER_TYPES = [
+    { name: "Rifle", range: 3, dmg: 5, prob: 30, color: "#aaa", type: "normal", cd: 60 },
+    { name: "MG", range: 2, dmg: 2, prob: 18, color: "#d88", type: "fast", cd: 20 },
+    { name: "Mortar", range: 4, dmg: 8, prob: 14, color: "#8d8", type: "splash", cd: 90 },
+    { name: "Sniper", range: 7, dmg: 15, prob: 8, color: "#88d", type: "sniper", cd: 180 },
+    { name: "Engi", range: 1.5, dmg: 12, prob: 12, color: "#dd8", type: "mine", cd: 120 },
+    { name: "Shield", range: 2, dmg: 10, prob: 8, color: "#8dd", type: "slow", cd: 60 },
+    { name: "Medic", range: 1.5, dmg: 0, prob: 5, color: "#fff", type: "medic", cd: 60 },
+    { name: "Comms", range: 1.5, dmg: 0, prob: 5, color: "#f8f", type: "comms", cd: 60 }
+];
+const RANK_MARKS = ["|", "||", "|||", "==", "V", "VV"];
+
+let wave = 0, life = 100, gold = 250, currentCost = CONFIG.gachaCost;
+const GRID_SIZE = 10;
+const grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null));
+
+const ENEMY_ROUTES = [
+    [ {x:0,y:3}, {x:1,y:3}, {x:2,y:3}, {x:3,y:3}, {x:4,y:3}, {x:5,y:3}, {x:6,y:3}, {x:6,y:4}, {x:6,y:5}, {x:6,y:6}, {x:5,y:6}, {x:4,y:6}, {x:3,y:6}, {x:3,y:5}, {x:3,y:4} ],
+    [ {x:6,y:0}, {x:6,y:1}, {x:6,y:2}, {x:6,y:3}, {x:6,y:4}, {x:6,y:5}, {x:6,y:6}, {x:5,y:6}, {x:4,y:6}, {x:3,y:6}, {x:3,y:5}, {x:3,y:4}, {x:3,y:3}, {x:4,y:3}, {x:5,y:3} ],
+    [ {x:9,y:6}, {x:8,y:6}, {x:7,y:6}, {x:6,y:6}, {x:5,y:6}, {x:4,y:6}, {x:3,y:6}, {x:3,y:5}, {x:3,y:4}, {x:3,y:3}, {x:4,y:3}, {x:5,y:3}, {x:6,y:3}, {x:6,y:4}, {x:6,y:5} ],
+    [ {x:3,y:9}, {x:3,y:8}, {x:3,y:7}, {x:3,y:6}, {x:3,y:5}, {x:3,y:4}, {x:3,y:3}, {x:4,y:3}, {x:5,y:3}, {x:6,y:3}, {x:6,y:4}, {x:6,y:5}, {x:6,y:6}, {x:5,y:6}, {x:4,y:6} ] 
+];
+const LOOP_RESTART_INDEX = 3;
+
+let enemies = [], gachaCards = [], mines = [];
+let dragging = null, waveTime = 0; 
+const WAVE_DURATION = 60 * 60; 
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const CELL = 48;
+
+const actx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(type) {
+    if (actx.state === 'suspended') actx.resume();
+    const osc = actx.createOscillator();
+    osc.connect(actx.destination);
+    osc.frequency.value = type === 'shoot' ? 800 : (type === 'merge' ? 1200 : (type === 'mine' ? 300 : 200));
+    osc.start(); osc.stop(actx.currentTime + 0.05);
+}
+
+function isPath(x, y) { return x === 3 || x === 6 || y === 3 || y === 6; }
+
+function rollGacha() {
+    let roll = () => {
+        let rand = Math.random() * 100, sum = 0;
+        for (let t of TOWER_TYPES) { sum += t.prob; if (rand <= sum) return t; }
+        return TOWER_TYPES[0];
+    };
+    gachaCards = [roll(), roll(), roll()];
+    renderGacha();
+}
+
+function renderGacha() {
+    const container = document.getElementById("gacha");
+    container.innerHTML = "";
+    gachaCards.forEach((card, idx) => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `<strong>${card.name}</strong>ATK: ${card.dmg} / RNG: ${card.range}`;
+        div.onclick = () => selectCard(idx);
+        container.appendChild(div);
+    });
+}
+
+function selectCard(idx) {
+    let emptySpots = [];
+    for (let y=0; y<10; y++) for (let x=0; x<10; x++) if (!isPath(x,y) && !grid[y][x]) emptySpots.push({x, y});
+    if (emptySpots.length === 0) return alert("No space left!");
+    
+    let spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
+    grid[spot.y][spot.x] = { ...gachaCards[idx], rank: 0, cooldown: 0 };
+    gachaCards = [];
+    document.getElementById("gacha").innerHTML = "";
+}
+
+document.getElementById("btnReroll").onclick = () => {
+    if (gold >= Math.floor(currentCost)) {
+        gold -= Math.floor(currentCost);
+        currentCost *= CONFIG.gachaCostIncrease;
+        rollGacha();
+        updateUI();
+    }
+};
+
+document.getElementById("btnNextWave").onclick = () => {
+    if(wave >= 25) return alert("Victory!");
+    let earlyBonus = (waveTime > 0) ? 1.5 : 1.0;
+    gold += Math.floor(CONFIG.incomePerWave * earlyBonus);
+    
+    wave++;
+    waveTime = WAVE_DURATION;
+    
+    let hp = 10 * Math.pow(CONFIG.enemyHpMultiplier, wave);
+    let count = Math.floor(5 * Math.pow(CONFIG.enemyCountIncrease, wave));
+    let type = wave >= 21 ? "Cart" : (wave >= 16 ? "Armor" : (wave >= 11 ? "Shield" : (wave >= 6 ? "Helm" : "Normal")));
+    
+    for(let i=0; i<count; i++) {
+        setTimeout(() => {
+            let rIdx = Math.floor(Math.random() * 4);
+            enemies.push({ hp: hp, maxHp: hp, routeIdx: rIdx, pathIdx: 0, x: ENEMY_ROUTES[rIdx][0].x, y: ENEMY_ROUTES[rIdx][0].y, type: type });
+        }, i * 900);
+    }
+    updateUI();
+};
+
+canvas.onmousedown = (e) => {
+    let x = Math.floor(e.offsetX / CELL), y = Math.floor(e.offsetY / CELL);
+    if(x>=0 && x<10 && y>=0 && y<10 && grid[y][x]) dragging = {sx: x, sy: y, unit: grid[y][x]};
+};
+
+canvas.onmouseup = (e) => {
+    if(!dragging) return;
+    let tx = Math.floor(e.offsetX / CELL), ty = Math.floor(e.offsetY / CELL);
+    
+    if(tx>=0 && tx<10 && ty>=0 && ty<10 && !isPath(tx, ty)) {
+        let target = grid[ty][tx];
+        if(target && (dragging.sx !== tx || dragging.sy !== ty) && target.name === dragging.unit.name && target.rank === dragging.unit.rank) {
+            let third = null;
+            for(let cy=0; cy<10; cy++) for(let cx=0; cx<10; cx++) {
+                if(!isPath(cx,cy) && (cx!==dragging.sx || cy!==dragging.sy) && (cx!==tx || cy!==ty)) {
+                    if(grid[cy][cx] && grid[cy][cx].name === target.name && grid[cy][cx].rank === target.rank) {
+                        third = {x: cx, y: cy}; break;
+                    }
+                }
+            }
+            if(third) {
+                target.rank++;
+                target.dmg = Math.floor(target.dmg * CONFIG.rankAtkMultiplier);
+                target.range = target.range * 1.12;
+                grid[dragging.sy][dragging.sx] = null;
+                grid[third.y][third.x] = null;
+                playSound('merge');
+            }
+        } else if (!target) {
+            grid[ty][tx] = dragging.unit;
+            grid[dragging.sy][dragging.sx] = null;
+        }
+    }
+    dragging = null;
+};
+
+function update() {
+    if(waveTime > 0) {
+        waveTime--;
+        document.getElementById("timerFill").style.width = `${(waveTime/WAVE_DURATION)*100}%`;
+        if(waveTime === 0 && enemies.length > 0) {
+            life -= enemies.length;
+            gold = Math.max(0, gold - Math.floor(CONFIG.incomePerWave * CONFIG.missPenalty));
+            enemies = [];
+            playSound('hurt');
+            updateUI();
+        }
+    }
+
+    for(let y=0; y<10; y++) {
+        for(let x=0; x<10; x++) {
+            let t = grid[y][x];
+            if(t) {
+                let hasComms = false, hasMedic = false;
+                for(let dy=-1; dy<=1; dy++) for(let dx=-1; dx<=1; dx++) {
+                    let nx = x+dx, ny = y+dy;
+                    if(nx>=0 && nx<10 && ny>=0 && ny<10 && grid[ny][nx]) {
+                        if(grid[ny][nx].type === 'comms') hasComms = true;
+                        if(grid[ny][nx].type === 'medic') hasMedic = true;
+                    }
+                }
+
+                let curDmg = hasComms ? Math.floor(t.dmg * 1.2) : t.dmg;
+                let cdSpeed = hasMedic ? 2 : 1;
+
+                if(t.cooldown > 0) t.cooldown -= cdSpeed;
+                else if(t.type === 'mine') {
+                    let placed = false;
+                    for(let dy=-1; dy<=1; dy++) for(let dx=-1; dx<=1; dx++) {
+                        let nx = x+dx, ny = y+dy;
+                        if(isPath(nx,ny) && !mines.some(m => m.x === nx && m.y === ny)) {
+                            mines.push({x: nx, y: ny, dmg: curDmg});
+                            t.cooldown = t.cd; placed = true; break;
+                        }
+                    }
+                } else if(enemies.length > 0 && t.dmg > 0) {
+                    let target = enemies.find(e => Math.hypot(e.x - x, e.y - y) <= t.range);
+                    if(target) {
+                        let finalDmg = curDmg;
+                        if(target.type === 'Shield' && t.type !== 'splash') finalDmg *= 0.5;
+                        
+                        if(t.type === 'splash') {
+                            enemies.forEach(e => { if(Math.hypot(e.x - target.x, e.y - target.y) <= 1.5) e.hp -= finalDmg; });
+                        } else { target.hp -= finalDmg; }
+                        
+                        t.cooldown = t.cd; 
+                        playSound('shoot');
+                    }
+                }
+            }
+        }
+    }
+
+    for(let i = enemies.length - 1; i >= 0; i--) {
+        let e = enemies[i];
+        if(e.hp <= 0) { enemies.splice(i, 1); continue; }
+        
+        let hitMine = mines.findIndex(m => Math.hypot(m.x - e.x, m.y - e.y) < 0.5);
+        if(hitMine !== -1) {
+            let mdmg = mines[hitMine].dmg;
+            enemies.forEach(en => { if(Math.hypot(en.x - e.x, en.y - e.y) <= 2) en.hp -= mdmg; });
+            mines.splice(hitMine, 1);
+            playSound('mine');
+        }
+
+        let isSlowed = false;
+        for(let ty=0; ty<10; ty++) for(let tx=0; tx<10; tx++) {
+            if(grid[ty][tx] && grid[ty][tx].type === 'slow' && Math.hypot(tx-e.x, ty-e.y) <= grid[ty][tx].range) {
+                isSlowed = true; break;
+            }
+        }
+        
+        let speed = (e.type === 'Armor' ? 0.015 : (e.type === 'Cart' ? 0.01 : 0.03));
+        if(isSlowed) speed *= 0.5;
+
+        let targetP = ENEMY_ROUTES[e.routeIdx][e.pathIdx];
+        let dx = targetP.x - e.x, dy = targetP.y - e.y;
+        let dist = Math.hypot(dx, dy);
+        
+        if(dist < 0.05) {
+            e.pathIdx++;
+            if(e.pathIdx >= ENEMY_ROUTES[e.routeIdx].length) e.pathIdx = LOOP_RESTART_INDEX;
+            e.x = targetP.x; e.y = targetP.y;
+        } else {
+            e.x += (dx/dist) * speed; e.y += (dy/dist) * speed;
+        }
+    }
+}
+
+const ART = {"grass": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAaklEQVR4nGN0qNJlIAUwkaSagcoaNNW18GnQxJA+vfEqPg2nMaR5NBjxaeDBJo1PA0HX49OA1fX4NKA5TxPJQqLi4TSShegasLoe2UJ0DXhcj9CAbCrBwAVpIGgqMmD5cuM/AwMDhCQGAABzhRhqkkfXogAAAABJRU5ErkJggg==", "road": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAbUlEQVR4nGPsynRiIAUwkaSaAVPDjQe/IQx1fR18GtRh0hoKrBDGzYtX8Gm4iUMazVoGIv2gAbMWuwZcrsepAc156qj6mbA6FI9+JqwOJdZJ6nhdz4CpAc12rI7EF6zIjoRbTmxagltOceIjCACPoh9VClEbIwAAAABJRU5ErkJggg==", "base": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABJElEQVR4nGNgoABkRXn9B2FKzGBioAI44GVFtiNYqOEAbI5w2HaMka4OICZUsDmKhYHGgFBIsJBjaJKhId44Jzb4yXIAsuUKTx5BGDx8DIuef2cgBzCSY7EG72+c6m58ZoWz550/z0iVbJhEpOXo8oSiCgQIuhBmCCGL8YUGvpBgJGQxuZajOwKXQxjxWU6Jxbgcgu4IRmwWU9tydEcgO4QR3XJaWIzLISBHYETBwU2dFNVuhIC9Xzkj3oLo5qWLDPQETAwDDFjQBW7cJq9IHT4hgAxuPHyLwteQF2YgBpCij4WQYf0dPmC6sGILTguwWYRNH1kOwAUePXuOwpeTkmQgB7AQUkDIB5TqY8EnSWycU6KPiWGAAdOoAxhGo2AUMAwsAAAe7mkjGxVA/QAAAABJRU5ErkJggg==", "mine": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAASklEQVR4nGNgGAW0Bwe8rP7jk2ei1AJGfJJiYnJw21+9eoRVLQs+jSYmMnCxM2cY/mMziAmX7ciasfEJGnDmzBO8fKqFwShgYAAACfIXa4bRjLQAAAAASUVORK5CYII=", "u_Rifle_0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEknJeWDNXq7+ODVv270RTM+bO4mRKumABZvguUs3iTaAiVIXYA3E+PginBoWLuxDCUSKXUAxAAAS6i/143r00QAAAABJRU5ErkJggg==", "u_Rifle_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAjklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEknJeWDNXq7+ODVv270RTM+bO4mRKumABZugm9ZEOLtjhQfpBnQQ0IQMsAZifHwRTg0LF/ahBCLFYUAxAABhMTFvzeypOAAAAABJRU5ErkJggg==", "u_Rifle_2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAjElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEknJeWDNXq7+ODVv270RTM+bO4mRKumABZugm9ZEOLtjhQdeA5godQHWQIyPL8KpYeHCPpRApNgFFAMAAUov9aQiWhUAAAAASUVORK5CYII=", "u_Rifle_3": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEknJeWDNXq7+ODVv270RTM+bO4mRKumABZugm9ZEOLtjhQdeA5io6gKQv8CBmK+FU8POHdtQAhGrFwg5m6oAALVLMwDFaVd2AAAAAElFTkSuQmCC", "u_Rifle_4": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEknJeWDNXq7+ODVv270RTM+bO4mRKumABZugjYM2nD1p0jq8BjBhE+R6lYZC4wNYA/H6di04v2OFB4r8woV9KIGI1QvommgKAF5iNiPC0gDsAAAAAElFTkSuQmCC", "u_Rifle_5": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEknJeWDNXq7+ODVv270RTM+bO4mRKumABZugjYM2nD1p0jq8BjBhE+R6lYZC4wNYA/H6di04v2OFB4r8woV9KIGI1QvommgKAF5iNiPC0gDsAAAAAElFTkSuQmCC", "u_MG_0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjMig8Ca/X21cGreuPkamM5Yvo6RKumABZvgzWOn8GjhQeExUeoCrIG4NFAJp4bo9fdQApFiF1AMAApsL/FF1KZsAAAAAElFTkSuQmCC", "u_MG_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjMig8Ca/X21cGreuPkamM5Yvo6RKumABZsgt84lOPvcrB9osjyEDTiHoQk3wBqISwOVcGqIXn8PJRApDgOKAQBTNzNTcjEUYAAAAABJRU5ErkJggg==", "u_MG_2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAj0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjMig8Ca/X21cGreuPkamM5Yvo6RKumABZsgt84lOPvcrB9osjwoPCZKXYA1EJcGKuHUEL3+HkogUuwCigEAG/sw8QWN2M0AAAAASUVORK5CYII=", "u_MG_3": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAk0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjMig8Ca/X21cGreuPkamM5Yvo6RKumABZsgt84lOPvcrB9osjwoPCZKXYA1EK9vR4QBugui199DCUSsXsB0Ng0BAAgCNlPcFKivAAAAAElFTkSuQmCC", "u_MG_4": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjMig8Ca/X21cGreuPkamM5Yvo6RKumABZsgo1MOnH2jJQ5NlgeFx4TNAK5XaSg0PoA1EK9vR4TBuVk/UOSj199DCUSsXkDXRFMAAFmpOAcaiHgnAAAAAElFTkSuQmCC", "u_MG_5": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjMig8Ca/X21cGreuPkamM5Yvo6RKumABZsgo1MOnH2jJQ5NlgeFx4TNAK5XaSg0PoA1EK9vR4TBuVk/UOSj199DCUSsXkDXRFMAAFmpOAcaiHgnAAAAAElFTkSuQmCC", "u_Mortar_0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEgFF7mDN1v5GODUf3XgOTG/o28lIlXTAgk3w8s2LRBvARKkLsAaic70aTg17G2+hBCLFLqAYAAAE4y/550i/vgAAAABJRU5ErkJggg==", "u_Mortar_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAjklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEgFF7mDN1v5GODUf3XgOTG/o28lIlXTAgk0wXfAqnJ1z4g/pBuQQ0IQMsAaic70aTg17G2+hBCLFYUAxAAAi6DMrpig+eAAAAABJRU5ErkJggg==", "u_Mortar_2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAjElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEgFF7mDN1v5GODUf3XgOTG/o28lIlXTAgk0wXfAqnJ1z4g9eA5godQHWQHSuV8OpYW/jLZRApNgFFAMAGLIw+SjNM1gAAAAASUVORK5CYII=", "u_Mortar_3": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAj0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEgFF7mDN1v5GODUf3XgOTG/o28lIlXTAgk0wXfAqnJ1z4g9eA5godQHWQLy+XQunC/Y23kIJRKxeIORsqgIA8kQ2K3dMNIEAAAAASUVORK5CYII=", "u_Mortar_4": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEgFF7mDN1v5GODUf3XgOTG/o28lIlXTAgk0wVj0fzi7blITXACZsglyv0lBofABrIF7frgXn55z4gyK/t/EWSiBi9QK6JpoCAEP6N9/GrT56AAAAAElFTkSuQmCC", "u_Mortar_5": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEgFF7mDN1v5GODUf3XgOTG/o28lIlXTAgk0wVj0fzi7blITXACZsglyv0lBofABrIF7frgXn55z4gyK/t/EWSiBi9QK6JpoCAEP6N9/GrT56AAAAAElFTkSuQmCC", "u_Sniper_0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEkE5M8CatWz9cWq+dngjmF43JYORKumABZvgqcM3cWrgQeMzUeoCrIGoHTgHp4ar61NQApFiF1AMAAhdL+6DGqgtAAAAAElFTkSuQmCC", "u_Sniper_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEkE5M8CatWz9cWq+dngjmF43JYORKumABZtgmWY6nB0yqwhFjocYA0LQNOEDWANRO3AOTg1X16egBCLFYUAxAABBFjFQTwrP1gAAAABJRU5ErkJggg==", "u_Sniper_2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAj0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEkE5M8CatWz9cWq+dngjmF43JYORKumABZtgmWY6nB0yqwhFjgdNLROlLsAaiNqBc3BquLo+BSUQKXYBxQAA984v7t8Z2gQAAAAASUVORK5CYII=", "u_Sniper_3": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEkE5M8CatWz9cWq+dngjmF43JYORKumABZtgmWY6nB0yqwhFjgdNLROlLsAaiNe3a+F0wdX1KSiBiNUL6JpoCgDX0jNQdGMLGwAAAABJRU5ErkJggg==", "u_Sniper_4": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEkE5M8CatWz9cWq+dngjmF43JYORKumABZtgjj3CYXEtN1DkeNDUMmEzgOtVGgqND2ANxOvbteD8kFlFKPJX16egBCJWL6BroikAAEuXNgSRIbwaAAAAAElFTkSuQmCC", "u_Sniper_5": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEkE5M8CatWz9cWq+dngjmF43JYORKumABZtgjj3CYXEtN1DkeNDUMmEzgOtVGgqND2ANxOvbteD8kFlFKPJX16egBCJWL6BroikAAEuXNgSRIbwaAAAAAElFTkSuQmCC", "u_Engi_0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAi0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjN6PMCa/Z1VcWreuPc2mM4o2cFIlXTAgk3w5rmTeLQIofCYKHUB1kBc2oRqCzKIrnuHEogUu4BiAAAiJi/+krBehQAAAABJRU5ErkJggg==", "u_Engi_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjN6PMCa/Z1VcWreuPc2mM4o2cFIlXTAgk2Qm/khnH3u9As0WSHCBpzD0IQbYA3EpU2otiCD6Lp3KIFIcRhQDACIIzOBSw8TTgAAAABJRU5ErkJggg==", "u_Engi_2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAj0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjN6PMCa/Z1VcWreuPc2mM4o2cFIlXTAgk2Qm/khnH3u9As0WSEUHhOlLsAaiEubUG1BBtF171ACkWIXUAwAMikw/hjvbYAAAAAASUVORK5CYII=", "u_Engi_3": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjN6PMCa/Z1VcWreuPc2mM4o2cFIlXTAgk2Qm/khnH3u9As0WSEUHhOlLsAaiNe3a+F0QXTdO5RAxOoFTGfTEAAAKqA2gdkDJu4AAAAASUVORK5CYII=", "u_Engi_4": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjN6PMCa/Z1VcWreuPc2mM4o2cFIlXTAgk2QUbIazr6xFT06hVB4TNgM4HqVhkLjA1gD8fp2LTj/3OkXKPLRde9QAhGrF9A10RQAAHxHODXuajkPAAAAAElFTkSuQmCC", "u_Engi_5": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEjN6PMCa/Z1VcWreuPc2mM4o2cFIlXTAgk2QUbIazr6xFT06hVB4TNgM4HqVhkLjA1gD8fp2LTj/3OkXKPLRde9QAhGrF9A10RQAAHxHODXuajkPAAAAAElFTkSuQmCC", "u_Shield_0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEr4tHWDNeoH+ODVfWr8RTG+uqWCkSjpgwSZ49uJNnBpY0fhMlLoAayDqdvfg1HC5tAQlECl2AcUAABznL/iRNbNHAAAAAElFTkSuQmCC", "u_Shield_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEr4tHWDNeoH+ODVfWr8RTG+uqWCkSjpgwSZY/rcczg67koQix0qMAWFomvABrIGo292DU8Pl0hKUQKQ4DCgGAKuZMoYoc6S/AAAAAElFTkSuQmCC", "u_Shield_2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAj0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEr4tHWDNeoH+ODVfWr8RTG+uqWCkSjpgwSZY/rcczg67koQix4qmlolSF2ANRN3uHpwaLpeWoAQixS6gGAAAOWYw+DlQGjkAAAAASUVORK5CYII=", "u_Shield_3": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEr4tHWDNeoH+ODVfWr8RTG+uqWCkSjpgwSZY/rcczg67koQix4qmlolSF2ANxOvbtXC64HJpCUogYvUCuiaaAgAp/DSGEqB+2QAAAABJRU5ErkJggg==", "u_Shield_4": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEr4tHWDNeoH+ODVfWr8RTG+uqWCkSjpgwSaYKywIZyfsO4Eix4qmlgmbAVyv0lBofABrIF7frgXnh11JQpG/XFqCEohYvYCuiaYAAG6jNjrdqYWcAAAAAElFTkSuQmCC", "u_Shield_5": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEr4tHWDNeoH+ODVfWr8RTG+uqWCkSjpgwSaYKywIZyfsO4Eix4qmlgmbAVyv0lBofABrIF7frgXnh11JQpG/XFqCEohYvYCuiaYAAG6jNjrdqYWcAAAAAElFTkSuQmCC", "u_Medic_0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiElEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEhuWrwRr9vfxxKl545btYDogMpyRKumABZvgzfMXiDaAiVIXYA3Evcvn4dTgHJmEEogUu4BiAABMqy/0jfK+dAAAAABJRU5ErkJggg==", "u_Medic_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAjklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEhuWrwRr9vfxxKl545btYDogMpyRKumABZvg5/sxcPazDyWkG/CMgCZkgDUQ9y6fh1ODc2QSSiBSHAYUAwCztTRAclR/UwAAAABJRU5ErkJggg==", "u_Medic_2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAjUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEhuWrwRr9vfxxKl545btYDogMpyRKumABZvg5/sxcPazDyV4DWCi1AVYA3Hv8nk4NThHJqEEIsUuoBgAAJBRMfReVgDgAAAAAElFTkSuQmCC", "u_Medic_3": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAj0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEhuWrwRr9vfxxKl545btYDogMpyRKumABZvg5/sxcPazDyV4DWCi1AVYA/H6di2cLnCOTEIJRKxeIORsqgIAyKU2QJdQpKcAAAAASUVORK5CYII=", "u_Medic_4": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEhuWrwRr9vfxxKl545btYDogMpyRKumABZvgy6/f4OwPt27hNYAJmyDXqzQUGh/AGojXt2vB+c8+lKDIO0cmoQQiVi+ga6IpAABqeTn0upv9uQAAAABJRU5ErkJggg==", "u_Medic_5": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAmklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEhuWrwRr9vfxxKl545btYDogMpyRKumABZvgy6/f4OwPt27hNYAJmyDXqzQUGh/AGojXt2vB+c8+lKDIO0cmoQQiVi+ga6IpAABqeTn0upv9uQAAAABJRU5ErkJggg==", "u_Comms_0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiklEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEq3RM8CaEwz8cWpecGEjmK5emsFIlXTAgk3w+OmbuHWwonKZKHUB1kCcaD0Hp4b8oykogUixCygGABnIL+zsoFDAAAAAAElFTkSuQmCC", "u_Comms_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEq3RM8CaEwz8cWpecGEjmK5emsFIlXTAgk2Q1z0dzt7VUoQqyUqEAbvQNeEBWANxovUcnBryj6agBCLFYUAxAACZhzGeeDii+QAAAABJRU5ErkJggg==", "u_Comms_2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAj0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEq3RM8CaEwz8cWpecGEjmK5emsFIlXTAgk2Q1z0dzt7VUoQqyYrKZaLUBVgDcaL1HJwa8o+moAQixS6gGAAABYgv7PxxYNQAAAAASUVORK5CYII=", "u_Comms_3": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEq3RM8CaEwz8cWpecGEjmK5emsFIlXTAgk2Q1z0dzt7VUoQqyYrKZaLUBVgD8fp2LZwuyD+aghKIWL2A4WxaAgAD8jOeLml2CQAAAABJRU5ErkJggg==", "u_Comms_4": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAm0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEq3RM8CaEwz8cWpecGEjmK5emsFIlXTAgk2QORbhsCN5N1AlWVG5TNgM4HqVhkLjA1gD8fp2LTh/V0sRinz+0RSUQMTqBXRNNAUAd6g2UrcFZGkAAAAASUVORK5CYII=", "u_Comms_5": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAm0lEQVR4nGNgoBAwYhOUllb5j0vD06d3UPQwUeoCJlJsxybPiEvR2R4/DHHjkk2kecG4ZBMKjQ0w4nMqsiuw2Y7XAHT/YtMMAoykBiK6YYzIEq3RM8CaEwz8cWpecGEjmK5emsFIlXTAgk2QORbhsCN5N1AlWVG5TNgM4HqVhkLjA1gD8fp2LTh/V0sRinz+0RSUQMTqBXRNNAUAd6g2UrcFZGkAAAAASUVORK5CYII=", "e_0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZUlEQVR4nGNgGGjAiE9STEzuP4z96tUjrGpZ8GmWFhJBFvqPzRAmIjUzgPjILsJrACmAiSYGvHr1iPHpuzcoYiA+tjBgpDQWGPFpwgWQDWPBpsBF2wan5j1XjwyFWCAFUGwAxQAA2G4iXK+cbEMAAAAASUVORK5CYII=", "e_1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAfklEQVR4nGNgoBAw4pIQE5P7jy726tUjRqIMEBOT+5+aWoYhPnt2F4YhTMRqBgGQOLrLmBgoBIzoAolJORh+Rwfz501hpJ0LYADkV2khETj/6bs3xMcCDCAHGDbNIMBITPyjA2TDWLApcNG2wal5z9UjKHwmBgoB09A3gGIAADQsJitQsxCUAAAAAElFTkSuQmCC", "e_2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAjUlEQVR4nGNgoBAw4pIQE5P7jy726tUjRqIMEBOT+5+aWoYhPnt2F4YhTMRqBgGQOLrLmBgoBIzoAolJORh+Rwfz501hpJ0LYADkV2khETj/6bs3uGNBDC1gYAqRxbFpRjEgxZYfLDDn8EcGQgDZMBZsCly0bXBq3nP1CAqfiYFCwDTgBsDDgJjAowkAAFmpL31GJX2bAAAAAElFTkSuQmCC", "e_3": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAApUlEQVR4nGNgoBAw4pIQE5P7jy726tUjRqIMEBOT+5+aWoYhPnt2F4YhTMRqBgGQOLrLmBgoBIzoAolJORh+Rwfz501hpJ0LYADkV2khETj/6bs3uGNBDC1gYAqRxbFpRjEgxZYfLHD6syoDIbB71zq4YSzokhcvnGFwd4/BqXnnziUofBZsigx11PEYwEDYgPNXbuI0AB1QHI1wF8w5/JFSs8gDAMZBNWDfMxW2AAAAAElFTkSuQmCC", "e_4": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAtklEQVR4nGNgoBAw4pIQE5P7jy726tUjRqIMEBOT+5+aWoYhPnt2F4YhTMRqBgGQOLrLmBgoBIzoAolJORh+Rwfz501hpJ0LYADkV2khETj/6bs3uGNBDC1gYAqRxbFpRjEgxZYfLHD6syoDIbB71zq4YSzokhcvnGFwd4/BqXnnziWYLshyUSUY8tjAtD23GcEuuPHsLzn6wQAlGq+8+QPGuAA2ebgByBLYDMElDw9NXFFJSB4Aa4hTNRZT1nsAAAAASUVORK5CYII="};
+
+const IMG = {};
+for (const k in ART) { const i = new Image(); i.src = ART[k]; IMG[k] = i; }
+function 그림준비(){ return IMG.grass && IMG.grass.complete && IMG.grass.naturalWidth > 0; }
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = false;
+
+    // 땅 — 길이면 흙, 아니면 풀밭
+    for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+            const 길인가 = isPath(x, y);
+            const im = 길인가 ? IMG.road : IMG.grass;
+            if (그림준비()) ctx.drawImage(im, x*CELL, y*CELL, CELL, CELL);
+            else { ctx.fillStyle = 길인가 ? "#8a7050" : "#4a7a3a"; ctx.fillRect(x*CELL, y*CELL, CELL, CELL); }
+        }
+    }
+    // 구역 경계 — 어디가 한 덩어리인지 보이게
+    ctx.strokeStyle = "rgba(0,0,0,0.22)"; ctx.lineWidth = 1;
+    for (let i = 1; i < GRID_SIZE; i++) {
+        ctx.beginPath(); ctx.moveTo(i*CELL, 0); ctx.lineTo(i*CELL, canvas.height); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i*CELL); ctx.lineTo(canvas.width, i*CELL); ctx.stroke();
+    }
+
+    // 본진
+    if (그림준비()) ctx.drawImage(IMG.base, (GRID_SIZE/2-1)*CELL, (GRID_SIZE/2-1.2)*CELL, CELL*2, CELL*2);
+
+    // 병사
+    for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+            const t = grid[y] && grid[y][x];
+            if (!t) continue;
+            const key = 'u_' + t.name + '_' + Math.min(t.rank || 0, 5);
+            if (그림준비() && IMG[key]) ctx.drawImage(IMG[key], x*CELL, y*CELL, CELL, CELL);
+            else {
+                ctx.fillStyle = t.color;
+                ctx.beginPath(); ctx.arc(x*CELL+CELL/2, y*CELL+CELL/2, CELL/3, 0, Math.PI*2); ctx.fill();
+            }
+        }
+    }
+
+    // 적 — 판이 올라갈수록 장비가 는다
+    const 단계 = wave >= 21 ? 4 : wave >= 16 ? 3 : wave >= 11 ? 2 : wave >= 6 ? 1 : 0;
+    enemies.forEach(e => {
+        if (그림준비()) ctx.drawImage(IMG['e_' + 단계], e.x*CELL, e.y*CELL, CELL, CELL);
+        else { ctx.fillStyle = "red"; ctx.fillRect(e.x*CELL+CELL/4, e.y*CELL+CELL/4, CELL/2, CELL/2); }
+        ctx.fillStyle = "#1b1b24"; ctx.fillRect(e.x*CELL+4, e.y*CELL-1, CELL-8, 4);
+        ctx.fillStyle = "#7ad86a"; ctx.fillRect(e.x*CELL+4, e.y*CELL-1, (CELL-8)*(e.hp/e.maxHp), 4);
+    });
+}
+
+function updateUI() {
+    document.getElementById("waveInfo").innerText = `Wave: ${wave} / 25`;
+    document.getElementById("lifeInfo").innerText = `Life: ${life}`;
+    document.getElementById("goldInfo").innerText = `Gold: ${gold}`;
+    document.getElementById("btnReroll").innerText = `Reroll (${Math.floor(currentCost)})`;
+}
+
+function loop() { update(); draw(); requestAnimationFrame(loop); }
+rollGacha(); loop();
+</script>
+<script src="/count.js" defer></script>
+</body>
+</html>
