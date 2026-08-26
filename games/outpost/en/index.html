@@ -350,5 +350,100 @@ function loop() { update(); draw(); requestAnimationFrame(loop); }
 rollGacha(); loop();
 </script>
 <script src="/count.js" defer></script>
+<style>
+#bgmBtn{position:fixed;top:8px;right:8px;z-index:99;background:rgba(0,0,0,.45);
+ color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;
+ padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}
+</style>
+<button id="bgmBtn">♪</button>
+<script>/* 8비트 음악 — 파일 없이 코드로. 옛 게임기가 하던 방식 그대로다.
+   음표만 적어 두고 그때그때 소리를 낸다. 그래서 크기가 1KB 도 안 된다.
+
+   쓰는 법:  BGM.play(BGM.songs.outpost);   BGM.stop();   BGM.toggle();
+   음표 = 'C4' 처럼. '-' 는 쉼표, 숫자 뒤 옥타브. */
+window.BGM = (function () {
+  var ac = null, timer = null, 켜짐 = true, 현재 = null;
+  var 음 = { C:0, 'C#':1, D:2, 'D#':3, E:4, F:5, 'F#':6, G:7, 'G#':8, A:9, 'A#':10, B:11 };
+
+  function hz(n) {
+    if (!n || n === '-') return 0;
+    var m = n.match(/^([A-G]#?)(\d)$/); if (!m) return 0;
+    return 440 * Math.pow(2, (음[m[1]] + (parseInt(m[2]) - 4) * 12 - 9) / 12);
+  }
+  function 소리(f, t, 길이, 파형, 크기) {
+    if (!f) return;
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = 파형; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(크기, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 길이 * 0.9);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + 길이);
+  }
+  function 한바퀴(곡, 시작) {
+    var 박 = 60 / 곡.bpm / 2;                 // 8분음표 하나
+    곡.mel.forEach(function (n, i) { 소리(hz(n), 시작 + i * 박, 박, 'square', 0.08); });
+    if (곡.bass) 곡.bass.forEach(function (n, i) {
+      소리(hz(n), 시작 + i * 박 * 2, 박 * 2, 'triangle', 0.10); });
+    return 곡.mel.length * 박;
+  }
+  return {
+    songs: {
+      // 초소 — 지키는 자리. 단단하고 반복적으로
+      outpost: { bpm: 108,
+        mel: ['E4','-','G4','-','A4','-','G4','-','E4','-','D4','-','E4','-','-','-',
+              'E4','-','G4','-','A4','-','C5','-','B4','-','A4','-','G4','-','-','-'],
+        bass:['A2','A2','E2','E2','A2','A2','D2','E2','A2','A2','E2','E2','F2','E2','A2','A2'] },
+      // 나는 것 — 가볍고 통통 튀게
+      fly:     { bpm: 132,
+        mel: ['C5','E5','G5','E5','C5','E5','G5','E5','D5','F5','A5','F5','D5','F5','A5','F5'],
+        bass:['C3','C3','G2','G2','F2','F2','G2','G2'] },
+      // 퍼즐 — 조용하고 방해되지 않게
+      puzzle:  { bpm: 84,
+        mel: ['A4','-','C5','-','E5','-','C5','-','G4','-','B4','-','D5','-','B4','-'],
+        bass:['A2','-','F2','-','G2','-','E2','-'] }
+    },
+    start: function (곡) {
+      if (!켜짐) return;
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+      현재 = 곡; this.stop();
+      var 자신 = this;
+      function 돌기() {
+        if (!켜짐 || !현재) return;
+        var 길이 = 한바퀴(현재, ac.currentTime + 0.05);
+        timer = setTimeout(돌기, 길이 * 1000);
+      }
+      돌기();
+    },
+    stop: function () { if (timer) { clearTimeout(timer); timer = null; } },
+    toggle: function () {
+      켜짐 = !켜짐;
+      if (!켜짐) this.stop(); else if (현재) this.start(현재);
+      try { localStorage.setItem('bgm_on', 켜짐 ? '1' : '0'); } catch (e) {}
+      return 켜짐;
+    },
+    isOn: function () { return 켜짐; },
+    restore: function () {
+      try { 켜짐 = localStorage.getItem('bgm_on') !== '0'; } catch (e) {}
+      return 켜짐;
+    }
+  };
+})();
+
+BGM.restore();
+(function(){
+  var b = document.getElementById('bgmBtn');
+  function 표시(){ b.textContent = BGM.isOn() ? '♪' : '♪̸'; }
+  b.onclick = function(){ BGM.toggle(); 표시(); };
+  표시();
+  // 브라우저는 사람이 한 번 누르기 전에는 소리를 못 낸다
+  function 시작(){ BGM.start(BGM.songs.outpost); 
+    window.removeEventListener('pointerdown', 시작);
+    window.removeEventListener('keydown', 시작); }
+  window.addEventListener('pointerdown', 시작);
+  window.addEventListener('keydown', 시작);
+})();
+</script>
 </body>
 </html>
