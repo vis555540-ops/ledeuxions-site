@@ -29,6 +29,21 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
 .gauge i{display:block;height:100%;background:var(--warm);transition:width .5s ease}
 .scene{font-size:1.06rem;margin:0 0 8px;min-height:3em}
 .aside{color:var(--dim);font-size:.92rem;margin:0 0 26px}
+
+/* ── PTSD chapter — nothing blinks; some people are sensitive to light ── */
+.lost{color:#8e8598;font-size:.9rem;margin:0 0 12px;padding:9px 12px;
+  border-left:2px solid #3a3446;background:rgba(58,52,70,.22);border-radius:0 6px 6px 0}
+.pic.washed{filter:grayscale(.72) contrast(.88)}
+.flash{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:16px;color:#d8d2e0;font-size:.95rem;line-height:1.6;
+  background:linear-gradient(rgba(18,16,24,.62),rgba(18,16,24,.78));animation:seep 1.1s ease-out both}
+@keyframes seep{from{opacity:0}to{opacity:1}}
+.chose{color:#7c7488;font-size:.86rem;margin:0 0 6px;
+  text-decoration:line-through;text-decoration-color:#4a4356}
+.scene.shifted{border-left:2px solid #6b5a7a;padding-left:12px;color:#e6dfec;
+  animation:slip .9s ease-out both}
+@keyframes slip{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.flash,.scene.shifted{animation:none}}
 .opts{display:flex;flex-direction:column;gap:9px;margin-top:auto}
 button.opt{width:100%;text-align:left;padding:14px 16px;border-radius:11px;font:inherit;
  border:1px solid var(--line);background:var(--pick);color:var(--ink);cursor:pointer;transition:.15s}
@@ -49,7 +64,7 @@ p{margin:0 0 14px}
 .help a{color:var(--accent)}
 .tag{display:inline-block;font-size:.72rem;padding:2px 9px;border-radius:99px;
  border:1px solid var(--line);color:var(--dim);letter-spacing:.06em}
-.pic{width:100%;aspect-ratio:8/5;border-radius:10px;border:1px solid var(--line);
+.pic{position:relative;overflow:hidden;width:100%;aspect-ratio:8/5;border-radius:10px;border:1px solid var(--line);
  margin:0 0 16px;image-rendering:pixelated;image-rendering:crisp-edges;
  background-size:cover;background-position:center;display:block}
 .hidden{display:none}
@@ -310,14 +325,273 @@ var 그림 = {
 
 var 앱 = document.getElementById('app');
 var 편, 칸 = 0, 끝난편 = [];
+/* ── PTSD chapter ──────────────────────────────────────────────
+   The depression chapter locks buttons: you want to, your body will not.
+   Here nothing is locked. Every button works.
+   What you chose and what happens are simply not the same thing.
+
+   Nothing here says what happened. It stays "that day".
+   It differs for everyone, and naming it would make it someone else's.
+
+   Sources: PTSD UK · NCBI intrusive-memory research · dissociative subtype literature.
+   ────────────────────────────────────────────────────────────── */
+
+var PTSD_아픈사람 = [
+ { 때:'Day 1 · 3am', 힘:30,
+   글:'Three fourteen. Same time as yesterday.',
+   곁:'It felt like a sound woke me, not a dream. I could not tell you what sound.',
+   고르기:[
+     {말:'Close my eyes again',
+      뒤:'Closing them makes it sharper. So I kept them open. Until six.'},
+     {말:'Go get water',
+      뒤:'The hallway is dark. I turned the light on first. I do not walk through dark places now.'},
+     {말:'Lie there and look at the ceiling',
+      뒤:'This is fine. This much is fine. I thought that until six.'}]},
+
+ { 때:'Day 1 · morning', 힘:26,
+   글:'I sit down to eat and my back is to the door.',
+   곁:'I moved seats. Nobody noticed. I could not explain it either.',
+   고르기:[
+     {말:'Just sit',
+      뒤:'I sat. The whole meal I was listening to what was behind me. I do not remember the food.'},
+     {말:'Change seats',
+      뒤:'Better with a wall behind me. "Why did you move?" they asked. "No reason," I said.'}]},
+
+ { 때:'Day 2 · midday', 힘:24, 덮임:'Somewhere there was that smell.',
+   글:'I was doing the shopping.',
+   곁:'I could not tell you what smell. The body just knows first.',
+   고르기:[
+     {말:'Keep shopping',
+      뒤:'My grip went tight on the cart. I came out with half of what was on the list.'},
+     {말:'Go outside',
+      뒤:'I stood in the car park about ten minutes. I could feel my heart in my throat.'}]},
+
+ { 때:'Day 2 · evening', 힘:20,
+   글:'My kid ran up and grabbed me from behind.',
+   곁:'Out of happiness. Something they have always done.',
+   고르기:[
+     {말:'Laugh and hug them back',
+      바뀜:'I threw the arm off. I think I shouted. I only knew because I saw them crying.\n\nThat was me. And the me that did it was not me.'},
+     {말:'Try hard not to flinch',
+      바뀜:'My body turned first. My hand came up and stopped.\n\nThey saw the hand. I saw their eyes.'}]},
+
+ { 때:'Day 2 · night', 힘:14,
+   글:'I need to apologise.',
+   곁:'What do I say. If I say "Dad is ill", will a child understand that.',
+   고르기:[
+     {말:'"I am sorry. Dad got startled."',
+      뒤:'"Why did you get startled?"\n\nI had no answer. I do not know either.'},
+     {말:'"Dad has been unwell lately."',
+      뒤:'"Where does it hurt?"\n\nFor the first time I wished it were somewhere you could see.'}]},
+
+ { 때:'Day 3 · midday', 힘:22, 잃음:true,
+   글:'I came to in the car.',
+   곁:'Engine off. Clock said two forty. I left around one.',
+   고르기:[
+     {말:'Try to remember where I went',
+      뒤:'Nothing. The whole stretch is simply gone.\n\nIt was not even frightening. This is not the first time.'},
+     {말:'Just drive home',
+      뒤:'I drove back. I remember the drive. It is the hour and forty minutes before it that is missing.'}]},
+
+ { 때:'Day 4 · morning', 힘:28,
+   글:'Today is fine. Nothing is wrong.',
+   곁:'There are days like this. That is what makes it confusing. What was I until yesterday.',
+   고르기:[
+     {말:'Use the good day on work I owe',
+      뒤:'Three hours. It went well. I thought this was it getting better.'},
+     {말:'Suggest we go somewhere',
+      뒤:'"Why are you in such a good mood?" they asked. I said I did not know.'}]},
+
+ { 때:'Day 4 · evening', 힘:12, 덮임:'A car door shut somewhere.',
+   글:'In the car park.',
+   곁:'Just somebody else closing their door.',
+   고르기:[
+     {말:'Tell myself it is fine',
+      바뀜:'I could not. Nothing came out.\n\nI was crouched down. Someone asked if I was alright. I think I nodded.'},
+     {말:'Count my breaths and walk',
+      바뀜:'I got to three. After that there is nothing.\n\nI was standing at my own front door. I do not know how.'}]},
+
+ { 때:'Day 5 · midday', 힘:18,
+   글:'The doctor wants to increase the dose.',
+   곁:'"Is it getting better?" they asked. I do not know what the correct answer is.',
+   고르기:[
+     {말:'"It is getting better."',
+      뒤:'I said that. It is not a lie. There are good days.\n\nI did not mention the bad ones. That takes longer.'},
+     {말:'"I keep losing time."',
+      뒤:'The doctor nodded. "That is also a symptom."\n\nThe word symptom was oddly comforting. It means I did not become wrong.'}]},
+
+ { 때:'Day 6 · evening', 힘:16,
+   글:'"You have to stop thinking about that day."',
+   곁:'I am not thinking about it. It is doing the thinking, and I am what it thinks about.',
+   고르기:[
+     {말:'"I am not thinking about it."',
+      뒤:'"Then what is it."\n\nI had no words. It is the kind of thing you do not have words for unless you have been in it.'},
+     {말:'"Alright."',
+      뒤:'I said that and went to the other room.\n\nGiving up on being understood is easier than arguing.'}]},
+
+ { 때:'Day 7 · night', 힘:10,
+   글:'The dream again.',
+   곁:'I was still inside it after waking. It took a while to work out where I was.',
+   고르기:[
+     {말:'Wake them',
+      뒤:'"Again?" they said. Not angry. Tired.\n\nI said sorry.'},
+     {말:'Go out to the living room alone',
+      뒤:'Every light on, sitting there. Brighter is better.\n\nAt half four the birds started. That is when it let go.'}]},
+
+ { 때:'Day 8 · midday', 힘:20,
+   글:'I tried something I used to love.',
+   곁:'Nothing came. Not dislike. Just nothing.',
+   고르기:[
+     {말:'Finish it anyway',
+      뒤:'I finished. Still nothing at the end.\n\nThis used to be good. I remember that it was good. The feeling does not arrive.'},
+     {말:'Stop',
+      뒤:'I stopped.\n\nThis frightens me more than the fear does. Pain ends eventually. Nothing does not look like it ends.'}]},
+
+ { 때:'Day 9 · evening', 힘:24,
+   글:'They say it carefully. "You seem a bit better lately."',
+   곁:'I am not better. I am showing less. But saying that would disappoint them.',
+   고르기:[
+     {말:'"Yeah, a bit better."',
+      뒤:'Their face lifted.\n\nI lied to see that face. I do not know if that is a bad lie or not.'},
+     {말:'"I am showing less."',
+      뒤:'"...Oh."\n\nThen nothing for a long while. But they took my hand.'}]},
+
+ { 때:'Day 10 · morning', 힘:26,
+   글:'Three fourteen again.',
+   곁:'Exactly like ten days ago. Nothing has improved.',
+   고르기:[
+     {말:'Think, here we go again',
+      뒤:'But today I fell back asleep. About two hours.\n\nTen days ago I could not have.'},
+     {말:'Get up and open the window',
+      뒤:'Still dark. The air was cold.\n\nThat day is over and I am here. It took three years to know that.'}]}
+];
+
+var PTSD_곁의사람 = [
+ { 때:'Day 1 · 3am', 힘:34,
+   글:'The other side of the bed is empty again. Around three.',
+   곁:'The living room light is on. Do I go out, or leave it.',
+   고르기:[
+     {말:'Go out and say something',
+      뒤:'"You okay?" I said. "Yeah," they said.\n\nThat was all of it. We sat there a while and came back in.'},
+     {말:'Pretend I did not notice',
+      뒤:'I looked at the ceiling. Going out might be pressure. Not going might be cold.\n\nSome nights everything you could do is the wrong one.'}]},
+
+ { 때:'Day 1 · morning', 힘:30,
+   글:'They swapped seats. Without a word.',
+   곁:'Asking feels like prying. Not asking feels like not caring.',
+   고르기:[
+     {말:'"Why did you move?"',
+      뒤:'"No reason," they said.\n\nI know it is not no reason. But once someone says no reason you cannot ask again.'},
+     {말:'Say nothing',
+      뒤:'We ate. Like nothing had happened.\n\nNothing happens in our house lately. Only the work of pretending nothing does.'}]},
+
+ { 때:'Day 2 · evening', 힘:18,
+   글:'My kid ran to me crying.',
+   곁:'"Dad shouted at me."',
+   고르기:[
+     {말:'Hold the child first',
+      뒤:'I held them, patting their back, looking at the other door.\n\nTwo people need calming and I am one person.'},
+     {말:'Go and see what happened',
+      뒤:'They were standing there with the face of someone who does not know what they just did.\n\nYou cannot be angry at that face. So the anger has nowhere to go.'}]},
+
+ { 때:'Day 3 · midday', 힘:20,
+   글:'No answer. They left at one and it is nearly three.',
+   곁:'I have called about ten times.',
+   고르기:[
+     {말:'Keep calling',
+      뒤:'They picked up at ten past three. "Yeah? What is it?"\n\nLike nothing had happened. Only I spent two hours imagining the worst.'},
+     {말:'Wait',
+      뒤:'The door opened. They walked in like it was nothing.\n\nI asked where they had been. They said they stepped out for a bit. It was two hours.'}]},
+
+ { 때:'Day 4 · morning', 힘:38,
+   글:'Bright today. Talking first, even laughing.',
+   곁:'These days are welcome and frightening. There is no telling when it stops.',
+   고르기:[
+     {말:'Be glad with them',
+      뒤:'We laughed together. It had been a while.\n\nAnd while laughing, part of me was counting. How many days will this last.'},
+     {말:'Handle it carefully',
+      뒤:'"Why are you looking at me like that?" they asked.\n\nIt has been a long time since I could enjoy a good day all the way.'}]},
+
+ { 때:'Day 4 · evening', 힘:14,
+   글:'I found them crouched in the car park.',
+   곁:'I ran over. Said their name. They did not seem to hear it.',
+   고르기:[
+     {말:'Shake their shoulder',
+      뒤:'The body stiffened, then they recognised me.\n\n"Sorry," they said. There is nothing to be sorry for.'},
+     {말:'Crouch down next to them',
+      뒤:'It took about three minutes. Then "let us go," and they stood up.\n\nI did not ask what it was. They would only say they did not know.'}]},
+
+ { 때:'Day 5 · midday', 힘:16,
+   글:'A friend asked how things are.',
+   곁:'What do I say.',
+   고르기:[
+     {말:'"Fine."',
+      뒤:'I said fine. The subject moved on.\n\nI cried a bit on the way home. I do not know why either.'},
+     {말:'Tell them the truth',
+      뒤:'"That bad? Are they maybe just a bit sensitive?"\n\nOne sentence and I decided not to say it again.'}]},
+
+ { 때:'Day 6 · evening', 힘:12,
+   글:'It came out. "You have to stop thinking about that day."',
+   곁:'I regretted it before the sentence ended.',
+   고르기:[
+     {말:'Apologise',
+      뒤:'"Sorry, I did not mean it like that."\n\n"I know," they said. Knowing does not remove it.'},
+     {말:'Leave it',
+      뒤:'I watched them go into the other room.\n\nWhy did I say it. Because I am worn down too, and that is the only way it came out.'}]},
+
+ { 때:'Day 7 · night', 힘:10,
+   글:'Woken again. Fourth time this week.',
+   곁:'"Again?" came out of my mouth.',
+   고르기:[
+     {말:'Sit up anyway',
+      뒤:'We sat there. Neither of us saying anything.\n\nThinking about work tomorrow made me dizzy. I sat there anyway.'},
+     {말:'"Let us talk tomorrow," and turn over',
+      뒤:'I turned over. I heard them get up and leave.\n\nI am sorry and my body would not move. I am also a person.'}]},
+
+ { 때:'Day 8 · midday', 힘:22,
+   글:'I saw them doing something they used to love.',
+   곁:'I watched, glad.',
+   고르기:[
+     {말:'"Been a while. Good?"',
+      뒤:'"...Yeah," they said.\n\nThere was nothing in the face. Not good, not bad.'},
+     {말:'Leave them to it',
+      뒤:'They did it alone and stopped partway.\n\nI thought they were coming back. They were not.'}]},
+
+ { 때:'Day 9 · evening', 힘:26,
+   글:'I said it. "You seem a bit better lately."',
+   곁:'It looked true. I also wanted it to be.',
+   고르기:[
+     {말:'"Right?" and smile',
+      뒤:'We smiled together.\n\nI found out later. Not better. Showing less.'},
+     {말:'"Really?" and ask again',
+      뒤:'"I am showing less."\n\nI did not know what to say so I took their hand. That was all I had.'}]},
+
+ { 때:'Day 10 · morning', 힘:30,
+   글:'The bed is empty. Out around three again, probably.',
+   곁:'But the living room is quiet.',
+   고르기:[
+     {말:'Go and look',
+      뒤:'Asleep on the sofa. Maybe two hours of it.\n\nI put a blanket over them and came back. Ten days ago this person could not sleep.'},
+     {말:'Leave them',
+      뒤:'I lay there a bit longer.\n\nSo this is how better arrives, with no sign at all. Which is why it is easy to miss.'}]}
+];
+
+
 var 누가아픈가 = null;   // '남편' 또는 '아내' — 호칭만 바뀐다. 겪는 일은 같다.
 try { 누가아픈가 = localStorage.getItem('eotteon_who'); } catch(e) {}
+var 병 = null;   // 'depression' or 'ptsd' — same ten days, different way of breaking.
+try { 병 = localStorage.getItem('eotteon_ill'); } catch(e) {}
 function 아픈쪽(){ return 누가아픈가 === 'wife' ? 'the wife' : 'the husband'; }
 function 곁쪽(){ return 누가아픈가 === 'wife' ? 'the husband' : 'the wife'; }
 try { 끝난편 = JSON.parse(localStorage.getItem('eotteon_done') || '[]'); } catch(e) { 끝난편 = []; }
 
-function 저장(){ try { localStorage.setItem('eotteon_done', JSON.stringify(끝난편));
-  if (누가아픈가) localStorage.setItem('eotteon_who', 누가아픈가); } catch(e){} }
+function 저장(){ try {
+  localStorage.setItem('eotteon_done_' + (병||'depression'), JSON.stringify(끝난편));
+  if (누가아픈가) localStorage.setItem('eotteon_who', 누가아픈가);
+  if (병) localStorage.setItem('eotteon_ill', 병); } catch(e){} }
+function 끝난것불러오기(){ try {
+  끝난편 = JSON.parse(localStorage.getItem('eotteon_done_' + (병||'depression')) || '[]');
+} catch(e){ 끝난편 = []; } }
 
 function 누구고르기(){
   앱.innerHTML =
@@ -332,19 +606,38 @@ function 누구고르기(){
 function 누구정함(w){ 누가아픈가 = w; 끝난편 = []; 저장(); 시작화면(); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
+function 병고르기(){
+  앱.innerHTML =
+   '<div class="card">' +
+   '<h1>Some Days</h1>' +
+   '<p class="note">A day comes apart differently depending on the illness. Pick one.</p>' +
+   '<button class="btn solid" onclick="병정함(\'depression\')">Depression</button>' +
+   '<p class="note" style="margin:-4px 0 14px;font-size:13px">You want to and your body will not. Some options stop being available.</p>' +
+   '<button class="btn solid" onclick="병정함(\'ptsd\')">PTSD</button>' +
+   '<p class="note" style="margin:-4px 0 14px;font-size:13px">You can pick anything. What happens is simply not what you picked.</p>' +
+   '<div class="help"><p style="margin:0">Some scenes are hard. You can leave at any point.</p></div>' +
+   '</div>';
+}
+function 병정함(b){ 병 = b; 끝난것불러오기(); 저장(); 시작화면(); }
+
 function 시작화면(){
+  if (!병) return 병고르기();
   if (!누가아픈가) return 누구고르기();
   var 둘다 = 끝난편.indexOf('아픈사람') >= 0 && 끝난편.indexOf('곁의사람') >= 0;
   앱.innerHTML =
    '<div class="card">' +
    '<h1>Some Days</h1>' +
    '<p class="note">You live the same ten days twice. Once as the person who is ill, once as the person beside them.</p>' +
-   '<p class="note">Some options cannot be picked. That is part of the story too.</p>' +
+   (병 === 'ptsd'
+  ? '<p class="note">What happens is not what you picked. That is part of the story too.</p>'
+  : '<p class="note">Some options cannot be picked. That is part of the story too.</p>') +
    '<button class="btn solid" onclick="편시작(\'아픈사람\')">' +
-     아픈쪽() + '' + (끝난편.indexOf('아픈사람')>=0 ? ' · 다시' : '') + '</button>' +
+     아픈쪽() + '' + (끝난편.indexOf('아픈사람')>=0 ? ' · again' : '') + '</button>' +
    '<button class="btn" onclick="편시작(\'곁의사람\')">' +
-     곁쪽() + '' + (끝난편.indexOf('곁의사람')>=0 ? ' · 다시' : '') + '</button>' +
+     곁쪽() + '' + (끝난편.indexOf('곁의사람')>=0 ? ' · again' : '') + '</button>' +
    '<button class="btn" style="border-color:#2b2936;color:#8b8798" onclick="누구고르기()">Change who is ill</button>' +
+   '<button class="btn" style="border-color:#2b2936;color:#8b8798" onclick="병고르기()">'
+     + (병 === 'ptsd' ? 'PTSD' : 'Depression') + ' · switch illness</button>' +
    (둘다 ? '<button class="btn" onclick="마무리()">See the same evening from both sides</button>' : '') +
    '<div class="help">' +
    '<p style="margin:0 0 6px">This is not any one person’s story. It was built from accounts that people who lived it wrote publicly.</p>' +
@@ -354,7 +647,10 @@ function 시작화면(){
 
 function 편시작(누구){ 편 = 누구; 칸 = 0; 그리기(); }
 
-function 목록(){ return 편 === '아픈사람' ? 아픈사람 : 곁의사람; }
+function 목록(){
+  if (병 === 'ptsd') return 편 === '아픈사람' ? PTSD_아픈사람 : PTSD_곁의사람;
+  return 편 === '아픈사람' ? 아픈사람 : 곁의사람;
+}
 
 function 그리기(){
   var L = 목록();
@@ -369,9 +665,12 @@ function 그리기(){
   if (편 === '아픈사람' && (때.indexOf('셋째') >= 0 || 때.indexOf('Day 3') >= 0)) 배경 = '교회';
   if (편 === '곁의사람' && (때.indexOf('셋째') >= 0 || 때.indexOf('Day 3') >= 0)) 배경 = '교회';
   var 이름 = 편 === '아픈사람' ? 아픈쪽() : 곁쪽();
+  var 앞머리 = s.잃음 ? '<p class="lost">There is no memory of that stretch.</p>' : '';
+  var 덮개 = s.덮임 ? '<div class="flash">' + esc(s.덮임) + '</div>' : '';
   var h = '<div class="top"><span class="tag">' + 이름 + '</span><span>' + esc(s.때) + '</span></div>' +
           '<div class="gauge"><i style="width:' + s.힘 + '%"></i></div>' +
-          '<div class="pic" style="background-image:url(' + 그림[배경] + ')"></div>' +
+          '<div class="pic' + (s.덮임 ? ' washed' : '') + '" style="background-image:url(' + 그림[배경] + ')">' + 덮개 + '</div>' +
+          앞머리 +
           '<p class="scene">' + esc(s.글) + '</p>' +
           '<p class="aside">' + esc(s.곁) + '</p>' +
           '<div class="opts">';
@@ -389,11 +688,14 @@ function 흔들기(el){ el.style.animation='none'; void el.offsetWidth; el.style
 var 마지막배경 = '아침';
 function 고름(i){
   var s = 목록()[칸], o = s.고르기[i];
+  var 바뀜인가 = !!o.바뀜;
+  var 결과 = o.바뀜 || o.뒤;
   앱.innerHTML = '<div class="top"><span class="tag">' +
     (편==='아픈사람'?아픈쪽():곁쪽()) + '</span><span>' + esc(s.때) + '</span></div>' +
     '<div class="gauge"><i style="width:' + s.힘 + '%"></i></div>' +
     '<div class="pic" style="background-image:url(' + 그림[마지막배경] + ')"></div>' +
-    '<p class="scene">' + esc(o.뒤) + '</p>' +
+    (바뀜인가 ? '<p class="chose">You chose: ' + esc(o.말) + '</p>' : '') +
+    '<p class="scene' + (바뀜인가 ? ' shifted' : '') + '">' + esc(결과) + '</p>' +
     '<div class="opts"><button class="opt" onclick="Next()">Next</button></div>';
 }
 
@@ -425,18 +727,18 @@ function 마무리(){
    '<p class="note" style="margin-bottom:4px">' + 곁쪽() + '</p>' +
    '<p>I tried to hold the sigh and it came out. And I knew they heard it.</p>' +
    '<h2>Both of them had something they could not do</h2>' +
-   '<p>한 사람은 대답할 것이 없어서 못 했고, 한 사람은 기다릴 힘이 남지 않아서 못 했습니다. ' +
-   '둘 다 상대를 아프게 하려던 것이 아니었습니다.</p>' +
-   '<p>아픈 사람의 고통은 당사자 말고는 잘 모릅니다. ' +
-   '그런데 <b>곁에 있는 사람의 고통도 당사자 말고는 모릅니다.</b> 그래서 서로를 모른 채 같은 집에 삽니다.</p>' +
+   '<p>One of them had nothing to answer with. The other had no waiting left in them. ' +
+   'Neither was trying to hurt anyone.</p>' +
+   '<p>Nobody really knows what the ill person carries except the ill person. ' +
+   'But <b>nobody knows what the one beside them carries either.</b> So they live in the same house, each unknown to the other.</p>' +
    '<h2>And on the eighth day</h2>' +
-   '<p>한 사람은 "Want to walk for a bit?" 라고 물었고, 한 사람은 "Okay" 이라고 했습니다. 십 분쯤 걷고 들어왔습니다.</p>' +
-   '<p>나은 것은 아닙니다. Next 날 또 못 일어날 수도 있습니다. 다만 그날은 그것 됐습니다.</p>' +
+   '<p>One of them said, "Want to walk for a bit?" The other said, "Okay." They walked about ten minutes and came back in.</p>' +
+   '<p>Nothing was cured. Tomorrow they may not get up again. But that day, that was enough.</p>' +
    '<h2>To anyone who played this</h2>' +
-   '<p style="font-size:1.02rem">정신 버티라고, 이렇게 계속 살 거냐고 하지 말아 주세요. <b>오늘 하루 넘기는 게 목표인 사람도 있습니다.</b></p>' +
+   '<p style="font-size:1.02rem">Do not tell them to hold on with willpower. Do not ask if they plan to live like this forever. <b>For some people, getting through today is the whole goal.</b></p>' +
    '<p style="font-size:1.02rem">And one sentence from you can end a person. Healthy people cannot feel this.</p>' +
    '<p style="font-size:1.02rem">The die, die, die going on inside a head. <b>Those people are not failing to die. They are holding on, again, today.</b></p>' +
-   '<p style="font-size:1.02rem">이 프로그램라도 조금이라도 알아주셨으면 좋겠습니다.</p>' +
+   '<p style="font-size:1.02rem">I hope this — even just this — lets you know a little of it.</p>' +
    '<p class="note" style="margin-top:18px">— left here by one of the people who made this.</p>' +
    '<p class="note">There is no answer in this. Only this: the other person had grey buttons on their screen too.</p>' +
    '<button class="btn" onclick="시작화면()">Start over</button>' +
