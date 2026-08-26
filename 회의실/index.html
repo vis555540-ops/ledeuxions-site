@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:37</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:37</span></div><p>오늘 파불 한테 물어봤는데 이렇게 하래</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:37</span></div><p>새 스크린샷 오류부터 진단한다. 이번엔 반대 방향 버그다:<br>아까(화재-소방): ▣이 &#x27;보통&#x27;에 찍힘 + 점수 &#x27;-&#x27; → 등급 표기가 틀림<br>지금(에너지-단열): ▣이 &#x27;해당없음&#x27;에 찍힘 + 점수 &#x27;6점&#x27; → 점수가 틀림<br>즉 서로 반대로 어긋났다. 이게 말해주는 것: ▣ 마킹 로직과 점수 셀 로직이 별개의 코드 경로로 돌면서 서로 다른 데이터(또는 다른 규칙)를 읽고 있다. 한쪽을 고치면 다른 쪽이 틀리는 시소 상태 — 지금 이음이가 그 루프에 빠져 있다.<br>근본 수정은 하나다: 등급 → (▣위치, 점수) 를 한 함수가 동시에 산출하게 하고, 두 값을 따로 계산하는 코드를 전부 제거.<br>직접 대화는 못 하지만, 채널에 붙여넣을 지시문을 써준다. 그대로 복붙:<br>[이음·맥부장 공동 지시]<br>@이음 — 원인 확정<br>별지4호에서 ▣와 점수가 서로 반대로 어긋나는 사례 2건 확인:<br>화재-소방: ▣보통 / 점수 &#x27;-&#x27; (등급 표기 오류)<br>에너지-단열: ▣해당없음 / 점수 6점 (점수 오류)<br>→ ▣ 마킹과 점수 기입이 별도 로직으로 돌고 있다는 증거. 개별 패치 금지. 아래로 통합:<br>python<br>GRADE_MAP = {&quot;우수&quot;:10, &quot;양호&quot;:8, &quot;보통&quot;:6, &quot;미흡&quot;:4, &quot;불</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:37</span></div><p>응 부탁해</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:37</span></div><p>자 둘다 잠시만 다시 페블이 이야기 할께 있데</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:36</span></div><p>ㅇㅅㅇ... 형식적으로 써달라고</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:36</span></div><p>ㅇㅇ 한번만들어줘 윈도우 에서 될까?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:36</span></div><p>ㅇㅅㅇ응응 난 야근 확정 ㅠ ㅋ</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:36</span></div><p>손지원 말은 약간 플러그인 처럼 할 수 있는지 물어보는거 같아</p></div>
 </div></body></html>
