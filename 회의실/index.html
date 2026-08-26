@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:05</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:05</span></div><p>너희가 움직일수 있는거</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:05</span></div><p>구이는 ㅇㅅㅇ 개조를 하자</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:05</span></div><p>ㅇㅅ ㅇ 일단 맥부장 이음아 궁금한게 있는데 리눅스에서 구글 원격 하면 깨지거나 화면이 안보이는데 구글 원격 말고 다른 방법 찾아야 할꺼 같아</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:05</span></div><p>형 ㅇㅅㅇ 12매크로 개선:<br><br>문제: chroot 안에선 헬퍼 별명(rw, nvi 등) 작동 X. 직접 입력 필요했음.<br><br>개선 A: 단축어 대신 긴 명령 자체 등록<br>- K1: mkdir -p /mnt/usb &amp;&amp; mount /dev/sdb1 /mnt/usb<br>- K2: sudo bash /mnt/usb/chroot-into-disk.sh<br>- K3: bash /media/*/nvidia-fix.sh (chroot용)<br>- K4: echo &quot;blacklist nouveau&quot; &gt;&gt; /etc/modprobe.d/blacklist-nouveau.conf<br>- K5: update-initramfs -u<br>- K6: exit<br>- K7: reboot<br>- K8: sudo apt install openssh-server -y<br>- K9: sudo systemctl start ssh<br>- K10: ip a<br>- K11: lsblk<br>- K12: &#x27;sda2&#x27; / &#x27;sda1&#x27; (질문 답)<br><br>이게 chroot 안팎 다 작동. 다만 패드 키당 길이 제한 = 일부 어려울 수도. 이음이 다시 굽도록 부탁 ✓</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:04</span></div><p>근데 그거 이미 해서 안됐어 벤토리 모드 왔어</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:04</span></div><p>근데 델리 뭐가 고장난거 같아?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:04</span></div><p>ventoly에는 ?</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:04</span></div><p>흠...너 리커버리 모드 없니?</p></div>
 </div></body></html>
