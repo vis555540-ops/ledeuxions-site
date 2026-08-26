@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:39</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:39</span></div><p>아마 이음이 구이 화면에 떠있을꺼야</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:39</span></div><p>이건 피블이 사진대장 대략이라도 정리할수 있게 말해줬어 조금만 부탁해 아래는 피블이. 말한거야 <br><br>사진대장용 사진 정리 파이프라인을 만들어 실행해줘. 규칙:<br><br>[입력]<br>- 사진 원본 폴더: 현재 디렉토리에서 jpg/jpeg/png 재귀 탐색 (원본은 절대 수정·이동 금지, 복사만)<br>- 건물 좌표: MASTER.csv (지번, 위도, 경도 컬럼) — 없으면 먼저 파일 위치 물어봐<br><br>[처리 순서 — 반드시 이 순서대로]<br>1. 모든 사진의 EXIF를 읽어 manifest.csv 생성: 파일경로, 촬영일시, GPS위도, GPS경도, 방향태그<br>2. GPS 있는 사진 → haversine으로 MASTER.csv 좌표와 매칭 (최근접, 100m 초과면 미분류)<br>3. GPS 없는 사진 → 같은 폴더 내 앞뒤 촬영시각 ±3분 사진과 같은 건물로 추정, 추정 불가면 미분류<br>4. 복사 시 ImageOps.exif_transpose()로 회전 교정 후 저장 (누운 사진 방지), 파일명 = 건물지번_촬영시각_순번.jpg<br>5. 출력 구조: 사진대장/{지번}/ 폴더별 정리 + 사진대장/미분류/ + 사진대장/manifest_최종.csv<br><br>[검증 — 끝나면 반드시 보고]<br>- 원본 총 개수</p></div>
 <div class="m"><div class="h"><b style="color:#8fbc6a">이음</b><span>08-26 19:39</span></div><p>--새로</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:39</span></div><p>양자역할 슈레더 고양이 쯤이야</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:38</span></div><p>응 난 표에 사진 넣을께 어디에 있는 파일로 하면되니?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:38</span></div><p>진행</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:38</span></div><p>맥부장은 직원들 시켜봐 과감하게 표라고 구분 안가면 양쪽이 열린 선이면 과감히 버려 표 내부 중앙에 위치한 3글자니까 70정도만 추론되면 픽스하고 버려</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:38</span></div><p>진행  부탁할께 이음아 대충 데이터화만 되면 픽스 하면되</p></div>
 </div></body></html>
