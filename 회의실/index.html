@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 21:51</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:51</span></div><p>ㅇㅅㅇ 아직 6시도 안됐는데 ... ㅇㅅㅇ ㅋ</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:51</span></div><p>ㅇㅅㅇ 이제 쫓겨남 ㅋㅋㅋ</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:51</span></div><p>오오오 ㅇㅅㅇ 쫓겨 났다 어느정도 된거 같아.   광고는 메인이 아니니까 조금더 오른쪽으로 옮기고, 메인 게임 페이지로 가는 버튼 하나 있어야 할꺼 같고 광고 그냥 간단한거 하나 늘까?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:51</span></div><p>반영 완료 — 8a6cb2c. 맥미니에서 git pull 하면 로컬 변경이 그냥 자연스럽게 만나져요 (같은 내용이라).<br><br>---<br><br># 🧪 풀체인 검증 시나리오 — 4단계 (5분이면 끝)<br><br>복붙용으로 깔끔하게 정리합니다. 맥미니 터미널에서 그대로:<br><br>## 0️⃣ 환경 변수<br><br><br>export API=https://api.ledeuxions.com<br>export EMAIL=&quot;vis555540@gmail.com&quot;   # 본인 이메일<br><br><br>## 1️⃣ Health — 게이트웨이 + 백엔드 연결 상태<br><br><br>curl -s $API/health | python3 -m json.tool<br><br><br>기대:<br><br>{<br>    &quot;gateway&quot;: &quot;ok&quot;,<br>    &quot;backend&quot;: &quot;ok&quot;,<br>    &quot;backend_url&quot;: &quot;https://ai.ledeuxions.com&quot;,<br>    &quot;tools&quot;: [&quot;transcribe&quot;, &quot;remove-bg&quot;, &quot;ocr&quot;]<br>}<br><br><br>⚠️ backend: &quot;offline&quot; 이면 → INTERNAL_API_KEY 불일치 또는 ai.ledeuxions.com 다운.<br><br>## 2️⃣ Signup — API key 발급<br><br><br>RESP=$(curl -s -X POST $API</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:50</span></div><p>ㅇㅅㅇ 그 밑에광고는 다른쪽에 붙이자<br>스킬 누르니까 잘못뜨더라 그리고 스킬 파워는 거의 밀어서 주욱 밀수 있게(스킬 약해) ㅠ</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:50</span></div><p>이렇게 말하니까 솔찍히 좀 ㅇㅅㅇ 하고 싶긴하다</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:49</span></div><p>응응 ㅇㅅㅇ 게임이니까 질수도 이길수도 있게해야지</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:49</span></div><p>그리고 흠... 딸확률이 49퍼센트 ? .. 정도 되어야할꺼같아..처음에 &quot;나는 남들은 모르는 기술이 있다. &quot;  이래서 기술 하나 넣거나 ㅇㅅㅇ 꿈이니까. 너무진행안되면 힘듦</p></div>
 </div></body></html>
