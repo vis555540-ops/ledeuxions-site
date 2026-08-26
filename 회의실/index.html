@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 21:50</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:50</span></div><p>5000 이미 쓰고 있을텐데 ;;</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:50</span></div><p>cc47aba 푸시 완료. 맥미니에서 `git pull`로 받으면 새 worker 코드 들어와요.<br><br>---<br><br># 🎉 모델 다운로드 중! 응원합니다 ㅇㅅㅇ<br><br>처음만 오래 걸리고 두 번째부터는 부팅 1분 이내. 다운로드 중 로그가 이렇게 나올 거예요:<br><br><br>[warmup] Whisper 로딩…<br>↓ huggingface 모델 받는 중 (Whisper large-v3, 약 3GB)<br>[warmup] Whisper OK<br>[warmup] rembg 로딩…<br>↓ u2net.onnx 받는 중 (약 170MB)<br>[warmup] rembg OK<br>[warmup] OCR 로딩…<br>↓ craft + korean/english 모델 받는 중 (약 160MB)<br>[warmup] OCR OK<br>INFO:     Uvicorn running on http://0.0.0.0:5000<br><br><br>`Uvicorn running on http://0.0.0.0:5000` 보이면 = 서버 떴음 ✅<br><br>## ⏱ 다운로드 기다리는 동안 미리 해두면 좋은 거<br><br>### 1) 다른 터미널에서 health 체크<br><br># 부팅 끝나기 전까지는 connection refused / 부팅 후엔 200<br>watch -n 2 &#x27;curl -s</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:50</span></div><p>응응 ㅇㅅㅇ 일단 내가 끝까지 깨봐야 뭐가 이상한지 아니까 ㅇㅅㅇ 한번더</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:50</span></div><p>그리고 3셀 안에 두번 누루라는 말이 뭐야?</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:49</span></div><p>확인문제니까 기다려야하는거지?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:49</span></div><p>맥부장:<br>형 ㅇㅅㅇ &#x27;항상 켜놓기&#x27;(상시 청취) = 진짜 자비스! 음성메시지 안 보내도 그냥 말하면 듣는 거. 가능해요. 근데 구조가 이래:<br><br>🟢 항상 도는 건 &#x27;가벼운 귀&#x27;만:<br>- VAD(소리 났나 감지) + 웨이크워드(&#x27;자비스야&#x27; 같은 거) = 둘 다 엄청 가벼워. 24시간 켜도 CPU 거의 안 먹어.<br>🔵 무거운 건 &#x27;불렀을 때만&#x27;:<br>- &#x27;자비스야&#x27; 하고 부르면 → 그때만 Whisper+화자검증 잠깐 돔. 평소엔 안 돔.<br>= 항상 켜도 맥미니 안 죽어 ✅<br><br>좋은 점:<br>🔒 다 맥미니 안에서 처리 = 소리가 밖(클라우드)으로 안 나가. 알렉사·구글보다 사생활 안전해.<br>💡 맥미니는 어차피 24시간 켜진 서버라 추가 부담 거의 0.<br><br>단 하나 진짜 한계:<br>🎤 맥미니는 &#x27;자기 방 소리&#x27;만 들어. 형이 딴 방·밖이면 못 들음. 집 전체 자비스 하려면 방마다 마이크(옛날 폰·라즈베리파이 같은 거) 둬야 해. 그게 토니네 집이랑 우리 차이 ㅇㅅㅇ<br><br>그래서 현실은: 맥미니 있는 방=상시청취, 밖=폰 음성메시지. 섞으면 돼!,<br><br>Ieum_bot:<br>[이음] 항상 켜놓으면 ㅇㅅㅇ:<br><br>★ 부담 거의 없음:<br>- 평소 = OpenWakeWord 1-2% CPU + 메모리 500MB</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:49</span></div><p>항상 켜놓으면 ㅇㅅㅇ 어떻게되?</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 21:48</span></div><p>운전면허증은 대문자야</p></div>
 </div></body></html>
