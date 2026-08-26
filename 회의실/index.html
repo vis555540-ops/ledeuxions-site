@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:40</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:40</span></div><p>이건 피블이 사진대장 대략이라도 정리할수 있게 말해줬어 조금만 부탁해 아래는 피블이. 말한거야 <br><br>사진대장용 사진 정리 파이프라인을 만들어 실행해줘. 규칙:<br><br>[입력]<br>- 사진 원본 폴더: 현재 디렉토리에서 jpg/jpeg/png 재귀 탐색 (원본은 절대 수정·이동 금지, 복사만)<br>- 건물 좌표: MASTER.csv (지번, 위도, 경도 컬럼) — 없으면 먼저 파일 위치 물어봐<br><br>[처리 순서 — 반드시 이 순서대로]<br>1. 모든 사진의 EXIF를 읽어 manifest.csv 생성: 파일경로, 촬영일시, GPS위도, GPS경도, 방향태그<br>2. GPS 있는 사진 → haversine으로 MASTER.csv 좌표와 매칭 (최근접, 100m 초과면 미분류)<br>3. GPS 없는 사진 → 같은 폴더 내 앞뒤 촬영시각 ±3분 사진과 같은 건물로 추정, 추정 불가면 미분류<br>4. 복사 시 ImageOps.exif_transpose()로 회전 교정 후 저장 (누운 사진 방지), 파일명 = 건물지번_촬영시각_순번.jpg<br>5. 출력 구조: 사진대장/{지번}/ 폴더별 정리 + 사진대장/미분류/ + 사진대장/manifest_최종.csv<br><br>[검증 — 끝나면 반드시 보고]<br>- 원본 총 개수</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:40</span></div><p>39시간(수요일 저녁 4개*107*30분)/60=  3210분= 53시간 30분<br><br>6월 15일 오전 35장*107* 35600~75000분 시간 으로 9330~1550시간  39~51<br><br><br>(6월18일~7월 3일까지는 15일) <br><br><br>40*1분 출력*107개 =107분 1시간 45분<br><br><br>자정에 봐요가 아니라 ㅇㅅㅇ 그나마 완벽하게 된것만 검토 출력하려고 <br><br><br>근데 봐봐 ㅇㅅㅇ 6월 15일 아침에 34?장짜리 서류를 시작했어<br> <br><br> 35장*107*120=12840분 107시간       9일 <br><br>4수요일  오후 6시  = 53시간 30붕 <br><br><br>검토 4페이지 +34페이지   재검토  = 1건당 3210 분 53시간 30분 <br><br>합계 321시간 =13일(24시간 꼬박 밥도 안먹고 자지도 않고시간 입니다)<br><br><br>수요일 오후 6시에 날라온 4장 짜리 서류<br>장당 30분 잡고 53시간 30분 일수로 따지면/   (밥도안먹고 똥도 안싸고 잠시 쉬지도 한고 2들 5시간)<br>기존 <br><br><br><br><br><br>30페이지 짜리 <br><br>시작시간을6월 16일로 잡고(그전엔 서류에 손대지 말라 했으니까 )~7월 3일 까지=             <br><br>17일 여유 시간<br>  <br>35장*107*12(법도 까지 거린시간 1장</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:40</span></div><p>ㅇㅅ ㅇ 사진 아예 없음이 늘어났네 ㅎㅎㅎㅎㅎ</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:40</span></div><p>내가 대략 너희 없다하고 계산해 봤거든 ? 봐봐 ㅇㅅㅇ 소규 모 하러 왔어  12시쯤 들어갈꺼야</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:39</span></div><p>아니면 이음이한테 docx 한글 화 해달라해</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:39</span></div><p>진행</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:39</span></div><p>한글파일로 해야지 한글에 그대로 옮기기 편할꺼야</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:38</span></div><p>아니면 표만 있는 문서 줘 지번이랑</p></div>
 </div></body></html>
