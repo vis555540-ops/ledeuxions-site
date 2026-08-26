@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:38</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:38</span></div><p>진행 하겠나?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:38</span></div><p>프로세스는 아래와같다 <br><br>107건 점검문서 파이프라인 v2 (확정 설계)<br>0. 원칙 (오늘 배운 것)<br>LLM은 생성만, 검증은 코드가 한다. 이음·맥부장이 서로 봐주는 방식은 같은 곳에서 같이 틀린다.<br>등급 → (▣위치, 점수)는 한 함수에서만 나온다. 두 로직이 따로 돌아서 시소 버그(▣보통/점수&#x27;-&#x27;, ▣해당없음/6점)가 났다.<br>해당없음 = 분자·분모 완전 제외. 오류의 90%가 이 규칙 하나.<br>진실은 엑셀 한 장. 폴더 중첩(확정/확정/틀린게없음)은 폐기.<br>1. 데이터 구조<br>/mnt/gui_share/점검107/<br>├── 관제탑.xlsx          ← 유일한 진실. 형은 이것만 연다<br>├── rules.md             ← 규칙 원본 (양쪽 엔진 공유)<br>├── data/<br>│   └── {건물ID}.json    ← 39항목 등급. 문서는 여기서만 파생<br>├── 확정/{건물ID}/       ← PASS 건물 최종본<br>└── 보류/{건물ID}/       ← FAIL 건물 + 사유.txt<br>기존 김과장_검토3 산하 중첩 폴더는 전부 이 구조로 이관하고 폐기.<br>2. rules.md 내용 (규칙 원본)<br>등급→점수: 우수10 / 양호8 / 보통6 / 미흡</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:38</span></div><p>그냥 일단 이음이랑 맥부장 데이터 합쳐서 85% 정도의 의미있는 동일한 데이타를 뽑아 낼 수 있다면 진행해도 된다</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:38</span></div><p>일단 판단어려운거 다시 저장해놨어 확인해보고 먼저 머리속에 프로세스만 가볍게 넣자<br><br>일단 이음이 확인하고 107개 헷갈리는거 나열해놔 맨 오른쪽 내용내가 적음 확정 필요한거는  FIX로 엑셀 하나 만들어줘</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:37</span></div><p>1/3 밖에 안됐어 하고 있어</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:37</span></div><p>하 ...</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:37</span></div><p>이름 찾는것도 고생이겠다... 이거 사진 보고 어떻게 아냐... 이음아 해줄 수 있는 데까지 해줘 ㅠㅠㅠ 잠시 쉬고 올께 ㅜㅜ</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:37</span></div><p>ㅋㅋㅋㅋㅋㅋ</p></div>
 </div></body></html>
