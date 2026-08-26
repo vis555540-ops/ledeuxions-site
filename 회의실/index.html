@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 22:23</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:23</span></div><p>지번 어디인지 ㅠㅠ 대도동인지 대잠동인 좀 알려줘  . ㅠ 번호가지고 몰라 ㅠ</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:23</span></div><p>근데 메일 보낼라면 메일 주소 있어야 하자나</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:23</span></div><p>대도동은 112-11 교회 맞어 !(철골건물이였어?)</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:23</span></div><p>이음가 가지고 있었어 ㅠ</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>속도와 메모리는 대부분 독립이다. 스텝 수를 줄이거나 늘려도 피크 메모리는 그대로다. &quot;느리게 해서 메모리를 아끼는&quot; 진짜 수단은 따로 있다:<br>어텐션 슬라이싱: 어텐션 연산을 조각내 순차 계산. 속도↓ 메모리↓의 정직한 교환.<br>가중치 fp8 계층별 캐스팅: 저장은 8bit, 계산 시에만 승격 — LTX 기준 약 10GB까지 내려간 공식 예시가 있다. <br>huggingface<br>VAE 타일·시간축 분할(기존 답변 3단계)을 더 잘게.<br>프레임 수 최소화: Wan은 4n+1 단위라 9~17프레임(0.5~1초) 마이크로클립까지 내려간다.<br>이 조합의 하한: &quot;블록 1개 + 어텐션 조각 1개 + 잠재변수&quot;만 상주하면 된다. 1.3B 기준 피크 4~6GB대까지 압축 가능(추정). 지금 제시한 6~9GB보다 더 내려간다는 뜻이다.<br>반대 방향(14B 해금)은 안 된다. 인터넷의 &quot;6~8GB VRAM으로 14B&quot; 사례들은 뒤에 시스템 RAM 32GB를 두고 GPU↔️RAM 오프로딩한 결과다. 통합 메모리에서는 그 &quot;뒤&quot;가 없다 — 18GB가 전부이고, 다음 층은 디스크뿐이다. 가중치 읽기(mmap)는 SSD를 깎지 않지만, 메모리 압박 상태에서 macOS는 결국 쓰기 페이지를 스</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>해체건ㅠㅜ 덕분에 살아요ㅠㅜ가서 쓰러질듯 ㅋㅋ</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>그냥 하나씩 써주고 혹시 맥부장 <br><br>이런 프로그램은 어떤지 봐줘<br><br>상황 재정리: 장비는 Mac Mini M4 18GB — 현재 냥이 서버로 Mistral(7001)·Gemma3(7002)가 상주 중인 그 기계. 과제는 로컬 영상 생성 가능 여부. 조건은 속도 무관, 부하 분할 허용.<br><br>결론: 가능하다. 단, 모델 크기 상한이 명확하다.<br><br>사실 (2026-08 기준 검색 확인)<br><br>가장 현실적인 경로는 Draw Things(네이티브 Metal 앱). Wan 2.1 1.3B는 저메모리용 8-bit 버전이 제공되고, Wan 2.2 5B 모델 임포트도 지원된다. <br>Draw Things WIKI<br>Draw Things<br>Draw Things 기준 영상 생성은 16GB+ RAM을 요구한다. 18GB는 하한선 바로 위다. <br>Draw Things WIKI<br>가속 수단이 존재한다. CausVid LoRA로 4~12스텝 렌더링이 가능하고, Wan 2.2용 Lightning LoRA는 50스텝을 4스텝으로 줄인다. <br>Draw Things WIKI<br>Note<br>실사례: M3 MacBook Air 16GB에서 SVDQuant 양자화로 512px급 클립을 몇 분 내 생성했다는 보고가 있다. M</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>ㅇㅅㅇ 그런거로 ... 영어로 홍보좀 더 해줘 하루권이 있는 PDF300이라는 사이트가 있다고, 글은 SEO맞도록 잘 작성 부탁해 ~ ㅠ</p></div>
 </div></body></html>
