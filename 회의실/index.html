@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 22:24</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:24</span></div><p>몸은 이야기 안할께 걱정시키는거 같다 ㅠ</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:24</span></div><p>지운다</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:24</span></div><p>K2986527k@ 아니면 Rnjsxodhks01@ 이거 정도 일껄  보고 저장좀 해줘 바로 삭제하게</p></div>
 <div class="m"><div class="h"><b style="color:#8fbc6a">이음</b><span>08-26 22:24</span></div><p>--새로</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>같은 사진인데 근데 내가 저거 대장에 사진대장은 내가 해놨을껀데 잠시만</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>응 너한테 부담안되게. 픽샐로 제작하라했는데. 했나모르겠다</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>상황 재정리: 요청 두 가지 — ① &quot;그런 모델&quot;을 내가 만들 수 있는가, ② 시간 무관, 최소 단위 분할로 맥미니 부하 최소화.<br><br>먼저 능력 경계부터 사실대로 구분한다.<br><br>사실 — 만들 수 있는 것 / 없는 것<br><br>- 영상 생성 모델 자체를 새로 학습 = 불가. 나도, 그 기계도 못 한다. 기존 모델의 LoRA 미세조정조차 80GB+ GPU 권장, 최저 32GB + Linux/CUDA 환경을 요구한다. [LTX](https://ltx.io/blog/how-to-fine-tune-a-video-generation-model-with-lora) 밑바닥 학습은 데이터센터급이다.<br>- 공개 모델(Wan 2.1 1.3B)을 부품으로 쓰는 분할 실행 파이프라인 제작 = 가능. 이건 코드 문제다. 지금 작성한다.<br>- 한계: 이 작업 환경에는 Apple GPU가 없어 MPS 실전 구동은 검증 못 한다. 문법·구조 검증까지만 하고 넘긴다. 그쪽 기계에서 시운전 1회 필요.<br><br>파이프라인을 만든다. 분할의 최소 단위를 &quot;디노이즈 1스텝&quot;까지 내린 설계다.<br><br>만든 것 — 분할 구조 요약<br><br>| 단계 | 프로세스 | 분할 수단 |<br>|---|---|---|<br>| 1 인코딩 | 01_enc</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>저거 15다 27아니야~ 저거</p></div>
 </div></body></html>
