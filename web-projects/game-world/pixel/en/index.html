@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="canonical" href="https://ledeuxions.com/web-projects/game-world/pixel/en/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a2036">
+<meta name="description" content="Draw pixel art on an 8, 16 or 32 grid and save it as a transparent PNG. Zoom, eyedropper, custom colors, two-finger pan on phones. Made for game character and item sprites. Free, no signup.">
+<meta property="og:title" content="🎨 Pixel Art Maker — LeDeuxions">
+<meta property="og:description" content="Draw pixel art, save as transparent PNG. Zoom and eyedropper, two-finger zoom on phones. Build game sprites.">
+<title>Pixel Art Maker — Free Online, No Signup</title>
+<!-- No auto ads: this is an interactive drawing tool, and an ad wedged between canvas and palette wrecks it. Manual footer ad later if ever. -->
+
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; touch-action:none; }
+  body { min-height:100vh; font-family:-apple-system,'Malgun Gothic',sans-serif;
+    background:linear-gradient(160deg,#1a2036,#2b2350); color:#fff;
+    display:flex; flex-direction:column; align-items:center; padding:12px; }
+  a.back { position:fixed; top:12px; left:14px; color:#fff; opacity:.6; text-decoration:none; font-size:15px; z-index:5; }
+  h1 { font-size:19px; font-weight:800; margin:2px 0 8px; }
+  .row { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; align-items:center; margin-bottom:8px; }
+  .sz,.tool { padding:7px 12px; font-size:13px; font-weight:700; background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.15); border-radius:10px; color:#fff; cursor:pointer; line-height:1; }
+  .sz.on,.tool.on { background:#ffc247; color:#1a2036; border-color:#ffc247; }
+  .pick { width:38px; height:34px; padding:0; border:1px solid rgba(255,255,255,.25); border-radius:10px;
+    background:transparent; cursor:pointer; overflow:hidden; }
+  .pick::-webkit-color-swatch-wrapper { padding:2px; }
+  .pick::-webkit-color-swatch { border:none; border-radius:7px; }
+  #palette { display:grid; grid-template-columns:repeat(9,1fr); gap:5px; max-width:340px; margin-bottom:8px; }
+  .sw { width:100%; aspect-ratio:1; border-radius:6px; cursor:pointer; border:2px solid transparent; }
+  .sw.on { border-color:#fff; transform:scale(1.12); }
+  .sw.eraser { background:repeating-conic-gradient(#bbb 0% 25%, #fff 0% 50%) 50%/10px 10px; }
+  #zoombar { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
+  .zb { width:40px; height:40px; font-size:20px; font-weight:800; background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.15); border-radius:12px; color:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; line-height:1; }
+  .zb:active { transform:translateY(1px); }
+  #zlabel { min-width:64px; text-align:center; font-size:14px; font-weight:800; opacity:.85; }
+  #wrap { background:#fff; border-radius:8px; padding:6px; box-shadow:0 8px 24px rgba(0,0,0,.35);
+    overflow:hidden; position:relative; }
+  #view { overflow:hidden; position:relative; }
+  canvas { display:block; image-rendering:pixelated; transform-origin:0 0;
+    background:repeating-conic-gradient(#d8d8d8 0% 25%, #fff 0% 50%) 50%/16px 16px; cursor:crosshair; }
+  #btns { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; justify-content:center; }
+  .b { padding:11px 18px; font-size:15px; font-weight:800; border:none; border-radius:30px; cursor:pointer; }
+  .b.save { background:linear-gradient(180deg,#a9f5c8,#5fe08e); color:#16241c; }
+  .b.photo { background:linear-gradient(180deg,#ffd98a,#f6b73c); color:#3a2a00; }
+  .b.clear { background:rgba(255,255,255,.12); color:#fff; }
+  .b.undo { background:rgba(255,255,255,.12); color:#fff; }
+  .b:active { transform:translateY(2px); }
+  .b:disabled { opacity:.35; }
+  #hint { font-size:12px; opacity:.55; margin-top:10px; text-align:center; line-height:1.6; max-width:360px; }
+</style>
+</head>
+<body>
+  <a class="back" href="/games/en/">← Games</a>
+  <h1>🎨 Pixel Art Maker</h1>
+
+  <div class="row">
+    <span class="sz on" data-n="16">16×16</span>
+    <span class="sz" data-n="32">32×32</span>
+    <span class="sz" data-n="8">8×8</span>
+    <span class="tool" id="eraser" title="Eraser — clears a filled cell">🧹 Eraser</span>
+    <span class="tool" id="eyedrop" title="Eyedropper — pick a color straight off your drawing">💧 Pick</span>
+    <input type="color" class="pick" id="pick" value="#ff66cc" title="Make your own color">
+  </div>
+
+  <div id="zoombar">
+    <button class="zb" id="zout" title="Zoom out">−</button>
+    <span id="zlabel">100%</span>
+    <button class="zb" id="zin" title="Zoom in">+</button>
+    <button class="zb" id="zreset" title="Reset view" style="font-size:16px;">⤢</button>
+  </div>
+
+  <div id="wrap"><div id="view"><canvas id="c"></canvas></div></div>
+
+  <div id="palette"></div>
+
+  <div id="btns">
+    <button class="b photo" id="photo">🖼️ From photo</button>
+    <button class="b undo" id="undo" disabled>↩︎ Undo</button>
+    <button class="b clear" id="clear">Clear all</button>
+    <button class="b save" id="save">Save PNG</button>
+  </div>
+  <input type="file" id="photoInput" accept="image/*" style="display:none">
+  <div id="hint">
+    One finger draws · <b>two fingers zoom and pan</b> 📱<br>
+    💧 Pick colors off the canvas · make your own in the swatch on the right<br>
+    <b>🖼️ Drop in a photo and it becomes pixel art</b> (8, 16 or 32 grid)<br>
+    Saves as a transparent PNG — ready to drop straight into a game 🐟
+  </div>
+
+<script>
+const COLORS=['#000000','#ffffff','#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6',
+  '#e84393','#fd79a8','#a0522d','#7f8c8d','#bdc3c7','#2c3e50','#27ae60','#c0392b','__ERASE__'];
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+const pal=document.getElementById('palette');
+const pickEl=document.getElementById('pick'), eyedropBtn=document.getElementById('eyedrop');
+const eraserBtn=document.getElementById('eraser');
+const zlabel=document.getElementById('zlabel'), undoBtn=document.getElementById('undo');
+
+let N=16, DISP=Math.min(window.innerWidth-40,352), cell, cssSize=DISP;
+let grid, color='#000000', drawing=false, picking=false;
+let scale=1, ox=0, oy=0;                 // zoom / pan state
+const MINS=1, MAXS=12;
+const pointers=new Map();                // multi-touch tracking
+let gesture=null;                        // pinch gesture state
+const undoStack=[];
+
+// ── palette ─────────────────────────────────
+COLORS.forEach((col,i)=>{ const s=document.createElement('div'); s.className='sw'+(i===0?' on':'');
+  if(col==='__ERASE__'){ s.className+=' eraser'; s.title='Eraser'; } else s.style.background=col;
+  s.dataset.col=col;
+  s.addEventListener('click',()=>selectColor(col,s)); pal.appendChild(s); });
+
+function selectColor(col,el){
+  document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));
+  if(el) el.classList.add('on');
+  color=col;
+  eraserBtn.classList.toggle('on', col==='__ERASE__');
+  setPicking(false);
+}
+pickEl.addEventListener('input',()=>selectColor(pickEl.value,null));
+eraserBtn.addEventListener('click',()=>selectColor('__ERASE__',null));
+
+// ── eyedropper ──────────────────────────────
+function setPicking(on){ picking=on; eyedropBtn.classList.toggle('on',on);
+  cv.style.cursor = on ? 'copy' : 'crosshair'; }
+eyedropBtn.addEventListener('click',()=>setPicking(!picking));
+
+// ── canvas setup ────────────────────────────
+function setup(n){
+  N=n; cell=Math.floor(DISP/N); cssSize=cell*N;
+  cv.width=cssSize; cv.height=cssSize; cv.style.width=cssSize+'px'; cv.style.height=cssSize+'px';
+  document.getElementById('view').style.width=cssSize+'px';
+  document.getElementById('view').style.height=cssSize+'px';
+  grid=Array.from({length:N},()=>Array(N).fill(null));
+  undoStack.length=0; refreshUndo();
+  resetView(); render();
+}
+function render(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){ if(grid[y][x]){ ctx.fillStyle=grid[y][x];
+    ctx.fillRect(x*cell,y*cell,cell,cell); } }
+  ctx.strokeStyle='rgba(0,0,0,.10)'; ctx.lineWidth=1;
+  for(let i=0;i<=N;i++){ const p=i*cell+.5;
+    ctx.beginPath(); ctx.moveTo(p,0); ctx.lineTo(p,cv.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,p); ctx.lineTo(cv.width,p); ctx.stroke(); }
+}
+
+// ── zoom / pan transform ────────────────────
+function clampPan(){
+  const min=cssSize*(1-scale);            // keep the canvas covering the viewport
+  ox=Math.max(min,Math.min(0,ox));
+  oy=Math.max(min,Math.min(0,oy));
+}
+function applyTransform(){
+  clampPan();
+  cv.style.transform=`translate(${ox}px,${oy}px) scale(${scale})`;
+  zlabel.textContent=Math.round(scale*100)+'%';
+}
+function resetView(){ scale=1; ox=0; oy=0; applyTransform(); }
+function zoomAt(cx,cy,factor){            // zoom centered on (cx,cy) in viewport coords
+  const ns=Math.max(MINS,Math.min(MAXS,scale*factor));
+  const f=ns/scale;
+  ox=cx-f*(cx-ox); oy=cy-f*(cy-oy);
+  scale=ns; applyTransform();
+}
+document.getElementById('zin').addEventListener('click',()=>zoomAt(cssSize/2,cssSize/2,1.5));
+document.getElementById('zout').addEventListener('click',()=>zoomAt(cssSize/2,cssSize/2,1/1.5));
+document.getElementById('zreset').addEventListener('click',resetView);
+
+// ── coords to cell (getBoundingClientRect already accounts for the transform) ──
+function cellAt(clientX,clientY){
+  const r=cv.getBoundingClientRect();
+  const x=Math.floor((clientX-r.left)/(r.width/N));
+  const y=Math.floor((clientY-r.top)/(r.height/N));
+  return (x<0||y<0||x>=N||y>=N)?null:{x,y};
+}
+
+// ── undo ────────────────────────────────────
+function pushUndo(){ undoStack.push(grid.map(r=>r.slice())); if(undoStack.length>40) undoStack.shift(); refreshUndo(); }
+function refreshUndo(){ undoBtn.disabled=undoStack.length===0; }
+undoBtn.addEventListener('click',()=>{ if(!undoStack.length)return; grid=undoStack.pop(); refreshUndo(); render(); });
+
+// ── draw / paint ────────────────────────────
+function stroke(clientX,clientY){
+  const c=cellAt(clientX,clientY); if(!c) return;
+  if(picking){
+    const g=grid[c.y][c.x]; if(g){ selectColor(g,[...document.querySelectorAll('.sw')].find(s=>s.dataset.col===g)||null); }
+    setPicking(false); return;
+  }
+  grid[c.y][c.x] = color==='__ERASE__'? null : color;
+  render();
+}
+
+// ── pointers (multi-touch) ──────────────────
+function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+function mid(a,b){ const r=cv.parentElement.getBoundingClientRect();
+  return { x:(a.x+b.x)/2 - r.left, y:(a.y+b.y)/2 - r.top }; }
+
+cv.addEventListener('pointerdown',e=>{
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===1){ drawing=true; pushUndo(); stroke(e.clientX,e.clientY); }
+  else if(pointers.size===2){
+    drawing=false;                        // two fingers means zoom/pan, so cancel the stroke
+    if(undoStack.length) { undoStack.pop(); refreshUndo(); }  // undo the dot that just got placed
+    const pts=[...pointers.values()];
+    gesture={ d0:dist(pts[0],pts[1]), m0:mid(pts[0],pts[1]), s0:scale, ox0:ox, oy0:oy };
+  }
+});
+window.addEventListener('pointermove',e=>{
+  if(!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size>=2 && gesture){
+    const pts=[...pointers.values()];
+    const d=dist(pts[0],pts[1]), m=mid(pts[0],pts[1]);
+    const ns=Math.max(MINS,Math.min(MAXS, gesture.s0 * d/gesture.d0));
+    const f=ns/gesture.s0;
+    ox=m.x - f*(gesture.m0.x - gesture.ox0);
+    oy=m.y - f*(gesture.m0.y - gesture.oy0);
+    scale=ns; applyTransform();
+  } else if(drawing){ stroke(e.clientX,e.clientY); }
+});
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if(pointers.size<2) gesture=null;
+  if(pointers.size===0) drawing=false;
+}
+window.addEventListener('pointerup',endPointer);
+window.addEventListener('pointercancel',endPointer);
+
+// ── grid size buttons ───────────────────────
+document.querySelectorAll('.sz').forEach(b=> b.addEventListener('click',()=>{
+  document.querySelectorAll('.sz').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  setup(+b.dataset.n); }));
+
+// ── clear / save ────────────────────────────
+document.getElementById('clear').addEventListener('click',()=>{ if(confirm('Clear the whole canvas?')){ pushUndo(); grid=Array.from({length:N},()=>Array(N).fill(null)); render(); } });
+document.getElementById('save').addEventListener('click',()=>{
+  const o=document.createElement('canvas'); o.width=N; o.height=N; const octx=o.getContext('2d');
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){ if(grid[y][x]){ octx.fillStyle=grid[y][x]; octx.fillRect(x,y,1,1); } }
+  const a=document.createElement('a'); a.download='pixelart_'+N+'x'+N+'.png'; a.href=o.toDataURL('image/png'); a.click();
+});
+
+// ── photo to pixel art (downsampled to the current grid) ──
+function loadImage(file){
+  const img=new Image();
+  img.onload=()=>{
+    pushUndo();
+    const tmp=document.createElement('canvas'); tmp.width=N; tmp.height=N;
+    const tctx=tmp.getContext('2d');
+    const s=Math.min(img.width,img.height);          // center square crop
+    const sx=(img.width-s)/2, sy=(img.height-s)/2;
+    tctx.drawImage(img, sx,sy,s,s, 0,0,N,N);          // shrink to NxN — that is the pixelation
+    const d=tctx.getImageData(0,0,N,N).data;
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      const i=(y*N+x)*4;
+      if(d[i+3]<40){ grid[y][x]=null; continue; }     // transparent means empty cell
+      grid[y][x]='#'+[d[i],d[i+1],d[i+2]].map(v=>v.toString(16).padStart(2,'0')).join('');
+    }
+    render();
+    URL.revokeObjectURL(img.src);
+  };
+  img.src=URL.createObjectURL(file);
+}
+document.getElementById('photo').addEventListener('click',()=>document.getElementById('photoInput').click());
+document.getElementById('photoInput').addEventListener('change',e=>{ if(e.target.files[0]) loadImage(e.target.files[0]); e.target.value=''; });
+
+setup(16);
+</script>
+<div style="text-align:center;font-size:12px;opacity:.45;margin:16px 0 22px;">🎨 Built by hand at LeDeuxions</div>
+  <script src="/count.js" defer></script>
+</body>
+</html>
