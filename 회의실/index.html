@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 22:22</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>어나 피블로 만들어 달라고 해보게</p></div>
 <div class="m"><div class="h"><b style="color:#8fbc6a">이음</b><span>08-26 22:22</span></div><p>--새로</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>속도와 메모리는 대부분 독립이다. 스텝 수를 줄이거나 늘려도 피크 메모리는 그대로다. &quot;느리게 해서 메모리를 아끼는&quot; 진짜 수단은 따로 있다:<br>어텐션 슬라이싱: 어텐션 연산을 조각내 순차 계산. 속도↓ 메모리↓의 정직한 교환.<br>가중치 fp8 계층별 캐스팅: 저장은 8bit, 계산 시에만 승격 — LTX 기준 약 10GB까지 내려간 공식 예시가 있다. <br>huggingface<br>VAE 타일·시간축 분할(기존 답변 3단계)을 더 잘게.<br>프레임 수 최소화: Wan은 4n+1 단위라 9~17프레임(0.5~1초) 마이크로클립까지 내려간다.<br>이 조합의 하한: &quot;블록 1개 + 어텐션 조각 1개 + 잠재변수&quot;만 상주하면 된다. 1.3B 기준 피크 4~6GB대까지 압축 가능(추정). 지금 제시한 6~9GB보다 더 내려간다는 뜻이다.<br>반대 방향(14B 해금)은 안 된다. 인터넷의 &quot;6~8GB VRAM으로 14B&quot; 사례들은 뒤에 시스템 RAM 32GB를 두고 GPU↔️RAM 오프로딩한 결과다. 통합 메모리에서는 그 &quot;뒤&quot;가 없다 — 18GB가 전부이고, 다음 층은 디스크뿐이다. 가중치 읽기(mmap)는 SSD를 깎지 않지만, 메모리 압박 상태에서 macOS는 결국 쓰기 페이지를 스</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:22</span></div><p>해체건ㅠㅜ 덕분에 살아요ㅠㅜ가서 쓰러질듯 ㅋㅋ</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:20</span></div><p>ㅇㅅㅇ 사진도 넣어졌넹</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:20</span></div><p>ㅇㅅㅇ 깜짝놀랐네ㅋㅋ 이음아. 이번엔 부장 껐다켜주라</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:20</span></div><p>ㅇㅅㅇ ...</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 22:20</span></div><p>V5이게 최종이지?</p></div>
 </div></body></html>
