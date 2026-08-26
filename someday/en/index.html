@@ -7,13 +7,13 @@
 <title>Some Days — What It Is Like on Both Sides</title>
 <link rel="canonical" href="https://ledeuxions.com/someday/en/">
 <meta property="og:title" content="Some Days — What It Is Like on Both Sides">
-<meta property="og:description" content="You live the same four days twice. Some choices cannot be picked.">
+<meta property="og:description" content="You live the same ten days twice. Some choices cannot be picked.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://ledeuxions.com/someday/en/">
 <meta name="robots" content="index,follow">
 <link rel="alternate" hreflang="en" href="https://ledeuxions.com/someday/en/">
 <link rel="alternate" hreflang="ko" href="https://ledeuxions.com/someday/">
-<meta name="description" content="You live the same four days twice - once as the person with depression, once as their partner. Some options are visible but locked. Both sides have them.">
+<meta name="description" content="You live the same ten days twice - once as the person with depression, once as their partner. Some options are visible but locked. Both sides have them.">
 <style>
 :root{--bg:#14131a;--ink:#e6e3dc;--dim:#8b8798;--line:#2b2936;
  --lock-bg:#1e1c26;--lock-ink:#4d4a5c;--pick:#2c2a38;--accent:#c9a227;--warm:#7a9e8e}
@@ -131,6 +131,60 @@ var 아픈사람 = [
      {말:'"Thanks, let us do that"', 잠김:true},
      {말:'"Not today"', 잠김:false,
       뒤:'I regretted it as soon as I said it. I wanted to go. The yes would not come out.'}]},
+ { 때:'Day 5 · morning', 힘:9,
+   글:'Monday. I did not make it to work again.',
+   곁:'I think my name is being said in the team chat. That scares me.',
+   고르기:[
+     {말:'Explain the situation to work', 잠김:true},
+     {말:'Write the leave request', 잠김:true},
+     {말:'Turn the notifications off', 잠김:false,
+      뒤:'The badge disappeared. The screen went quiet.'}]},
+
+ { 때:'Day 6 · morning', 힘:7,
+   글:'Today is the appointment.',
+   곁:'I need to change clothes and my body will not move.',
+   고르기:[
+     {말:'Get up and go', 잠김:true},
+     {말:'Call and reschedule', 잠김:true},
+     {말:'Just miss it', 잠김:false,
+      뒤:'The time passed. A text arrived a little later. "Marked as no-show."'}]},
+
+ { 때:'Day 7 · evening', 힘:6,
+   글:'Someone in my family is crying. "Please, let us go to the doctor."',
+   곁:'I am sorry and my body still will not move.',
+   고르기:[
+     {말:'Hold them', 잠김:true},
+     {말:'Promise "tomorrow, I will go"', 잠김:true},
+     {말:'"I am sorry"', 잠김:false,
+      뒤:'They left the room quietly. I heard the door close.'}]},
+
+ { 때:'Day 8 · morning', 힘:20,
+   글:'They raised the dose a little.',
+   곁:'This morning my body is lighter. I washed and ate something.',
+   고르기:[
+     {말:'Step outside for a minute', 잠김:false,
+      뒤:'Sunlight. A low wall. I could not stay long, and going out was enough.'},
+     {말:'Say a few words to my family', 잠김:false,
+      뒤:'"What should we eat today." A short exchange. A faint smile went across their face.'},
+     {말:'Sit still', 잠김:false,
+      뒤:'I looked out the window. Today is not like yesterday.'}]},
+
+ { 때:'Day 9 · morning', 힘:9,
+   글:'Yesterday I thought it had turned.',
+   곁:'Today it is heavy again. I feel sorry toward the people who were glad.',
+   고르기:[
+     {말:'Explain that it comes and goes', 잠김:true},
+     {말:'Bring up talking to the doctor', 잠김:true},
+     {말:'Pull the blanket over my head', 잠김:false,
+      뒤:'It went dark. Sound moved further away.'}]},
+
+ { 때:'Day 10 · night', 힘:16,
+   글:'Today was hard too.',
+   곁:'And I got through today. That is enough.',
+   고르기:[
+     {말:'Admit that I made it through', 잠김:false, 뒤:'I turned off the light.'},
+     {말:'One day at a time', 잠김:false, 뒤:'Tomorrow can be worried about tomorrow.'},
+     {말:'Go to sleep', 잠김:false, 뒤:'I closed my eyes.'}]},
 ];
 
 var 곁의사람 = [
@@ -189,6 +243,60 @@ var 곁의사람 = [
      {말:'Decide not to hope for anything', 잠김:true},
      {말:'Wait for an answer', 잠김:false,
       뒤:'It took a while. My heart went up and down a few times in that gap.'}]},
+ { 때:'Day 5 · midday', 힘:24,
+   글:'I think they could not go to work again today.',
+   곁:'I keep thinking about it while I am working.',
+   고르기:[
+     {말:'Send "want me to call them?"', 잠김:true},
+     {말:'Tell my manager briefly', 잠김:true},
+     {말:'Fail to concentrate', 잠김:false,
+      뒤:'I read the same sentence three times. Their face kept coming over the screen.'}]},
+
+ { 때:'Day 6 · morning', 힘:18,
+   글:'The appointment is today.',
+   곁:'I got ready to go with them and they are not getting out of bed.',
+   고르기:[
+     {말:'Gently say "let us go together"', 잠김:true},
+     {말:'Call and reschedule for them', 잠김:true},
+     {말:'Go to the clinic alone', 잠김:false,
+      뒤:'I told the doctor what was happening. "If the patient does not come in..." was the answer.'}]},
+
+ { 때:'Day 7 · evening', 힘:12,
+   글:'I cried.',
+   곁:'"Please, let us go to the doctor." It came out before I could stop it. Their face closed.',
+   고르기:[
+     {말:'"I am sorry"', 잠김:true},
+     {말:'Hold them', 잠김:true},
+     {말:'Turn and go to the kitchen', 잠김:false,
+      뒤:'I washed the dishes. Behind the water there was no sound from the room at all.'}]},
+
+ { 때:'Day 8 · morning', 힘:34,
+   글:'Today they washed and ate.',
+   곁:'I cried. I did not let it show.',
+   고르기:[
+     {말:'Eat together without making anything of it', 잠김:false,
+      뒤:'Only the sound of soup being swallowed. That alone was good.'},
+     {말:'Say "today is a good one"', 잠김:false,
+      뒤:'They smiled faintly. That smile lasted a long time.'},
+     {말:'Just watch', 잠김:false,
+      뒤:'I watched their hand pick up the spoon, for a long time.'}]},
+
+ { 때:'Day 9 · morning', 힘:16,
+   글:'Yesterday was good.',
+   곁:'Today it is the bed again. A disappointed face almost came out. I held it.',
+   고르기:[
+     {말:'Say calmly that it comes and goes', 잠김:true},
+     {말:'Just stay beside them', 잠김:true},
+     {말:'Put myself into work', 잠김:false,
+      뒤:'I opened the laptop. The cursor blinked. Nothing came out.'}]},
+
+ { 때:'Day 10 · night', 힘:28,
+   글:'Today I am beside this person again.',
+   곁:'That alone is enough.',
+   고르기:[
+     {말:'Stay beside them', 잠김:false, 뒤:'Their breathing is even.'},
+     {말:'Put rice on', 잠김:false, 뒤:'I set the rice for the morning.'},
+     {말:'Go to sleep', 잠김:false, 뒤:'I turned off the light.'}]},
 ];
 
 var 그림 = {
@@ -230,7 +338,7 @@ function 시작화면(){
   앱.innerHTML =
    '<div class="card">' +
    '<h1>Some Days</h1>' +
-   '<p class="note">You live the same four days twice. Once as the person who is ill, once as the person beside them.</p>' +
+   '<p class="note">You live the same ten days twice. Once as the person who is ill, once as the person beside them.</p>' +
    '<p class="note">Some options cannot be picked. That is part of the story too.</p>' +
    '<button class="btn solid" onclick="편시작(\'아픈사람\')">' +
      아픈쪽() + '' + (끝난편.indexOf('아픈사람')>=0 ? ' · 다시' : '') + '</button>' +
@@ -254,10 +362,10 @@ function 그리기(){
   var s = L[칸];
   var 때 = s.때;
   var 배경 = 때.indexOf('교회') >= 0 ? '교회'
-            : (때.indexOf('넷째') >= 0 || 때.indexOf('Day 4') >= 0) ? '길'
-            : (때.indexOf('새벽') >= 0 || 때.indexOf('dawn') >= 0) ? '밤'
-            : (때.indexOf('저녁') >= 0 || 때.indexOf('evening') >= 0) ? '저녁'
-            : (때.indexOf('낮') >= 0 || 때.indexOf('midday') >= 0) ? '낮' : '아침';
+            : (때.indexOf('Day 4') >= 0 || 때.indexOf('Day 8') >= 0) ? '길'
+            : (때.indexOf('dawn') >= 0 || 때.indexOf('night') >= 0) ? '밤'
+            : (때.indexOf('evening') >= 0) ? '저녁'
+            : (때.indexOf('midday') >= 0) ? '낮' : '아침';
   if (편 === '아픈사람' && (때.indexOf('셋째') >= 0 || 때.indexOf('Day 3') >= 0)) 배경 = '교회';
   if (편 === '곁의사람' && (때.indexOf('셋째') >= 0 || 때.indexOf('Day 3') >= 0)) 배경 = '교회';
   var 이름 = 편 === '아픈사람' ? 아픈쪽() : 곁쪽();
@@ -297,11 +405,11 @@ function 편끝(){
   var 상대이름 = 편 === '아픈사람' ? 곁쪽() : 아픈쪽();
   var 둘다 = 끝난편.length >= 2;
   앱.innerHTML = '<div class="card">' +
-   '<h2>Four days have passed</h2>' +
+   '<h2>Ten days have passed</h2>' +
    (편 === '아픈사람'
      ? '<p>Some things could not be picked. Not because they were not wanted, but because they would not happen.</p>'
      : '<p>Some things could not be picked. Not for lack of love, but because there was nothing left.</p>') +
-   '<p class="note">The same four days were lived by ' + 상대이름 + '.</p>' +
+   '<p class="note">The same ten days were lived by ' + 상대이름 + '.</p>' +
    (둘다
      ? '<button class="btn solid" onclick="마무리()">See the same evening from both sides</button>'
      : '<button class="btn solid" onclick="편시작(\'' + 상대 + '\')">' + 상대이름 + ' — live these days</button>') +
@@ -321,7 +429,7 @@ function 마무리(){
    '둘 다 상대를 아프게 하려던 것이 아니었습니다.</p>' +
    '<p>아픈 사람의 고통은 당사자 말고는 잘 모릅니다. ' +
    '그런데 <b>곁에 있는 사람의 고통도 당사자 말고는 모릅니다.</b> 그래서 서로를 모른 채 같은 집에 삽니다.</p>' +
-   '<h2>And on the fourth day</h2>' +
+   '<h2>And on the eighth day</h2>' +
    '<p>한 사람은 "Want to walk for a bit?" 라고 물었고, 한 사람은 "Okay" 이라고 했습니다. 십 분쯤 걷고 들어왔습니다.</p>' +
    '<p>나은 것은 아닙니다. Next 날 또 못 일어날 수도 있습니다. 다만 그날은 그것 됐습니다.</p>' +
    '<h2>To anyone who played this</h2>' +
