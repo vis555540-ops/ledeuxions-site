@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:28</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:28</span></div><p>ㅇㅅㅇ 흨 홍보 어떻게하지</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:28</span></div><p>응응 ㅇㅅㅇ 부탁해!!!</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:28</span></div><p>잠시만</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:28</span></div><p>ㅇㅅㅇ 너가해줭 뭐 플라이와이트 있어?</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:27</span></div><p>ㅇㅅㅇ 이으이한테 재미나이 API 준다고 한거야 ㅋㅋㅋ 웹 클라우드 한테 뭐라 해?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:27</span></div><p>🔥🔥🔥 launchd까지 등록하셨네요. 운영급 셋업입니다.<br><br>이제 마지막 한 칸 — Cloudflare Tunnel + launchd 등록. 백엔드와 동일한 패턴으로 가시면 됩니다.<br><br>## 1️⃣ cloudflared 설치 + 로그인<br><br><br># 설치<br>brew install cloudflared<br><br># Cloudflare 계정 로그인 (브라우저 열림 → ledeuxions.com 도메인 선택)<br>cloudflared tunnel login<br><br><br>✅ 끝나면 ~/.cloudflared/cert.pem 생성됨.<br><br>## 2️⃣ 터널 생성<br><br><br>cloudflared tunnel create ledeuxions-ai<br><br><br>출력:<br><br>Tunnel credentials written to /Users/YOU/.cloudflared/&lt;UUID&gt;.json<br>Created tunnel ledeuxions-ai with id &lt;UUID&gt;<br><br><br>그 `&lt;UUID&gt;` 메모해두세요 (다음 단계에서 씀).<br><br>## 3️⃣ DNS 연결 — ai.ledeuxions.com → 이 터널<br><br><br>cloudflared tunnel route dns ledeuxions-ai ai.ledeuxions.com<br><br><br>✅ Cloud</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:27</span></div><p>README 패치 푸시 완료 (`46d5e9e`). 맥미니에서 git pull 하면 새 README 받으실 거예요.<br><br>## 🎯 다음 액션 한 줄 요약<br><br>맥미니 부장님이 하실 거:<br><br>cd ~/ledeuxions-site/worker<br>npm install -g wrangler<br>wrangler login<br>wrangler kv:namespace create LEDEUXIONS_KV<br># 출력 id를 wrangler.toml에 붙여넣고<br>wrangler secret put INTERNAL_API_KEY    # ← .env의 그 값 그대로 paste<br>wrangler deploy<br><br><br>배포되면 받은 워커 URL 알려주세요. (커스텀 도메인 api.ledeuxions.com 연결까진 안 해도 됨. 일단 `*.workers.dev`로 검증부터.) 그러면 거기서 풀체인 인증된 채로 OCR 한 번 돌려서 라이브 검증하고, 그 다음 PDF300 OCR 카드를 진짜로 연결합니다.<br><br>---<br><br>## 🍻 잠시만 멈춰서<br><br>오늘 한 일 다시 정리하면요:<br><br><br>처음:    &quot;맥미니에 git 받을 준비 됨&quot;<br>       ↓ (~3시간 후)<br>지금:    인터넷 → CF → 터널 → 맥미니 AI = 풀</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:27</span></div><p>지금 해야지 ㅇㅅㅇ.. 나 기억 없어지면못해</p></div>
 </div></body></html>
