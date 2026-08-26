@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="canonical" href="https://ledeuxions.com/web-projects/game-world/simon/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a2036">
+<meta name="description" content="Watch the sequence of colors and sounds, then repeat it. One step longer every round. Free in your browser, works on phone.">
+<meta property="og:title" content="Color Memory — Free in Your Browser">
+<meta property="og:description" content="How many steps can you remember?">
+<title>Color Memory Game — Free Simon-Style Memory Test | LeDeuxions</title>
+<link rel="canonical" href="https://ledeuxions.com/web-projects/game-world/simon/en/">
+<meta name="robots" content="index,follow">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+  body { min-height:100vh; font-family:-apple-system,'Malgun Gothic',sans-serif;
+    background:linear-gradient(160deg,#1a2036,#2b2350); color:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
+  h1 { font-size:26px; font-weight:800; margin-bottom:4px; }
+  #msg { font-size:15px; opacity:.8; height:22px; margin-bottom:18px; }
+  #lv { font-size:14px; color:#ffd479; font-weight:700; margin-bottom:14px; }
+  .pad { display:grid; grid-template-columns:1fr 1fr; gap:14px;
+    width:min(84vw,320px); aspect-ratio:1/1; }
+  .btn { border-radius:18px; cursor:pointer; opacity:.5; transition:opacity .12s, transform .08s;
+    box-shadow:inset 0 -6px 12px rgba(0,0,0,.2); }
+  .btn:active { transform:scale(.97); }
+  .btn.on { opacity:1; box-shadow:inset 0 -6px 12px rgba(0,0,0,.2), 0 0 26px currentColor; }
+  #g{ background:#2ecc71; color:#2ecc71; } #r{ background:#e74c3c; color:#e74c3c; }
+  #y{ background:#f1c40f; color:#f1c40f; } #b{ background:#3498db; color:#3498db; }
+  #start { margin-top:26px; padding:14px 40px; font-size:18px; font-weight:800; color:#1a2036;
+    background:linear-gradient(180deg,#ffe08a,#ffc247); border:none; border-radius:40px;
+    box-shadow:0 6px 18px rgba(255,190,71,.4); cursor:pointer; }
+  #start:active{ transform:translateY(2px); }
+  a.back { position:fixed; top:16px; left:18px; color:#fff; opacity:.6; text-decoration:none; font-size:15px; }
+  .credit { position:fixed; bottom:14px; left:0; right:0; text-align:center;
+    font-size:12px; opacity:.45; }
+</style>
+</head>
+<body>
+  <a class="back" href="../">← Games</a>
+  <a class="back" href="../ranking/" style="left:auto;right:18px;">🏆 Ranking</a>
+  <h1>🎨 Color Memory</h1>
+  <div id="lv">Level 0 · Best 0</div>
+  <div id="msg">Press Start</div>
+  <div class="pad">
+    <div class="btn" id="g"></div><div class="btn" id="r"></div>
+    <div class="btn" id="y"></div><div class="btn" id="b"></div>
+  </div>
+  <button id="start">Start</button>
+  <div class="credit">🎨 Made by LeDeuxions</div>
+<script>
+const pads=['g','r','y','b'];
+const el=id=>document.getElementById(id);
+const msg=el('msg'), lvEl=el('lv'), startBtn=el('start');
+let seq=[], input=[], playing=false, best=+(localStorage.getItem('simon_best')||0);
+lvEl.textContent='Level 0 · Best '+best;
+
+function flash(id,ms=380){ return new Promise(res=>{ const b=el(id); b.classList.add('on');
+  beep(id); setTimeout(()=>{ b.classList.remove('on'); setTimeout(res,140); }, ms); }); }
+let actx;
+function beep(id){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  const f={g:330,r:262,y:392,b:494}[id]; const o=actx.createOscillator(), g=actx.createGain();
+  o.frequency.value=f; o.connect(g); g.connect(actx.destination); g.gain.value=.15;
+  o.start(); o.stop(actx.currentTime+.18);}catch(e){} }
+
+async function play(){ playing=false; msg.textContent='Watch...';
+  for(const id of seq){ await flash(id); } msg.textContent='Your turn!'; input=[]; playing=true; }
+function next(){ seq.push(pads[Math.floor(Math.random()*4)]);
+  lvEl.textContent='Level '+seq.length+' · Best '+best; setTimeout(play,600); }
+function start(){ if(window.Arcade) Arcade.ensureName(); seq=[]; input=[]; startBtn.style.display='none'; msg.textContent=''; next(); }
+
+pads.forEach(id=> el(id).addEventListener('pointerdown',()=>{ if(!playing) return;
+  el(id).classList.add('on'); beep(id); setTimeout(()=>el(id).classList.remove('on'),140);
+  input.push(id); const i=input.length-1;
+  if(input[i]!==seq[i]){ // wrong
+    playing=false; const sc=seq.length-1; const rec = sc>best;
+    if(rec){ best=sc; localStorage.setItem('simon_best',best);}
+    msg.textContent='Wrong! '+sc+' steps';
+    lvEl.textContent='Level '+sc+' · Best '+best;
+    startBtn.textContent='Again'; startBtn.style.display='block';
+    if(rec && sc>0 && window.Arcade){ Arcade.submit('simon',sc).then(r=>{ if(r) msg.textContent='Wrong! '+sc+'step · '+Arcade.rankText(r); }); }
+    return; }
+  if(input.length===seq.length){ playing=false; msg.textContent='Nice! Next ↑'; next(); }
+}));
+startBtn.addEventListener('click',start);
+</script>
+<script src="../arcade.js"></script>
+  <script src="/count.js" defer></script>
+</body>
+</html>
