@@ -327,7 +327,7 @@
         // 신기록이면 전세계 랭킹 제출·표시
         if (newRecord && score > 0 && window.Arcade) {
             const line = document.getElementById('rankLine');
-            if (line) line.textContent = '🌍 순위 확인 중…';
+            if (line) line.textContent = '🌍 checking rank…';
             Arcade.submit('tower', score).then(function (res) {
                 const el = document.getElementById('rankLine');
                 if (el) el.textContent = Arcade.rankText(res);
@@ -408,7 +408,7 @@
             ctx.fillStyle = '#ffd34d';
             ctx.font = '700 22px ' + getFont();
             ctx.textAlign = 'center';
-            ctx.fillText('완벽! +콤보', W / 2, H * 0.3);
+            ctx.fillText('Perfect! +combo', W / 2, H * 0.3);
             ctx.globalAlpha = 1;
         }
     }
