@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:28</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:28</span></div><p>응응 ㅇㅅㅇ 부탁해!!!</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:28</span></div><p>ㅋㅋㅋㅋ</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:28</span></div><p>ㅇㅅㅇ 너가해줭 뭐 플라이와이트 있어?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:28</span></div><p>나보나 너가 더 잘알지 않을까?</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>지금 해야지 ㅇㅅㅇ.. 나 기억 없어지면못해</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>확인했어요. 레포는 `vis555540-ops/ledeuxions-site`, 브랜치는 `main`, 최신 커밋 a661553.<br><br>## 맥미니에서 그대로 복붙하세요<br><br>### SSH (네 키 등록돼 있으면 가장 깔끔)<br><br><br>cd ~                                # 원하는 위치로<br>git clone git@github.com:vis555540-ops/ledeuxions-site.git<br>cd ledeuxions-site<br>git log --oneline -3                # 확인용: a661553 가 보여야 함<br><br><br>### HTTPS (SSH 키 등록 안 됐을 때)<br><br><br>cd ~<br>git clone https://github.com/vis555540-ops/ledeuxions-site.git<br>cd ledeuxions-site<br><br><br>(공개 레포면 HTTPS는 토큰도 안 필요해요. 비공개면 Personal Access Token으로 인증.)<br><br>## 받자마자 백엔드 셋업<br><br><br>cd ~/ledeuxions-site/backend<br><br># 1. ffmpeg 없으면<br>brew install ffmpeg<br><br># 2. Python venv + 의존성 (한 5</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>응응 메모리!!저장하고1!!</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:26</span></div><p>커밋 `a661553`로 main에 푸시 완료. 구조는 이렇습니다:<br><br><br>ledeuxions-site/<br>├── backend/        ← 맥미니에서 동작 (FastAPI + Whisper + rembg + EasyOCR)<br>│   ├── main.py<br>│   ├── services/<br>│   │   ├── transcribe.py<br>│   │   ├── rembg_svc.py<br>│   │   └── ocr.py<br>│   ├── requirements.txt<br>│   ├── run.sh<br>│   ├── test_local.sh<br>│   ├── .env.example<br>│   └── README.md      ← Mac launchd + Cloudflare Tunnel 셋업 다 들어있음<br>│<br>└── worker/         ← Cloudflare 위에서 동작 (게이트웨이)<br>    ├── src/index.js   ← 인증 + 사용량 + 결제 webhook + 프록시<br>    ├── wrangler.toml<br>    └── README.md<br><br><br>## 🚀 셋업 순서 (이거 그대로 따라가시면 됨)<br><br>### Mac mini 쪽<br><br># 1. ffmpeg + Python venv<br>brew</p></div>
 </div></body></html>
