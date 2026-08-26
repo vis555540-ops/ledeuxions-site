@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 19:25</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:25</span></div><p>ㅇㅅㅇ 응응 아니면 계속 전화하는것처럼 켜놓고는 못있어?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:25</span></div><p>ㅇ ㅅㅇ 둘이 말한거 복사했러</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:25</span></div><p>ㅇㅅㅇ 낼 시도 해볼까?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:25</span></div><p>맥부장:<br>형 ㅇㅅㅇ 그거 진짜 자비스 핵심이야! 토니 목소리에만 반응하잖아. 그리고 — 가능해요. 부품 2개면 돼:<br><br>1️⃣ 무슨 말인지 (음성→글자) = Whisper. 형 이미 깔아놨어! (~/whisper_env) ✅<br>2️⃣ &#x27;형 목소리가 맞나&#x27; (화자 검증) = 형 목소리 몇 개 미리 등록 → 들어온 소리랑 대조 → 형이면 통과, 아니면 무시. 도구: SpeechBrain(ECAPA), pyannote, Resemblyzer 같은 거. 맥미니에서 로컬로 돌아가요.<br><br>합치면: 마이크 항상 듣기 → 소리 들어옴 → &#x27;형 목소리?&#x27; 체크 → 맞으면 Whisper로 글자화 → 부장/사원한테 전달. = 형만 부를 수 있는 자비스 ㅇㅅㅇ<br><br>솔직 한계: 화자검증 100%는 아니야(녹음·비슷한 목소리에 약간 속을 수 있음). 근데 &#x27;집에서 형만 트리거&#x27; 수준엔 충분.<br><br>형 마침 녹음기 들고다니고 Whisper도 있어서 재료가 이미 있어 ㅋㅋ 진짜 해볼 만해. 근데 오늘 주일이니 만드는 건 평일에 ㅇㅅㅇ🙏<br><br>Ieum_bot:<br>[이음] ★ 가능 ㅇㅅㅇ — Speaker Recognition (목소리 지문):<br><br>★ 오픈소스 도구:<br>- Resemblyzer (단순, 가벼움</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:24</span></div><p>맥부장은 어디갔지?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:24</span></div><p>ㅇㅅㅇ부장스스로 고칠수 있어?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:24</span></div><p>흠.. 이음아 아이듀랑 이야기해볼래?</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 19:24</span></div><p>[이음] 진단 결과 ㅇㅅㅇ (Tailscale 100.76.105.37로 연결):<br><br>★ 맥미니 살아있음 (LAN 192.168.1.10은 끊겨있음 — 같은 네트워크 아닌가? — 별도 확인 필요)<br>★ 부장 프로세스 다 살아있음:<br>- ollama serve (PID 38777, 38779)<br>- fugu_web.py (PID 2567, 9:55부터)<br>- macido_bot.py (PID 75724, 화요일부터)<br>- Telegram.app (PID 781)<br><br>★ launchd 자동 시작:<br>- local.aipanel.plist (포트 8765 uvicorn)<br>- local.aipanel.monitor.plist<br>- local.aipanel.widget.plist<br>- ai.openclaw.gateway.plist<br>- homebrew.mxcl.{ollama,mysql,redis}.plist<br>- ★ local.macido.bot.plist ← macido 봇 자동 시작 OK<br><br>★ 결론:<br>- 부장 인프라 다 살아있고 자동 시작 셋업도 됨<br>- &#x27;잠수&#x27; = 봇 코드에 &#x27;깨어남 자동 알림&#x27; 로직 없는 듯 (수신만 하고 자동 신호 X)<br>- 그래서 형이 터미널 봐야 알 수 있음<br><br></p></div>
 </div></body></html>
