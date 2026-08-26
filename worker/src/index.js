@@ -465,7 +465,36 @@ async function handleHitStats(request, env, origin) {
             if (v || u || b) 답[사이트][날] = { 방문: v, 사람: u, 기계: b };
         }
     }
-    return json({ ok: true, days: 며칠, stats: 답 }, 200, h);
+    // 쪽별 — 형이 물으신 「어느 글이 사람을 부르나」의 답 (2026-08-26 추가).
+    // hitp: 는 예전부터 쌓이고 있었는데 꺼내 보는 길이 없었다.
+    // ⚠️ KV list 는 비싸다. 물어볼 때만 훑고, 날짜도 좁게 잡는다.
+    let 쪽별 = undefined;
+    if (url.searchParams.get("pages")) {
+        const 며칠쪽 = Math.min(며칠, 14);
+        const 좁은날 = new Set(날들.slice(0, 며칠쪽));
+        쪽별 = {};
+        for (const 사이트 of 우리사이트) {
+            const 모음 = {};
+            let 커서 = undefined, 바퀴 = 0;
+            do {
+                const r = await env.KV.list({ prefix: `hitp:${사이트}:`, cursor: 커서, limit: 1000 });
+                for (const k of r.keys) {
+                    // hitp:사이트:날짜:쪽  — 쪽 안에 : 가 들어갈 수 있으니 앞 세 토막만 자른다
+                    const 조각 = k.name.split(":");
+                    const 날 = 조각[2];
+                    if (!좁은날.has(날)) continue;
+                    const 쪽 = 조각.slice(3).join(":") || "/";
+                    모음[쪽] = (모음[쪽] || 0) + Number(await env.KV.get(k.name) || 0);
+                }
+                커서 = r.list_complete ? undefined : r.cursor;
+            } while (커서 && ++바퀴 < 8);
+            쪽별[사이트] = Object.entries(모음)
+                .sort((a, b) => b[1] - a[1]).slice(0, 25)
+                .map(([쪽, 수]) => ({ 쪽, 방문: 수 }));
+        }
+    }
+
+    return json({ ok: true, days: 며칠, stats: 답, pages: 쪽별 }, 200, h);
 }
 
 // 손님이 열쇠를 넣었을 때 — 살아 있나 답해준다
