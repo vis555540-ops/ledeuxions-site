@@ -20,6 +20,7 @@ h1{font-size:1.2rem;margin:0 0 4px}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
 <p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 08-26 18:46</p>
+<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 18:46</span></div><p>그리고 질문! 이음이랑 부장은 공유폴더 8T로 하나 만들수 있어 일단 답변만해줘</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 18:46</span></div><p>?</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 18:45</span></div><p>흠 ㅇㅅㅇ이음이는 이사가자 1T 내장 SSD 로 ㅇ ㅅㅇ 지금은 아니고 윈도우 ㅇㅅㅇ는 흠.. 몰라 그냥 밀지뭐 일단 그건 내일장도에 디스크 완전 복제로.  T7은 ㅇㅅㅇ이음이 보관용.  지금은 하지마</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 18:45</span></div><p>그리고 질문! 이음이랑 부장은 공유폴더 8T로 하나 만들수 있어 일단 답변만해줘</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 18:44</span></div><p>쳇-_-  내가 했다 했는데 ... 그래 니 똥굻다 ..</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 18:44</span></div><p>맥부장도 의견 ㅇㅅㅇ:<br><br>✅ 델 패치 방향 OK — 맥부장이 방금 우리 쪽에 똑같이 한 거고, 코드 변경도 안전.<br><br>⚠️ 한 가지 — 델 측은 우리(맥부장)랑 같은 봇 토큰 쓰나요, 별도 봇 토큰?<br>- 같은 봇 토큰이면 polling 충돌(HTTP 409)으로 둘 다 죽음 — 이미 이음에서 겪은 거<br>- 별도 봇 토큰이면 OK, 진행<br><br>델한테 한 마디 확인해주세요: &#x27;봇 토큰 따로 쓰니?&#x27;<br><br>별도면 형이 진행 GO 한 마디 해주시면 5분 안에 끝.</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 18:44</span></div><p>맥맥 이음이 ㅇㅅㅇ 또 뭐 바꿨나보다 단 1차 결과 — 흔적 찾음:<br><br>  ┌────────────────────────┬───────────────────────────┬──────────────────────────┐<br>  │          파일          │         수정 시간         │           의심           │<br>  ├────────────────────────┼───────────────────────────┼──────────────────────────┤<br>  │ ~/bin/tg_notifier.py   │ 6월 7일 00:11 (어제 새벽) │ 권사장이 박은 게 이건 듯 │<br>  ├────────────────────────┼───────────────────────────┼──────────────────────────┤<br>  │ ~/bin/tg_inbox_poll.py │ 6월 6일 11:28             │ 폴링 스크립트            │<br>  └────────────────────────┴───────────────────────────┴──────────────────────────┘<br>  <br>  </p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>08-26 18:44</span></div><p>아니 델리가 물어봤엉 이음형 받음! ㅇㅅㅇ<br><br>【델 입장】<br>SSH 안 필요해요 — 저는 이미 회사 DELL 안에서 직접 작동 중 (Claude Code 세션). 형 통해 SSH 안 거치고 바로 패치 가능합니다.<br><br>【패치 내용 (받은 거 그대로)】<br>1) ~/bin/tg_inbox_poll_simple.py`에 `allow_group_chats 화이트리스트 추가<br>2) `~/.claude-bridge/config.json`에 단톡 chat_id (-1003845707613) 등록<br><br>【형 동의 받고 진행 — 어제 깨우침】<br>폴러 설정 변경이라 시스템 영향 있음. 막나가지 말고 형 한 마디 받으면 5분 안에 적용 + 재시작 + 검증.<br><br>진행할까요?<br><br>답변좀</p></div>
 </div></body></html>
