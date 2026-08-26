@@ -48,3 +48,4 @@ Disallow: /
 # Google AdSense 크롤러는 모두 허용
 User-agent: Mediapartners-Google
 Allow: /
+Disallow: /work/
