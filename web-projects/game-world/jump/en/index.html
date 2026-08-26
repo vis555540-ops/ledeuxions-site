@@ -176,7 +176,7 @@
         const sc = meters(maxA);
         ovTitle.textContent = '떨어졌어요!';
         ovDesc.innerHTML = '<span class="big-score">' + sc + ' m</span>' +
-            (newRecord && sc > 0 ? '<br>New best! 🏆' : '<br>최고 ' + best + ' m') +
+            (newRecord && sc > 0 ? '<br>New best! 🏆' : '<br>Best ' + best + ' m') +
             '<br><span id="rankLine" style="opacity:.9;font-size:.95rem"></span>';
         playBtn.textContent = '다시 뛰기';
         overlay.classList.remove('hidden');
