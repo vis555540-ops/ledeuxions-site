@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14131a">
+<title>Some Days — What It Is Like on Both Sides</title>
+<link rel="canonical" href="https://ledeuxions.com/someday/en/">
+<meta property="og:title" content="Some Days — What It Is Like on Both Sides">
+<meta property="og:description" content="You live the same four days twice. Some choices cannot be picked.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ledeuxions.com/someday/en/">
+<meta name="robots" content="index,follow">
+<link rel="alternate" hreflang="en" href="https://ledeuxions.com/someday/en/">
+<link rel="alternate" hreflang="ko" href="https://ledeuxions.com/someday/">
+<meta name="description" content="You live the same four days twice - once as the person with depression, once as their partner. Some options are visible but locked. Both sides have them.">
+<style>
+:root{--bg:#14131a;--ink:#e6e3dc;--dim:#8b8798;--line:#2b2936;
+ --lock-bg:#1e1c26;--lock-ink:#4d4a5c;--pick:#2c2a38;--accent:#c9a227;--warm:#7a9e8e}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+ font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+ line-height:1.85;font-size:17px;word-break:keep-all;-webkit-font-smoothing:antialiased;
+ -webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto;padding:34px 20px 70px;min-height:100vh;display:flex;flex-direction:column}
+.top{display:flex;justify-content:space-between;align-items:baseline;
+ color:var(--dim);font-size:.82rem;margin-bottom:26px;letter-spacing:.04em}
+.gauge{height:5px;background:var(--line);border-radius:99px;overflow:hidden;margin:0 0 30px}
+.gauge i{display:block;height:100%;background:var(--warm);transition:width .5s ease}
+.scene{font-size:1.06rem;margin:0 0 8px;min-height:3em}
+.aside{color:var(--dim);font-size:.92rem;margin:0 0 26px}
+.opts{display:flex;flex-direction:column;gap:9px;margin-top:auto}
+button.opt{width:100%;text-align:left;padding:14px 16px;border-radius:11px;font:inherit;
+ border:1px solid var(--line);background:var(--pick);color:var(--ink);cursor:pointer;transition:.15s}
+button.opt:hover:not(.locked){border-color:var(--warm)}
+button.opt.locked{background:var(--lock-bg);color:var(--lock-ink);cursor:not-allowed;border-color:transparent}
+button.opt.locked:active{animation:nudge .22s}
+@keyframes nudge{25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+.card{border:1px solid var(--line);border-radius:14px;padding:24px 22px;background:#191822}
+h1{font-size:1.42rem;margin:0 0 10px;letter-spacing:-.01em}
+h2{font-size:1.08rem;margin:26px 0 8px}
+p{margin:0 0 14px}
+.note{color:var(--dim);font-size:.9rem}
+.btn{display:block;width:100%;text-align:center;padding:14px;border-radius:11px;font:inherit;
+ font-weight:600;border:1px solid var(--warm);background:transparent;color:var(--warm);
+ cursor:pointer;margin-top:14px;text-decoration:none}
+.btn.solid{background:var(--warm);color:#14131a;border-color:var(--warm)}
+.help{border-top:1px solid var(--line);margin-top:30px;padding-top:18px;color:var(--dim);font-size:.9rem}
+.help a{color:var(--accent)}
+.tag{display:inline-block;font-size:.72rem;padding:2px 9px;border-radius:99px;
+ border:1px solid var(--line);color:var(--dim);letter-spacing:.06em}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   Some Days — 아픈 사람과 곁의 사람
+
+   만든 이유: 아픈 사람의 고통은 당사자 말고 잘 모른다.
+             그런데 곁에 있는 사람의 고통도 당사자 말고 모른다.
+             둘 다 힘든데 서로를 모른다.
+
+   장치: 선택지를 지우지 않고 회색 잠근다.
+        "안 하는 것"이 아니라 "못 하는 것"임을 버튼이 대신 말한다.
+        양쪽 다 잠긴다. 그래야 한쪽이 나쁜 사람이 되지 않는다.
+
+   내용: 특정한 누구의 이야기가 아니다.
+        우울을 겪은 사람들과 그 곁을 지킨 사람들이 공개적 남긴
+        글들을 바탕, 여러 사람의 자리를 섞어 한 부부로 만들었다.
+   ───────────────────────────────────────────────────────────── */
+
+var 아픈사람 = [
+ { 때:'Day 1 · morning', 힘:22,
+   글:'My eyes opened but my body will not move. Last night I decided I would get up and see the kid off.',
+   곁:'I can hear the front door. If I go now I am not late. But the blanket feels like it weighs something.',
+   고르기:[
+     {말:'Get up and see them off', 잠김:true},
+     {말:'At least sit up', 잠김:true},
+     {말:'Look at the ceiling', 잠김:false,
+      뒤:'The door closed. They are gone, I thought, and looked at the ceiling.'}]},
+
+ { 때:'Day 1 · midday', 힘:16,
+   글:'A message from work. The meeting went ahead without me.',
+   곁:'I need to reply and my hands will not do it. I know what to write. The writing is what will not happen.',
+   고르기:[
+     {말:'Write the reply', 잠김:true},
+     {말:'Send something short', 잠김:true},
+     {말:'Stare at it, then put the phone down', 잠김:false,
+      뒤:'It just says read. They will think I ignored them. I knew that and still did nothing.'}]},
+
+ { 때:'Day 1 · evening', 힘:11,
+   글:'"What did you do today?"',
+   곁:'Not an angry voice. Just a question. And I have nothing to answer with.',
+   고르기:[
+     {말:'Say "a few things" and move on', 잠김:true},
+     {말:'Say "I am sorry"', 잠김:true},
+     {말:'"Nothing"', 잠김:false,
+      뒤:'I know how careless that sounds. It was all that came out. I could not say how heavy that nothing was all day.'}]},
+
+ { 때:'Day 2 · before dawn', 힘:8,
+   글:'I took the medication and sleep still will not come. I came out to the living room.',
+   곁:'Sitting in the dark, thoughts go the bad way. These hours are the longest.',
+   고르기:[
+     {말:'Wake them and talk', 잠김:true},
+     {말:'Message someone, anyone', 잠김:true},
+     {말:'Just sit there', 잠김:false,
+      뒤:'Someone was behind me. They had woken up. They stood there without saying anything, then went back in.'}]},
+
+ { 때:'Day 3 · morning', 힘:9,
+   글:'Sunday. Time for church.',
+   곁:'Everyone greets each other brightly. I am the only dark thing here. Feeling that I should not be like this, here of all places, makes it worse.',
+   고르기:[
+     {말:'Greet people and sit as usual', 잠김:true},
+     {말:'Tell someone I am struggling', 잠김:true},
+     {말:'Sit alone in the back row', 잠김:false,
+      뒤:'I did not hear the sermon. During the prayer I did not know what to say, so I just kept my eyes closed.'}]},
+
+ { 때:'Day 4 · midday', 힘:15,
+   글:'A little lighter than yesterday. Only a little.',
+   곁:'"Want to walk for a bit?" they ask.',
+   고르기:[
+     {말:'"Okay"', 잠김:false,
+      뒤:'Even that one word took a while. Putting shoes on took longer. But we went. About ten minutes, then back inside.',
+      좋음:true},
+     {말:'"Thanks, let us do that"', 잠김:true},
+     {말:'"Not today"', 잠김:false,
+      뒤:'I regretted it as soon as I said it. I wanted to go. The yes would not come out.'}]},
+];
+
+var 곁의사람 = [
+ { 때:'Day 1 · morning', 힘:60,
+   글:'I saw the kid off alone. They did not get up again today.',
+   곁:'Anger and worry arrive together, so I cannot tell which one is real.',
+   고르기:[
+     {말:'Go in and wake them', 잠김:true},
+     {말:'Ask gently if they are okay', 잠김:true},
+     {말:'Just leave', 잠김:false,
+      뒤:'I stood at the door for a second and left. I started to say something and stopped.'}]},
+
+ { 때:'Day 1 · midday', 힘:46,
+   글:'It keeps coming back while I work. Did they eat anything.',
+   곁:'I sent "did you eat?" It says read. No reply.',
+   고르기:[
+     {말:'Call them', 잠김:true},
+     {말:'Stop thinking about it until they reply', 잠김:true},
+     {말:'Check the screen a few more times', 잠김:false,
+      뒤:'Something hurt came up in me. And then I disliked myself for feeling it.'}]},
+
+ { 때:'Day 1 · evening', 힘:31,
+   글:'Home. After helping with homework I asked, "what did you do today?"',
+   곁:'"Nothing." That came back.',
+   고르기:[
+     {말:'"That is okay, some days are like that"', 잠김:true},
+     {말:'Ask what happened', 잠김:true},
+     {말:'A sigh comes out', 잠김:false,
+      뒤:'I tried to hold it and it came out anyway. I knew they heard it. The kid was there so I said nothing more.'}]},
+
+ { 때:'Day 2 · before dawn', 힘:22,
+   글:'Half asleep I noticed the other side of the bed was empty. They are sitting in the living room with no light on.',
+   곁:'I do not know what to say. Saying the wrong thing might make it worse.',
+   고르기:[
+     {말:'Go and sit beside them', 잠김:true},
+     {말:'Ask what they are thinking about', 잠김:true},
+     {말:'Watch for a moment, then go back', 잠김:false,
+      뒤:'I lay back down and could not sleep. I tried to decide what to say in the morning and could not decide that either.'}]},
+
+ { 때:'Day 3 · morning', 힘:19,
+   글:'At church. I can see them sitting alone in the back row.',
+   곁:'I am not hearing the sermon. I am watching their back.',
+   고르기:[
+     {말:'Go and sit beside them', 잠김:true},
+     {말:'Talk to the pastor afterwards', 잠김:true},
+     {말:'Stay in my seat at the front', 잠김:false,
+      뒤:'During the prayer I did not know what to say. I have asked for them to be healed too many times.'}]},
+
+ { 때:'Day 4 · midday', 힘:26,
+   글:'They look a little better today. I thought about it for a long time before asking.',
+   곁:'"Want to walk for a bit?"',
+   고르기:[
+     {말:'Hear them say okay', 잠김:false,
+      뒤:'That one word almost made me cry. It was nothing and it was everything. We walked about ten minutes and came back, and that day that was enough.',
+      좋음:true},
+     {말:'Decide not to hope for anything', 잠김:true},
+     {말:'Wait for an answer', 잠김:false,
+      뒤:'It took a while. My heart went up and down a few times in that gap.'}]},
+];
+
+var 앱 = document.getElementById('app');
+var 편, 칸 = 0, 끝난편 = [];
+var 누가아픈가 = null;   // '남편' 또는 '아내' — 호칭만 바뀐다. 겪는 일은 같다.
+try { 누가아픈가 = localStorage.getItem('eotteon_who'); } catch(e) {}
+function 아픈쪽(){ return 누가아픈가 === 'wife' ? 'the wife' : 'the husband'; }
+function 곁쪽(){ return 누가아픈가 === 'wife' ? 'the husband' : 'the wife'; }
+try { 끝난편 = JSON.parse(localStorage.getItem('eotteon_done') || '[]'); } catch(e) { 끝난편 = []; }
+
+function 저장(){ try { localStorage.setItem('eotteon_done', JSON.stringify(끝난편));
+  if (누가아픈가) localStorage.setItem('eotteon_who', 누가아픈가); } catch(e){} }
+
+function 누구고르기(){
+  앱.innerHTML =
+   '<div class="card">' +
+   '<h1>Some Days</h1>' +
+   '<p class="note">Who is the one who is ill? The days are the same either way. Only the words change.</p>' +
+   '<button class="btn solid" onclick="누구정함(\'husband\')">My husband is the one who is ill</button>' +
+   '<button class="btn solid" onclick="누구정함(\'wife\')">My wife is the one who is ill</button>' +
+   '<p class="note" style="margin-top:18px">Depression comes to anyone. To men and to women.</p>' +
+   '</div>';
+}
+function 누구정함(w){ 누가아픈가 = w; 끝난편 = []; 저장(); 시작화면(); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+function 시작화면(){
+  if (!누가아픈가) return 누구고르기();
+  var 둘다 = 끝난편.indexOf('아픈사람') >= 0 && 끝난편.indexOf('곁의사람') >= 0;
+  앱.innerHTML =
+   '<div class="card">' +
+   '<h1>Some Days</h1>' +
+   '<p class="note">You live the same four days twice. Once as the person who is ill, once as the person beside them.</p>' +
+   '<p class="note">Some options cannot be picked. That is part of the story too.</p>' +
+   '<button class="btn solid" onclick="편시작(\'아픈사람\')">' +
+     아픈쪽() + '' + (끝난편.indexOf('아픈사람')>=0 ? ' · 다시' : '') + '</button>' +
+   '<button class="btn" onclick="편시작(\'곁의사람\')">' +
+     곁쪽() + '' + (끝난편.indexOf('곁의사람')>=0 ? ' · 다시' : '') + '</button>' +
+   '<button class="btn" style="border-color:#2b2936;color:#8b8798" onclick="누구고르기()">Change who is ill</button>' +
+   (둘다 ? '<button class="btn" onclick="마무리()">See the same evening from both sides</button>' : '') +
+   '<div class="help">' +
+   '<p style="margin:0 0 6px">This is not any one person’s story. It was built from accounts that people who lived it wrote publicly.</p>' +
+   '<p style="margin:0">If today is very hard, you can call <a href="tel:988">988</a> (US) or your local crisis line. Free, 24 hours.</p>' +
+   '</div></div>';
+}
+
+function 편시작(누구){ 편 = 누구; 칸 = 0; 그리기(); }
+
+function 목록(){ return 편 === '아픈사람' ? 아픈사람 : 곁의사람; }
+
+function 그리기(){
+  var L = 목록();
+  if (칸 >= L.length) return 편끝();
+  var s = L[칸];
+  var 이름 = 편 === '아픈사람' ? 아픈쪽() : 곁쪽();
+  var h = '<div class="top"><span class="tag">' + 이름 + '</span><span>' + esc(s.때) + '</span></div>' +
+          '<div class="gauge"><i style="width:' + s.힘 + '%"></i></div>' +
+          '<p class="scene">' + esc(s.글) + '</p>' +
+          '<p class="aside">' + esc(s.곁) + '</p>' +
+          '<div class="opts">';
+  s.고르기.forEach(function(o, i){
+    h += '<button class="opt' + (o.잠김 ? ' locked' : '') + '"' +
+         (o.잠김 ? ' aria-disabled="true" onclick="흔들기(this)"' : ' onclick="고름(' + i + ')"') +
+         '>' + esc(o.말) + '</button>';
+  });
+  앱.innerHTML = h + '</div>';
+}
+
+function 흔들기(el){ el.style.animation='none'; void el.offsetWidth; el.style.animation=''; }
+
+function 고름(i){
+  var s = 목록()[칸], o = s.고르기[i];
+  앱.innerHTML = '<div class="top"><span class="tag">' +
+    (편==='아픈사람'?아픈쪽():곁쪽()) + '</span><span>' + esc(s.때) + '</span></div>' +
+    '<div class="gauge"><i style="width:' + s.힘 + '%"></i></div>' +
+    '<p class="scene">' + esc(o.뒤) + '</p>' +
+    '<div class="opts"><button class="opt" onclick="Next()">Next</button></div>';
+}
+
+function Next(){ 칸++; 그리기(); }
+
+function 편끝(){
+  if (끝난편.indexOf(편) < 0) { 끝난편.push(편); 저장(); }
+  var 상대 = 편 === '아픈사람' ? '곁의사람' : '아픈사람';
+  var 상대이름 = 편 === '아픈사람' ? 곁쪽() : 아픈쪽();
+  var 둘다 = 끝난편.length >= 2;
+  앱.innerHTML = '<div class="card">' +
+   '<h2>Four days have passed</h2>' +
+   (편 === '아픈사람'
+     ? '<p>Some things could not be picked. Not because they were not wanted, but because they would not happen.</p>'
+     : '<p>Some things could not be picked. Not for lack of love, but because there was nothing left.</p>') +
+   '<p class="note">The same four days were lived by ' + 상대이름 + '.</p>' +
+   (둘다
+     ? '<button class="btn solid" onclick="마무리()">See the same evening from both sides</button>'
+     : '<button class="btn solid" onclick="편시작(\'' + 상대 + '\')">' + 상대이름 + ' — live these days</button>') +
+   '<button class="btn" onclick="시작화면()">Start over</button>' +
+   '</div>';
+}
+
+function 마무리(){
+  앱.innerHTML = '<div class="card">' +
+   '<h2>The same evening</h2>' +
+   '<p class="note" style="margin-bottom:4px">' + 아픈쪽() + '</p>' +
+   '<p>My mouth would not open. Lying was hard and saying sorry again was hard.</p>' +
+   '<p class="note" style="margin-bottom:4px">' + 곁쪽() + '</p>' +
+   '<p>I tried to hold the sigh and it came out. And I knew they heard it.</p>' +
+   '<h2>Both of them had something they could not do</h2>' +
+   '<p>한 사람은 대답할 것이 없어서 못 했고, 한 사람은 기다릴 힘이 남지 않아서 못 했습니다. ' +
+   '둘 다 상대를 아프게 하려던 것이 아니었습니다.</p>' +
+   '<p>아픈 사람의 고통은 당사자 말고는 잘 모릅니다. ' +
+   '그런데 <b>곁에 있는 사람의 고통도 당사자 말고는 모릅니다.</b> 그래서 서로를 모른 채 같은 집에 삽니다.</p>' +
+   '<h2>And on the fourth day</h2>' +
+   '<p>한 사람은 "Want to walk for a bit?" 라고 물었고, 한 사람은 "Okay" 이라고 했습니다. 십 분쯤 걷고 들어왔습니다.</p>' +
+   '<p>나은 것은 아닙니다. Next 날 또 못 일어날 수도 있습니다. 다만 그날은 그것 됐습니다.</p>' +
+   '<h2>To anyone who played this</h2>' +
+   '<p style="font-size:1.02rem">정신 버티라고, 이렇게 계속 살 거냐고 하지 말아 주세요. <b>오늘 하루 넘기는 게 목표인 사람도 있습니다.</b></p>' +
+   '<p style="font-size:1.02rem">And one sentence from you can end a person. Healthy people cannot feel this.</p>' +
+   '<p style="font-size:1.02rem">The die, die, die going on inside a head. <b>Those people are not failing to die. They are holding on, again, today.</b></p>' +
+   '<p style="font-size:1.02rem">이 프로그램라도 조금이라도 알아주셨으면 좋겠습니다.</p>' +
+   '<p class="note" style="margin-top:18px">— left here by one of the people who made this.</p>' +
+   '<p class="note">There is no answer in this. Only this: the other person had grey buttons on their screen too.</p>' +
+   '<button class="btn" onclick="시작화면()">Start over</button>' +
+   '<div class="help">' +
+   '<p style="margin:0 0 6px">If you are struggling — <a href="tel:988">988</a> (US, free, 24 hours) or your local crisis line</p>' +
+   '<p style="margin:0">If you are the one caring — being worn out is not a failing. You need somewhere to say it too.</p>' +
+   '</div></div>';
+}
+
+시작화면();
+</script>
+</body>
+</html>
