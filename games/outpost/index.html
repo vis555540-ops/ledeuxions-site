@@ -31,7 +31,7 @@
     <span id="goldInfo" style="color:#ffd93b;">돈: 250</span>
 </div>
 <div id="timerBar"><div id="timerFill"></div></div>
-<canvas style="max-width:100%;height:auto;image-rendering:pixelated" id="gameCanvas" width="480" height="480"></canvas>
+<canvas style="touch-action:none" style="max-width:100%;height:auto;image-rendering:pixelated" id="gameCanvas" width="480" height="480"></canvas>
 <div id="controls">
     <button id="btnNextWave">다음 판 (조기호출 1.5배)</button>
     <button id="btnReroll">다시 뽑기 (50)</button>
@@ -160,14 +160,26 @@ document.getElementById("btnNextWave").onclick = () => {
     updateUI();
 };
 
-canvas.onmousedown = (e) => {
-    let x = Math.floor(e.offsetX / CELL), y = Math.floor(e.offsetY / CELL);
-    if(x>=0 && x<10 && y>=0 && y<10 && grid[y][x]) dragging = {sx: x, sy: y, unit: grid[y][x]};
-};
+// 🚨 손가락으로도 되게 한다. 전에는 마우스만 받아서 폰에서 병사를 못 집었다 (2026-08-27)
+function 칸찾기(e) {
+    const r = canvas.getBoundingClientRect();
+    const cx = (e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0));
+    const cy = (e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0));
+    // 화면 크기가 줄어 캔버스가 작게 그려질 수 있으니 그 비율만큼 되돌린다
+    const 배 = canvas.width / r.width;
+    return { x: Math.floor((cx - r.left) * 배 / CELL), y: Math.floor((cy - r.top) * 배 / CELL) };
+}
 
-canvas.onmouseup = (e) => {
+canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    const {x, y} = 칸찾기(e);
+    if(x>=0 && x<10 && y>=0 && y<10 && grid[y][x]) dragging = {sx: x, sy: y, unit: grid[y][x]};
+});
+
+canvas.addEventListener('pointerup', (e) => {
+    e.preventDefault();
     if(!dragging) return;
-    let tx = Math.floor(e.offsetX / CELL), ty = Math.floor(e.offsetY / CELL);
+    const 칸 = 칸찾기(e); let tx = 칸.x, ty = 칸.y;
     
     if(tx>=0 && tx<10 && ty>=0 && ty<10 && !isPath(tx, ty)) {
         let target = grid[ty][tx];
@@ -194,7 +206,7 @@ canvas.onmouseup = (e) => {
         }
     }
     dragging = null;
-};
+});
 
 function update() {
     if(waveTime > 0) {
