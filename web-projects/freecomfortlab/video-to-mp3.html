@@ -98,6 +98,7 @@
         <button class="btn btn-primary btn-block" id="run" disabled>오디오 추출 → MP3</button>
         <div class="progress-bar" id="bar" hidden><div></div></div>
         <div class="status" id="status" hidden></div>
+        <p id="pdf-hint" hidden style="text-align:center;margin:14px 0 0;font-size:.92rem;line-height:1.6">PDF도 다루시나요? <a href="https://pdf300.com" style="color:inherit;text-decoration:underline">pdf300.com</a> — 합치기·나누기·용량 줄이기, 설치 없이.</p>
         <p class="help" style="margin-top:var(--space-4);">
             ⚠️ 브라우저가 디코드 가능한 영상이어야 합니다. iPhone HEVC/H.265는 Safari에서 가장 잘 작동합니다.
         </p>
@@ -106,7 +107,6 @@
 </div>
 
 </main>
-<p style="text-align:center;margin:26px 0 8px;font-size:.92rem;opacity:.72">PDF도 다루시나요? <a href="https://pdf300.com" style="color:inherit">pdf300.com</a> — 합치기·나누기·용량 줄이기, 설치 없이.</p>
 
 
 <footer class="site-footer">
@@ -159,6 +159,8 @@
         var s = document.getElementById('status');
         s.textContent = msg; s.hidden = !msg;
         s.className = 'status' + (kind ? ' ' + kind : '');
+        var h = document.getElementById('pdf-hint');
+        if (h) h.hidden = (kind !== 'ok');
     }
 
     elRun.addEventListener('click', async function () {

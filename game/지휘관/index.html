@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>지휘관 — 첫 판</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#14110f;color:#d8d2c6;font:14px/1.6 -apple-system,'Apple SD Gothic Neo',sans-serif;
+       display:flex;height:100vh;overflow:hidden}
+  #판{flex:1;position:relative}
+  canvas{display:block;image-rendering:pixelated;cursor:crosshair}
+  #곁{width:300px;border-left:1px solid #2a2520;padding:14px;overflow-y:auto;background:#1a1613}
+  h1{font-size:15px;letter-spacing:.05em;margin-bottom:2px}
+  .때{color:#6b6257;font-size:12px;margin-bottom:14px}
+  .부대{border:1px solid #2a2520;padding:8px 10px;margin-bottom:6px;cursor:pointer;background:#14110f}
+  .부대:hover{border-color:#4a4038}
+  .부대.뽑힘{border-color:#c9a227;background:#1e1a15}
+  .이름{font-weight:700}
+  .수{color:#8a8175;font-size:12px}
+  #보고{margin-top:16px;border-top:1px solid #2a2520;padding-top:12px}
+  #보고 p{margin-bottom:8px;padding-left:10px;border-left:2px solid #3a332c;color:#b5ac9e;font-size:13px}
+  #보고 p.급{border-left-color:#a33;color:#d8b0b0}
+  .안내{color:#6b6257;font-size:12px;margin-top:14px;line-height:1.7}
+  kbd{background:#2a2520;padding:1px 5px;border-radius:2px;font-size:11px}
+</style></head><body>
+
+<div id="판"><canvas id="c"></canvas></div>
+
+<div id="곁">
+  <h1>지휘관</h1>
+  <div class="때" id="때">진시 (07:00) · 맑음</div>
+  <div id="부대들"></div>
+  <div id="보고"></div>
+  <div class="안내">
+    부대를 누르고 → 지도를 누르면 그리로 간다.<br>
+    <kbd>스페이스</kbd> 시간을 흘려보낸다.
+  </div>
+</div>
+
+<script>
+const c = document.getElementById('c'), g = c.getContext('2d');
+const 칸 = 24, 가로 = 34, 세로 = 26;
+
+// ── 땅 ──────────────────────────────────────────────
+// 0 풀 · 1 숲 · 2 언덕 · 3 물 · 4 길
+const 땅 = [];
+for (let y = 0; y < 세로; y++) {
+  땅[y] = [];
+  for (let x = 0; x < 가로; x++) {
+    let t = 0;
+    const 언덕 = Math.sin(x * 0.28) * 3 + Math.cos(y * 0.34) * 3;
+    if (y > 14 + 언덕 * 0.5) t = 2;
+    if (y > 19 + 언덕 * 0.3) t = 1;
+    if (x > 12 && x < 16 && y < 13) t = 3;
+    if (y === 11 || (x === 20 && y > 8)) t = 4;
+    땅[y][x] = t;
+  }
+}
+const 땅빛 = ['#3e4a30','#2b3623','#4a4433','#243a4a','#5a5040'];
+const 땅이름 = ['풀밭','숲','언덕','물','길'];
+// 지나가기 힘든 정도 (1 = 보통)
+const 발품 = [1, 2.2, 1.8, 99, 0.7];
+
+// ── 부대 ────────────────────────────────────────────
+let 부대들 = [
+  {이름:'선봉 창병', 병과:'창', 수:120, x:6,  y:22, 우리:true,  색:'#7a8fd0'},
+  {이름:'좌익 궁병', 병과:'활', 수:80,  x:4,  y:19, 우리:true,  색:'#6fa88a'},
+  {이름:'기병대',   병과:'말', 수:60,  x:9,  y:24, 우리:true,  색:'#c9a227'},
+  {이름:'적 본대',   병과:'창', 수:'?', x:26, y:6,  우리:false, 색:'#a05050', 흐림:true},
+];
+let 뽑힌 = null, 때 = 7 * 60;
+
+function 그리기() {
+  c.width  = c.parentElement.clientWidth;
+  c.height = c.parentElement.clientHeight;
+  const ox = (c.width - 가로*칸)/2, oy = (c.height - 세로*칸)/2;
+  g.fillStyle = '#14110f'; g.fillRect(0,0,c.width,c.height);
+
+  for (let y=0; y<세로; y++) for (let x=0; x<가로; x++) {
+    g.fillStyle = 땅빛[땅[y][x]];
+    g.fillRect(ox+x*칸, oy+y*칸, 칸, 칸);
+    // 땅마다 결을 조금 준다 — 밋밋하지 않게
+    if ((x*7+y*13) % 5 === 0) {
+      g.fillStyle = 'rgba(0,0,0,.12)';
+      g.fillRect(ox+x*칸+ (x%3)*6, oy+y*칸 + (y%3)*6, 4, 4);
+    }
+  }
+  // 격자는 아주 옅게
+  g.strokeStyle = 'rgba(0,0,0,.18)'; g.lineWidth = 1;
+  for (let x=0; x<=가로; x++){ g.beginPath(); g.moveTo(ox+x*칸,oy); g.lineTo(ox+x*칸,oy+세로*칸); g.stroke(); }
+  for (let y=0; y<=세로; y++){ g.beginPath(); g.moveTo(ox,oy+y*칸); g.lineTo(ox+가로*칸,oy+y*칸); g.stroke(); }
+
+  부대들.forEach(u => {
+    const px = ox+u.x*칸, py = oy+u.y*칸;
+    if (u === 뽑힌) {
+      g.strokeStyle = '#c9a227'; g.lineWidth = 2;
+      g.strokeRect(px-2, py-2, 칸+4, 칸+4);
+    }
+    사람그리기(px, py, u);
+  });
+  g.fillStyle = '#6b6257'; g.font = '11px sans-serif';
+  g.fillText('한 칸 = 100보', ox, oy+세로*칸+16);
+}
+
+// 손톱만한 사람 하나. 얼굴은 안 그린다 — 이 크기에선 어차피 안 보인다
+function 사람그리기(px, py, u) {
+  const a = 알파(u);
+  g.globalAlpha = a;
+  g.fillStyle = '#000'; g.globalAlpha = a*0.25;
+  g.beginPath(); g.ellipse(px+12, py+21, 7, 3, 0, 0, 7); g.fill();
+  g.globalAlpha = a;
+  g.fillStyle = u.색;                      // 몸
+  g.fillRect(px+8, py+9, 8, 9);
+  g.fillStyle = '#d8c8a8';                  // 얼굴
+  g.fillRect(px+9, py+4, 6, 5);
+  g.fillStyle = 'rgba(0,0,0,.55)';          // 투구
+  g.fillRect(px+8, py+3, 8, 3);
+  g.fillStyle = u.색;
+  if (u.병과 === '창') { g.fillRect(px+17, py+2, 2, 16); }
+  if (u.병과 === '활') { g.fillRect(px+5, py+6, 2, 10); }
+  if (u.병과 === '말') { g.fillRect(px+4, py+14, 14, 4); }
+  g.globalAlpha = 1;
+}
+function 알파(u){ return u.흐림 ? 0.45 : 1; }
+
+function 곁그리기() {
+  document.getElementById('때').textContent = 때문자() + ' · 맑음';
+  const d = document.getElementById('부대들');
+  d.innerHTML = '';
+  부대들.filter(u=>u.우리).forEach(u=>{
+    const e = document.createElement('div');
+    e.className = '부대' + (u===뽑힌 ? ' 뽑힘' : '');
+    e.innerHTML = '<div class="이름">'+u.이름+'</div><div class="수">'+u.수+'명 · '+땅이름[땅[u.y][u.x]]+'</div>';
+    e.onclick = ()=>{ 뽑힌 = u; 그리기(); 곁그리기(); };
+    d.appendChild(e);
+  });
+}
+function 때문자(){
+  const h = Math.floor(때/60), m = 때%60;
+  const 이름 = ['자시','축시','인시','묘시','진시','사시','오시','미시','신시','유시','술시','해시'];
+  return 이름[Math.floor(((h+1)%24)/2)] + ' (' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ')';
+}
+function 알림(글, 급){
+  const b = document.getElementById('보고');
+  const p = document.createElement('p');
+  if (급) p.className = '급';
+  p.textContent = 글;
+  b.insertBefore(p, b.firstChild);
+  while (b.children.length > 12) b.removeChild(b.lastChild);
+}
+
+c.addEventListener('click', e=>{
+  if (!뽑힌) { 알림('먼저 부대를 고르십시오.'); return; }
+  const r = c.getBoundingClientRect();
+  const ox = (c.width - 가로*칸)/2, oy = (c.height - 세로*칸)/2;
+  const x = Math.floor((e.clientX - r.left - ox)/칸), y = Math.floor((e.clientY - r.top - oy)/칸);
+  if (x<0||y<0||x>=가로||y>=세로) return;
+  const t = 땅[y][x];
+  if (발품[t] > 50) { 알림(뽑힌.이름+' — 물을 건널 수 없습니다.', true); return; }
+  const 거리 = Math.abs(x-뽑힌.x) + Math.abs(y-뽑힌.y);
+  const 걸림 = Math.round(거리 * 발품[t] * 4);
+  뽑힌.x = x; 뽑힌.y = y;
+  때 = (때 + 걸림) % 1440;
+  알림(뽑힌.이름+'이 '+땅이름[t]+'으로 이동했습니다. ('+걸림+'분)');
+  그리기(); 곁그리기();
+});
+
+addEventListener('keydown', e=>{
+  if (e.code === 'Space') {
+    e.preventDefault();
+    때 = (때 + 30) % 1440;
+    알림('반 시진이 지났습니다.');
+    곁그리기();
+  }
+});
+addEventListener('resize', 그리기);
+그리기(); 곁그리기();
+알림('적 본대가 북동쪽에 보입니다. 수는 알 수 없습니다.', true);
+</script>
+</body></html>

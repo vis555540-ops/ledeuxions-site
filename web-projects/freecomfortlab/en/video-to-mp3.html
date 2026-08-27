@@ -74,10 +74,10 @@
         <button class="btn btn-primary btn-block" id="run" disabled>Extract → MP3</button>
         <div class="progress-bar" id="bar" hidden><div></div></div>
         <div class="status" id="status" hidden></div>
+        <p id="pdf-hint" hidden style="text-align:center;margin:14px 0 0;font-size:.92rem;line-height:1.6">Work with PDFs too? <a href="https://pdf300.com" style="color:inherit;text-decoration:underline">pdf300.com</a> — merge, split, shrink. No install.</p>
     </div>
 </div>
 </main>
-<p style="text-align:center;margin:26px 0 8px;font-size:.92rem;opacity:.72">Work with PDFs too? <a href="https://pdf300.com" style="color:inherit">pdf300.com</a> — merge, split, shrink. No install.</p>
 
 <footer class="site-footer">
     <div class="site-footer-inner">
@@ -123,6 +123,8 @@
     function setStatus(msg, kind) {
         var s = document.getElementById('status');
         s.textContent = msg; s.hidden = !msg; s.className = 'status' + (kind ? ' ' + kind : '');
+        var h = document.getElementById('pdf-hint');
+        if (h) h.hidden = (kind !== 'ok');
     }
     elRun.addEventListener('click', async function () {
         if (!state.file) return;

@@ -175,6 +175,7 @@
         </button>
 
         <div class="status" id="status" hidden></div>
+        <p id="pdf-hint" hidden style="text-align:center;margin:14px 0 0;font-size:.92rem;line-height:1.6">PDF도 다루시나요? <a href="https://pdf300.com" style="color:inherit;text-decoration:underline">pdf300.com</a> — 합치기·나누기·용량 줄이기, 설치 없이.</p>
 
         <p class="help" style="margin-top:var(--space-4);">
             🔒 모든 처리는 브라우저 안에서 끝납니다. 파일이 외부로 전송되지 않습니다.
@@ -184,7 +185,6 @@
 </div>
 
 </main>
-<p style="text-align:center;margin:26px 0 8px;font-size:.92rem;opacity:.72">PDF도 다루시나요? <a href="https://pdf300.com" style="color:inherit">pdf300.com</a> — 합치기·나누기·용량 줄이기, 설치 없이.</p>
 
 
 <footer class="site-footer">
@@ -268,6 +268,8 @@
         var s = document.getElementById('status');
         s.textContent = msg; s.hidden = !msg;
         s.className = 'status' + (kind ? ' ' + kind : '');
+        var h = document.getElementById('pdf-hint');
+        if (h) h.hidden = (kind !== 'ok');
     }
 
     async function decodeAudio(file) {
