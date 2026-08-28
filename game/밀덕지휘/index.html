@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>밀덕지휘 프로토 v0.3</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; background: #1a1a1a; color: #e0e0e0; overflow: hidden; }
+#app { display: grid; grid-template-rows: 1fr 240px; grid-template-columns: 1fr 1fr; height: 100vh; gap: 2px; background: #333; }
+#grid-panel { position: relative; background: #1e2a1e; overflow: hidden; }
+#paint-panel { position: relative; background: #f5f5f0; overflow: hidden; }
+#chat-panel { grid-column: 1 / -1; display: flex; flex-direction: column; background: #222; border-top: 1px solid #444; }
+
+.panel-title { position: absolute; top: 8px; left: 8px; z-index: 10; padding: 4px 10px; background: rgba(0,0,0,0.6); color: #fff; font-size: 11px; border-radius: 3px; letter-spacing: 1px; }
+#paint-panel .panel-title { background: rgba(0,0,0,0.55); color: #fff; }
+
+.tool-bar { position: absolute; top: 8px; right: 8px; z-index: 10; display: flex; gap: 3px; background: rgba(0,0,0,0.7); padding: 4px; border-radius: 4px; flex-wrap: wrap; max-width: 60%; justify-content: flex-end; }
+.tool-bar button { padding: 4px 8px; background: #333; color: #ccc; border: 1px solid #555; border-radius: 3px; cursor: pointer; font-size: 11px; }
+.tool-bar button.active { background: #4a6; color: #fff; border-color: #6d8; }
+#save-btn { background: #654 !important; }
+
+canvas { display: block; touch-action: none; }
+#grid-cv { cursor: crosshair; }
+#paint-cv { cursor: crosshair; }
+
+#coord { position: absolute; bottom: 6px; right: 8px; z-index: 10; background: rgba(0,0,0,0.6); padding: 3px 8px; font-family: monospace; font-size: 11px; color: #6cf; border-radius: 3px; }
+
+#chat-log { flex: 1; overflow-y: auto; padding: 10px 14px; font-size: 13px; line-height: 1.5; }
+#chat-log .형 { color: #6cf; }
+#chat-log .이음 { color: #fc6; }
+#chat-log .system { color: #888; font-style: italic; font-size: 11px; }
+#chat-log p { margin-bottom: 6px; word-break: break-all; white-space: pre-wrap; }
+#input-bar { display: flex; padding: 8px; border-top: 1px solid #444; gap: 6px; }
+#input-bar input { flex: 1; padding: 8px; background: #333; color: #eee; border: 1px solid #555; border-radius: 4px; font-size: 13px; }
+#input-bar button { padding: 8px 14px; background: #4a6; color: #fff; border: 0; border-radius: 4px; cursor: pointer; font-weight: 600; }
+#input-bar #save-chat { background: #654; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="grid-panel">
+    <div class="panel-title">격자 (게임판)</div>
+    <div class="tool-bar">
+      <button data-tool="g-friend" class="active">아군◯</button>
+      <button data-tool="g-enemy">적△</button>
+      <button data-tool="g-mark">체크✓</button>
+      <button data-tool="g-path">경로</button>
+      <button data-tool="g-erase">셀지움</button>
+      <button id="g-clear">전체지움</button>
+    </div>
+    <canvas id="grid-cv"></canvas>
+    <div id="coord">(-, -)</div>
+  </div>
+
+  <div id="paint-panel">
+    <div class="panel-title">그림판 (자유)</div>
+    <div class="tool-bar">
+      <button data-brush="black" class="active" style="color:#000;background:#eee;">검정</button>
+      <button data-brush="red" style="color:#f44;background:#fee;">빨강</button>
+      <button data-brush="blue" style="color:#48f;background:#eef;">파랑</button>
+      <button data-brush="green" style="color:#4a4;background:#efe;">초록</button>
+      <button data-brush="erase" style="color:#666;background:#fff;">지우개</button>
+      <button id="p-clear" style="color:#000;background:#ffe;">전체지움</button>
+    </div>
+    <canvas id="paint-cv"></canvas>
+  </div>
+
+  <div id="chat-panel">
+    <div id="chat-log">
+      <p class="system">밀덕지휘 프로토 v0.3 · 반은 격자, 반은 그림판, 아래는 이음과 채팅.</p>
+    </div>
+    <div id="input-bar">
+      <input id="msg" type="text" placeholder="이음이한테 명령·질문...">
+      <button id="send">보냄</button>
+      <button id="save-chat">이음 봐줘</button>
+    </div>
+  </div>
+</div>
+<script>
+const COLS = 20, ROWS = 15, CELL = 32;
+
+const gp = document.getElementById('grid-panel');
+const pp = document.getElementById('paint-panel');
+const gcv = document.getElementById('grid-cv');
+const pcv = document.getElementById('paint-cv');
+const gctx = gcv.getContext('2d');
+const pctx = pcv.getContext('2d');
+const coord = document.getElementById('coord');
+
+function resize() {
+  const g = { w: gp.clientWidth, h: gp.clientHeight };
+  const p = { w: pp.clientWidth, h: pp.clientHeight };
+  gcv.width = g.w; gcv.height = g.h;
+  pcv.width = p.w; pcv.height = p.h;
+  redrawPaint();
+  drawGrid();
+}
+window.addEventListener('resize', resize);
+
+let gridTool = 'g-friend';
+let brushColor = 'black';
+let brushSize = 3;
+let paintPaths = []; // {color, size, points:[[x,y]]}
+let currentStroke = null;
+let currentPath = null;
+
+const state = {
+  격자: { cols: COLS, rows: ROWS },
+  아군: [], 적: [], 체크: [], 경로: [], 그림_스트로크수: 0,
+  형_말: '', 이음_말_기다림: false
+};
+
+const surnames = ['김','이','박','최','정','강','조','윤','장','임','한','오','서','신','권','문','손','유','고','류'];
+const 이름1 = ['민','성','석','호','수','재','태','우','현','준','희','원','기','종','승','형'];
+const 이름2 = ['수','호','재','민','철','규','일','석','우','환','준','성','한','원','철'];
+function 이름() { return surnames[Math.floor(Math.random()*surnames.length)] + 이름1[Math.floor(Math.random()*이름1.length)] + 이름2[Math.floor(Math.random()*이름2.length)]; }
+const 병과들 = ['소총수','기관총','박격포','저격수','공병','방패병','의무병','통신병'];
+
+document.querySelectorAll('#grid-panel .tool-bar button[data-tool]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#grid-panel .tool-bar button[data-tool]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    gridTool = b.dataset.tool;
+  });
+});
+document.querySelectorAll('#paint-panel .tool-bar button[data-brush]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#paint-panel .tool-bar button[data-brush]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    brushColor = b.dataset.brush;
+  });
+});
+
+document.getElementById('g-clear').addEventListener('click', () => {
+  if (!confirm('격자 전체 지움?')) return;
+  state.아군 = []; state.적 = []; state.체크 = []; state.경로 = [];
+  drawGrid();
+  log('system', '격자 지움.');
+});
+document.getElementById('p-clear').addEventListener('click', () => {
+  if (!confirm('그림판 전체 지움?')) return;
+  paintPaths = [];
+  state.그림_스트로크수 = 0;
+  redrawPaint();
+  log('system', '그림판 지움.');
+});
+
+function gridPos(e) {
+  const r = gcv.getBoundingClientRect();
+  const scale = COLS * CELL / r.width;
+  const size = COLS * CELL;
+  const startX = (gcv.width - size) / 2;
+  const startY = 40;
+  const x = e.clientX - r.left - startX;
+  const y = e.clientY - r.top - startY;
+  return { col: Math.floor(x / CELL), row: Math.floor(y / CELL) };
+}
+
+gcv.addEventListener('mousemove', e => {
+  const p = gridPos(e);
+  if (p.col >= 0 && p.col < COLS && p.row >= 0 && p.row < ROWS) coord.textContent = `(${p.col+1}, ${p.row+1})`;
+  else coord.textContent = '(-, -)';
+
+  if (gridTool === 'g-path' && currentPath) {
+    if (p.col < 0 || p.col >= COLS || p.row < 0 || p.row >= ROWS) return;
+    const last = currentPath.점들[currentPath.점들.length - 1];
+    if (!last || last[0] !== p.col || last[1] !== p.row) {
+      currentPath.점들.push([p.col, p.row]);
+      drawGrid();
+    }
+  }
+});
+gcv.addEventListener('mouseleave', () => coord.textContent = '(-, -)');
+
+gcv.addEventListener('mousedown', e => {
+  const p = gridPos(e);
+  if (p.col < 0 || p.col >= COLS || p.row < 0 || p.row >= ROWS) return;
+  if (gridTool === 'g-friend') {
+    if (findAt(state.아군, p) < 0) state.아군.push({col:p.col,row:p.row, 이름:이름(), 병과: 병과들[Math.floor(Math.random()*병과들.length)]});
+  } else if (gridTool === 'g-enemy') {
+    if (findAt(state.적, p) < 0) state.적.push({col:p.col,row:p.row});
+  } else if (gridTool === 'g-mark') {
+    const i = findAt(state.체크, p);
+    if (i >= 0) state.체크.splice(i, 1); else state.체크.push({col:p.col,row:p.row});
+  } else if (gridTool === 'g-erase') {
+    ['아군','적','체크'].forEach(k => {
+      const i = findAt(state[k], p);
+      if (i >= 0) state[k].splice(i, 1);
+    });
+  } else if (gridTool === 'g-path') {
+    currentPath = { 점들: [[p.col, p.row]] };
+  }
+  drawGrid();
+});
+gcv.addEventListener('mouseup', () => {
+  if (currentPath && currentPath.점들.length > 1) state.경로.push(currentPath);
+  currentPath = null;
+  drawGrid();
+});
+function findAt(list, p) { return list.findIndex(o => o.col === p.col && o.row === p.row); }
+
+pcv.addEventListener('mousedown', e => {
+  const r = pcv.getBoundingClientRect();
+  const x = (e.clientX - r.left) * (pcv.width / r.width);
+  const y = (e.clientY - r.top) * (pcv.height / r.height);
+  currentStroke = { color: brushColor, size: brushColor === 'erase' ? 20 : brushSize, points: [[x, y]] };
+});
+pcv.addEventListener('mousemove', e => {
+  if (!currentStroke) return;
+  const r = pcv.getBoundingClientRect();
+  const x = (e.clientX - r.left) * (pcv.width / r.width);
+  const y = (e.clientY - r.top) * (pcv.height / r.height);
+  currentStroke.points.push([x, y]);
+  drawStroke(currentStroke);
+});
+pcv.addEventListener('mouseup', () => {
+  if (currentStroke) {
+    paintPaths.push(currentStroke);
+    state.그림_스트로크수 = paintPaths.length;
+  }
+  currentStroke = null;
+});
+pcv.addEventListener('mouseleave', () => {
+  if (currentStroke) {
+    paintPaths.push(currentStroke);
+    state.그림_스트로크수 = paintPaths.length;
+    currentStroke = null;
+  }
+});
+
+function drawStroke(s) {
+  const color = s.color === 'erase' ? '#f5f5f0' : ({black:'#111',red:'#d33',blue:'#26c',green:'#3a3'}[s.color]);
+  pctx.strokeStyle = color; pctx.lineWidth = s.size; pctx.lineCap = 'round'; pctx.lineJoin = 'round';
+  pctx.beginPath();
+  const pts = s.points;
+  if (pts.length === 1) { pctx.arc(pts[0][0], pts[0][1], s.size/2, 0, Math.PI*2); pctx.fillStyle = color; pctx.fill(); return; }
+  pctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i=1; i<pts.length; i++) pctx.lineTo(pts[i][0], pts[i][1]);
+  pctx.stroke();
+}
+function redrawPaint() {
+  pctx.fillStyle = '#f5f5f0'; pctx.fillRect(0, 0, pcv.width, pcv.height);
+  for (const s of paintPaths) drawStroke(s);
+}
+
+function drawGrid() {
+  gctx.fillStyle = '#1e2a1e'; gctx.fillRect(0, 0, gcv.width, gcv.height);
+  const size = COLS * CELL;
+  const startX = (gcv.width - size) / 2;
+  const startY = 40;
+
+  gctx.save();
+  gctx.translate(startX, startY);
+
+  gctx.strokeStyle = '#3a4a3a'; gctx.lineWidth = 1;
+  for (let c=0; c<=COLS; c++) { gctx.beginPath(); gctx.moveTo(c*CELL, 0); gctx.lineTo(c*CELL, ROWS*CELL); gctx.stroke(); }
+  for (let r=0; r<=ROWS; r++) { gctx.beginPath(); gctx.moveTo(0, r*CELL); gctx.lineTo(COLS*CELL, r*CELL); gctx.stroke(); }
+  gctx.fillStyle = '#556655'; gctx.font = '9px monospace';
+  for (let c=0; c<COLS; c+=5) gctx.fillText(String(c+1), c*CELL+2, 10);
+  for (let r=0; r<ROWS; r+=5) gctx.fillText(String(r+1), 2, r*CELL+11);
+
+  for (const m of state.체크) {
+    gctx.fillStyle = 'rgba(255,255,64,0.25)'; gctx.fillRect(m.col*CELL, m.row*CELL, CELL, CELL);
+    gctx.strokeStyle = '#ff4'; gctx.lineWidth = 2;
+    gctx.beginPath();
+    gctx.moveTo(m.col*CELL+8, m.row*CELL+CELL/2);
+    gctx.lineTo(m.col*CELL+CELL/2-1, m.row*CELL+CELL-8);
+    gctx.lineTo(m.col*CELL+CELL-6, m.row*CELL+6);
+    gctx.stroke();
+  }
+  for (const p of state.경로) {
+    gctx.strokeStyle = '#4c8'; gctx.lineWidth = 3;
+    gctx.beginPath();
+    gctx.moveTo(p.점들[0][0]*CELL+CELL/2, p.점들[0][1]*CELL+CELL/2);
+    for (let i=1; i<p.점들.length; i++) gctx.lineTo(p.점들[i][0]*CELL+CELL/2, p.점들[i][1]*CELL+CELL/2);
+    gctx.stroke();
+  }
+  if (currentPath && currentPath.점들.length > 1) {
+    gctx.strokeStyle = '#4c8'; gctx.lineWidth = 3; gctx.setLineDash([5,5]);
+    gctx.beginPath();
+    gctx.moveTo(currentPath.점들[0][0]*CELL+CELL/2, currentPath.점들[0][1]*CELL+CELL/2);
+    for (let i=1; i<currentPath.점들.length; i++) gctx.lineTo(currentPath.점들[i][0]*CELL+CELL/2, currentPath.점들[i][1]*CELL+CELL/2);
+    gctx.stroke(); gctx.setLineDash([]);
+  }
+  for (const u of state.아군) {
+    const cx = u.col*CELL+CELL/2, cy = u.row*CELL+CELL/2;
+    gctx.strokeStyle = '#6cf'; gctx.fillStyle = 'rgba(102,204,255,0.25)'; gctx.lineWidth = 2;
+    gctx.beginPath(); gctx.arc(cx, cy, CELL/2-4, 0, Math.PI*2); gctx.fill(); gctx.stroke();
+    gctx.fillStyle = '#fff'; gctx.font = 'bold 8px sans-serif'; gctx.textAlign = 'center';
+    gctx.fillText(u.이름, cx, cy-2);
+    gctx.fillText(u.병과, cx, cy+7);
+  }
+  for (const e of state.적) {
+    const cx = e.col*CELL+CELL/2, cy = e.row*CELL+CELL/2;
+    gctx.strokeStyle = '#f66'; gctx.fillStyle = 'rgba(255,102,102,0.25)'; gctx.lineWidth = 2;
+    gctx.beginPath();
+    gctx.moveTo(cx, cy-CELL/2+4);
+    gctx.lineTo(cx-CELL/2+4, cy+CELL/2-4);
+    gctx.lineTo(cx+CELL/2-4, cy+CELL/2-4);
+    gctx.closePath(); gctx.fill(); gctx.stroke();
+  }
+  gctx.restore();
+}
+
+function log(who, text) {
+  const l = document.getElementById('chat-log');
+  const p = document.createElement('p');
+  p.className = who;
+  p.textContent = who === 'system' ? text : who + ': ' + text;
+  l.appendChild(p);
+  l.scrollTop = l.scrollHeight;
+}
+
+function save() {
+  state.형_말 = document.getElementById('msg').value || '';
+  state.이음_말_기다림 = true;
+  const json = JSON.stringify(state, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'state.json'; a.click();
+  URL.revokeObjectURL(url);
+  log('system', 'state.json 저장.');
+}
+document.getElementById('send').addEventListener('click', () => {
+  const t = document.getElementById('msg').value.trim();
+  if (!t) return;
+  log('형', t);
+  state.형_말 = t;
+  document.getElementById('msg').value = '';
+});
+document.getElementById('save-chat').addEventListener('click', () => {
+  const t = document.getElementById('msg').value.trim();
+  if (t) { log('형', t); state.형_말 = t; document.getElementById('msg').value = ''; }
+  save();
+});
+document.getElementById('msg').addEventListener('keypress', e => {
+  if (e.key === 'Enter') document.getElementById('send').click();
+});
+
+resize();
+log('system', '준비 완료.');
+</script>
+</body>
+</html>
