@@ -517,7 +517,7 @@
         </div>
     </div>
 
-    <input type="file" id="fileInput" style="display: none;" accept="image/*">
+    <input type="file" id="fileInput" style="display: none;" accept="image/*" multiple>
 
     <script>
         // 다국어 번역
@@ -1452,20 +1452,42 @@
             document.getElementById('fileInput').click();
         }
 
+        let 사진놓은수 = 0;
         document.getElementById('fileInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
+            const files = [...e.target.files];
+            files.forEach((file, i) => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const img = new Image();
                     img.onload = () => {
-                        ctx.drawImage(img, 0, 0);
+                        // 캔버스보다 크면 줄인다
+                        let w = img.width, h = img.height;
+                        const 큰쪽 = Math.min(canvas.width*0.6/w, canvas.height*0.6/h, 1);
+                        w = Math.round(w*큰쪽); h = Math.round(h*큰쪽);
+                        // 앞 사진과 겹치지 않게 조금씩 어긋나게 놓는다
+                        const x = Math.min(20 + 사진놓은수*28, Math.max(0, canvas.width - w - 10));
+                        const y = Math.min(20 + 사진놓은수*28, Math.max(0, canvas.height - h - 10));
+                        사진놓은수 = (사진놓은수 + 1) % 8;
+
+                        ctx.drawImage(img, x, y, w, h);
                         saveState();
+
+                        // 🚨 놓자마자 잡아둔다. 그래야 바로 끌어 옮길 수 있다
+                        selectedImage = ctx.getImageData(x, y, w, h);
+                        selectionRect = { x, y, w: w, h: h };
+                        currentTool = 'select';
+                        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                        const 고름 = document.querySelector('[data-tool="select"]');
+                        if (고름) 고름.classList.add('active');
+                        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                        tempCtx.drawImage(canvas, 0, 0);
+                        updateStatus(i18n[currentLang].statusSelectionComplete);
                     };
                     img.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
-            }
+            });
+            e.target.value = '';
         });
 
         function clearCanvas() {
