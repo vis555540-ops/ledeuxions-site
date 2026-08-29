@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>모두의 갤러리 · 1층 시험판 v1</title>
+<title>모두의 갤러리 · 1층 v2</title>
 <style>
 :root{--bg:#0e0c0a;--card:#1c1814;--ink:#f1e9d8;--dim:#a79d8b;--gold:#d8b45a;--line:#3b3329}
 *{box-sizing:border-box}
@@ -25,14 +25,14 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 .hidden{display:none!important}
 #panel,#talk,#lift{right:12px;top:64px;width:min(320px,calc(100vw - 24px))}
 #panel .art{display:block;width:100%;aspect-ratio:1/1;image-rendering:pixelated;image-rendering:crisp-edges;background:#2a231c;border:2px solid var(--gold);border-radius:4px;object-fit:contain}
-#panel .loc{font-size:13px;color:var(--dim);margin-top:8px}
-#panel h2{margin:2px 0;font-size:20px;font-weight:700}
-#panel .artist{font-size:15px;color:var(--gold)}
-#panel p{margin:10px 0 0;font-size:16px;line-height:1.65;white-space:pre-line}
+#panel .loc{font-size:11px;color:var(--dim);margin-top:8px}
+#panel h2{margin:2px 0;font-size:17px;font-weight:700}
+#panel .artist{font-size:13px;color:var(--gold)}
+#panel p{margin:8px 0 0;font-size:13px;line-height:1.5;white-space:pre-line}
 #panel .meta{min-width:0}
 #aLink{margin-top:8px}
-#talk .who{font-size:14px;color:var(--gold);font-weight:600}
-#talk p{margin:8px 0 0;font-size:17px;line-height:1.7;white-space:pre-line}
+#talk .who{font-size:12px;color:var(--gold);font-weight:600}
+#talk p{margin:6px 0 0;font-size:14px;line-height:1.55;white-space:pre-line}
 #talk .btn{margin-top:10px}
 #lift h3{margin:0 0 8px;font-size:14px;color:var(--dim);font-weight:600}
 #lift button{display:block;width:100%;text-align:left;margin:4px 0;padding:9px 10px;background:#2a241d;color:var(--ink);border:1px solid var(--line);border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit}
@@ -57,6 +57,43 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 #editor .ebtns .btn{font-size:12px}
 #eStatus{font-size:12px;color:var(--dim);margin-top:8px;min-height:1.2em;word-break:break-all;white-space:pre-line}
 #editor .note{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.5}
+/* 걷지 않고 보기 */
+#browseBtn{position:fixed;right:14px;bottom:24px;z-index:6;background:rgba(28,24,20,.92);color:var(--ink);border:1px solid var(--gold);border-radius:10px;padding:12px 16px;font-size:15px;font-family:inherit;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.45);text-align:left}
+#browseBtn small{display:block;font-size:11px;color:var(--dim);margin-top:2px}
+#browse{position:fixed;inset:0;z-index:7}
+#bBack{position:absolute;inset:0;background:rgba(14,12,10,.7);backdrop-filter:blur(3px)}
+#bBox{position:absolute;inset:24px;margin:0 auto;max-width:940px;background:rgba(28,24,20,.97);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;-webkit-user-select:text;user-select:text}
+#bHead{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);gap:8px}
+#bTabs{display:flex;gap:4px;flex-wrap:wrap}
+#bTabs button{background:none;border:1px solid transparent;color:var(--dim);font-size:16px;padding:8px 12px;border-radius:8px;cursor:pointer;font-family:inherit}
+#bTabs button.on{color:var(--gold);border-color:var(--gold)}
+#bClose{background:#2a241d;border:1px solid var(--line);color:var(--ink);padding:8px 14px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit}
+#bBody{overflow:auto;padding:14px;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));align-content:start}
+.card{background:#241f19;border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0}
+.card .no{font-size:11px;color:var(--dim)}
+.card h3{margin:2px 0 2px;font-size:17px}
+.card .sub{font-size:13px;color:var(--dim);line-height:1.4;white-space:pre-line}
+.reps{display:flex;gap:8px;margin:10px 0}
+.th{width:64px;height:64px;image-rendering:pixelated;image-rendering:crisp-edges;border:2px solid var(--gold);border-radius:4px;background:#2a231c;object-fit:contain;display:block}
+.th[data-detail]{cursor:pointer}
+.th.empty{border-color:var(--line);opacity:.6}
+.th.big{width:min(260px,60vw);height:auto;aspect-ratio:1/1}
+.card button,.card a.btn{background:#2a241d;border:1px solid var(--line);color:var(--ink);padding:8px 12px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;margin:4px 6px 0 0;display:inline-block;text-decoration:none}
+.card button.gold{border-color:var(--gold);color:var(--gold)}
+.work{cursor:pointer;display:flex;gap:10px;align-items:center}
+.work .th{width:80px;height:80px;flex:none}
+.work .t{font-weight:600;font-size:15px}
+.work .a{font-size:12px;color:var(--gold)}
+.work .l{font-size:11px;color:var(--dim)}
+.detail{grid-column:1/-1;display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.detail .meta{flex:1;min-width:220px}
+.detail .l{font-size:11px;color:var(--dim)}
+.detail h3{font-size:22px;margin:2px 0}
+.detail .a{color:var(--gold);font-size:14px}
+.detail p{font-size:14px;line-height:1.6;white-space:pre-wrap}
+.empty{grid-column:1/-1;color:var(--dim);font-size:14px;padding:10px 4px}
+.show{grid-column:1/-1}
+.show .w{font-size:12px;color:var(--gold)}
 /* 폰 */
 #dpad{position:fixed;right:14px;bottom:14px;width:138px;height:138px;display:none;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:4px;z-index:6}
 #dpad button{background:rgba(28,24,20,.85);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:20px;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
@@ -66,18 +103,20 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 body.mobile #dpad{display:grid}
 body.mobile.editing #dpad{display:none}
 body.mobile #tip{display:none}
-body.mobile #who{font-size:11px;max-width:180px;padding:5px 8px}
 body.mobile #panel,body.mobile #talk,body.mobile #lift{top:auto;bottom:14px;left:12px;right:164px;width:auto;max-height:44vh;overflow:auto}
 body.mobile #panel{display:flex;gap:10px}
 body.mobile #panel .art{width:96px;height:96px;flex:none}
 body.mobile #panel .loc{margin-top:0}
 body.mobile #editor{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:62vh}
 body.mobile .hudR{flex-direction:column;align-items:flex-end}
+body.mobile #browseBtn{bottom:170px;padding:10px 12px;font-size:14px}
+body.mobile #bBox{inset:10px}
 /* 구글 번역 위젯: 위쪽 띠 숨김, 셀렉트만 남김 */
 .goog-te-banner-frame.skiptranslate,iframe.skiptranslate{display:none!important}
 #google_translate_element .goog-te-gadget{font-size:0!important;color:transparent!important}
 #google_translate_element .goog-te-gadget span,#google_translate_element img{display:none}
 #google_translate_element select{font-size:12px;background:#221d18;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 6px;max-width:150px;font-family:inherit}
+body.mobile #who{font-size:11px;max-width:180px;padding:5px 8px}
 </style>
 </head>
 <body>
@@ -127,6 +166,7 @@ body.mobile .hudR{flex-direction:column;align-items:flex-end}
     <label class="btn">room.json 불러오기<input type="file" id="eImport" accept=".json,application/json" hidden></label>
     <button class="btn" id="eSend">서버로 보내기</button>
     <button class="btn" id="eClear">방 비우기</button>
+    <a class="btn" id="eBig" target="_blank" rel="noopener">큰 화면으로 꾸미기</a>
   </div>
   <div id="eStatus"></div>
   <div class="note">그림은 PNG 픽셀아트, 300KB 이하 권장. 내려받은 room.json 하나가 이 방 전체다. 서버에 올리면 관리자 확인 뒤 공개.</div>
@@ -139,18 +179,31 @@ body.mobile .hudR{flex-direction:column;align-items:flex-end}
 </div>
 
 <div id="who" style="position:fixed;left:10px;top:10px;z-index:4;
-     background:rgba(14,12,10,.72);border:1px solid var(--line);border-radius:8px;
-     padding:7px 11px;font-size:12px;line-height:1.5;color:var(--dim);max-width:280px">
-  <b style="color:var(--gold)">모두의 갤러리</b><br>
+     background:rgba(14,12,10,.72);border:1px solid #3a3128;border-radius:8px;
+     padding:7px 11px;font-size:12px;line-height:1.5;color:#8a8175;max-width:280px">
+  <b style="color:#c9a227">모두의 갤러리</b><br>
   <span style="font-size:11px">A LeDeuxions internet project<br>
   세계의 작가가 말의 벽 없이 그림을 거는 곳</span>
 </div>
-<div id="tip">이동: 방향키 · WASD (화면을 한 번 클릭한 뒤) · 작품·안내인 옆에 서면 열린다 · 현관 오른쪽 회색 칸 = 엘리베이터</div>
+<div id="tip">이동: 방향키 · WASD (화면을 한 번 클릭한 뒤) · 작품·안내인 옆에 서면 열린다 · 걷기 싫으면 마우스를 오른쪽으로</div>
+
+<button id="browseBtn" class="hidden">작가별 보기<small>걷지 않고 · 작가 · 작품 · 전시</small></button>
+<div id="browse" class="hidden">
+  <div id="bBack"></div>
+  <div id="bBox" role="dialog" aria-label="목록으로 보기">
+    <div id="bHead">
+      <div id="bTabs"><button data-tab="artists" class="on">작가별</button><button data-tab="works">작품별</button><button data-tab="shows">전시</button></div>
+      <button id="bClose">닫기</button>
+    </div>
+    <div id="bBody"></div>
+  </div>
+</div>
 
 <script>
 'use strict';
 /* ------------------------------------------------------------------
-   모두의 갤러리 · 1층 시험판 v1 · 2026-08-29
+   모두의 갤러리 · 1층 v2 · 2026-08-29
+   v2: 걷지 않고 보기(작가별·작품별·전시) · #preview 미리보기 · #room=3-1 바로가기 · 큰 화면 꾸미기 링크
    한 파일. 서버 없음. 정적 호스팅에 그대로 올린다.
 
    구조: 공원 → 정문 → 현관(엘리베이터·안내판) → 가운데 복도 → 양쪽 홀(각 작가 방 2) → 복도 끝 홍보관
@@ -159,8 +212,9 @@ body.mobile .hudR{flex-direction:column;align-items:flex-end}
    층 붙이기: FLOORS 에 한 줄. src 는 다른 서버 JSON 주소여도 된다.
    층 JSON:
    { "name":"2층", "halls":5,
-     "rooms": { "1-1": { …방 }, "1-2": { "src":"https://다른서버/rooms/abc.json" } },
+     "rooms": { "1-1": { …방 }, "1-2": { "src":"https://다른서버/rooms/abc.json" } },   ← 안 적은 방은 /gallery/rooms/<키>.json 을 자동으로 찾는다
      "promo": [ {"slot":1,"title":"…","org":"…","desc":"…","image":"…png","link":"https://…"} ],
+     "exhibitions": [ {"title":"…","when":"2026-12","desc":"…","link":"https://…"} ],   ← 「전시」탭
      "npc": { "park":"공원 안내인이 할 말" } }
    방 JSON (room.json — 꾸미기 창에서 내려받는 것과 같은 형식):
    { "artist":"…","country":"KR","about":"…","wall":"cream","floor":"wood",
@@ -170,10 +224,16 @@ body.mobile .hudR{flex-direction:column;align-items:flex-end}
    - floor: wood darkwood marble stone red green blue grey
    - 다른 서버가 JSON/PNG 를 줄 때는 Access-Control-Allow-Origin 헤더가 필요하다.
 
-   서버로 보내기: UPLOAD_URL 에 주소를 넣으면 「서버로 보내기」가 room.json 을 POST 한다. (gallery_api.py 참고)
+   서버로 보내기: UPLOAD_URL 로 room.json 을 POST 한다. (gallery_api.py · nginx /api/gallery/ → 127.0.0.1:5002)
+   미리보기: 이 파일을 #preview 로 열고 postMessage({type:'preview', key:'3-1', room:{…방}}) 를 보내면 그 방만 있는 층을 그린다.
+   바로가기: index.html#room=3-1 → 그 방 앞에서 시작.
+   걷지 않고 보기: 마우스를 오른쪽 1/3 로 가져가면 「작가별 보기」 단추. 폰은 항상 보인다.
 ------------------------------------------------------------------ */
 
-const UPLOAD_URL='';   // 예: 'https://ledeuxions.com/api/gallery/room'
+const UPLOAD_URL='/api/gallery/room';          // gallery_api.py. 같은 도메인이면 이대로.
+const EDITOR_URL='./modu_room_editor.html';     // 큰 화면 꾸미기 (작가용)
+const ROOM_SRC=key=>'/gallery/rooms/'+key+'.json'; // 승인된 방 파일. 층 JSON 에 안 적어도 이 자리를 자동으로 찾아본다 (없으면 빈 방)
+const PREVIEW=location.hash.startsWith('#preview');
 
 const FLOORS=[
   {id:1,name:'1층',src:null},
@@ -185,6 +245,9 @@ const FLOOR1={name:'1층',halls:5,ground:true,
   promo:[
     {slot:1,title:'예시 갤러리 기획전',org:'예시 갤러리',desc:'예시 데이터. 실제 전시장이 자기 배너를 건다.',link:'https://example.com'},
     {slot:3,title:'예시 후원사',org:'예시 후원사',desc:'예시 데이터. 후원사 배너 자리.',link:''}
+  ],
+  exhibitions:[
+    {title:'개관전 (예시)',when:'2026-12',desc:'첫 100명 작가의 대표작. 예시 데이터.',link:''}
   ],
   rooms:{
     '1-1':{artist:'예시 작가 A',country:'KR',about:'항구와 새벽을 그린다. 16색 팔레트.',wall:'cream',floor:'wood',works:[
@@ -296,7 +359,7 @@ function buildFloor(def){
   }
   const npcMap=new Map();for(const np of npcs)npcMap.set(np.x+','+np.y,np);
   return {W,H,grid,under,roomAt,frames,npcs,npcMap,signs,roomsGeo,hallsGeo,lift,start,ground,name:def.name||'',
-          rooms:Object.assign({},def.rooms||{}),promo:(def.promo||[]).slice(),npcText:def.npc||{}};
+          rooms:Object.assign({},def.rooms||{}),promo:(def.promo||[]).slice(),exhibitions:(def.exhibitions||[]).slice(),npcText:def.npc||{}};
 }
 
 /* ---------- 그림 도구 ---------- */
@@ -391,7 +454,8 @@ const $=id=>document.getElementById(id);
 const cvs=$('game'),ctx=cvs.getContext('2d'),panel=$('panel'),talk=$('talk'),lift=$('lift'),editor=$('editor'),zoneEl=$('zone'),artCv=$('artCv'),artImg=$('artImg');
 const hide=el=>el.classList.add('hidden'),show=el=>el.classList.remove('hidden');
 let dpr=1,SCALE=3,viewW=0,viewH=0,camX=0,camY=0;
-let floor=null,activeFrame=null,activeNpc=null,liftOpen=false,lastZone='',editKey=null;
+let floor=null,activeFrame=null,activeNpc=null,liftOpen=false,lastZone='',editKey=null,bOpen=false,bTab='artists';
+const floorLabel=()=>floor.id?floor.id+'F':'미리보기';
 let thumbs=new Map();
 const player={x:0,y:0,dir:'down',moving:false,t:0};
 const keys={};
@@ -443,12 +507,13 @@ function setFloor(def,id,viaLift){
   activeFrame=null;activeNpc=null;liftOpen=false;lastZone='';hide(panel);hide(talk);hide(lift);hide(editor);document.body.classList.remove('editing');editKey=null;
   // 방 파일 (src) 불러오기
   const fl=floor;
+  if(id>=1&&/^https?:/.test(location.protocol))for(const key of Object.keys(fl.roomsGeo)){const r=fl.rooms[key];if(!r||(!r.src&&!r.artist&&!(r.works&&r.works.length)))fl.rooms[key]={src:ROOM_SRC(key),_probe:true};}
   for(const [key,r] of Object.entries(fl.rooms)){
     if(!r||!r.src||r.artist)continue;
     r._status='loading';
     fetch(r.src,{cache:'no-store'}).then(x=>{if(!x.ok)throw new Error('HTTP '+x.status);return x.json();})
-      .then(d=>{if(floor!==fl)return;fl.rooms[key]=Object.assign({},d,{src:r.src});invalidateRoom(key);refreshTalk();})
-      .catch(e=>{if(floor!==fl)return;r._status='error';r._err=e.message;refreshTalk();});
+      .then(d=>{if(floor!==fl)return;fl.rooms[key]=Object.assign({},d,{src:r.src});invalidateRoom(key);refreshTalk();refreshArt();if(bOpen)renderBrowse();})
+      .catch(e=>{if(floor!==fl)return;if(r._probe){delete fl.rooms[key];refreshTalk();if(bOpen)renderBrowse();return;}r._status='error';r._err=e.message;refreshTalk();if(bOpen)renderBrowse();});
   }
 }
 
@@ -459,14 +524,14 @@ function showArt(fr){
   const link=$('aLink');hide(link);
   if(fr.promo){
     const p=promoOf(fr.slot);
-    $('aLoc').textContent=`${floor.id}F · 홍보관 · ${fr.slot}번 배너`;
+    $('aLoc').textContent=`${floorLabel()} · 홍보관 · ${fr.slot}번 배너`;
     if(p){$('aTitle').textContent=p.title||p.org||'(제목 없음)';$('aArtist').textContent=p.org||'';$('aDesc').textContent=p.desc||'';
       if(p.link){link.href=p.link;show(link);}
       if(p.image){artImg.src=p.image;show(artImg);hide(artCv);}else{g.drawImage(thumbFor(fr),0,0);show(artCv);hide(artImg);}}
     else{$('aTitle').textContent='빈 배너';$('aArtist').textContent='대여 가능';$('aDesc').textContent='갤러리·기관·후원사 자리.';g.drawImage(EMPTY44,0,0);show(artCv);hide(artImg);}
   }else{
     const geo=floor.roomsGeo[fr.room],r=roomOf(fr.room),a=workOf(fr.room,fr.slot);
-    $('aLoc').textContent=`${floor.id}F · ${geo.hall}홀 · ${r&&r.artist?r.artist:'빈 방'} · ${SLOT_NAMES[fr.slot-1]}`;
+    $('aLoc').textContent=`${floorLabel()} · ${geo.hall}홀 · ${r&&r.artist?r.artist:'빈 방'} · ${SLOT_NAMES[fr.slot-1]}`;
     if(a){$('aTitle').textContent=a.title||'(제목 없음)';$('aArtist').textContent=(r.artist||'')+(r.country?' · '+r.country:'');$('aDesc').textContent=a.desc||'';
       if(a.image){artImg.src=a.image;show(artImg);hide(artCv);}else{g.drawImage(thumbFor(fr),0,0);show(artCv);hide(artImg);}}
     else{$('aTitle').textContent='빈 액자';$('aArtist').textContent=r&&r.artist?r.artist+' · 아직 안 걸음':'대여 가능';$('aDesc').textContent=r&&r.artist?'':'아직 아무도 걸지 않은 자리. 가격은 작가 100명이 모인 뒤 정한다.';g.drawImage(EMPTY12,0,0);show(artCv);hide(artImg);}
@@ -537,6 +602,7 @@ function openEditor(key,teleport){
   const sel=$('eRoom');sel.innerHTML='';
   for(const k of Object.keys(floor.roomsGeo)){const g=floor.roomsGeo[k],rr=roomOf(k);const o=document.createElement('option');o.value=k;o.textContent=`${g.hall}홀 ${g.idx}번 방 · ${rr&&rr.artist?rr.artist:'빈 방'}`;sel.appendChild(o);}
   sel.value=key;fillEditor(key);$('eStatus').textContent='';show(editor);document.body.classList.add('editing');
+  $('eBig').href=EDITOR_URL+'?key='+encodeURIComponent(key);
   if(teleport){const g=floor.roomsGeo[key];player.x=g.door.x*T;player.y=(g.door.y-1)*T;player.dir='up';}
   void r;
 }
@@ -587,6 +653,64 @@ async function sendRoom(){
   catch(e){st.textContent='실패: '+e.message;}
 }
 
+/* ---------- 걷지 않고 보기 (작가별 · 작품별 · 전시) ---------- */
+const browse=$('browse'),bBody=$('bBody'),browseBtn=$('browseBtn');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const TOUCH=matchMedia('(hover:none)').matches;
+const urlCache=new Map();
+function seedOfKey(key){let s=0;for(const ch of key)s=(s*31+ch.charCodeAt(0))|0;return Math.abs(s)+floor.id*7;}
+function thumbSrc(key,w){                      // key = '1-1-3' (방-자리)
+  if(w&&w.image)return w.image;
+  const k=(w?'g':'e')+floor.id+':'+key;
+  if(!urlCache.has(k))urlCache.set(k,(w?genArt(seedOfKey(key)):EMPTY12).toDataURL());
+  return urlCache.get(k);
+}
+const roomKeys=()=>Object.keys(floor.roomsGeo);
+function teleportRoom(key){const g=floor.roomsGeo[key];if(!g)return false;player.x=g.door.x*T;player.y=(g.door.y+1)*T;player.dir='up';return true;}
+function goRoom(key){if(teleportRoom(key))closeBrowse();}
+function openBrowse(tab){if(tab)bTab=tab;bOpen=true;for(const k in keys)keys[k]=false;show(browse);renderBrowse();}
+function closeBrowse(){bOpen=false;hide(browse);}
+function renderBrowse(){
+  document.querySelectorAll('#bTabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===bTab));
+  let html='';
+  if(bTab==='artists'){
+    html=roomKeys().map(key=>{
+      const g=floor.roomsGeo[key],r=roomOf(key),has=!!(r&&(r.artist||(r.works&&r.works.length)));
+      const reps=[1,2,3].map(s=>{const w=workOf(key,s);return `<img class="th${w?'':' empty'}" src="${thumbSrc(key+'-'+s,w)}" alt=""${w?` data-detail="${key}-${s}"`:''}>`;}).join('');
+      const n=has?(r.works||[]).filter(w=>w.title||w.image).length:0;
+      let sub=has?[r.country?esc(r.country):'',r.about?esc(r.about):''].filter(Boolean).join(' · '):'대여 가능';
+      if(r&&r._status==='loading')sub='방 파일 불러오는 중…';if(r&&r._status==='error')sub='방 파일 연결 실패: '+esc(r._err||'');
+      return `<section class="card"><div class="no">${floorLabel()} · ${g.hall}홀 ${g.idx}번 방</div><h3>${has?esc(r.artist||'(이름 없음)'):'빈 방'}</h3><div class="sub">${sub}</div><div class="reps">${reps}</div><div><button class="gold" data-go="${key}">방 앞으로 가기</button>${n?`<button data-works="${key}">작품 ${n}점</button>`:''}</div></section>`;
+    }).join('');
+  }else if(bTab==='works'){
+    const items=[];
+    for(const key of roomKeys()){const g=floor.roomsGeo[key],r=roomOf(key);for(let s=1;s<=10;s++){const w=workOf(key,s);if(!w)continue;
+      items.push(`<div class="card work" data-detail="${key}-${s}"><img class="th" src="${thumbSrc(key+'-'+s,w)}" alt=""><div style="min-width:0"><div class="t">${esc(w.title||'(제목 없음)')}</div><div class="a">${esc(r.artist||'')}</div><div class="l">${g.hall}홀 ${g.idx}번 방 · ${SLOT_NAMES[s-1]}</div></div></div>`);}}
+    html=items.length?items.join(''):'<div class="empty">이 층에 걸린 작품이 없다.</div>';
+  }else{
+    html=(floor.exhibitions||[]).map(e=>`<section class="card show"><div class="w">${esc(e.when||'')}</div><h3>${esc(e.title||'')}</h3><div class="sub">${esc(e.desc||'')}</div>${e.link?`<div><a class="btn" href="${esc(e.link)}" target="_blank" rel="noopener">자세히</a></div>`:''}</section>`).join('');
+    const pr=[1,2,3,4,5].map(s=>promoOf(s)).filter(Boolean);
+    if(pr.length)html+='<div class="empty" style="padding:6px 4px 0">홍보관 배너</div>'+pr.map(p=>`<section class="card"><div class="no">홍보관 · ${p.slot}번 배너</div><h3>${esc(p.title||p.org||'')}</h3><div class="sub">${esc(p.org||'')}${p.desc?' · '+esc(p.desc):''}</div>${p.link?`<div><a class="btn" href="${esc(p.link)}" target="_blank" rel="noopener">사이트 열기</a></div>`:''}</section>`).join('');
+    if(!html)html='<div class="empty">예정된 전시가 없다. 방을 빌린 작가와 홍보관 배너가 정한다.</div>';
+  }
+  bBody.innerHTML=html;bBody.scrollTop=0;
+}
+function showDetail(key,s){
+  const w=workOf(key,s),r=roomOf(key),g=floor.roomsGeo[key];if(!w||!g)return;
+  bBody.innerHTML=`<div class="detail"><img class="th big" src="${thumbSrc(key+'-'+s,w)}" alt=""><div class="meta"><div class="l">${floorLabel()} · ${g.hall}홀 ${g.idx}번 방 · ${SLOT_NAMES[s-1]}</div><h3>${esc(w.title||'(제목 없음)')}</h3><div class="a">${esc(r.artist||'')}${r.country?' · '+esc(r.country):''}</div><p>${esc(w.desc||'')}</p><div><button data-back="1">목록으로</button><button class="gold" data-go="${key}">방 앞으로 가기</button></div></div></div>`;
+  bBody.scrollTop=0;
+}
+bBody.addEventListener('click',e=>{
+  const el=e.target.closest('[data-go],[data-works],[data-detail],[data-back]');if(!el)return;
+  if(el.dataset.go)goRoom(el.dataset.go);
+  else if(el.dataset.works){bTab='works';renderBrowse();const f=bBody.querySelector(`[data-detail^="${el.dataset.works}-"]`);if(f)f.scrollIntoView({block:'start'});}
+  else if(el.dataset.detail){const m=/^(\d+-\d+)-(\d+)$/.exec(el.dataset.detail);if(m)showDetail(m[1],+m[2]);}
+  else if(el.dataset.back)renderBrowse();
+});
+document.querySelectorAll('#bTabs button').forEach(b=>b.onclick=()=>{bTab=b.dataset.tab;renderBrowse();});
+$('bClose').onclick=closeBrowse;$('bBack').onclick=closeBrowse;browseBtn.onclick=()=>openBrowse();
+if(TOUCH)show(browseBtn);else addEventListener('mousemove',e=>{if(bOpen)return;if(e.clientX>innerWidth*0.66)show(browseBtn);else hide(browseBtn);});
+
 /* ---------- 움직임 ---------- */
 function canStand(nx,ny){
   const b=(x,y)=>{const tx=Math.floor(x/T),ty=Math.floor(y/T);if(tx<0||ty<0||tx>=floor.W||ty>=floor.H)return true;return BLOCK.has(floor.grid[ty][tx]);};
@@ -602,7 +726,7 @@ function checkInteract(){
   if(n!==activeNpc){activeNpc=n;if(n)showTalk(n);else hide(talk);}
   const on=ptx===floor.lift.x&&pty===floor.lift.y;
   if(on!==liftOpen){liftOpen=on;if(on)showLift();else hide(lift);}
-  const z=zoneOf(ptx,pty);if(z!==lastZone){lastZone=z;zoneEl.textContent=floor.id+'F · '+z;}
+  const z=zoneOf(ptx,pty);if(z!==lastZone){lastZone=z;zoneEl.textContent=floorLabel()+' · '+z;}
 }
 let last=performance.now();
 function loop(now){
@@ -673,7 +797,7 @@ function render(){
 /* ---------- 입력 ---------- */
 const CODEMAP={KeyW:'up',KeyS:'down',KeyA:'left',KeyD:'right',ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
 const typing=e=>e.target&&e.target.matches&&e.target.matches('input,textarea,select');
-addEventListener('keydown',e=>{if(typing(e))return;const k=CODEMAP[e.code];if(k){keys[k]=true;e.preventDefault();}if(e.code==='Escape'){hide(panel);hide(talk);hide(lift);}});
+addEventListener('keydown',e=>{if(typing(e))return;if(e.code==='Escape'){if(bOpen)closeBrowse();else{hide(panel);hide(talk);hide(lift);}return;}if(bOpen)return;const k=CODEMAP[e.code];if(k){keys[k]=true;e.preventDefault();}});
 addEventListener('keyup',e=>{const k=CODEMAP[e.code];if(k)keys[k]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 document.querySelectorAll('#dpad [data-dir]').forEach(b=>{
@@ -695,8 +819,25 @@ window.googleTranslateElementInit=function(){
 setTimeout(()=>{if(!(window.google&&google.translate))$('gtNote').textContent='번역 위젯 안 뜸 — 실제 도메인에서 확인';},6000);
 
 /* ---------- 시작 ---------- */
+function previewFloor(key,room){
+  const m=/^([1-6])-([12])$/.exec(key||''),k=m?key:'1-1';
+  return {name:'미리보기',halls:m?+m[1]:1,ground:false,promo:[],npc:{},exhibitions:[],rooms:{[k]:room||{}},_key:k};
+}
+if(PREVIEW){
+  hide($('btnEdit'));
+  addEventListener('message',e=>{
+    const d=e.data;if(!d||d.type!=='preview'||!d.room||typeof d.room!=='object')return;
+    const def=previewFloor(d.key,d.room),keep=floor&&floor.id===0&&floor._key===def._key,px0=player.x,py0=player.y;
+    setFloor(def,0,false);floor._key=def._key;
+    if(keep){player.x=px0;player.y=py0;}else teleportRoom(def._key);
+    if(bOpen)renderBrowse();
+  });
+  const tell=()=>{try{if(parent!==window)parent.postMessage({type:'ready'},'*');if(opener)opener.postMessage({type:'ready'},'*');}catch(_){}};
+  addEventListener('load',tell);setTimeout(tell,0);
+}
 buildEditor();resize();addEventListener('resize',resize);
-setFloor(FLOOR1,1,false);
+if(PREVIEW){const def=previewFloor('1-1',{});setFloor(def,0,false);floor._key='1-1';teleportRoom('1-1');}
+else{setFloor(FLOOR1,1,false);const m=/[#&]room=([1-6]-[12])/.exec(location.hash);if(m)teleportRoom(m[1]);}
 requestAnimationFrame(loop);
 </script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>내 방 꾸미기 · 모두의 갤러리</title>
+<style>
+:root{--paper:#f4eddc;--paper2:#eae1cb;--ink:#2a2119;--dim:#6d6253;--gold:#b48a2c;--gold2:#e6cf8a;--line:#cdbf9e;--moss:#3e7a3a;--moss2:#dcecd6;--red:#a63a2a;--white:#fffdf7}
+*{box-sizing:border-box}
+html{font-size:17px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;line-height:1.5;top:0!important}
+header{position:sticky;top:0;z-index:5;background:rgba(244,237,220,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header h1{font-size:1.05rem;margin:0;font-weight:700;line-height:1.25}
+header h1 small{display:block;font-size:.78rem;color:var(--dim);font-weight:500}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+main{max-width:900px;margin:0 auto;padding:16px 16px 90px}
+section.step{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+.stepHead{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.num{font-size:1.4rem;color:var(--gold);font-weight:800;font-variant-numeric:tabular-nums}
+.stepHead h2{margin:0;font-size:1.2rem}
+.hint{color:var(--dim);font-size:.92rem;margin:4px 0 12px}
+label.f{display:block;font-size:.85rem;color:var(--dim);margin:10px 0 4px}
+input[type=text],textarea{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible,.slot:focus-visible,.w:focus-visible{outline:3px solid var(--gold2);outline-offset:1px}
+textarea{resize:vertical;min-height:64px}
+button{font:inherit;min-height:48px;padding:10px 18px;border-radius:10px;border:1px solid var(--line);background:var(--paper2);color:var(--ink);cursor:pointer}
+button.primary{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:700}
+button.small{min-height:38px;padding:6px 12px;font-size:.9rem}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.status{font-size:.92rem;color:var(--dim);margin-top:8px;min-height:1.4em;white-space:pre-line;word-break:break-all}
+.status.ok{color:var(--moss)} .status.bad{color:var(--red)}
+.hidden{display:none!important}
+#key{max-width:220px;font-size:1.4rem;text-align:center;letter-spacing:.12em}
+/* 올리기 */
+.drop{display:block;border:2px dashed var(--gold);border-radius:14px;padding:26px 16px;text-align:center;background:var(--paper);cursor:pointer;font-size:1rem}
+.drop.over{background:var(--moss2);border-color:var(--moss)}
+.drop input{display:none}
+.tray{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;min-height:40px;padding:10px;border-radius:12px;background:var(--paper)}
+.tray.over{background:var(--moss2)}
+.w{width:92px;text-align:center;font-size:.78rem;color:var(--dim);cursor:pointer;position:relative;border-radius:10px;padding:4px;touch-action:manipulation}
+.w img{width:80px;height:80px;image-rendering:pixelated;image-rendering:crisp-edges;border:3px solid var(--line);border-radius:8px;background:#fff;object-fit:contain;display:block;margin:0 auto 4px}
+.w.sel{background:var(--moss2)} .w.sel img{border-color:var(--moss)}
+.w .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 방 도면 */
+.plan{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 10px;overflow-x:auto}
+.plan .lbl{font-size:.82rem;color:var(--dim);text-align:center;margin:0 0 6px}
+.slots{display:flex;gap:12px;justify-content:center}
+.slot{width:84px;height:84px;border:3px dashed var(--line);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;flex:none;touch-action:manipulation}
+.slot small{position:absolute;bottom:-21px;left:-8px;right:-8px;text-align:center;font-size:.72rem;color:var(--dim);white-space:nowrap}
+.slot img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:7px;display:block}
+.slot .plus{color:var(--line);font-size:1.6rem;line-height:1}
+.slot.filled{border-style:solid;border-color:var(--gold)}
+.slot.target{border-style:solid;border-color:var(--moss);background:var(--moss2)}
+.slot.over{border-color:var(--moss);background:var(--moss2)}
+.slot.sel{border-color:var(--moss);box-shadow:0 0 0 4px var(--moss2)}
+.room{display:grid;grid-template-columns:96px 1fr 96px;gap:10px;align-items:start;margin:8px auto 0;max-width:540px;border:8px solid #9b907b;border-radius:6px;padding:14px 6px 12px;background:#c99a63}
+.room .n{grid-column:1/-1;padding-bottom:22px}
+.room .side{display:flex;flex-direction:column;gap:32px;align-items:center;padding:8px 0 22px}
+.room .mid{text-align:center;color:#3a2a14;font-size:.85rem;padding-top:8px;line-height:1.4}
+.room .lbl{color:#3a2a14}
+.door{grid-column:1/-1;text-align:center;margin-top:0}
+.door span{display:inline-block;background:#e8dfc8;border:2px solid #6f665a;padding:3px 22px;border-radius:4px;font-size:.85rem}
+.corr{margin:12px auto 0;max-width:540px;background:#e0d8c2;border-radius:6px;padding:12px 6px 36px}
+.actions{margin-top:14px}
+.selbar{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--moss2);color:var(--moss);font-size:.95rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+/* 글 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sw{display:flex;flex-wrap:wrap;gap:8px}
+.sw button{min-height:40px;padding:6px 10px 6px 8px;font-size:.88rem;display:flex;align-items:center;gap:8px}
+.sw button i{width:20px;height:20px;border-radius:5px;border:1px solid rgba(0,0,0,.25);display:inline-block}
+.sw button.on{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold2)}
+.works{display:grid;gap:10px;margin-top:8px}
+.wk{display:grid;grid-template-columns:80px 1fr;gap:12px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px}
+.wk img{width:80px;height:80px;image-rendering:pixelated;image-rendering:crisp-edges;border:2px solid var(--line);border-radius:8px;background:#fff;object-fit:contain}
+.wk .pos{font-size:.82rem;color:var(--moss);font-weight:700} .wk .pos.no{color:var(--dim);font-weight:400}
+.wk input,.wk textarea{margin-top:6px}
+.wk textarea{min-height:48px}
+.wk .btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+/* 미리보기 */
+iframe#pv{width:100%;height:460px;border:1px solid var(--line);border-radius:12px;background:#0e0c0a;display:block}
+/* 보내기 */
+.check{display:grid;gap:4px;margin:8px 0 12px;font-size:.95rem}
+.check .ok{color:var(--moss)} .check .no{color:var(--red)}
+.foot{font-size:.82rem;color:var(--dim);text-align:center;margin-top:30px}
+.goog-te-banner-frame.skiptranslate,iframe.skiptranslate{display:none!important}
+#google_translate_element .goog-te-gadget{font-size:0!important;color:transparent!important}
+#google_translate_element .goog-te-gadget span,#google_translate_element img{display:none}
+#google_translate_element select{font:inherit;font-size:.85rem;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);max-width:140px}
+@media (max-width:600px){
+  html{font-size:16px} main{padding:10px 10px 90px} section.step{padding:14px}
+  .room{grid-template-columns:76px 1fr 76px;border-width:6px} .slot{width:70px;height:70px} .slots{gap:8px}
+  .grid2{grid-template-columns:1fr} .wk{grid-template-columns:64px 1fr} .wk img{width:64px;height:64px}
+  iframe#pv{height:380px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1><span data-s="title">내 방 꾸미기</span><small class="notranslate">모두의 갤러리</small></h1>
+  <div class="hdr-r"><button class="small" id="langBtn">English</button><div id="google_translate_element" class="notranslate"></div></div>
+</header>
+<main>
+
+<section class="step" id="s1">
+  <div class="stepHead"><span class="num">1</span><h2 data-s="step1">열쇠</h2></div>
+  <p class="hint" data-s="keyHint">받은 열쇠를 넣는다. 가입은 없다. 예: 3-1 (3홀 1번 방)</p>
+  <div class="row"><input type="text" id="key" placeholder="3-1" inputmode="numeric" autocomplete="off" spellcheck="false"><button class="primary" id="enterBtn" data-s="enter">들어가기</button></div>
+  <div class="status" id="keyStatus"></div>
+</section>
+
+<div id="gate" class="hidden">
+
+<section class="step">
+  <div class="stepHead"><span class="num">2</span><h2 data-s="step2">그림 올리기</h2></div>
+  <p class="hint" data-s="many">여러 장을 한 번에 올릴 수 있다. PNG 픽셀아트, 한 장 300KB 이하 권장.</p>
+  <label class="drop" id="drop"><span data-s="drop">여기에 그림을 끌어다 놓거나, 눌러서 고른다</span><input type="file" id="files" multiple accept="image/png,image/gif,image/webp,image/jpeg"></label>
+  <div class="status" id="upStatus"></div>
+  <div class="hint" style="margin:12px 0 0"><span data-s="tray">올린 그림 (아직 안 건 것)</span></div>
+  <div class="tray" id="tray"></div>
+</section>
+
+<section class="step">
+  <div class="stepHead"><span class="num">3</span><h2 data-s="step3">걸기</h2></div>
+  <p class="hint" data-s="tapHint">그림을 누른 뒤 자리를 누른다. 끌어다 놓아도 된다. 자리는 열 개. 복도 쪽 셋은 밖에서 보이는 대표작.</p>
+  <div class="plan">
+    <div class="room" id="roomBox">
+      <div class="n"><div class="lbl" data-s="inside">방 안 · 들어와야 보인다</div><div class="slots"><div class="slot" data-slot="4" tabindex="0"></div><div class="slot" data-slot="5" tabindex="0"></div><div class="slot" data-slot="6" tabindex="0"></div></div></div>
+      <div class="side"><div class="slot" data-slot="7" tabindex="0"></div><div class="slot" data-slot="8" tabindex="0"></div></div>
+      <div class="mid" data-s="mid">손님이 문으로 들어와 이 안을 걸어 다닌다</div>
+      <div class="side"><div class="slot" data-slot="9" tabindex="0"></div><div class="slot" data-slot="10" tabindex="0"></div></div>
+      <div class="door"><span data-s="door">문</span></div>
+    </div>
+    <div class="corr"><div class="lbl" data-s="outside">복도 · 밖에서 보이는 대표작 셋</div><div class="slots"><div class="slot" data-slot="1" tabindex="0"></div><div class="slot" data-slot="2" tabindex="0"></div><div class="slot" data-slot="3" tabindex="0"></div></div></div>
+  </div>
+  <div class="selbar hidden" id="selbar"><span id="selText"></span><button class="small" id="selUnhang" data-s="unhang">내리기</button><button class="small" id="selCancel" data-s="cancel">취소</button></div>
+  <div class="row actions"><button id="autoBtn" data-s="autoHang">올린 순서대로 걸기</button><button id="unhangAllBtn" data-s="unhangAll">모두 내리기</button></div>
+  <div class="status" id="hangStatus"></div>
+</section>
+
+<section class="step">
+  <div class="stepHead"><span class="num">4</span><h2 data-s="step4">글쓰기</h2></div>
+  <p class="hint" data-s="textHint">자기 나라 말로 쓴다. 번역은 갤러리가 붙인다.</p>
+  <div class="grid2">
+    <div><label class="f" for="aName" data-s="name">이름</label><input type="text" id="aName" maxlength="60"></div>
+    <div><label class="f" for="aCountry" data-s="country">나라 (KR, JP, BR …)</label><input type="text" id="aCountry" maxlength="8"></div>
+  </div>
+  <label class="f" for="aAbout" data-s="about">한마디 — 방 앞 안내인이 손님에게 이 말을 한다</label>
+  <textarea id="aAbout" maxlength="400" rows="2"></textarea>
+  <label class="f" data-s="wall">벽 색</label><div class="sw" id="wallSw"></div>
+  <label class="f" data-s="floor">바닥</label><div class="sw" id="floorSw"></div>
+  <label class="f" data-s="works">그림마다 제목 · 설명</label>
+  <div class="works" id="works"></div>
+</section>
+
+<section class="step">
+  <div class="stepHead"><span class="num">5</span><h2 data-s="step5">미리보기</h2></div>
+  <p class="hint" data-s="preview">손님이 보는 그대로. 화면을 한 번 누른 뒤 방향키로 걸어 들어간다. 오른쪽 아래 「작가별 보기」로 걷지 않고 볼 수도 있다.</p>
+  <iframe id="pv" title="미리보기"></iframe>
+  <div class="row" style="margin-top:10px"><button class="small" id="pvReload" data-s="reload">다시 그리기</button><button class="small" id="pvOpen" data-s="openNew">새 창에서 크게 보기</button></div>
+  <div class="status" id="pvNote"></div>
+</section>
+
+<section class="step">
+  <div class="stepHead"><span class="num">6</span><h2 data-s="step6">보내기</h2></div>
+  <div class="check" id="check"></div>
+  <div class="row"><button class="primary" id="sendBtn" data-s="send">서버로 보내기</button><button id="dlBtn" data-s="download">파일로 내려받기</button></div>
+  <div class="status" id="sendStatus"></div>
+  <p class="hint" style="margin-top:12px" data-s="sentHint">보내면 갤러리가 확인한 뒤 공개한다. 서버가 막히면 내려받은 파일을 메일로 보내도 된다.</p>
+  <div class="status" id="draftNote"></div>
+</section>
+
+</div>
+<div class="foot notranslate">LeDeuxions · 모두의 갤러리</div>
+</main>
+
+<script>
+'use strict';
+/* ------------------------------------------------------------------
+   내 방 꾸미기 · 2026-08-29
+   보내는 곳: POST API (gallery_api.py). 보내는 형식:
+     {key:'3-1', level:1, artist, country, about, wall, floor,
+      works:[{slot:1..10, title, desc, image:'data:image/…' 또는 'https://…'}]}
+   기존 방: ROOM_FILE(key) = /gallery/rooms/<key>.json (승인돼 공개된 것) 을 읽어 온다.
+   초안: 이 브라우저에만 자동 저장 (localStorage). 서버에는 「보내기」 때만 간다.
+   미리보기: VIEWER 를 #preview 로 열고 postMessage({type:'preview', key, room}) 로 방을 보낸다.
+------------------------------------------------------------------ */
+const API='/api/gallery/room';
+const ROOM_FILE=key=>'/gallery/rooms/'+key+'.json';
+const VIEWER='./modu_gallery_v2.html';
+const LEVEL=1;
+const KEY_RE=/^[1-6]-[12]$/;
+const MAX_TOTAL=5*1024*1024, WARN_FILE=300*1024;
+const WALLS={stone:'#9b907b',cream:'#d8cbb1',white:'#e9e4da',rose:'#c79c96',sage:'#98a993',sky:'#8fa7bd',navy:'#4f5c78',plum:'#6b4c6e',charcoal:'#5a5651',black:'#2b2926'};
+const FLOORS={wood:'#a5743f',darkwood:'#6b4526',marble:'#e8e0cc',stone:'#cfc6b0',red:'#8c2f2f',green:'#3f6b4a',blue:'#39527a',grey:'#77726c'};
+
+const STR={
+  ko:{title:'내 방 꾸미기',step1:'열쇠',step2:'그림 올리기',step3:'걸기',step4:'글쓰기',step5:'미리보기',step6:'보내기',
+    keyHint:'받은 열쇠를 넣는다. 가입은 없다. 예: 3-1 (3홀 1번 방)',enter:'들어가기',keyBad:'열쇠는 「홀-방」 꼴이다. 예: 3-1',
+    loading:'방 불러오는 중…',loadedRoom:'공개돼 있는 방을 불러왔다. 고쳐서 다시 보내면 된다.',newRoom:'새 방. 아직 서버에 없다.',draftLoaded:'이 브라우저에 남아 있던 초안을 불러왔다',
+    many:'여러 장을 한 번에 올릴 수 있다. PNG 픽셀아트, 한 장 300KB 이하 권장.',drop:'여기에 그림을 끌어다 놓거나, 눌러서 고른다',tray:'올린 그림 (아직 안 건 것)',trayEmpty:'올린 그림이 모두 걸렸다',trayNone:'아직 올린 그림이 없다',
+    big:'큰 파일',added:'장 올렸다',
+    tapHint:'그림을 누른 뒤 자리를 누른다. 끌어다 놓아도 된다. 자리는 열 개. 복도 쪽 셋은 밖에서 보이는 대표작.',inside:'방 안 · 들어와야 보인다',mid:'손님이 문으로 들어와 이 안을 걸어 다닌다',door:'문',outside:'복도 · 밖에서 보이는 대표작 셋',
+    unhang:'내리기',cancel:'취소',autoHang:'올린 순서대로 걸기',unhangAll:'모두 내리기',selected:'골랐다. 이제 자리를 누른다',limit:'자리는 열 개. 안 걸린 그림은 보내지 않는다.',
+    slot:{1:'대표작 1',2:'대표작 2',3:'대표작 3',4:'북벽 1',5:'북벽 2',6:'북벽 3',7:'서벽 1',8:'서벽 2',9:'동벽 1',10:'동벽 2'},
+    textHint:'자기 나라 말로 쓴다. 번역은 갤러리가 붙인다.',name:'이름',country:'나라 (KR, JP, BR …)',about:'한마디 — 방 앞 안내인이 손님에게 이 말을 한다',wall:'벽 색',floor:'바닥',works:'그림마다 제목 · 설명',
+    wTitle:'제목',wDesc:'설명',unhung:'안 걸림',remove:'삭제',removeAsk:'이 그림을 지울까?',
+    walls:{stone:'돌',cream:'크림',white:'흰색',rose:'장미',sage:'세이지',sky:'하늘',navy:'남색',plum:'자두',charcoal:'차콜',black:'검정'},
+    floors:{wood:'나무',darkwood:'짙은 나무',marble:'대리석',stone:'돌',red:'붉은 카펫',green:'초록 카펫',blue:'파란 카펫',grey:'회색 카펫'},
+    preview:'손님이 보는 그대로. 화면을 한 번 누른 뒤 방향키로 걸어 들어간다. 오른쪽 아래 「작가별 보기」로 걷지 않고 볼 수도 있다.',previewNo:'미리보기가 안 뜬다. 갤러리 파일이 같은 서버에 있어야 한다.',reload:'다시 그리기',openNew:'새 창에서 크게 보기',
+    send:'서버로 보내기',download:'파일로 내려받기',sending:'보내는 중…',sent:'보냈다. 갤러리가 확인한 뒤 공개한다.',sendFail:'서버에 못 보냈다. 「파일로 내려받기」로 받아서 메일로 보내도 된다.',sentHint:'보내면 갤러리가 확인한 뒤 공개한다. 서버가 막히면 내려받은 파일을 메일로 보내도 된다.',
+    needKey:'열쇠',needName:'이름',needWork:'건 그림 1장 이상',size:'보낼 크기',tooBig:'5MB 를 넘는다. 그림을 줄여야 한다.',draft:'초안 자동 저장됨',draftNo:'이 창에서는 초안 저장이 안 된다. 「파일로 내려받기」로 남겨 두는 게 안전하다.',
+    downloaded:'내려받음',lang:'English'},
+  en:{title:'Decorate my room',step1:'Key',step2:'Upload pictures',step3:'Hang',step4:'Write',step5:'Preview',step6:'Send',
+    keyHint:'Enter the key you received. No sign-up. e.g. 3-1 (hall 3, room 1)',enter:'Enter',keyBad:'The key looks like "hall-room", e.g. 3-1',
+    loading:'Loading room…',loadedRoom:'Loaded your published room. Edit and send again.',newRoom:'New room. Not on the server yet.',draftLoaded:'Loaded the draft saved in this browser',
+    many:'You can upload several at once. PNG pixel art, under 300KB each recommended.',drop:'Drop pictures here, or click to choose',tray:'Uploaded (not hung yet)',trayEmpty:'All uploaded pictures are hung',trayNone:'No pictures uploaded yet',
+    big:'large file',added:'added',
+    tapHint:'Tap a picture, then tap a spot. Drag and drop also works. Ten spots. The three on the corridor side are shown outside.',inside:'Inside · visible after entering',mid:'Visitors come in through the door and walk around here',door:'Door',outside:'Corridor · three featured works, visible outside',
+    unhang:'Take down',cancel:'Cancel',autoHang:'Hang in upload order',unhangAll:'Take all down',selected:'Selected. Now tap a spot',limit:'Ten spots. Pictures not hung are not sent.',
+    slot:{1:'Featured 1',2:'Featured 2',3:'Featured 3',4:'North 1',5:'North 2',6:'North 3',7:'West 1',8:'West 2',9:'East 1',10:'East 2'},
+    textHint:'Write in your own language. The gallery adds translation.',name:'Name',country:'Country (KR, JP, BR …)',about:'One line — the guide in front of your room says this to visitors',wall:'Wall colour',floor:'Floor',works:'Title and note for each picture',
+    wTitle:'Title',wDesc:'Note',unhung:'Not hung',remove:'Delete',removeAsk:'Delete this picture?',
+    walls:{stone:'Stone',cream:'Cream',white:'White',rose:'Rose',sage:'Sage',sky:'Sky',navy:'Navy',plum:'Plum',charcoal:'Charcoal',black:'Black'},
+    floors:{wood:'Wood',darkwood:'Dark wood',marble:'Marble',stone:'Stone',red:'Red carpet',green:'Green carpet',blue:'Blue carpet',grey:'Grey carpet'},
+    preview:'Exactly what visitors see. Click the screen once, then walk in with the arrow keys. "By artist" at the bottom right lets you look without walking.',previewNo:'Preview did not load. The gallery file must be on the same server.',reload:'Redraw',openNew:'Open large in a new window',
+    send:'Send to server',download:'Download file',sending:'Sending…',sent:'Sent. The gallery will check it and publish.',sendFail:'Could not reach the server. Use "Download file" and email it instead.',sentHint:'After sending, the gallery checks it and publishes. If the server is down, email the downloaded file.',
+    needKey:'key',needName:'name',needWork:'at least one picture hung',size:'Size to send',tooBig:'Over 5MB. Shrink the pictures.',draft:'Draft saved automatically',draftNo:'Drafts cannot be saved in this window. Keep a copy with "Download file".',
+    downloaded:'Downloaded',lang:'한국어'}
+};
+let lang=(navigator.language||'ko').toLowerCase().startsWith('ko')?'ko':'en';
+const S=()=>STR[lang];
+const $=id=>document.getElementById(id);
+const hide=el=>el.classList.add('hidden'),show=el=>el.classList.remove('hidden');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const state={key:'',artist:'',country:'',about:'',wall:'stone',floor:'wood',works:[],selected:null,entered:false};
+let uid=0;const newId=()=>'w'+(++uid)+'_'+Date.now().toString(36);
+const byId=id=>state.works.find(w=>w.id===id);
+const workAt=s=>state.works.find(w=>w.slot===s);
+function status(el,msg,cls){el.textContent=msg||'';el.className='status'+(cls?' '+cls:'');}
+
+/* ---------- 말 ---------- */
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-s]').forEach(el=>{const v=S()[el.dataset.s];if(typeof v==='string')el.textContent=v;});
+  $('langBtn').textContent=S().lang;
+  $('aName').placeholder=S().name;$('aCountry').placeholder='KR';
+  renderSwatches();renderAll();
+}
+$('langBtn').onclick=()=>{lang=lang==='ko'?'en':'ko';applyLang();};
+
+/* ---------- 1. 열쇠 ---------- */
+function loadDraft(key){try{const s=localStorage.getItem('modu_room_'+key);return s?JSON.parse(s):null;}catch(e){return null;}}
+let draftTimer=null;
+function saveDraft(){
+  if(!state.key)return;
+  clearTimeout(draftTimer);
+  draftTimer=setTimeout(()=>{
+    try{localStorage.setItem('modu_room_'+state.key,JSON.stringify({artist:state.artist,country:state.country,about:state.about,wall:state.wall,floor:state.floor,works:state.works,savedAt:new Date().toLocaleString()}));
+      status($('draftNote'),S().draft+' · '+new Date().toLocaleTimeString());}
+    catch(e){status($('draftNote'),S().draftNo);}
+  },400);
+}
+function takeRoom(d){
+  state.artist=String(d.artist||'');state.country=String(d.country||'');state.about=String(d.about||'');
+  state.wall=WALLS[d.wall]?d.wall:'stone';state.floor=FLOORS[d.floor]?d.floor:'wood';
+  state.works=(Array.isArray(d.works)?d.works:[]).map(w=>({id:newId(),slot:(w.slot>=1&&w.slot<=10)?+w.slot:null,title:String(w.title||''),desc:String(w.desc||''),image:String(w.image||''),size:w.size||(w.image||'').length}));
+}
+async function enter(){
+  const key=$('key').value.trim();
+  if(!KEY_RE.test(key)){status($('keyStatus'),S().keyBad,'bad');return;}
+  state.key=key;state.selected=null;
+  const d=loadDraft(key);
+  if(d){takeRoom(d);status($('keyStatus'),S().draftLoaded+' · '+(d.savedAt||''),'ok');}
+  else{
+    status($('keyStatus'),S().loading);
+    try{const r=await fetch(ROOM_FILE(key),{cache:'no-store'});if(!r.ok)throw 0;takeRoom(await r.json());status($('keyStatus'),S().loadedRoom,'ok');}
+    catch(e){state.works=[];state.artist='';state.country='';state.about='';state.wall='stone';state.floor='wood';status($('keyStatus'),S().newRoom);}
+  }
+  state.entered=true;show($('gate'));
+  $('aName').value=state.artist;$('aCountry').value=state.country;$('aAbout').value=state.about;
+  renderSwatches();renderAll();
+  if(!$('pv').src)$('pv').src=VIEWER+'#preview';else sendPreview();
+  try{history.replaceState(null,'',location.pathname+'?key='+encodeURIComponent(key));}catch(e){}
+}
+$('enterBtn').onclick=enter;
+$('key').addEventListener('keydown',e=>{if(e.key==='Enter')enter();});
+
+/* ---------- 2. 올리기 ---------- */
+function addFiles(files){
+  const list=[...files].filter(f=>f&&f.type&&f.type.startsWith('image/'));if(!list.length)return;
+  let big=0,done=0;
+  const entries=list.map(f=>{if(f.size>WARN_FILE)big++;return {id:newId(),slot:null,title:(f.name||'').replace(/\.[^.]+$/,''),desc:'',image:'',size:f.size};});   // 고른 순서 유지
+  list.forEach((f,i)=>{
+    const rd=new FileReader();
+    rd.onload=()=>{entries[i].image=rd.result;
+      if(++done===list.length){state.works.push(...entries.filter(e=>e.image));status($('upStatus'),list.length+' '+S().added+(big?' · '+big+' '+S().big+' (>300KB)':''),big?'bad':'ok');renderAll();}};
+    rd.onerror=()=>{if(++done===list.length){state.works.push(...entries.filter(e=>e.image));renderAll();}};
+    rd.readAsDataURL(f);
+  });
+}
+$('files').addEventListener('change',e=>{addFiles(e.target.files);e.target.value='';});
+const drop=$('drop');
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>{if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length)addFiles(e.dataTransfer.files);});
+document.addEventListener('paste',e=>{const items=[...(e.clipboardData&&e.clipboardData.items||[])].filter(i=>i.type.startsWith('image/'));if(items.length&&state.entered)addFiles(items.map(i=>i.getAsFile()));});
+
+/* ---------- 3. 걸기 ---------- */
+function place(id,slot){
+  const w=byId(id);if(!w)return;
+  const occ=state.works.find(x=>x.slot===slot&&x.id!==id),prev=w.slot;
+  w.slot=slot;if(occ)occ.slot=prev;
+  state.selected=null;renderAll();
+}
+function unhang(id){const w=byId(id);if(w)w.slot=null;state.selected=null;renderAll();}
+function select(id){state.selected=state.selected===id?null:id;renderTray();renderPlan();}
+function autoHang(){const free=[];for(let s=1;s<=10;s++)if(!workAt(s))free.push(s);for(const w of state.works){if(w.slot)continue;if(!free.length)break;w.slot=free.shift();}state.selected=null;renderAll();}
+function removeWork(id){const w=byId(id);if(!w)return;if(!confirm(S().removeAsk))return;state.works=state.works.filter(x=>x.id!==id);if(state.selected===id)state.selected=null;renderAll();}
+let dragId=null;
+function bindDrag(el,id){
+  el.draggable=true;
+  el.addEventListener('dragstart',e=>{dragId=id;try{e.dataTransfer.setData('text/plain',id);e.dataTransfer.effectAllowed='move';}catch(_){}});
+  el.addEventListener('dragend',()=>{dragId=null;document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));});
+}
+function workEl(w){
+  const d=document.createElement('div');d.className='w'+(state.selected===w.id?' sel':'');d.dataset.id=w.id;d.tabIndex=0;
+  d.innerHTML=`<img src="${esc(w.image)}" alt=""><div class="t">${esc(w.title||'')}</div>`;
+  d.addEventListener('click',()=>select(w.id));
+  d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select(w.id);}});
+  bindDrag(d,w.id);return d;
+}
+function renderTray(){
+  const tray=$('tray');tray.innerHTML='';
+  const un=state.works.filter(w=>!w.slot);
+  if(!un.length){tray.innerHTML=`<span class="hint" style="margin:6px">${esc(state.works.length?S().trayEmpty:S().trayNone)}</span>`;}
+  for(const w of un)tray.appendChild(workEl(w));
+}
+function renderPlan(){
+  const names=S().slot;
+  document.querySelectorAll('.slot').forEach(sl=>{
+    const s=+sl.dataset.slot,w=workAt(s);
+    sl.className='slot'+(w?' filled':'')+(state.selected&&(!w||w.id!==state.selected)?' target':'')+(w&&w.id===state.selected?' sel':'');
+    sl.innerHTML=(w?`<img src="${esc(w.image)}" alt="">`:'<span class="plus">+</span>')+`<small>${esc(names[s])}</small>`;
+    sl.dataset.id=w?w.id:'';sl.draggable=!!w;
+  });
+  const rb=$('roomBox');rb.style.background=FLOORS[state.floor]||FLOORS.wood;rb.style.borderColor=WALLS[state.wall]||WALLS.stone;
+  const dark=['navy','plum','charcoal','black'].includes(state.wall)||['darkwood','red','green','blue','grey'].includes(state.floor);
+  rb.querySelectorAll('.mid,.lbl').forEach(el=>el.style.color=['darkwood','red','green','blue','grey'].includes(state.floor)?'#f4eddc':'#3a2a14');
+  void dark;
+  const bar=$('selbar');
+  if(state.selected){const w=byId(state.selected);$('selText').textContent=S().selected+' · '+(w?w.title||'':'');show(bar);const hb=$('selUnhang');w&&w.slot?show(hb):hide(hb);}else hide(bar);
+  status($('hangStatus'),state.works.filter(w=>!w.slot).length&&state.works.filter(w=>w.slot).length>=10?S().limit:'');
+}
+document.querySelectorAll('.slot').forEach(sl=>{
+  const s=+sl.dataset.slot;
+  sl.addEventListener('click',()=>{const w=workAt(s);if(state.selected){if(w&&w.id===state.selected){select(w.id);return;}place(state.selected,s);}else if(w)select(w.id);else $('files').click();});
+  sl.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sl.click();}});
+  sl.addEventListener('dragstart',e=>{if(sl.dataset.id){dragId=sl.dataset.id;try{e.dataTransfer.setData('text/plain',dragId);}catch(_){}}else e.preventDefault();});
+  sl.addEventListener('dragend',()=>{dragId=null;document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));});
+  sl.addEventListener('dragover',e=>{e.preventDefault();sl.classList.add('over');});
+  sl.addEventListener('dragleave',()=>sl.classList.remove('over'));
+  sl.addEventListener('drop',e=>{e.preventDefault();sl.classList.remove('over');const id=dragId||(e.dataTransfer&&e.dataTransfer.getData('text/plain'));if(id&&byId(id))place(id,s);});
+});
+const tray=$('tray');
+tray.addEventListener('dragover',e=>{if(dragId&&byId(dragId)&&byId(dragId).slot){e.preventDefault();tray.classList.add('over');}});
+tray.addEventListener('dragleave',()=>tray.classList.remove('over'));
+tray.addEventListener('drop',e=>{e.preventDefault();tray.classList.remove('over');const id=dragId||(e.dataTransfer&&e.dataTransfer.getData('text/plain'));if(id&&byId(id))unhang(id);});
+$('selUnhang').onclick=()=>{if(state.selected)unhang(state.selected);};
+$('selCancel').onclick=()=>{state.selected=null;renderTray();renderPlan();};
+$('autoBtn').onclick=autoHang;
+$('unhangAllBtn').onclick=()=>{state.works.forEach(w=>w.slot=null);state.selected=null;renderAll();};
+
+/* ---------- 4. 글 ---------- */
+function renderSwatches(){
+  const mk=(box,map,names,cur,key)=>{box.innerHTML='';for(const k in map){const b=document.createElement('button');b.type='button';b.className=k===cur?'on':'';b.innerHTML=`<i style="background:${map[k]}"></i>${esc(names[k]||k)}`;b.onclick=()=>{state[key]=k;renderSwatches();renderPlan();afterChange();};box.appendChild(b);}};
+  mk($('wallSw'),WALLS,S().walls,state.wall,'wall');mk($('floorSw'),FLOORS,S().floors,state.floor,'floor');
+}
+['aName','aCountry','aAbout'].forEach(id=>$(id).addEventListener('input',()=>{state.artist=$('aName').value.trim();state.country=$('aCountry').value.trim();state.about=$('aAbout').value.trim();afterChange();renderCheck();}));
+function renderWorks(){
+  const box=$('works');box.innerHTML='';
+  const names=S().slot,list=[...state.works].sort((a,b)=>(a.slot||99)-(b.slot||99));
+  for(const w of list){
+    const d=document.createElement('div');d.className='wk';d.dataset.id=w.id;
+    d.innerHTML=`<img src="${esc(w.image)}" alt=""><div style="min-width:0"><div class="pos${w.slot?'':' no'}">${w.slot?esc(names[w.slot]):esc(S().unhung)}</div>
+      <input type="text" class="wt" maxlength="80" placeholder="${esc(S().wTitle)}" value="${esc(w.title)}"><textarea class="wd" maxlength="400" placeholder="${esc(S().wDesc)}" rows="2">${esc(w.desc)}</textarea>
+      <div class="btns">${w.slot?`<button class="small" data-un="1">${esc(S().unhang)}</button>`:''}<button class="small" data-rm="1">${esc(S().remove)}</button></div></div>`;
+    d.querySelector('.wt').addEventListener('input',e=>{w.title=e.target.value;document.querySelectorAll(`.w[data-id="${w.id}"] .t`).forEach(t=>t.textContent=w.title);afterChange();});
+    d.querySelector('.wd').addEventListener('input',e=>{w.desc=e.target.value;afterChange();});
+    const un=d.querySelector('[data-un]');if(un)un.onclick=()=>unhang(w.id);
+    d.querySelector('[data-rm]').onclick=()=>removeWork(w.id);
+    box.appendChild(d);
+  }
+}
+
+/* ---------- 5. 미리보기 ---------- */
+const pv=$('pv');let pvReady=false,pvTimer=null;
+function roomJSON(){return {artist:state.artist,country:state.country,about:state.about,wall:state.wall,floor:state.floor,
+  works:state.works.filter(w=>w.slot).sort((a,b)=>a.slot-b.slot).map(w=>({slot:w.slot,title:w.title,desc:w.desc,image:w.image}))};}
+function sendPreview(target){
+  const msg={type:'preview',key:state.key,room:roomJSON()};
+  try{(target||pv.contentWindow).postMessage(msg,'*');}catch(_){}
+}
+addEventListener('message',e=>{if(e.data&&e.data.type==='ready'){pvReady=true;status($('pvNote'),'');if(e.source)sendPreview(e.source);}});
+pv.addEventListener('load',()=>{setTimeout(()=>{if(!pvReady)status($('pvNote'),S().previewNo,'bad');},3000);sendPreview();});
+$('pvReload').onclick=()=>{pvReady=false;pv.src=VIEWER+'#preview&t='+Date.now();};
+$('pvOpen').onclick=()=>{window.open(VIEWER+'#preview','_blank');};
+function schedulePreview(){clearTimeout(pvTimer);pvTimer=setTimeout(()=>sendPreview(),350);}
+
+/* ---------- 6. 보내기 ---------- */
+function payload(){return Object.assign({key:state.key,level:LEVEL},roomJSON());}
+function missing(){const m=[];if(!state.key)m.push(S().needKey);if(!state.artist)m.push(S().needName);if(!state.works.some(w=>w.slot))m.push(S().needWork);return m;}
+function renderCheck(){
+  const m=missing(),box=$('check'),bytes=JSON.stringify(payload()).length;
+  const lines=[[S().needKey,!!state.key],[S().needName,!!state.artist],[S().needWork,state.works.some(w=>w.slot)]].map(([t,ok])=>`<div class="${ok?'ok':'no'}">${ok?'✓':'✗'} ${esc(t)}</div>`);
+  lines.push(`<div class="${bytes>MAX_TOTAL?'no':'ok'}">${bytes>MAX_TOTAL?'✗':'✓'} ${esc(S().size)}: ${(bytes/1024).toFixed(0)}KB${bytes>MAX_TOTAL?' · '+esc(S().tooBig):''}</div>`);
+  box.innerHTML=lines.join('');
+  $('sendBtn').disabled=!!m.length||bytes>MAX_TOTAL;
+}
+async function send(){
+  const st=$('sendStatus');status(st,S().sending);$('sendBtn').disabled=true;
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())});
+    const t=(await r.text()).trim().slice(0,200);
+    if(!r.ok)throw new Error('HTTP '+r.status+' '+t);
+    status(st,S().sent+' ('+t+')','ok');
+  }catch(e){status(st,S().sendFail+'\n'+e.message,'bad');}
+  finally{$('sendBtn').disabled=false;renderCheck();}
+}
+function download(){
+  const blob=new Blob([JSON.stringify(payload(),null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='room_'+(state.key||'x')+'.json';document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+  status($('sendStatus'),S().downloaded+': '+a.download+' ('+Math.round(blob.size/1024)+'KB)','ok');
+}
+$('sendBtn').onclick=send;$('dlBtn').onclick=download;
+
+/* ---------- 공통 ---------- */
+function afterChange(){saveDraft();schedulePreview();renderCheck();}
+function renderAll(){renderTray();renderPlan();renderWorks();renderCheck();if(state.entered)afterChange();}
+
+/* ---------- 구글 번역 ---------- */
+window.googleTranslateElementInit=function(){try{new google.translate.TranslateElement({pageLanguage:'ko',autoDisplay:false},'google_translate_element');}catch(e){}};
+
+/* ---------- 시작 ---------- */
+applyLang();
+const q=new URLSearchParams(location.search).get('key');
+if(q){$('key').value=q.trim();enter();}
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
+</body>
+</html>
