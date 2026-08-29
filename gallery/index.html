@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>모두의 갤러리 · 1층 시험판</title>
+<title>모두의 갤러리 · 1층 시험판 v1</title>
 <style>
 :root{--bg:#0e0c0a;--card:#1c1814;--ink:#f1e9d8;--dim:#a79d8b;--gold:#d8b45a;--line:#3b3329}
 *{box-sizing:border-box}
@@ -12,41 +12,66 @@ body{top:0!important;position:relative}
 #game{position:fixed;inset:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none}
 #hud{position:fixed;top:10px;left:10px;right:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;pointer-events:none;z-index:4}
 #hud>*{pointer-events:auto}
-.tag{background:rgba(14,12,10,.82);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;line-height:1.35;backdrop-filter:blur(4px)}
+.hudR{display:flex;gap:6px;align-items:flex-start}
+.tag{background:rgba(14,12,10,.84);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;line-height:1.35;backdrop-filter:blur(4px)}
 .tag b{color:var(--gold);font-weight:600;margin-right:6px}
 #zone{font-weight:600}
+button.tag,label.btn,button.btn,a.btn{color:var(--ink);cursor:pointer;font-family:inherit;font-size:13px;background:#2a241d;border:1px solid var(--line);border-radius:8px;padding:7px 10px;display:inline-block;text-decoration:none}
+button.tag:hover,label.btn:hover,button.btn:hover,a.btn:hover{border-color:var(--gold)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 #gt{display:flex;align-items:center;gap:6px;min-height:34px}
 #gtNote{font-size:11px;color:var(--dim)}
 .sheet{position:fixed;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:5}
 .hidden{display:none!important}
-#panel{right:12px;top:64px;width:min(320px,calc(100vw - 24px))}
+#panel,#talk,#lift{right:12px;top:64px;width:min(320px,calc(100vw - 24px))}
 #panel .art{display:block;width:100%;aspect-ratio:1/1;image-rendering:pixelated;image-rendering:crisp-edges;background:#2a231c;border:2px solid var(--gold);border-radius:4px;object-fit:contain}
 #panel .loc{font-size:11px;color:var(--dim);margin-top:8px}
 #panel h2{margin:2px 0;font-size:17px;font-weight:700}
 #panel .artist{font-size:13px;color:var(--gold)}
-#panel p{margin:8px 0 0;font-size:13px;line-height:1.5}
+#panel p{margin:8px 0 0;font-size:13px;line-height:1.5;white-space:pre-line}
 #panel .meta{min-width:0}
-#lift{right:12px;top:64px;width:min(300px,calc(100vw - 24px))}
+#aLink{margin-top:8px}
+#talk .who{font-size:12px;color:var(--gold);font-weight:600}
+#talk p{margin:6px 0 0;font-size:14px;line-height:1.55;white-space:pre-line}
+#talk .btn{margin-top:10px}
 #lift h3{margin:0 0 8px;font-size:14px;color:var(--dim);font-weight:600}
 #lift button{display:block;width:100%;text-align:left;margin:4px 0;padding:9px 10px;background:#2a241d;color:var(--ink);border:1px solid var(--line);border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit}
-#lift button:focus-visible{outline:2px solid var(--gold)}
 #lift button.cur{border-color:var(--gold);color:var(--gold)}
 #lift button small{color:var(--dim);font-size:11px;margin-left:6px}
 #liftStatus{font-size:12px;color:var(--dim);margin-top:6px;min-height:1.2em;word-break:break-all}
+/* 꾸미기 */
+#editor{left:12px;top:64px;width:min(360px,calc(100vw - 24px));max-height:calc(100vh - 110px);overflow:auto;font-size:13px}
+#editor .ehead{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+#editor .ehead b{color:var(--gold);flex:none}
+#editor select,#editor input[type=text],#editor textarea{width:100%;background:#15120f;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 7px;font-family:inherit;font-size:13px}
+#editor .ehead select{flex:1;min-width:0}
+#editor .erow{margin:6px 0}
+#editor .erow label,#editor .erow2 label{display:block;font-size:11px;color:var(--dim);margin-bottom:3px}
+#editor .erow2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}
+#editor .slot{display:grid;grid-template-columns:44px 1fr 1fr auto auto;gap:5px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+#editor .slot .sl{grid-column:1/-1;font-size:11px;color:var(--gold)}
+#editor .slot .sp{width:44px;height:44px;image-rendering:pixelated;background:#15120f;border:1px solid var(--line);border-radius:4px;object-fit:contain}
+#editor .slot .fb{padding:6px 8px;font-size:12px}
+#editor .slot .fx{background:#2a241d;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:6px 8px;cursor:pointer;font-family:inherit}
+#editor .ebtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+#editor .ebtns .btn{font-size:12px}
+#eStatus{font-size:12px;color:var(--dim);margin-top:8px;min-height:1.2em;word-break:break-all;white-space:pre-line}
+#editor .note{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.5}
+/* 폰 */
 #dpad{position:fixed;right:14px;bottom:14px;width:138px;height:138px;display:none;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:4px;z-index:6}
 #dpad button{background:rgba(28,24,20,.85);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:20px;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
 #dpad button:active{background:#3a3128}
 #dpad .c{visibility:hidden}
 #tip{position:fixed;left:10px;bottom:10px;font-size:12px;color:var(--dim);background:rgba(14,12,10,.7);padding:5px 8px;border-radius:6px;z-index:4}
-@media (max-width:900px){ #dpad{display:grid} }
-@media (hover:none) and (pointer:coarse){
-  #dpad{display:grid}
-  #panel{top:auto;bottom:14px;left:12px;right:164px;width:auto;max-height:44vh;overflow:auto;display:flex;gap:10px}
-  #panel .art{width:96px;height:96px;flex:none}
-  #panel .loc{margin-top:0}
-  #lift{top:auto;bottom:14px;left:12px;right:164px;width:auto}
-  #tip{display:none}
-}
+body.mobile #dpad{display:grid}
+body.mobile.editing #dpad{display:none}
+body.mobile #tip{display:none}
+body.mobile #panel,body.mobile #talk,body.mobile #lift{top:auto;bottom:14px;left:12px;right:164px;width:auto;max-height:44vh;overflow:auto}
+body.mobile #panel{display:flex;gap:10px}
+body.mobile #panel .art{width:96px;height:96px;flex:none}
+body.mobile #panel .loc{margin-top:0}
+body.mobile #editor{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:62vh}
+body.mobile .hudR{flex-direction:column;align-items:flex-end}
 /* 구글 번역 위젯: 위쪽 띠 숨김, 셀렉트만 남김 */
 .goog-te-banner-frame.skiptranslate,iframe.skiptranslate{display:none!important}
 #google_translate_element .goog-te-gadget{font-size:0!important;color:transparent!important}
@@ -59,7 +84,10 @@ body{top:0!important;position:relative}
 
 <div id="hud">
   <div class="tag"><b class="notranslate">모두의 갤러리</b><span id="zone">1F · 공원</span></div>
-  <div class="tag" id="gt"><div id="google_translate_element" class="notranslate"></div><span id="gtNote">번역 불러오는 중</span></div>
+  <div class="hudR">
+    <button class="tag" id="btnEdit">내 방 꾸미기</button>
+    <div class="tag" id="gt"><div id="google_translate_element" class="notranslate"></div><span id="gtNote">번역 불러오는 중</span></div>
+  </div>
 </div>
 
 <aside id="panel" class="sheet hidden" aria-live="polite">
@@ -70,7 +98,14 @@ body{top:0!important;position:relative}
     <h2 id="aTitle"></h2>
     <div class="artist" id="aArtist"></div>
     <p id="aDesc"></p>
+    <a id="aLink" class="btn hidden" target="_blank" rel="noopener">사이트 열기</a>
   </div>
+</aside>
+
+<aside id="talk" class="sheet hidden" aria-live="polite">
+  <div class="who" id="tWho"></div>
+  <p id="tText"></p>
+  <button class="btn hidden" id="tEdit">이 방 꾸미기</button>
 </aside>
 
 <aside id="lift" class="sheet hidden">
@@ -79,148 +114,248 @@ body{top:0!important;position:relative}
   <div id="liftStatus"></div>
 </aside>
 
+<aside id="editor" class="sheet hidden">
+  <div class="ehead"><b>방 꾸미기</b><select id="eRoom"></select><button class="btn" id="eClose">닫기</button></div>
+  <div class="erow"><label>작가 이름</label><input type="text" id="eArtist"></div>
+  <div class="erow"><label>나라 (KR, FR…)</label><input type="text" id="eCountry"></div>
+  <div class="erow"><label>소개 — 방 앞 안내인이 이 말을 한다</label><textarea id="eAbout" rows="2"></textarea></div>
+  <div class="erow2"><div><label>벽</label><select id="eWall"></select></div><div><label>바닥</label><select id="eFloor"></select></div></div>
+  <div id="eSlots"></div>
+  <div class="ebtns">
+    <button class="btn" id="eExport">room.json 내려받기</button>
+    <label class="btn">room.json 불러오기<input type="file" id="eImport" accept=".json,application/json" hidden></label>
+    <button class="btn" id="eSend">서버로 보내기</button>
+    <button class="btn" id="eClear">방 비우기</button>
+  </div>
+  <div id="eStatus"></div>
+  <div class="note">그림은 PNG 픽셀아트, 300KB 이하 권장. 내려받은 room.json 하나가 이 방 전체다. 서버에 올리면 관리자 확인 뒤 공개.</div>
+</aside>
+
 <div id="dpad" aria-label="이동">
   <button class="c" tabindex="-1"></button><button data-dir="up" aria-label="위">▲</button><button class="c" tabindex="-1"></button>
   <button data-dir="left" aria-label="왼쪽">◀</button><button class="c" tabindex="-1"></button><button data-dir="right" aria-label="오른쪽">▶</button>
   <button class="c" tabindex="-1"></button><button data-dir="down" aria-label="아래">▼</button><button class="c" tabindex="-1"></button>
 </div>
 
-<div id="tip">이동: 방향키 · WASD (화면을 한 번 클릭한 뒤) · 작품 앞에 서면 열린다 · 현관 오른쪽 회색 칸 = 엘리베이터</div>
+<div id="tip">이동: 방향키 · WASD (화면을 한 번 클릭한 뒤) · 작품·안내인 옆에 서면 열린다 · 현관 오른쪽 회색 칸 = 엘리베이터</div>
 
 <script>
 'use strict';
 /* ------------------------------------------------------------------
-   모두의 갤러리 · 1층 시험판 · 2026-08-29
+   모두의 갤러리 · 1층 시험판 v1 · 2026-08-29
    한 파일. 서버 없음. 정적 호스팅에 그대로 올린다.
 
-   층 붙이기: FLOORS 에 한 줄 추가. src 는 다른 서버의 JSON 주소여도 된다.
-   층 JSON 형식:
+   구조: 공원 → 정문 → 현관(엘리베이터·안내판) → 가운데 복도 → 양쪽 홀(각 작가 방 2) → 복도 끝 홍보관
+   방: 복도 쪽 대표작 3 + 안 7 = 자리 10. 방마다 벽·바닥 색을 작가가 고른다.
+
+   층 붙이기: FLOORS 에 한 줄. src 는 다른 서버 JSON 주소여도 된다.
+   층 JSON:
    { "name":"2층", "halls":5,
-     "artworks":[ {"hall":1,"slot":1,"title":"…","artist":"…","country":"KR",
-                   "desc":"…","image":"https://…/a.png"} ] }
-   - hall: 1 ~ halls (최대 9)
-   - slot: 1~16   (1-3 복도쪽 대표작 · 4-8 북벽 · 9-12 서벽 · 13-16 동벽)
-   - image 없으면 자동 생성 무늬. 있으면 그 PNG 를 건다.
+     "rooms": { "1-1": { …방 }, "1-2": { "src":"https://다른서버/rooms/abc.json" } },
+     "promo": [ {"slot":1,"title":"…","org":"…","desc":"…","image":"…png","link":"https://…"} ],
+     "npc": { "park":"공원 안내인이 할 말" } }
+   방 JSON (room.json — 꾸미기 창에서 내려받는 것과 같은 형식):
+   { "artist":"…","country":"KR","about":"…","wall":"cream","floor":"wood",
+     "works":[ {"slot":1,"title":"…","desc":"…","image":"…png 또는 data:…"} ] }
+   - slot 1-3 복도 쪽 대표작 · 4-6 북벽 · 7-8 서벽 · 9-10 동벽
+   - wall: stone cream white rose sage sky navy plum charcoal black
+   - floor: wood darkwood marble stone red green blue grey
    - 다른 서버가 JSON/PNG 를 줄 때는 Access-Control-Allow-Origin 헤더가 필요하다.
+
+   서버로 보내기: UPLOAD_URL 에 주소를 넣으면 「서버로 보내기」가 room.json 을 POST 한다. (gallery_api.py 참고)
 ------------------------------------------------------------------ */
+
+const UPLOAD_URL='';   // 예: 'https://ledeuxions.com/api/gallery/room'
 
 const FLOORS=[
   {id:1,name:'1층',src:null},
   {id:2,name:'2층',src:''}          // 예: 'https://다른서버/floor2.json'
 ];
 
-const FLOOR1={name:'1층',halls:5,ground:true,artworks:[
-  {hall:1,slot:1,title:'새벽 항구',artist:'예시 작가 A',country:'KR',desc:'예시 데이터. 16색 팔레트, 48×48.'},
-  {hall:1,slot:2,title:'Little Lighthouse',artist:'Sample Artist B',country:'FR',desc:'Données d\'exemple. Un phare, 32×32.'},
-  {hall:1,slot:3,title:'골목 고양이',artist:'예시 작가 C',country:'KR',desc:'예시 데이터.'},
-  {hall:1,slot:4,title:'Ventana',artist:'Sample Artist D',country:'MX',desc:'Datos de ejemplo. Una ventana al mediodía.'},
-  {hall:2,slot:1,title:'Cidade à noite',artist:'Sample Artist E',country:'BR',desc:'Dados de exemplo. 64×64, 8 cores.'},
-  {hall:2,slot:2,title:'雨の商店街',artist:'Sample Artist F',country:'JP',desc:'サンプルデータ。雨の日の商店街。'},
-  {hall:2,slot:5,title:'Bakery',artist:'Sample Artist G',country:'DE',desc:'Beispieldaten. Eine kleine Bäckerei.'},
-  {hall:3,slot:1,title:'Winter Cabin',artist:'Sample Artist H',country:'FI',desc:'Sample data. Snow, smoke, one lamp.'},
-  {hall:3,slot:2,title:'Old Tram',artist:'Sample Artist I',country:'PT',desc:'Dados de exemplo.'},
-  {hall:3,slot:3,title:'시장 아침',artist:'예시 작가 J',country:'KR',desc:'예시 데이터.'},
-  {hall:4,slot:1,title:'Desert Bus Stop',artist:'Sample Artist K',country:'US',desc:'Sample data.'},
-  {hall:4,slot:4,title:'Kite Season',artist:'Sample Artist L',country:'IN',desc:'Sample data.'},
-  {hall:5,slot:1,title:'Deep Sea Post Office',artist:'Sample Artist M',country:'AU',desc:'Sample data.'},
-  {hall:5,slot:2,title:'회전목마',artist:'예시 작가 N',country:'KR',desc:'예시 데이터.'}
-]};
+const FLOOR1={name:'1층',halls:5,ground:true,
+  npc:{park:'여기는 모두의 갤러리. 세계 작가들이 자기 방을 빌려 그림을 건다.\n궁전 안 복도 양쪽이 홀, 홀 안이 작가 방이다. 방 앞 대표작 셋을 보고 들어가면 된다.\n복도 끝은 홍보관.'},
+  promo:[
+    {slot:1,title:'예시 갤러리 기획전',org:'예시 갤러리',desc:'예시 데이터. 실제 전시장이 자기 배너를 건다.',link:'https://example.com'},
+    {slot:3,title:'예시 후원사',org:'예시 후원사',desc:'예시 데이터. 후원사 배너 자리.',link:''}
+  ],
+  rooms:{
+    '1-1':{artist:'예시 작가 A',country:'KR',about:'항구와 새벽을 그린다. 16색 팔레트.',wall:'cream',floor:'wood',works:[
+      {slot:1,title:'새벽 항구',desc:'예시 데이터. 48×48.'},{slot:2,title:'골목 고양이',desc:'예시 데이터.'},{slot:3,title:'시장 아침',desc:'예시 데이터.'},
+      {slot:4,title:'등대',desc:''},{slot:5,title:'창문',desc:''},{slot:6,title:'회전목마',desc:''},{slot:7,title:'우산',desc:''}]},
+    '1-2':{artist:'Sample Artist B',country:'FR',about:'Phares et petites maisons. Données d\'exemple.',wall:'navy',floor:'darkwood',works:[
+      {slot:1,title:'Little Lighthouse',desc:'Données d\'exemple. 32×32.'},{slot:2,title:'Ventana',desc:''},{slot:3,title:'Old Tram',desc:''},
+      {slot:4,title:'Bakery',desc:''},{slot:5,title:'Kite Season',desc:''},{slot:8,title:'Winter Cabin',desc:''},{slot:9,title:'Bus Stop',desc:''},{slot:10,title:'Post Office',desc:''}]},
+    '2-1':{artist:'Sample Artist E',country:'BR',about:'Cidades à noite. Dados de exemplo.',wall:'sage',floor:'green',works:[
+      {slot:1,title:'Cidade à noite',desc:'Dados de exemplo. 64×64, 8 cores.'},{slot:2,title:'Chuva',desc:''},{slot:3,title:'Praça',desc:''},{slot:5,title:'Bonde',desc:''}]},
+    '3-2':{src:''}   // 예: {src:'/gallery/rooms/3-2.json'} — 방 하나가 파일 하나
+  }
+};
 
 /* ---------- 지도 ---------- */
-const T=16, HALL_W=11, HALL_H=9, WALL_IN=2;
-const BLOCK=new Set(['#','h','t','w','A','S','x']);
+const T=16, W=45, CX=22;
+const BLOCK=new Set(['#','h','t','w','A','B','S','x','b','q','l','n','N']);
+const OBJECTS=new Set(['b','q','l','n','N','S','t']);   // 바닥 위에 얹는 것 (밑 타일 따로 그림)
 
-// 타일: g 잔디 · p 자갈길 · f 꽃밭 · h 산울타리 · t 나무 · w 물 · S 조각상
-//       # 벽 · , 홀 마루 · - 복도 돌바닥 · . 현관 대리석 · D 문 · E 엘리베이터 · A 액자(벽) · x 바깥(상층)
+// 타일: g 잔디 · p 자갈 · f 꽃밭 · h 산울타리 · w 물 · # 벽 · , 방 바닥 · - 돌바닥 · . 대리석 · r 붉은 카펫길 · c 깔개
+//       D 문(위아래) · d 문(좌우) · E 엘리베이터 · A 액자 · B 배너 · x 바깥 · 물건: b 벤치 q 화분 l 등 n 안내판 N 사람 S 조각 t 나무
 function buildFloor(def){
-  const nH=Math.max(1,Math.min(9,(def.halls|0)||5));
-  const W=2+nH*HALL_W+(nH-1)*WALL_IN, ground=!!def.ground, H=ground?52:26, cx=Math.floor(W/2);
+  const nH=Math.max(1,Math.min(6,(def.halls|0)||5)), ground=!!def.ground, H=ground?82:56, cx=CX;
   const grid=Array.from({length:H},()=>Array(W).fill(ground?'g':'x'));
+  const under=Array.from({length:H},()=>Array(W).fill(null));
+  const roomAt=Array.from({length:H},()=>Array(W).fill(null));
   const fill=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(x>=0&&x<W&&y>=0&&y<H)grid[y][x]=c;};
-  const frames=[],halls=[],signs=[];
+  const put=(x,y,c)=>{if(x<0||x>=W||y<0||y>=H)return;under[y][x]=grid[y][x];grid[y][x]=c;};
+  const frames=[],npcs=[],signs=[],roomsGeo={},hallsGeo=[];
 
-  // 전시관 블록 (y 0~16): 벽으로 깔고 안을 판다
-  fill(0,0,W-1,16,'#');
-  for(let k=0;k<nH;k++){
-    const x0=1+k*(HALL_W+WALL_IN), x1=x0+HALL_W-1;
-    halls.push({x0,x1});
-    fill(x0,1,x1,HALL_H,',');                       // 홀 바닥
-    fill(x0+1,HALL_H+1,x0+2,HALL_H+1,'D');          // 남쪽 문 (복도로)
-    signs.push({x:x0+4,y:HALL_H+1,text:String(k+1)});
-    let s=1;
-    for(const dx of [5,7,9]) frames.push({x:x0+dx,y:HALL_H+1,fx:0,fy:1,hall:k+1,slot:s++});   // 복도쪽 대표작 1-3
-    for(const dx of [1,3,5,7,9]) frames.push({x:x0+dx,y:0,fx:0,fy:1,hall:k+1,slot:s++});       // 북벽 4-8
-    for(const dy of [2,4,6,8]) frames.push({x:x0-1,y:dy,fx:1,fy:0,hall:k+1,slot:s++});        // 서벽 9-12
-    for(const dy of [2,4,6,8]) frames.push({x:x1+1,y:dy,fx:-1,fy:0,hall:k+1,slot:s++});       // 동벽 13-16
+  // 건물 (y 0~45)
+  fill(0,0,W-1,45,'#');
+
+  // 홍보관 (y 1~8) · 북벽 배너 5개 (3칸씩)
+  fill(1,1,W-2,8,'-');
+  [5,13,21,29,37].forEach((bx,i)=>{for(let k=0;k<3;k++)grid[0][bx+k]='B';frames.push({x:bx,y:0,w:3,fx:0,fy:1,promo:true,slot:i+1});});
+  put(1,1,'q');put(W-2,1,'q');put(1,8,'q');put(W-2,8,'q');put(cx+4,8,'q');
+  put(cx-4,8,'n');npcs.push({x:cx-4,y:8,kind:'sign',text:'홍보관. 갤러리·기관·후원사 자리.\n배너 다섯. 비어 있으면 대여 가능.'});
+  put(8,4,'b');put(9,4,'b');put(35,4,'b');put(36,4,'b');
+
+  // 가운데 복도 (x 20~24) · 붉은 카펫
+  fill(20,9,24,46,'-');fill(22,10,22,46,'r');
+
+  // 홀 자리 여섯: 1 서·아래, 2 동·아래, 3 서·가운데, 4 동·가운데, 5 서·위, 6 동·위. 남는 자리는 휴게실
+  const slots=[[false,2],[true,2],[false,1],[true,1],[false,0],[true,0]];
+  for(let i=0;i<6;i++){
+    const [east,bi]=slots[i],hy0=11+bi*12,hx0=east?26:1,doorX=east?25:19,spineX=east?24:20;
+    grid[hy0+7][doorX]='d';grid[hy0+8][doorX]='d';
+    put(spineX,hy0+6,'q');put(spineX,hy0+9,'q');
+    if(i<nH){
+      const n=i+1;
+      hallsGeo.push({n,x0:hx0,x1:hx0+17,y0:hy0,y1:hy0+9,east});
+      signs.push({x:doorX,y:hy0+6,text:String(n)});
+      fill(hx0,hy0+6,hx0+17,hy0+9,'-');                 // 로비
+      for(let rI=0;rI<2;rI++){
+        const x0=hx0+1+rI*9,y0=hy0,key=n+'-'+(rI+1);
+        fill(x0,y0,x0+6,y0+4,',');                       // 방 바닥 7×5
+        fill(x0+2,y0+2,x0+4,y0+2,'c');                   // 깔개
+        const dX=east?x0+6:x0,nX=east?x0+5:x0+1;
+        grid[y0+5][dX]='D';                              // 방 문 (로비로)
+        put(nX,y0+6,'N');npcs.push({x:nX,y:y0+6,kind:'room',room:key});
+        let s=1;
+        for(const fx of (east?[x0,x0+2,x0+4]:[x0+2,x0+4,x0+6]))frames.push({x:fx,y:y0+5,w:1,fx:0,fy:1,room:key,slot:s++});  // 1-3 대표작
+        for(const fx of [x0+1,x0+3,x0+5])frames.push({x:fx,y:y0-1,w:1,fx:0,fy:1,room:key,slot:s++});                         // 4-6 북벽
+        for(const fy of [y0+1,y0+3])frames.push({x:x0-1,y:fy,w:1,fx:1,fy:0,room:key,slot:s++});                              // 7-8 서벽
+        for(const fy of [y0+1,y0+3])frames.push({x:x0+7,y:fy,w:1,fx:-1,fy:0,room:key,slot:s++});                             // 9-10 동벽
+        for(let y=y0-1;y<=y0+5;y++)for(let x=x0-1;x<=x0+7;x++)roomAt[y][x]=key;
+        roomsGeo[key]={key,hall:n,idx:rI+1,x0,y0,door:{x:dX,y:y0+5}};
+      }
+      put(hx0+8,hy0+8,'b');put(hx0+9,hy0+8,'b');
+      put(east?hx0+17:hx0,hy0+9,'q');
+    }else{
+      hallsGeo.push({n:0,lounge:true,x0:hx0,x1:hx0+17,y0:hy0,y1:hy0+9,east});
+      fill(hx0,hy0,hx0+17,hy0+9,'-');fill(hx0+6,hy0+3,hx0+11,hy0+6,'c');
+      for(const [bx,by] of [[hx0+4,hy0+2],[hx0+5,hy0+2],[hx0+12,hy0+2],[hx0+13,hy0+2],[hx0+4,hy0+7],[hx0+5,hy0+7],[hx0+12,hy0+7],[hx0+13,hy0+7]])put(bx,by,'b');
+      for(const [qx,qy] of [[hx0,hy0],[hx0+17,hy0],[hx0,hy0+9],[hx0+17,hy0+9]])put(qx,qy,'q');
+      const sx=east?hx0+16:hx0+1;put(sx,hy0+9,'n');npcs.push({x:sx,y:hy0+9,kind:'sign',text:'휴게실. 다음 작가 홀이 들어올 자리.'});
+    }
   }
-  fill(1,HALL_H+2,W-2,HALL_H+6,'-');                // 복도 y 11~15
-  for(const f of frames) grid[f.y][f.x]='A';
+  for(const f of frames)if(!f.promo)grid[f.y][f.x]='A';
 
-  // 현관 블록 (y 16~25)
-  fill(cx-11,16,cx+11,25,'#');
-  fill(cx-9,17,cx+9,24,'.');
-  fill(cx-3,16,cx+3,16,'-');                        // 복도 → 현관 열림
-  const lift={x:cx+9,y:20}; grid[lift.y][lift.x]='E';
+  // 현관 (y 46~55)
+  fill(cx-11,46,cx+11,55,'#');fill(cx-9,47,cx+9,54,'.');
+  fill(20,46,24,46,'-');grid[46][22]='r';fill(22,47,22,54,'r');
+  const lift={x:cx+9,y:50};grid[lift.y][lift.x]='E';
+  put(cx-9,47,'q');put(cx-9,54,'q');put(cx+9,54,'q');
+  put(cx-5,53,'n');npcs.push({x:cx-5,y:53,kind:'dir'});
   let start={x:lift.x-1,y:lift.y};
 
   if(ground){
-    fill(cx-1,25,cx+1,25,'D');                      // 정문
-    fill(cx-16,26,cx+16,26,'p');                    // 테라스
-    fill(cx-1,26,cx+1,H-1,'p');                     // 중앙 길
-    fill(3,37,W-4,39,'p');                          // 가로 길
-    for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=dx*dx+dy*dy;if(d<=20)grid[38+dy][cx+dx]=d<=6?'w':'p';}   // 분수
+    fill(cx-1,55,cx+1,55,'D');                            // 정문
+    fill(cx-16,56,cx+16,56,'p');                          // 테라스
+    fill(cx-1,56,cx+1,H-1,'p');                           // 중앙 길
+    fill(3,67,W-4,69,'p');                                // 가로 길
+    for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=dx*dx+dy*dy;if(d<=20)grid[68+dy][cx+dx]=d<=6?'w':'p';}  // 분수
     const bed=(x0,y0,x1,y1,gx,gy)=>{fill(x0,y0,x1,y1,'h');fill(x0+1,y0+1,x1-1,y1-1,'f');grid[gy][gx]='f';};
-    bed(cx-16,28,cx-5,34,cx-5,31); bed(cx+5,28,cx+16,34,cx+5,31);
-    bed(cx-16,42,cx-5,48,cx-5,45); bed(cx+5,42,cx+16,48,cx+5,45);
-    for(const [sx,sy] of [[cx-3,31],[cx+3,31],[cx-3,45],[cx+3,45]]) grid[sy][sx]='S';
-    for(let y=17;y<H;y++){grid[y][0]='h';grid[y][W-1]='h';}
-    fill(0,H-1,W-1,H-1,'h'); fill(cx-1,H-1,cx+1,H-1,'p');   // 아래 울타리 + 정문(입장)
-    for(let y=18;y<H-2;y+=3){grid[y][2]='t';grid[y+1][W-3]='t';}
-    for(const [tx,ty] of [[8,20],[W-9,20],[14,22],[W-15,22],[7,40],[W-8,40],[12,50],[W-13,50],[6,30],[W-7,30],[18,36],[W-19,36]])
-      if(grid[ty]&&grid[ty][tx]==='g') grid[ty][tx]='t';
+    bed(cx-16,58,cx-5,64,cx-5,61);bed(cx+5,58,cx+16,64,cx+5,61);
+    bed(cx-16,72,cx-5,78,cx-5,75);bed(cx+5,72,cx+16,78,cx+5,75);
+    for(const [sx,sy] of [[cx-3,61],[cx+3,61],[cx-3,75],[cx+3,75]])put(sx,sy,'S');
+    for(let y=46;y<H;y++){grid[y][0]='h';grid[y][W-1]='h';}
+    fill(0,H-1,W-1,H-1,'h');fill(cx-1,H-1,cx+1,H-1,'p');  // 아래 울타리 + 들어오는 문
+    for(let y=47;y<H-2;y+=3){put(2,y,'t');put(W-3,y+1,'t');}
+    for(const [tx,ty] of [[cx-18,50],[cx+18,50],[cx-14,52],[cx+14,52],[cx-15,70],[cx+15,70],[cx-10,80],[cx+10,80],[cx-16,66],[cx+16,66]])
+      if(grid[ty]&&grid[ty][tx]==='g')put(tx,ty,'t');
+    for(const [lx,ly] of [[cx-4,56],[cx+4,56],[cx-5,66],[cx+5,66],[cx-5,70],[cx+5,70],[cx-2,78],[cx+2,78]])put(lx,ly,'l');
+    for(const [bx,by] of [[cx-8,57],[cx-7,57],[cx+7,57],[cx+8,57]])put(bx,by,'b');
+    put(cx+2,80,'N');npcs.push({x:cx+2,y:80,kind:'park'});
     start={x:cx,y:H-2};
   }
-  return {W,H,grid,frames,halls,signs,lift,start,cx,ground,name:def.name||'',artworks:def.artworks||[]};
+  const npcMap=new Map();for(const np of npcs)npcMap.set(np.x+','+np.y,np);
+  return {W,H,grid,under,roomAt,frames,npcs,npcMap,signs,roomsGeo,hallsGeo,lift,start,ground,name:def.name||'',
+          rooms:Object.assign({},def.rooms||{}),promo:(def.promo||[]).slice(),npcText:def.npc||{}};
 }
 
 /* ---------- 그림 도구 ---------- */
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const px=(g,x,y,c,w=1,h=1)=>{g.fillStyle=c;g.fillRect(x,y,w,h);};
+function shade(hex,amt){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,Math.round(amt>=0?v+(255-v)*amt/100:v*(1+amt/100))));return '#'+[n>>16,(n>>8)&255,n&255].map(v=>f(v).toString(16).padStart(2,'0')).join('');}
 function tile(fn,seed){const c=document.createElement('canvas');c.width=T;c.height=T;fn(c.getContext('2d'),mulberry32(seed));return c;}
+const variants=fn=>[0,1,2].map(i=>tile(fn,101+i*977));
 
+const WALL_COLORS={stone:'#9b907b',cream:'#d8cbb1',white:'#e9e4da',rose:'#c79c96',sage:'#98a993',sky:'#8fa7bd',navy:'#4f5c78',plum:'#6b4c6e',charcoal:'#5a5651',black:'#2b2926'};
+const WALL_NAMES={stone:'돌',cream:'크림',white:'흰색',rose:'장미',sage:'세이지',sky:'하늘',navy:'남색',plum:'자두',charcoal:'차콜',black:'검정'};
+const FLOOR_STYLES={wood:['plank','#a5743f'],darkwood:['plank','#6b4526'],marble:['checker','#e8e0cc'],stone:['tile','#cfc6b0'],red:['carpet','#8c2f2f'],green:['carpet','#3f6b4a'],blue:['carpet','#39527a'],grey:['carpet','#77726c']};
+const FLOOR_NAMES={wood:'나무',darkwood:'짙은 나무',marble:'대리석',stone:'돌',red:'붉은 카펫',green:'초록 카펫',blue:'파란 카펫',grey:'회색 카펫'};
+
+const wallPainter=base=>(g,r)=>{px(g,0,0,base,16,16);px(g,0,0,shade(base,22),16,1);const m=shade(base,-22);for(let y=4;y<16;y+=4)px(g,0,y,m,16,1);for(let y=0;y<16;y+=4)px(g,(y/4)%2?8:0,y,m,1,4);px(g,0,15,shade(base,-32),16,1);};
+const floorPainter=(kind,base)=>(g,r)=>{
+  if(kind==='plank'){px(g,0,0,base,16,16);const m=shade(base,-18),hi=shade(base,12);for(let y=0;y<16;y+=4){px(g,0,y,m,16,1);const o=(y/4)%2?6:0;px(g,o,y,m,1,4);px(g,(o+11)%16,y,m,1,4);}for(let i=0;i<6;i++)px(g,(r()*16)|0,(r()*16)|0,hi);}
+  else if(kind==='checker'){px(g,0,0,base,16,16);const d=shade(base,-14);px(g,8,0,d,8,8);px(g,0,8,d,8,8);for(let i=0;i<4;i++)px(g,(r()*16)|0,(r()*16)|0,shade(base,10));}
+  else if(kind==='tile'){px(g,0,0,base,16,16);const m=shade(base,-14);px(g,0,0,m,16,1);px(g,0,0,m,1,16);px(g,8,0,m,1,16);px(g,0,8,m,16,1);for(let i=0;i<4;i++)px(g,(r()*16)|0,(r()*16)|0,shade(base,8));}
+  else{px(g,0,0,base,16,16);for(let i=0;i<10;i++)px(g,(r()*16)|0,(r()*16)|0,r()<.5?shade(base,-8):shade(base,8));}
+};
 const P={
   g:(g,r)=>{px(g,0,0,'#5a8f3c',16,16);for(let i=0;i<14;i++)px(g,(r()*16)|0,(r()*16)|0,r()<.5?'#4f7f33':'#6a9e47');},
   p:(g,r)=>{px(g,0,0,'#d9c89f',16,16);for(let i=0;i<10;i++)px(g,(r()*16)|0,(r()*16)|0,r()<.5?'#c9b68b':'#e7d9b4');},
   f:(g,r)=>{P.g(g,r);for(let i=0;i<5;i++){const x=(r()*15)|0,y=(r()*15)|0;px(g,x,y,['#e86a8a','#f2d34d','#f5f0e6','#c86bd8'][(r()*4)|0]);px(g,x+1,y+1,'#3f6f2c');}},
   h:(g,r)=>{px(g,0,0,'#2f6a2e',16,16);px(g,0,0,'#3f8a3a',16,2);px(g,0,14,'#214a20',16,2);for(let i=0;i<12;i++)px(g,(r()*16)|0,2+((r()*12)|0),r()<.5?'#285c27':'#3a7a36');},
-  t:(g,r)=>{P.g(g,r);px(g,7,12,'#6b4a2b',2,4);px(g,3,2,'#2c6a2c',10,10);px(g,2,4,'#2c6a2c',12,6);px(g,4,1,'#2c6a2c',8,12);px(g,4,3,'#3f8a3a',6,4);px(g,5,2,'#4b9c44',3,2);},
   w:(g,r)=>{px(g,0,0,'#3d7fc2',16,16);for(let i=0;i<6;i++)px(g,(r()*14)|0,(r()*16)|0,'#6faee6',2,1);for(let i=0;i<3;i++)px(g,(r()*16)|0,(r()*16)|0,'#2f66a0');},
-  S:(g,r)=>{P.g(g,r);px(g,3,12,'#8f8a80',10,3);px(g,4,11,'#a8a398',8,1);px(g,6,5,'#b8b3a8',4,6);px(g,7,2,'#b8b3a8',2,3);px(g,5,6,'#a09b90',1,4);},
-  '#':(g,r)=>{px(g,0,0,'#9b907b',16,16);px(g,0,0,'#b7ac95',16,1);for(let y=4;y<16;y+=4)px(g,0,y,'#7c7260',16,1);for(let y=0;y<16;y+=4)px(g,(y/4)%2?8:0,y,'#7c7260',1,4);px(g,0,15,'#6f665a',16,1);},
-  ',':(g,r)=>{px(g,0,0,'#a5743f',16,16);for(let y=0;y<16;y+=4){px(g,0,y,'#8f6234',16,1);const o=(y/4)%2?6:0;px(g,o,y,'#8f6234',1,4);px(g,(o+11)%16,y,'#8f6234',1,4);}for(let i=0;i<6;i++)px(g,(r()*16)|0,(r()*16)|0,'#b4834b');},
-  '-':(g,r)=>{px(g,0,0,'#cfc6b0',16,16);px(g,0,0,'#b3aa95',16,1);px(g,0,0,'#b3aa95',1,16);px(g,8,0,'#b3aa95',1,16);px(g,0,8,'#b3aa95',16,1);for(let i=0;i<4;i++)px(g,(r()*16)|0,(r()*16)|0,'#dcd4bf');},
-  '.':(g,r)=>{px(g,0,0,'#e8e0cc',16,16);px(g,8,0,'#c9c2b0',8,8);px(g,0,8,'#c9c2b0',8,8);for(let i=0;i<4;i++)px(g,(r()*16)|0,(r()*16)|0,'#f4efe2');},
+  '#':wallPainter(WALL_COLORS.stone),
+  ',':floorPainter('plank','#a5743f'),
+  '-':floorPainter('tile','#cfc6b0'),
+  '.':floorPainter('checker','#e8e0cc'),
+  r:(g,r)=>{px(g,0,0,'#8c2f2f',16,16);px(g,0,0,'#c9a24d',1,16);px(g,15,0,'#c9a24d',1,16);px(g,1,0,'#a33a3a',1,16);px(g,14,0,'#a33a3a',1,16);for(let i=0;i<6;i++)px(g,2+((r()*12)|0),(r()*16)|0,'#7a2626');},
+  c:(g,r)=>{px(g,0,0,'#5b3d6e',16,16);px(g,2,2,'#7a5590',12,12);px(g,5,5,'#c9a24d',6,6);px(g,7,7,'#5b3d6e',2,2);},
   D:(g,r)=>{P['-'](g,r);px(g,0,0,'#6f665a',2,16);px(g,14,0,'#6f665a',2,16);px(g,2,0,'#8f6234',12,2);},
+  d:(g,r)=>{P['-'](g,r);px(g,0,0,'#6f665a',16,2);px(g,0,14,'#6f665a',16,2);px(g,0,2,'#8f6234',2,12);},
   E:(g,r)=>{px(g,0,0,'#7d8590',16,16);px(g,2,3,'#aab2bd',5,12);px(g,9,3,'#aab2bd',5,12);px(g,7,3,'#3c424a',2,12);px(g,2,2,'#3c424a',12,1);px(g,7,0,'#e7c956',2,2);},
   x:(g,r)=>{px(g,0,0,'#0e0c0a',16,16);}
 };
-const TILES={};
-for(const c in P) TILES[c]=[0,1,2].map(i=>tile(P[c],(c.charCodeAt(0)*31+i*101)|0));
+const TILES={};for(const c in P)TILES[c]=variants(P[c]);
+const styleCache=new Map();
+function wallTiles(name){const base=WALL_COLORS[name]||WALL_COLORS.stone;const k='w:'+base;if(!styleCache.has(k))styleCache.set(k,variants(wallPainter(base)));return styleCache.get(k);}
+function floorTiles(name){const st=FLOOR_STYLES[name]||FLOOR_STYLES.wood;const k='f:'+st.join(':');if(!styleCache.has(k))styleCache.set(k,variants(floorPainter(st[0],st[1])));return styleCache.get(k);}
 
-// 빈 액자
-const EMPTY=(()=>{const c=document.createElement('canvas');c.width=c.height=12;const g=c.getContext('2d');px(g,0,0,'#efe6cf',12,12);
-  for(let i=0;i<12;i+=3){px(g,i,0,'#d9cfb5');px(g,0,i,'#d9cfb5');px(g,11,i,'#d9cfb5');px(g,i,11,'#d9cfb5');}
-  px(g,5,4,'#b7ad95',2,4);px(g,4,5,'#b7ad95',4,2);return c;})();
+// 물건 (투명 배경)
+const OBJ={
+  b:g=>{px(g,1,3,'#8b5e36',14,2);px(g,1,5,'#9a6a3e',14,1);px(g,1,6,'#7a5230',14,4);px(g,2,10,'#5a3a20',2,4);px(g,12,10,'#5a3a20',2,4);},
+  q:g=>{px(g,4,9,'#8b4426',8,1);px(g,5,10,'#a0522d',6,5);px(g,3,3,'#2f7a3a',10,6);px(g,5,1,'#3f9a48',6,3);px(g,2,5,'#2f7a3a',2,3);px(g,12,5,'#2f7a3a',2,3);px(g,6,4,'#5ab35f',2,2);},
+  l:g=>{px(g,7,5,'#3a3a3a',2,10);px(g,5,14,'#3a3a3a',6,2);px(g,5,1,'#3a3a3a',6,1);px(g,6,2,'#ffe28a',4,4);px(g,5,2,'#3a3a3a',1,4);px(g,10,2,'#3a3a3a',1,4);},
+  n:g=>{px(g,7,9,'#6b4a2b',2,6);px(g,2,2,'#8b5e36',12,8);px(g,3,3,'#efe4c8',10,6);px(g,4,4,'#8f8474',8,1);px(g,4,6,'#8f8474',6,1);},
+  S:g=>{px(g,3,12,'#8f8a80',10,3);px(g,4,11,'#a8a398',8,1);px(g,6,5,'#b8b3a8',4,6);px(g,7,2,'#b8b3a8',2,3);px(g,5,6,'#a09b90',1,4);},
+  t:g=>{px(g,7,12,'#6b4a2b',2,4);px(g,3,2,'#2c6a2c',10,10);px(g,2,4,'#2c6a2c',12,6);px(g,4,1,'#2c6a2c',8,12);px(g,4,3,'#3f8a3a',6,4);px(g,5,2,'#4b9c44',3,2);}
+};
+const OBJT={};for(const c in OBJ)OBJT[c]=tile(OBJ[c],1);
 
-// 자동 생성 무늬 (좌우대칭 12×12) — 실제 그림이 없을 때만
+// 빈 액자 · 자동 무늬
+function emptyThumb(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');px(g,0,0,'#efe6cf',w,h);
+  for(let i=0;i<w;i+=3){px(g,i,0,'#d9cfb5');px(g,i,h-1,'#d9cfb5');}for(let i=0;i<h;i+=3){px(g,0,i,'#d9cfb5');px(g,w-1,i,'#d9cfb5');}
+  const mx=(w>>1)-1,my=(h>>1)-1;px(g,mx,my-1,'#b7ad95',2,4);px(g,mx-1,my,'#b7ad95',4,2);return c;}
+const EMPTY12=emptyThumb(12,12),EMPTY44=emptyThumb(44,12);
 const PALS=[['#1b1f3b','#f0c04a','#e2523e','#7fd1c9'],['#0f2a1f','#9be564','#ffe066','#f5f5f5'],['#2a1237','#ff77aa','#ffd6e0','#7b3bd6'],
             ['#12232e','#5fb2ff','#dff3ff','#ff9f43'],['#3a2412','#f4a261','#e9c46a','#2a9d8f'],['#1d1d1d','#ff5722','#ffeb3b','#cfd8dc']];
-function genArt(seed){const r=mulberry32(seed*7919+13),pal=PALS[(r()*PALS.length)|0];const c=document.createElement('canvas');c.width=c.height=12;const g=c.getContext('2d');
-  px(g,0,0,pal[0],12,12);for(let y=0;y<12;y++)for(let x=0;x<6;x++)if(r()<.48){const col=pal[1+((r()*3)|0)];px(g,x,y,col);px(g,11-x,y,col);}return c;}
+function genArt(seed,w=12,h=12){const r=mulberry32(seed*7919+13),pal=PALS[(r()*PALS.length)|0];const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
+  px(g,0,0,pal[0],w,h);const half=Math.ceil(w/2);for(let y=0;y<h;y++)for(let x=0;x<half;x++)if(r()<.48){const col=pal[1+((r()*3)|0)];px(g,x,y,col);px(g,w-1-x,y,col);}return c;}
 
 // 사람
-function mkSprite(dir,fr){return tile(g=>{
-  const skin='#f2c9a4',hair='#3b2a20',shirt='#3f6fd6',pants='#2c3452',shoe='#1e1e1e',eye='#1e1e1e';
+function mkSprite(dir,fr,col){return tile(g=>{
+  const skin=col.skin,hair=col.hair,shirt=col.shirt,pants=col.pants||'#2c3452',shoe='#1e1e1e',eye='#1e1e1e';
   px(g,5,1,hair,6,2);px(g,5,3,skin,6,4);
   if(dir==='up')px(g,5,3,hair,6,3);
   if(dir==='down'){px(g,6,4,eye);px(g,9,4,eye);}
@@ -231,18 +366,25 @@ function mkSprite(dir,fr){return tile(g=>{
   px(g,5,12,pants,2,2-l);px(g,5,14-l,shoe,2,1);
   px(g,9,12,pants,2,2-rr);px(g,9,14-rr,shoe,2,1);
 },1);}
-const SPR={};for(const d of ['up','down','left','right'])SPR[d]=[0,1,2].map(f=>mkSprite(d,f));
+const PLAYER_COL={skin:'#f2c9a4',hair:'#3b2a20',shirt:'#3f6fd6'};
+const NPC_COLS=[{shirt:'#c0392b',hair:'#2b1d14',skin:'#f2c9a4'},{shirt:'#8e44ad',hair:'#111111',skin:'#d9a077'},{shirt:'#f39c12',hair:'#c9a24d',skin:'#f6d5b8'},
+                {shirt:'#16a085',hair:'#3b2a20',skin:'#c68642'},{shirt:'#d35400',hair:'#222222',skin:'#8d5524'},{shirt:'#7f8c8d',hair:'#5b3e1e',skin:'#e8b892'}];
+const PARK_COL={shirt:'#27ae60',hair:'#6b3e1e',skin:'#e8b892',pants:'#3b3b3b'};
+const SPR={};for(const d of ['up','down','left','right'])SPR[d]=[0,1,2].map(f=>mkSprite(d,f,PLAYER_COL));
+const npcSpr=new Map();
+function npcSprite(np){const k=np.kind==='park'?'park':np.room;if(!npcSpr.has(k)){let col=PARK_COL;if(np.kind!=='park'){let h=0;for(const ch of k)h=(h*31+ch.charCodeAt(0))|0;col=NPC_COLS[Math.abs(h)%NPC_COLS.length];}npcSpr.set(k,mkSprite('down',0,col));}return npcSpr.get(k);}
 
 // 3×5 숫자 (홀 번호판)
 const FONT={'0':[7,5,5,5,7],'1':[2,6,2,2,7],'2':[7,1,7,4,7],'3':[7,1,7,1,7],'4':[5,5,7,1,1],'5':[7,4,7,1,7],'6':[7,4,7,5,7],'7':[7,1,1,1,1],'8':[7,5,7,5,7],'9':[7,5,7,1,7]};
+const SLOT_NAMES=['대표작 1','대표작 2','대표작 3','북벽 4','북벽 5','북벽 6','서벽 7','서벽 8','동벽 9','동벽 10'];
 
 /* ---------- 상태 ---------- */
 const $=id=>document.getElementById(id);
-const cvs=$('game'),ctx=cvs.getContext('2d'),panel=$('panel'),lift=$('lift'),zoneEl=$('zone'),artCv=$('artCv'),artImg=$('artImg');
+const cvs=$('game'),ctx=cvs.getContext('2d'),panel=$('panel'),talk=$('talk'),lift=$('lift'),editor=$('editor'),zoneEl=$('zone'),artCv=$('artCv'),artImg=$('artImg');
 const hide=el=>el.classList.add('hidden'),show=el=>el.classList.remove('hidden');
 let dpr=1,SCALE=3,viewW=0,viewH=0,camX=0,camY=0;
-let floor=null,activeFrame=null,liftOpen=false,lastZone='';
-let thumbs=new Map(),artIndex=new Map();
+let floor=null,activeFrame=null,activeNpc=null,liftOpen=false,lastZone='',editKey=null;
+let thumbs=new Map();
 const player={x:0,y:0,dir:'down',moving:false,t:0};
 const keys={};
 
@@ -253,66 +395,99 @@ function resize(){
   cvs.style.width=w+'px';cvs.style.height=h+'px';
   SCALE=Math.max(2,Math.min(3,Math.floor(Math.min(w,h)/(T*14))));
   viewW=w/SCALE;viewH=h/SCALE;
+  if(w<=900)document.body.classList.add('mobile');
 }
 
+const roomOf=key=>floor.rooms[key];
+function roomStyle(key){const r=roomOf(key);return {wall:(r&&r.wall)||'stone',floor:(r&&r.floor)||'wood'};}
+function workOf(key,slot){const r=roomOf(key);if(!r||!r.works)return null;const w=r.works.find(w=>w.slot===slot);return w&&(w.title||w.image)?w:null;}
+function promoOf(slot){const p=floor.promo.find(p=>p.slot===slot);return p&&(p.title||p.image||p.org)?p:null;}
+function frameKey(fr){return fr.promo?'P-'+fr.slot:fr.room+'-'+fr.slot;}
+function invalidateRoom(key){for(const k of [...thumbs.keys()])if(k.startsWith(key+'-'))thumbs.delete(k);}
+
 function thumbFor(fr){
-  const key=fr.hall+'-'+fr.slot;
+  const key=frameKey(fr),w=fr.w*T-4,h=12;
   if(thumbs.has(key))return thumbs.get(key);
-  const a=artIndex.get(key);let c;
-  if(!a)c=EMPTY;
+  const a=fr.promo?promoOf(fr.slot):workOf(fr.room,fr.slot);let c;
+  if(!a)c=fr.w===1?EMPTY12:EMPTY44;
   else{
-    c=genArt(floor.id*1000+fr.hall*97+fr.slot*13);
-    if(a.image){const im=new Image();im.onload=()=>{const t=document.createElement('canvas');t.width=t.height=12;const g=t.getContext('2d');g.imageSmoothingEnabled=true;g.drawImage(im,0,0,12,12);thumbs.set(key,t);};im.src=a.image;}
+    let seed=0;for(const ch of key)seed=(seed*31+ch.charCodeAt(0))|0;
+    c=genArt(Math.abs(seed)+floor.id*7,w,h);
+    if(a.image){const fl=floor,im=new Image();im.onload=()=>{if(floor!==fl)return;const t=document.createElement('canvas');t.width=w;t.height=h;const g=t.getContext('2d');g.imageSmoothingEnabled=true;g.drawImage(im,0,0,w,h);thumbs.set(key,t);};im.src=a.image;}
   }
   thumbs.set(key,c);return c;
 }
 
 function zoneOf(tx,ty){
-  if(ty>=26)return '공원';
-  if(ty>=17)return '궁전 입구';
-  if(ty>=11)return '복도';
-  const k=floor.halls.findIndex(h=>tx>=h.x0-1&&tx<=h.x1+1);
-  return k>=0?(k+1)+'홀':'복도';
+  if(floor.ground&&ty>=56)return '공원';
+  if(ty>=46)return '궁전 입구';
+  if(ty<=9)return '홍보관';
+  const key=floor.roomAt[ty]&&floor.roomAt[ty][tx];
+  if(key){const g=floor.roomsGeo[key],r=roomOf(key);return g.hall+'홀 · '+(r&&r.artist?r.artist:'빈 방');}
+  for(const h of floor.hallsGeo){const dx=h.east?h.x0-1:h.x1+1;if(ty>=h.y0&&ty<=h.y1&&((tx>=h.x0&&tx<=h.x1)||tx===dx))return h.lounge?'휴게실':h.n+'홀';}
+  return '복도';
 }
 
 function setFloor(def,id,viaLift){
-  floor=buildFloor(def);floor.id=id;
-  artIndex=new Map();for(const a of floor.artworks)artIndex.set(a.hall+'-'+a.slot,a);
-  thumbs=new Map();
+  floor=buildFloor(def);floor.id=id;thumbs=new Map();npcSpr.clear();
   const s=viaLift?{x:floor.lift.x-1,y:floor.lift.y}:floor.start;
   player.x=s.x*T;player.y=s.y*T;player.dir=viaLift?'left':'up';
-  activeFrame=null;liftOpen=false;lastZone='';hide(panel);hide(lift);
+  activeFrame=null;activeNpc=null;liftOpen=false;lastZone='';hide(panel);hide(talk);hide(lift);hide(editor);document.body.classList.remove('editing');editKey=null;
+  // 방 파일 (src) 불러오기
+  const fl=floor;
+  for(const [key,r] of Object.entries(fl.rooms)){
+    if(!r||!r.src||r.artist)continue;
+    r._status='loading';
+    fetch(r.src,{cache:'no-store'}).then(x=>{if(!x.ok)throw new Error('HTTP '+x.status);return x.json();})
+      .then(d=>{if(floor!==fl)return;fl.rooms[key]=Object.assign({},d,{src:r.src});invalidateRoom(key);refreshTalk();})
+      .catch(e=>{if(floor!==fl)return;r._status='error';r._err=e.message;refreshTalk();});
+  }
 }
 
-/* ---------- 작품 · 엘리베이터 ---------- */
+/* ---------- 작품 · 안내인 · 엘리베이터 ---------- */
 function showArt(fr){
-  const key=fr.hall+'-'+fr.slot,a=artIndex.get(key);
-  $('aLoc').textContent=`${floor.id}F · ${fr.hall}홀 · ${fr.slot}번 자리`+(fr.slot<=3?' · 대표작':'');
-  const g=artCv.getContext('2d');g.clearRect(0,0,12,12);
-  if(a){
-    $('aTitle').textContent=a.title||'(제목 없음)';
-    $('aArtist').textContent=(a.artist||'')+(a.country?' · '+a.country:'');
-    $('aDesc').textContent=a.desc||'';
-    if(a.image){artImg.src=a.image;show(artImg);hide(artCv);}
-    else{g.drawImage(thumbFor(fr),0,0);show(artCv);hide(artImg);}
+  const g=artCv.getContext('2d'),w=fr.w*T-4,h=12;
+  artCv.width=w;artCv.height=h;artCv.style.aspectRatio=w+'/'+h;g.clearRect(0,0,w,h);
+  const link=$('aLink');hide(link);
+  if(fr.promo){
+    const p=promoOf(fr.slot);
+    $('aLoc').textContent=`${floor.id}F · 홍보관 · ${fr.slot}번 배너`;
+    if(p){$('aTitle').textContent=p.title||p.org||'(제목 없음)';$('aArtist').textContent=p.org||'';$('aDesc').textContent=p.desc||'';
+      if(p.link){link.href=p.link;show(link);}
+      if(p.image){artImg.src=p.image;show(artImg);hide(artCv);}else{g.drawImage(thumbFor(fr),0,0);show(artCv);hide(artImg);}}
+    else{$('aTitle').textContent='빈 배너';$('aArtist').textContent='대여 가능';$('aDesc').textContent='갤러리·기관·후원사 자리.';g.drawImage(EMPTY44,0,0);show(artCv);hide(artImg);}
   }else{
-    $('aTitle').textContent='빈 액자';
-    $('aArtist').textContent='대여 가능';
-    $('aDesc').textContent='아직 아무도 걸지 않은 자리. 가격은 작가 100명이 모인 뒤 정한다.';
-    g.drawImage(EMPTY,0,0);show(artCv);hide(artImg);
+    const geo=floor.roomsGeo[fr.room],r=roomOf(fr.room),a=workOf(fr.room,fr.slot);
+    $('aLoc').textContent=`${floor.id}F · ${geo.hall}홀 · ${r&&r.artist?r.artist:'빈 방'} · ${SLOT_NAMES[fr.slot-1]}`;
+    if(a){$('aTitle').textContent=a.title||'(제목 없음)';$('aArtist').textContent=(r.artist||'')+(r.country?' · '+r.country:'');$('aDesc').textContent=a.desc||'';
+      if(a.image){artImg.src=a.image;show(artImg);hide(artCv);}else{g.drawImage(thumbFor(fr),0,0);show(artCv);hide(artImg);}}
+    else{$('aTitle').textContent='빈 액자';$('aArtist').textContent=r&&r.artist?r.artist+' · 아직 안 걸음':'대여 가능';$('aDesc').textContent=r&&r.artist?'':'아직 아무도 걸지 않은 자리. 가격은 작가 100명이 모인 뒤 정한다.';g.drawImage(EMPTY12,0,0);show(artCv);hide(artImg);}
   }
   show(panel);
 }
+function dirText(){const parts=[];for(const h of floor.hallsGeo){if(h.lounge){parts.push('휴게실');continue;}const names=[1,2].map(i=>{const r=roomOf(h.n+'-'+i);return r&&r.artist?r.artist:'빈 방';});parts.push(h.n+'홀: '+names.join(', '));}parts.push('홍보관: 복도 끝');return parts.join('\n');}
+function npcTalk(np){
+  if(np.kind==='park')return {who:'공원 안내',text:floor.npcText.park||'여기는 모두의 갤러리.'};
+  if(np.kind==='sign')return {who:'안내판',text:np.text};
+  if(np.kind==='dir')return {who:'안내판',text:'엘리베이터: 오른쪽 벽. 복도는 위.\n'+dirText()};
+  const r=roomOf(np.room);
+  if(r&&r._status==='loading')return {who:'안내',text:'방 파일 불러오는 중… '+r.src};
+  if(r&&r._status==='error')return {who:'안내',text:'방 파일 연결 실패: '+r._err+(r.src?'\n'+r.src:'')};
+  if(!r||(!r.artist&&!(r.works&&r.works.length)))return {who:'안내',text:'빈 방. 대여 가능.\n가격은 작가 100명이 모인 뒤 정한다.'};
+  const n=(r.works||[]).filter(w=>w.title||w.image).length;
+  return {who:r.artist||'(이름 없음)',text:[r.country?'나라: '+r.country:'',r.about||'','작품 '+n+'점. 안에 들어가서 보면 된다.'].filter(Boolean).join('\n')};
+}
+function showTalk(np){const t=npcTalk(np);$('tWho').textContent=t.who;$('tText').textContent=t.text;const b=$('tEdit');if(np.kind==='room'){show(b);b.onclick=()=>openEditor(np.room,false);}else hide(b);show(talk);}
+function refreshTalk(){if(activeNpc&&!talk.classList.contains('hidden'))showTalk(activeNpc);}
+function refreshArt(){if(activeFrame&&!panel.classList.contains('hidden'))showArt(activeFrame);}
 
 function showLift(){
   const list=$('liftList');list.innerHTML='';
   for(const fl of FLOORS){
-    const b=document.createElement('button');
-    b.textContent=fl.name;
+    const b=document.createElement('button');b.textContent=fl.name;
     if(fl.id===floor.id){b.className='cur';b.insertAdjacentHTML('beforeend','<small>현재</small>');}
     else if(fl.id!==1&&!fl.src)b.insertAdjacentHTML('beforeend','<small>준비 중</small>');
-    b.onclick=()=>goFloor(fl);
-    list.appendChild(b);
+    b.onclick=()=>goFloor(fl);list.appendChild(b);
   }
   $('liftStatus').textContent='';show(lift);
 }
@@ -322,13 +497,86 @@ async function goFloor(fl){
   if(fl.id===1){setFloor(FLOOR1,1,true);return;}
   if(!fl.src){st.textContent=fl.name+': 아직 서버가 없다. FLOORS 의 src 에 JSON 주소를 넣으면 붙는다.';return;}
   st.textContent=fl.name+' 연결 중… '+fl.src;
-  try{
-    const r=await fetch(fl.src,{cache:'no-store'});
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const def=await r.json();
-    if(def.ground===undefined)def.ground=false;
-    setFloor(def,fl.id,true);
-  }catch(e){st.textContent=fl.name+' 연결 실패: '+e.message;}
+  try{const r=await fetch(fl.src,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const def=await r.json();if(def.ground===undefined)def.ground=false;setFloor(def,fl.id,true);}
+  catch(e){st.textContent=fl.name+' 연결 실패: '+e.message;}
+}
+
+/* ---------- 꾸미기 ---------- */
+function ensureRoom(key){let r=floor.rooms[key];if(!r||r.src&&!r.artist&&!r.works){r=floor.rooms[key]={artist:'',country:'',about:'',wall:'stone',floor:'wood',works:[]};}if(!r.works)r.works=[];return r;}
+function currentRoomKey(){const tx=Math.floor((player.x+8)/T),ty=Math.floor((player.y+12)/T);return (floor.roomAt[ty]&&floor.roomAt[ty][tx])||null;}
+function buildEditor(){
+  const ws=$('eWall');for(const k in WALL_COLORS){const o=document.createElement('option');o.value=k;o.textContent=WALL_NAMES[k];ws.appendChild(o);}
+  const fs=$('eFloor');for(const k in FLOOR_STYLES){const o=document.createElement('option');o.value=k;o.textContent=FLOOR_NAMES[k];fs.appendChild(o);}
+  const box=$('eSlots');
+  for(let s=1;s<=10;s++){
+    const d=document.createElement('div');d.className='slot';d.dataset.slot=s;
+    d.innerHTML=`<div class="sl">${SLOT_NAMES[s-1]}</div><img class="sp" alt=""><input type="text" class="st" placeholder="제목"><input type="text" class="sd" placeholder="설명"><label class="btn fb">그림<input type="file" accept="image/png,image/gif,image/webp,image/jpeg" hidden></label><button class="fx" title="그림 빼기">×</button>`;
+    box.appendChild(d);
+    d.querySelector('.st').addEventListener('input',applyEdit);d.querySelector('.sd').addEventListener('input',applyEdit);
+    d.querySelector('input[type=file]').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
+      $('eStatus').textContent=f.size>300*1024?'그림이 크다: '+Math.round(f.size/1024)+'KB. 픽셀아트 PNG 300KB 이하 권장.':'';
+      const rd=new FileReader();rd.onload=()=>{setWorkImage(s,rd.result);e.target.value='';};rd.readAsDataURL(f);});
+    d.querySelector('.fx').addEventListener('click',()=>setWorkImage(s,null));
+  }
+  ['eArtist','eCountry','eAbout','eWall','eFloor'].forEach(id=>$(id).addEventListener('input',applyEdit));
+  $('eRoom').addEventListener('change',e=>openEditor(e.target.value,true));
+  $('eClose').onclick=()=>{hide(editor);document.body.classList.remove('editing');};
+  $('eExport').onclick=exportRoom;$('eImport').addEventListener('change',importRoom);$('eSend').onclick=sendRoom;
+  $('eClear').onclick=()=>{floor.rooms[editKey]={artist:'',country:'',about:'',wall:'stone',floor:'wood',works:[]};fillEditor(editKey);invalidateRoom(editKey);refreshTalk();refreshArt();$('eStatus').textContent='비웠다 (파일로 내려받지 않으면 새로고침 때 사라진다).';};
+}
+function openEditor(key,teleport){
+  editKey=key;const r=ensureRoom(key);
+  const sel=$('eRoom');sel.innerHTML='';
+  for(const k of Object.keys(floor.roomsGeo)){const g=floor.roomsGeo[k],rr=roomOf(k);const o=document.createElement('option');o.value=k;o.textContent=`${g.hall}홀 ${g.idx}번 방 · ${rr&&rr.artist?rr.artist:'빈 방'}`;sel.appendChild(o);}
+  sel.value=key;fillEditor(key);$('eStatus').textContent='';show(editor);document.body.classList.add('editing');
+  if(teleport){const g=floor.roomsGeo[key];player.x=g.door.x*T;player.y=(g.door.y-1)*T;player.dir='up';}
+  void r;
+}
+function fillEditor(key){
+  const r=ensureRoom(key);
+  $('eArtist').value=r.artist||'';$('eCountry').value=r.country||'';$('eAbout').value=r.about||'';
+  $('eWall').value=WALL_COLORS[r.wall]?r.wall:'stone';$('eFloor').value=FLOOR_STYLES[r.floor]?r.floor:'wood';
+  document.querySelectorAll('#eSlots .slot').forEach(d=>{const s=+d.dataset.slot,w=r.works.find(w=>w.slot===s);d.querySelector('.st').value=w&&w.title||'';d.querySelector('.sd').value=w&&w.desc||'';const im=d.querySelector('.sp');if(w&&w.image){im.src=w.image;im.style.visibility='visible';}else{im.removeAttribute('src');im.style.visibility='hidden';}});
+}
+function applyEdit(){
+  if(!editKey)return;const r=ensureRoom(editKey);
+  r.artist=$('eArtist').value.trim();r.country=$('eCountry').value.trim();r.about=$('eAbout').value.trim();r.wall=$('eWall').value;r.floor=$('eFloor').value;
+  document.querySelectorAll('#eSlots .slot').forEach(d=>{const s=+d.dataset.slot,t=d.querySelector('.st').value.trim(),ds=d.querySelector('.sd').value.trim();
+    let w=r.works.find(w=>w.slot===s);if(!w&&(t||ds)){w={slot:s};r.works.push(w);}
+    if(w){w.title=t;w.desc=ds;if(!w.title&&!w.desc&&!w.image)r.works=r.works.filter(x=>x!==w);}});
+  r.works.sort((a,b)=>a.slot-b.slot);
+  const sel=$('eRoom'),o=sel.options[sel.selectedIndex];if(o)o.textContent=`${floor.roomsGeo[editKey].hall}홀 ${floor.roomsGeo[editKey].idx}번 방 · ${r.artist||'빈 방'}`;
+  invalidateRoom(editKey);refreshTalk();refreshArt();lastZone='';
+}
+function setWorkImage(slot,dataUrl){
+  const r=ensureRoom(editKey);let w=r.works.find(w=>w.slot===slot);
+  if(dataUrl){if(!w){w={slot,title:'',desc:''};r.works.push(w);}w.image=dataUrl;}
+  else if(w){delete w.image;if(!w.title&&!w.desc)r.works=r.works.filter(x=>x!==w);}
+  r.works.sort((a,b)=>a.slot-b.slot);fillEditor(editKey);invalidateRoom(editKey);refreshTalk();refreshArt();
+}
+function roomExport(){const r=ensureRoom(editKey);return {key:editKey,level:floor.id,artist:r.artist||'',country:r.country||'',about:r.about||'',wall:r.wall||'stone',floor:r.floor||'wood',works:r.works.map(w=>({slot:w.slot,title:w.title||'',desc:w.desc||'',image:w.image||''}))};}
+function exportRoom(){
+  applyEdit();const blob=new Blob([JSON.stringify(roomExport(),null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='room_'+editKey+'.json';document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+  $('eStatus').textContent='내려받음: room_'+editKey+'.json ('+Math.round(blob.size/1024)+'KB)';
+}
+function importRoom(e){
+  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{const d=JSON.parse(rd.result);if(typeof d!=='object'||!d)throw new Error('형식 아님');
+      floor.rooms[editKey]={artist:d.artist||'',country:d.country||'',about:d.about||'',wall:WALL_COLORS[d.wall]?d.wall:'stone',floor:FLOOR_STYLES[d.floor]?d.floor:'wood',
+        works:Array.isArray(d.works)?d.works.filter(w=>w&&w.slot>=1&&w.slot<=10).map(w=>({slot:+w.slot,title:w.title||'',desc:w.desc||'',...(w.image?{image:w.image}:{})})):[]};
+      fillEditor(editKey);invalidateRoom(editKey);refreshTalk();refreshArt();lastZone='';$('eStatus').textContent='불러옴: '+f.name;}
+    catch(err){$('eStatus').textContent='못 읽음: '+err.message;}e.target.value='';};
+  rd.readAsText(f);
+}
+async function sendRoom(){
+  applyEdit();const st=$('eStatus');
+  if(!UPLOAD_URL){st.textContent='UPLOAD_URL 이 비어 있다. 파일 위쪽 UPLOAD_URL 에 서버 주소를 넣으면 붙는다.\n지금은 「room.json 내려받기」로 파일을 받아 보내면 된다.';return;}
+  st.textContent='보내는 중… '+UPLOAD_URL;
+  try{const r=await fetch(UPLOAD_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(roomExport())});
+    const t=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' '+t.slice(0,120));st.textContent='보냈다. 관리자 확인 뒤 공개. 응답: '+t.slice(0,160);}
+  catch(e){st.textContent='실패: '+e.message;}
 }
 
 /* ---------- 움직임 ---------- */
@@ -338,8 +586,12 @@ function canStand(nx,ny){
 }
 function checkInteract(){
   const ptx=Math.floor((player.x+8)/T),pty=Math.floor((player.y+12)/T);
-  let f=null;for(const fr of floor.frames)if(fr.x+fr.fx===ptx&&fr.y+fr.fy===pty){f=fr;break;}
+  let f=null;
+  for(const fr of floor.frames){if(fr.y+fr.fy!==pty)continue;for(let k=0;k<fr.w;k++)if(fr.x+k+fr.fx===ptx){f=fr;break;}if(f)break;}
   if(f!==activeFrame){activeFrame=f;if(f)showArt(f);else hide(panel);}
+  let n=null;
+  if(!f){for(const [dx,dy] of [[0,1],[0,-1],[1,0],[-1,0]]){const np=floor.npcMap.get((ptx+dx)+','+(pty+dy));if(np){n=np;break;}}}
+  if(n!==activeNpc){activeNpc=n;if(n)showTalk(n);else hide(talk);}
   const on=ptx===floor.lift.x&&pty===floor.lift.y;
   if(on!==liftOpen){liftOpen=on;if(on)showLift();else hide(lift);}
   const z=zoneOf(ptx,pty);if(z!==lastZone){lastZone=z;zoneEl.textContent=floor.id+'F · '+z;}
@@ -363,10 +615,17 @@ function loop(now){
 
 /* ---------- 그리기 ---------- */
 function updateCam(){
-  const mw=floor.W*T,mh=floor.H*T;
-  camX=mw<=viewW?-(viewW-mw)/2:Math.max(0,Math.min(mw-viewW,player.x+8-viewW/2));
-  camY=mh<=viewH?-(viewH-mh)/2:Math.max(0,Math.min(mh-viewH,player.y+8-viewH/2));
+  const mw=floor.W*T,mh=floor.H*T,ed=!editor.classList.contains('hidden'),mob=document.body.classList.contains('mobile');
+  const offX=ed&&!mob?(editor.offsetWidth+24)/SCALE:0,offY=ed&&mob?(editor.offsetHeight+16)/SCALE:0;   // 꾸미기 창이 가리는 만큼 비켜 본다
+  camX=mw<=viewW?-(viewW-mw)/2:Math.max(-offX,Math.min(mw-viewW,player.x+8-viewW/2-offX/2));
+  camY=mh<=viewH?-(viewH-mh)/2:Math.max(0,Math.min(mh-viewH+offY,player.y+8-viewH/2+offY/2));
   camX=Math.round(camX);camY=Math.round(camY);
+}
+function baseTiles(c,x,y){
+  const key=floor.roomAt[y][x];
+  if(key){if(c===',')return floorTiles(roomStyle(key).floor);if(c==='#'||c==='A')return wallTiles(roomStyle(key).wall);}
+  if(c==='A'||c==='B')return TILES['#'];
+  return TILES[c]||TILES['-'];
 }
 function drawSign(s){
   const w=s.text.length*4+3,X=s.x*T+Math.floor((16-w)/2),Y=s.y*T+4;
@@ -381,12 +640,19 @@ function render(){
   const g=floor.grid;
   const tx0=Math.max(0,Math.floor(camX/T)),ty0=Math.max(0,Math.floor(camY/T));
   const tx1=Math.min(floor.W-1,Math.floor((camX+viewW)/T)),ty1=Math.min(floor.H-1,Math.floor((camY+viewH)/T));
-  for(let y=ty0;y<=ty1;y++)for(let x=tx0;x<=tx1;x++){const c=g[y][x];ctx.drawImage(TILES[c==='A'?'#':c][(x*7+y*13)%3],x*T,y*T);}
+  for(let y=ty0;y<=ty1;y++)for(let x=tx0;x<=tx1;x++){
+    const c=g[y][x],v=(x*7+y*13)%3;
+    if(OBJECTS.has(c)){
+      ctx.drawImage(baseTiles(floor.under[y][x]||'-',x,y)[v],x*T,y*T);
+      if(c==='N'){const np=floor.npcMap.get(x+','+y);ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(x*T+3,y*T+14,10,2);ctx.drawImage(npcSprite(np),x*T,y*T);}
+      else ctx.drawImage(OBJT[c],x*T,y*T);
+    }else ctx.drawImage(baseTiles(c,x,y)[v],x*T,y*T);
+  }
   for(const fr of floor.frames){
-    if(fr.x<tx0||fr.x>tx1||fr.y<ty0||fr.y>ty1)continue;
-    const X=fr.x*T+fr.fx*2,Y=fr.y*T+fr.fy*2,on=fr===activeFrame;
-    ctx.fillStyle=on?'#fff0a0':'#caa24d';ctx.fillRect(X+1,Y+1,14,14);
-    ctx.fillStyle='#2b1e0c';ctx.fillRect(X+2,Y+2,12,12);
+    if(fr.x+fr.w-1<tx0||fr.x>tx1||fr.y<ty0||fr.y>ty1)continue;
+    const X=fr.x*T+fr.fx*2,Y=fr.y*T+fr.fy*2,on=fr===activeFrame,pw=fr.w*T;
+    ctx.fillStyle=on?'#fff0a0':'#caa24d';ctx.fillRect(X+1,Y+1,pw-2,14);
+    ctx.fillStyle='#2b1e0c';ctx.fillRect(X+2,Y+2,pw-4,12);
     ctx.drawImage(thumbFor(fr),X+2,Y+2);
   }
   for(const s of floor.signs)if(s.x>=tx0&&s.x<=tx1&&s.y>=ty0&&s.y<=ty1)drawSign(s);
@@ -398,7 +664,8 @@ function render(){
 
 /* ---------- 입력 ---------- */
 const CODEMAP={KeyW:'up',KeyS:'down',KeyA:'left',KeyD:'right',ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
-addEventListener('keydown',e=>{const k=CODEMAP[e.code];if(k){keys[k]=true;e.preventDefault();}if(e.code==='Escape'){hide(panel);hide(lift);}});
+const typing=e=>e.target&&e.target.matches&&e.target.matches('input,textarea,select');
+addEventListener('keydown',e=>{if(typing(e))return;const k=CODEMAP[e.code];if(k){keys[k]=true;e.preventDefault();}if(e.code==='Escape'){hide(panel);hide(talk);hide(lift);}});
 addEventListener('keyup',e=>{const k=CODEMAP[e.code];if(k)keys[k]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 document.querySelectorAll('#dpad [data-dir]').forEach(b=>{
@@ -408,6 +675,9 @@ document.querySelectorAll('#dpad [data-dir]').forEach(b=>{
   b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',off);
   b.addEventListener('contextmenu',e=>e.preventDefault());
 });
+$('btnEdit').onclick=()=>openEditor(currentRoomKey()||Object.keys(floor.roomsGeo)[0],!currentRoomKey());
+if(matchMedia('(hover:none) and (pointer:coarse)').matches)document.body.classList.add('mobile');
+addEventListener('touchstart',()=>document.body.classList.add('mobile'),{once:true,passive:true});
 
 /* ---------- 구글 번역 ---------- */
 window.googleTranslateElementInit=function(){
@@ -417,24 +687,10 @@ window.googleTranslateElementInit=function(){
 setTimeout(()=>{if(!(window.google&&google.translate))$('gtNote').textContent='번역 위젯 안 뜸 — 실제 도메인에서 확인';},6000);
 
 /* ---------- 시작 ---------- */
-resize();addEventListener('resize',resize);
+buildEditor();resize();addEventListener('resize',resize);
 setFloor(FLOOR1,1,false);
 requestAnimationFrame(loop);
 </script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
-
-<script>
-// 🚨 형 폰에서 방향키가 안 보였다 (2026-08-29).
-//    미디어 쿼리만으로는 안 걸리는 기기가 있어, 손가락이 닿으면 무조건 띄운다.
-(function(){
-  function 띄우기(){
-    var d = document.getElementById('dpad');
-    if (d) d.style.display = 'grid';
-    window.removeEventListener('touchstart', 띄우기);
-  }
-  window.addEventListener('touchstart', 띄우기, {passive:true});
-  if (('ontouchstart' in window) || navigator.maxTouchPoints > 0) 띄우기();
-})();
-</script>
 </body>
 </html>
