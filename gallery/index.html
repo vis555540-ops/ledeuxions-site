@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>모두의 갤러리 · 1층 시험판</title>
+<style>
+:root{--bg:#0e0c0a;--card:#1c1814;--ink:#f1e9d8;--dim:#a79d8b;--gold:#d8b45a;--line:#3b3329}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+body{top:0!important;position:relative}
+#game{position:fixed;inset:0;display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none}
+#hud{position:fixed;top:10px;left:10px;right:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;pointer-events:none;z-index:4}
+#hud>*{pointer-events:auto}
+.tag{background:rgba(14,12,10,.82);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;line-height:1.35;backdrop-filter:blur(4px)}
+.tag b{color:var(--gold);font-weight:600;margin-right:6px}
+#zone{font-weight:600}
+#gt{display:flex;align-items:center;gap:6px;min-height:34px}
+#gtNote{font-size:11px;color:var(--dim)}
+.sheet{position:fixed;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:5}
+.hidden{display:none!important}
+#panel{right:12px;top:64px;width:min(320px,calc(100vw - 24px))}
+#panel .art{display:block;width:100%;aspect-ratio:1/1;image-rendering:pixelated;image-rendering:crisp-edges;background:#2a231c;border:2px solid var(--gold);border-radius:4px;object-fit:contain}
+#panel .loc{font-size:11px;color:var(--dim);margin-top:8px}
+#panel h2{margin:2px 0;font-size:17px;font-weight:700}
+#panel .artist{font-size:13px;color:var(--gold)}
+#panel p{margin:8px 0 0;font-size:13px;line-height:1.5}
+#panel .meta{min-width:0}
+#lift{right:12px;top:64px;width:min(300px,calc(100vw - 24px))}
+#lift h3{margin:0 0 8px;font-size:14px;color:var(--dim);font-weight:600}
+#lift button{display:block;width:100%;text-align:left;margin:4px 0;padding:9px 10px;background:#2a241d;color:var(--ink);border:1px solid var(--line);border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit}
+#lift button:focus-visible{outline:2px solid var(--gold)}
+#lift button.cur{border-color:var(--gold);color:var(--gold)}
+#lift button small{color:var(--dim);font-size:11px;margin-left:6px}
+#liftStatus{font-size:12px;color:var(--dim);margin-top:6px;min-height:1.2em;word-break:break-all}
+#dpad{position:fixed;right:14px;bottom:14px;width:138px;height:138px;display:none;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:4px;z-index:6}
+#dpad button{background:rgba(28,24,20,.85);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:20px;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
+#dpad button:active{background:#3a3128}
+#dpad .c{visibility:hidden}
+#tip{position:fixed;left:10px;bottom:10px;font-size:12px;color:var(--dim);background:rgba(14,12,10,.7);padding:5px 8px;border-radius:6px;z-index:4}
+@media (hover:none) and (pointer:coarse){
+  #dpad{display:grid}
+  #panel{top:auto;bottom:14px;left:12px;right:164px;width:auto;max-height:44vh;overflow:auto;display:flex;gap:10px}
+  #panel .art{width:96px;height:96px;flex:none}
+  #panel .loc{margin-top:0}
+  #lift{top:auto;bottom:14px;left:12px;right:164px;width:auto}
+  #tip{display:none}
+}
+/* 구글 번역 위젯: 위쪽 띠 숨김, 셀렉트만 남김 */
+.goog-te-banner-frame.skiptranslate,iframe.skiptranslate{display:none!important}
+#google_translate_element .goog-te-gadget{font-size:0!important;color:transparent!important}
+#google_translate_element .goog-te-gadget span,#google_translate_element img{display:none}
+#google_translate_element select{font-size:12px;background:#221d18;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 6px;max-width:150px;font-family:inherit}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="tag"><b class="notranslate">모두의 갤러리</b><span id="zone">1F · 공원</span></div>
+  <div class="tag" id="gt"><div id="google_translate_element" class="notranslate"></div><span id="gtNote">번역 불러오는 중</span></div>
+</div>
+
+<aside id="panel" class="sheet hidden" aria-live="polite">
+  <canvas class="art" id="artCv" width="12" height="12"></canvas>
+  <img class="art hidden" id="artImg" alt="">
+  <div class="meta">
+    <div class="loc" id="aLoc"></div>
+    <h2 id="aTitle"></h2>
+    <div class="artist" id="aArtist"></div>
+    <p id="aDesc"></p>
+  </div>
+</aside>
+
+<aside id="lift" class="sheet hidden">
+  <h3>엘리베이터</h3>
+  <div id="liftList"></div>
+  <div id="liftStatus"></div>
+</aside>
+
+<div id="dpad" aria-label="이동">
+  <button class="c" tabindex="-1"></button><button data-dir="up" aria-label="위">▲</button><button class="c" tabindex="-1"></button>
+  <button data-dir="left" aria-label="왼쪽">◀</button><button class="c" tabindex="-1"></button><button data-dir="right" aria-label="오른쪽">▶</button>
+  <button class="c" tabindex="-1"></button><button data-dir="down" aria-label="아래">▼</button><button class="c" tabindex="-1"></button>
+</div>
+
+<div id="tip">이동: 방향키 · WASD (화면을 한 번 클릭한 뒤) · 작품 앞에 서면 열린다 · 현관 오른쪽 회색 칸 = 엘리베이터</div>
+
+<script>
+'use strict';
+/* ------------------------------------------------------------------
+   모두의 갤러리 · 1층 시험판 · 2026-08-29
+   한 파일. 서버 없음. 정적 호스팅에 그대로 올린다.
+
+   층 붙이기: FLOORS 에 한 줄 추가. src 는 다른 서버의 JSON 주소여도 된다.
+   층 JSON 형식:
+   { "name":"2층", "halls":5,
+     "artworks":[ {"hall":1,"slot":1,"title":"…","artist":"…","country":"KR",
+                   "desc":"…","image":"https://…/a.png"} ] }
+   - hall: 1 ~ halls (최대 9)
+   - slot: 1~16   (1-3 복도쪽 대표작 · 4-8 북벽 · 9-12 서벽 · 13-16 동벽)
+   - image 없으면 자동 생성 무늬. 있으면 그 PNG 를 건다.
+   - 다른 서버가 JSON/PNG 를 줄 때는 Access-Control-Allow-Origin 헤더가 필요하다.
+------------------------------------------------------------------ */
+
+const FLOORS=[
+  {id:1,name:'1층',src:null},
+  {id:2,name:'2층',src:''}          // 예: 'https://다른서버/floor2.json'
+];
+
+const FLOOR1={name:'1층',halls:5,ground:true,artworks:[
+  {hall:1,slot:1,title:'새벽 항구',artist:'예시 작가 A',country:'KR',desc:'예시 데이터. 16색 팔레트, 48×48.'},
+  {hall:1,slot:2,title:'Little Lighthouse',artist:'Sample Artist B',country:'FR',desc:'Données d\'exemple. Un phare, 32×32.'},
+  {hall:1,slot:3,title:'골목 고양이',artist:'예시 작가 C',country:'KR',desc:'예시 데이터.'},
+  {hall:1,slot:4,title:'Ventana',artist:'Sample Artist D',country:'MX',desc:'Datos de ejemplo. Una ventana al mediodía.'},
+  {hall:2,slot:1,title:'Cidade à noite',artist:'Sample Artist E',country:'BR',desc:'Dados de exemplo. 64×64, 8 cores.'},
+  {hall:2,slot:2,title:'雨の商店街',artist:'Sample Artist F',country:'JP',desc:'サンプルデータ。雨の日の商店街。'},
+  {hall:2,slot:5,title:'Bakery',artist:'Sample Artist G',country:'DE',desc:'Beispieldaten. Eine kleine Bäckerei.'},
+  {hall:3,slot:1,title:'Winter Cabin',artist:'Sample Artist H',country:'FI',desc:'Sample data. Snow, smoke, one lamp.'},
+  {hall:3,slot:2,title:'Old Tram',artist:'Sample Artist I',country:'PT',desc:'Dados de exemplo.'},
+  {hall:3,slot:3,title:'시장 아침',artist:'예시 작가 J',country:'KR',desc:'예시 데이터.'},
+  {hall:4,slot:1,title:'Desert Bus Stop',artist:'Sample Artist K',country:'US',desc:'Sample data.'},
+  {hall:4,slot:4,title:'Kite Season',artist:'Sample Artist L',country:'IN',desc:'Sample data.'},
+  {hall:5,slot:1,title:'Deep Sea Post Office',artist:'Sample Artist M',country:'AU',desc:'Sample data.'},
+  {hall:5,slot:2,title:'회전목마',artist:'예시 작가 N',country:'KR',desc:'예시 데이터.'}
+]};
+
+/* ---------- 지도 ---------- */
+const T=16, HALL_W=11, HALL_H=9, WALL_IN=2;
+const BLOCK=new Set(['#','h','t','w','A','S','x']);
+
+// 타일: g 잔디 · p 자갈길 · f 꽃밭 · h 산울타리 · t 나무 · w 물 · S 조각상
+//       # 벽 · , 홀 마루 · - 복도 돌바닥 · . 현관 대리석 · D 문 · E 엘리베이터 · A 액자(벽) · x 바깥(상층)
+function buildFloor(def){
+  const nH=Math.max(1,Math.min(9,(def.halls|0)||5));
+  const W=2+nH*HALL_W+(nH-1)*WALL_IN, ground=!!def.ground, H=ground?52:26, cx=Math.floor(W/2);
+  const grid=Array.from({length:H},()=>Array(W).fill(ground?'g':'x'));
+  const fill=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(x>=0&&x<W&&y>=0&&y<H)grid[y][x]=c;};
+  const frames=[],halls=[],signs=[];
+
+  // 전시관 블록 (y 0~16): 벽으로 깔고 안을 판다
+  fill(0,0,W-1,16,'#');
+  for(let k=0;k<nH;k++){
+    const x0=1+k*(HALL_W+WALL_IN), x1=x0+HALL_W-1;
+    halls.push({x0,x1});
+    fill(x0,1,x1,HALL_H,',');                       // 홀 바닥
+    fill(x0+1,HALL_H+1,x0+2,HALL_H+1,'D');          // 남쪽 문 (복도로)
+    signs.push({x:x0+4,y:HALL_H+1,text:String(k+1)});
+    let s=1;
+    for(const dx of [5,7,9]) frames.push({x:x0+dx,y:HALL_H+1,fx:0,fy:1,hall:k+1,slot:s++});   // 복도쪽 대표작 1-3
+    for(const dx of [1,3,5,7,9]) frames.push({x:x0+dx,y:0,fx:0,fy:1,hall:k+1,slot:s++});       // 북벽 4-8
+    for(const dy of [2,4,6,8]) frames.push({x:x0-1,y:dy,fx:1,fy:0,hall:k+1,slot:s++});        // 서벽 9-12
+    for(const dy of [2,4,6,8]) frames.push({x:x1+1,y:dy,fx:-1,fy:0,hall:k+1,slot:s++});       // 동벽 13-16
+  }
+  fill(1,HALL_H+2,W-2,HALL_H+6,'-');                // 복도 y 11~15
+  for(const f of frames) grid[f.y][f.x]='A';
+
+  // 현관 블록 (y 16~25)
+  fill(cx-11,16,cx+11,25,'#');
+  fill(cx-9,17,cx+9,24,'.');
+  fill(cx-3,16,cx+3,16,'-');                        // 복도 → 현관 열림
+  const lift={x:cx+9,y:20}; grid[lift.y][lift.x]='E';
+  let start={x:lift.x-1,y:lift.y};
+
+  if(ground){
+    fill(cx-1,25,cx+1,25,'D');                      // 정문
+    fill(cx-16,26,cx+16,26,'p');                    // 테라스
+    fill(cx-1,26,cx+1,H-1,'p');                     // 중앙 길
+    fill(3,37,W-4,39,'p');                          // 가로 길
+    for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=dx*dx+dy*dy;if(d<=20)grid[38+dy][cx+dx]=d<=6?'w':'p';}   // 분수
+    const bed=(x0,y0,x1,y1,gx,gy)=>{fill(x0,y0,x1,y1,'h');fill(x0+1,y0+1,x1-1,y1-1,'f');grid[gy][gx]='f';};
+    bed(cx-16,28,cx-5,34,cx-5,31); bed(cx+5,28,cx+16,34,cx+5,31);
+    bed(cx-16,42,cx-5,48,cx-5,45); bed(cx+5,42,cx+16,48,cx+5,45);
+    for(const [sx,sy] of [[cx-3,31],[cx+3,31],[cx-3,45],[cx+3,45]]) grid[sy][sx]='S';
+    for(let y=17;y<H;y++){grid[y][0]='h';grid[y][W-1]='h';}
+    fill(0,H-1,W-1,H-1,'h'); fill(cx-1,H-1,cx+1,H-1,'p');   // 아래 울타리 + 정문(입장)
+    for(let y=18;y<H-2;y+=3){grid[y][2]='t';grid[y+1][W-3]='t';}
+    for(const [tx,ty] of [[8,20],[W-9,20],[14,22],[W-15,22],[7,40],[W-8,40],[12,50],[W-13,50],[6,30],[W-7,30],[18,36],[W-19,36]])
+      if(grid[ty]&&grid[ty][tx]==='g') grid[ty][tx]='t';
+    start={x:cx,y:H-2};
+  }
+  return {W,H,grid,frames,halls,signs,lift,start,cx,ground,name:def.name||'',artworks:def.artworks||[]};
+}
+
+/* ---------- 그림 도구 ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const px=(g,x,y,c,w=1,h=1)=>{g.fillStyle=c;g.fillRect(x,y,w,h);};
+function tile(fn,seed){const c=document.createElement('canvas');c.width=T;c.height=T;fn(c.getContext('2d'),mulberry32(seed));return c;}
+
+const P={
+  g:(g,r)=>{px(g,0,0,'#5a8f3c',16,16);for(let i=0;i<14;i++)px(g,(r()*16)|0,(r()*16)|0,r()<.5?'#4f7f33':'#6a9e47');},
+  p:(g,r)=>{px(g,0,0,'#d9c89f',16,16);for(let i=0;i<10;i++)px(g,(r()*16)|0,(r()*16)|0,r()<.5?'#c9b68b':'#e7d9b4');},
+  f:(g,r)=>{P.g(g,r);for(let i=0;i<5;i++){const x=(r()*15)|0,y=(r()*15)|0;px(g,x,y,['#e86a8a','#f2d34d','#f5f0e6','#c86bd8'][(r()*4)|0]);px(g,x+1,y+1,'#3f6f2c');}},
+  h:(g,r)=>{px(g,0,0,'#2f6a2e',16,16);px(g,0,0,'#3f8a3a',16,2);px(g,0,14,'#214a20',16,2);for(let i=0;i<12;i++)px(g,(r()*16)|0,2+((r()*12)|0),r()<.5?'#285c27':'#3a7a36');},
+  t:(g,r)=>{P.g(g,r);px(g,7,12,'#6b4a2b',2,4);px(g,3,2,'#2c6a2c',10,10);px(g,2,4,'#2c6a2c',12,6);px(g,4,1,'#2c6a2c',8,12);px(g,4,3,'#3f8a3a',6,4);px(g,5,2,'#4b9c44',3,2);},
+  w:(g,r)=>{px(g,0,0,'#3d7fc2',16,16);for(let i=0;i<6;i++)px(g,(r()*14)|0,(r()*16)|0,'#6faee6',2,1);for(let i=0;i<3;i++)px(g,(r()*16)|0,(r()*16)|0,'#2f66a0');},
+  S:(g,r)=>{P.g(g,r);px(g,3,12,'#8f8a80',10,3);px(g,4,11,'#a8a398',8,1);px(g,6,5,'#b8b3a8',4,6);px(g,7,2,'#b8b3a8',2,3);px(g,5,6,'#a09b90',1,4);},
+  '#':(g,r)=>{px(g,0,0,'#9b907b',16,16);px(g,0,0,'#b7ac95',16,1);for(let y=4;y<16;y+=4)px(g,0,y,'#7c7260',16,1);for(let y=0;y<16;y+=4)px(g,(y/4)%2?8:0,y,'#7c7260',1,4);px(g,0,15,'#6f665a',16,1);},
+  ',':(g,r)=>{px(g,0,0,'#a5743f',16,16);for(let y=0;y<16;y+=4){px(g,0,y,'#8f6234',16,1);const o=(y/4)%2?6:0;px(g,o,y,'#8f6234',1,4);px(g,(o+11)%16,y,'#8f6234',1,4);}for(let i=0;i<6;i++)px(g,(r()*16)|0,(r()*16)|0,'#b4834b');},
+  '-':(g,r)=>{px(g,0,0,'#cfc6b0',16,16);px(g,0,0,'#b3aa95',16,1);px(g,0,0,'#b3aa95',1,16);px(g,8,0,'#b3aa95',1,16);px(g,0,8,'#b3aa95',16,1);for(let i=0;i<4;i++)px(g,(r()*16)|0,(r()*16)|0,'#dcd4bf');},
+  '.':(g,r)=>{px(g,0,0,'#e8e0cc',16,16);px(g,8,0,'#c9c2b0',8,8);px(g,0,8,'#c9c2b0',8,8);for(let i=0;i<4;i++)px(g,(r()*16)|0,(r()*16)|0,'#f4efe2');},
+  D:(g,r)=>{P['-'](g,r);px(g,0,0,'#6f665a',2,16);px(g,14,0,'#6f665a',2,16);px(g,2,0,'#8f6234',12,2);},
+  E:(g,r)=>{px(g,0,0,'#7d8590',16,16);px(g,2,3,'#aab2bd',5,12);px(g,9,3,'#aab2bd',5,12);px(g,7,3,'#3c424a',2,12);px(g,2,2,'#3c424a',12,1);px(g,7,0,'#e7c956',2,2);},
+  x:(g,r)=>{px(g,0,0,'#0e0c0a',16,16);}
+};
+const TILES={};
+for(const c in P) TILES[c]=[0,1,2].map(i=>tile(P[c],(c.charCodeAt(0)*31+i*101)|0));
+
+// 빈 액자
+const EMPTY=(()=>{const c=document.createElement('canvas');c.width=c.height=12;const g=c.getContext('2d');px(g,0,0,'#efe6cf',12,12);
+  for(let i=0;i<12;i+=3){px(g,i,0,'#d9cfb5');px(g,0,i,'#d9cfb5');px(g,11,i,'#d9cfb5');px(g,i,11,'#d9cfb5');}
+  px(g,5,4,'#b7ad95',2,4);px(g,4,5,'#b7ad95',4,2);return c;})();
+
+// 자동 생성 무늬 (좌우대칭 12×12) — 실제 그림이 없을 때만
+const PALS=[['#1b1f3b','#f0c04a','#e2523e','#7fd1c9'],['#0f2a1f','#9be564','#ffe066','#f5f5f5'],['#2a1237','#ff77aa','#ffd6e0','#7b3bd6'],
+            ['#12232e','#5fb2ff','#dff3ff','#ff9f43'],['#3a2412','#f4a261','#e9c46a','#2a9d8f'],['#1d1d1d','#ff5722','#ffeb3b','#cfd8dc']];
+function genArt(seed){const r=mulberry32(seed*7919+13),pal=PALS[(r()*PALS.length)|0];const c=document.createElement('canvas');c.width=c.height=12;const g=c.getContext('2d');
+  px(g,0,0,pal[0],12,12);for(let y=0;y<12;y++)for(let x=0;x<6;x++)if(r()<.48){const col=pal[1+((r()*3)|0)];px(g,x,y,col);px(g,11-x,y,col);}return c;}
+
+// 사람
+function mkSprite(dir,fr){return tile(g=>{
+  const skin='#f2c9a4',hair='#3b2a20',shirt='#3f6fd6',pants='#2c3452',shoe='#1e1e1e',eye='#1e1e1e';
+  px(g,5,1,hair,6,2);px(g,5,3,skin,6,4);
+  if(dir==='up')px(g,5,3,hair,6,3);
+  if(dir==='down'){px(g,6,4,eye);px(g,9,4,eye);}
+  if(dir==='left'){px(g,8,1,hair,3,5);px(g,6,4,eye);}
+  if(dir==='right'){px(g,5,1,hair,3,5);px(g,9,4,eye);}
+  px(g,4,7,shirt,8,5);px(g,3,7,skin,1,4);px(g,12,7,skin,1,4);
+  const l=fr===1?1:0,rr=fr===2?1:0;
+  px(g,5,12,pants,2,2-l);px(g,5,14-l,shoe,2,1);
+  px(g,9,12,pants,2,2-rr);px(g,9,14-rr,shoe,2,1);
+},1);}
+const SPR={};for(const d of ['up','down','left','right'])SPR[d]=[0,1,2].map(f=>mkSprite(d,f));
+
+// 3×5 숫자 (홀 번호판)
+const FONT={'0':[7,5,5,5,7],'1':[2,6,2,2,7],'2':[7,1,7,4,7],'3':[7,1,7,1,7],'4':[5,5,7,1,1],'5':[7,4,7,1,7],'6':[7,4,7,5,7],'7':[7,1,1,1,1],'8':[7,5,7,5,7],'9':[7,5,7,1,7]};
+
+/* ---------- 상태 ---------- */
+const $=id=>document.getElementById(id);
+const cvs=$('game'),ctx=cvs.getContext('2d'),panel=$('panel'),lift=$('lift'),zoneEl=$('zone'),artCv=$('artCv'),artImg=$('artImg');
+const hide=el=>el.classList.add('hidden'),show=el=>el.classList.remove('hidden');
+let dpr=1,SCALE=3,viewW=0,viewH=0,camX=0,camY=0;
+let floor=null,activeFrame=null,liftOpen=false,lastZone='';
+let thumbs=new Map(),artIndex=new Map();
+const player={x:0,y:0,dir:'down',moving:false,t:0};
+const keys={};
+
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1,3);
+  const w=innerWidth,h=innerHeight;
+  cvs.width=Math.round(w*dpr);cvs.height=Math.round(h*dpr);
+  cvs.style.width=w+'px';cvs.style.height=h+'px';
+  SCALE=Math.max(2,Math.min(3,Math.floor(Math.min(w,h)/(T*14))));
+  viewW=w/SCALE;viewH=h/SCALE;
+}
+
+function thumbFor(fr){
+  const key=fr.hall+'-'+fr.slot;
+  if(thumbs.has(key))return thumbs.get(key);
+  const a=artIndex.get(key);let c;
+  if(!a)c=EMPTY;
+  else{
+    c=genArt(floor.id*1000+fr.hall*97+fr.slot*13);
+    if(a.image){const im=new Image();im.onload=()=>{const t=document.createElement('canvas');t.width=t.height=12;const g=t.getContext('2d');g.imageSmoothingEnabled=true;g.drawImage(im,0,0,12,12);thumbs.set(key,t);};im.src=a.image;}
+  }
+  thumbs.set(key,c);return c;
+}
+
+function zoneOf(tx,ty){
+  if(ty>=26)return '공원';
+  if(ty>=17)return '궁전 입구';
+  if(ty>=11)return '복도';
+  const k=floor.halls.findIndex(h=>tx>=h.x0-1&&tx<=h.x1+1);
+  return k>=0?(k+1)+'홀':'복도';
+}
+
+function setFloor(def,id,viaLift){
+  floor=buildFloor(def);floor.id=id;
+  artIndex=new Map();for(const a of floor.artworks)artIndex.set(a.hall+'-'+a.slot,a);
+  thumbs=new Map();
+  const s=viaLift?{x:floor.lift.x-1,y:floor.lift.y}:floor.start;
+  player.x=s.x*T;player.y=s.y*T;player.dir=viaLift?'left':'up';
+  activeFrame=null;liftOpen=false;lastZone='';hide(panel);hide(lift);
+}
+
+/* ---------- 작품 · 엘리베이터 ---------- */
+function showArt(fr){
+  const key=fr.hall+'-'+fr.slot,a=artIndex.get(key);
+  $('aLoc').textContent=`${floor.id}F · ${fr.hall}홀 · ${fr.slot}번 자리`+(fr.slot<=3?' · 대표작':'');
+  const g=artCv.getContext('2d');g.clearRect(0,0,12,12);
+  if(a){
+    $('aTitle').textContent=a.title||'(제목 없음)';
+    $('aArtist').textContent=(a.artist||'')+(a.country?' · '+a.country:'');
+    $('aDesc').textContent=a.desc||'';
+    if(a.image){artImg.src=a.image;show(artImg);hide(artCv);}
+    else{g.drawImage(thumbFor(fr),0,0);show(artCv);hide(artImg);}
+  }else{
+    $('aTitle').textContent='빈 액자';
+    $('aArtist').textContent='대여 가능';
+    $('aDesc').textContent='아직 아무도 걸지 않은 자리. 가격은 작가 100명이 모인 뒤 정한다.';
+    g.drawImage(EMPTY,0,0);show(artCv);hide(artImg);
+  }
+  show(panel);
+}
+
+function showLift(){
+  const list=$('liftList');list.innerHTML='';
+  for(const fl of FLOORS){
+    const b=document.createElement('button');
+    b.textContent=fl.name;
+    if(fl.id===floor.id){b.className='cur';b.insertAdjacentHTML('beforeend','<small>현재</small>');}
+    else if(fl.id!==1&&!fl.src)b.insertAdjacentHTML('beforeend','<small>준비 중</small>');
+    b.onclick=()=>goFloor(fl);
+    list.appendChild(b);
+  }
+  $('liftStatus').textContent='';show(lift);
+}
+async function goFloor(fl){
+  const st=$('liftStatus');
+  if(fl.id===floor.id){st.textContent='지금 있는 층';return;}
+  if(fl.id===1){setFloor(FLOOR1,1,true);return;}
+  if(!fl.src){st.textContent=fl.name+': 아직 서버가 없다. FLOORS 의 src 에 JSON 주소를 넣으면 붙는다.';return;}
+  st.textContent=fl.name+' 연결 중… '+fl.src;
+  try{
+    const r=await fetch(fl.src,{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const def=await r.json();
+    if(def.ground===undefined)def.ground=false;
+    setFloor(def,fl.id,true);
+  }catch(e){st.textContent=fl.name+' 연결 실패: '+e.message;}
+}
+
+/* ---------- 움직임 ---------- */
+function canStand(nx,ny){
+  const b=(x,y)=>{const tx=Math.floor(x/T),ty=Math.floor(y/T);if(tx<0||ty<0||tx>=floor.W||ty>=floor.H)return true;return BLOCK.has(floor.grid[ty][tx]);};
+  return !b(nx+3,ny+9)&&!b(nx+12,ny+9)&&!b(nx+3,ny+15)&&!b(nx+12,ny+15);
+}
+function checkInteract(){
+  const ptx=Math.floor((player.x+8)/T),pty=Math.floor((player.y+12)/T);
+  let f=null;for(const fr of floor.frames)if(fr.x+fr.fx===ptx&&fr.y+fr.fy===pty){f=fr;break;}
+  if(f!==activeFrame){activeFrame=f;if(f)showArt(f);else hide(panel);}
+  const on=ptx===floor.lift.x&&pty===floor.lift.y;
+  if(on!==liftOpen){liftOpen=on;if(on)showLift();else hide(lift);}
+  const z=zoneOf(ptx,pty);if(z!==lastZone){lastZone=z;zoneEl.textContent=floor.id+'F · '+z;}
+}
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);
+  if(dx&&dy){dx*=0.7071;dy*=0.7071;}
+  player.moving=!!(dx||dy);
+  if(player.moving){
+    player.dir=Math.abs(dx)>=Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');
+    const sp=70*dt;
+    const nx=player.x+dx*sp;if(canStand(nx,player.y))player.x=nx;
+    const ny=player.y+dy*sp;if(canStand(player.x,ny))player.y=ny;
+    player.t+=dt;
+  }else player.t=0;
+  checkInteract();render();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- 그리기 ---------- */
+function updateCam(){
+  const mw=floor.W*T,mh=floor.H*T;
+  camX=mw<=viewW?-(viewW-mw)/2:Math.max(0,Math.min(mw-viewW,player.x+8-viewW/2));
+  camY=mh<=viewH?-(viewH-mh)/2:Math.max(0,Math.min(mh-viewH,player.y+8-viewH/2));
+  camX=Math.round(camX);camY=Math.round(camY);
+}
+function drawSign(s){
+  const w=s.text.length*4+3,X=s.x*T+Math.floor((16-w)/2),Y=s.y*T+4;
+  ctx.fillStyle='#4a3a20';ctx.fillRect(X,Y,w,9);ctx.fillStyle='#efe4c8';ctx.fillRect(X+1,Y+1,w-2,7);
+  ctx.fillStyle='#2a1e0c';
+  [...s.text].forEach((ch,i)=>{const rows=FONT[ch];if(!rows)return;rows.forEach((bits,ry)=>{for(let b=0;b<3;b++)if(bits&(4>>b))ctx.fillRect(X+2+i*4+b,Y+2+ry,1,1);});});
+}
+function render(){
+  updateCam();
+  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#0e0c0a';ctx.fillRect(0,0,cvs.width,cvs.height);
+  ctx.setTransform(dpr*SCALE,0,0,dpr*SCALE,0,0);ctx.imageSmoothingEnabled=false;ctx.translate(-camX,-camY);
+  const g=floor.grid;
+  const tx0=Math.max(0,Math.floor(camX/T)),ty0=Math.max(0,Math.floor(camY/T));
+  const tx1=Math.min(floor.W-1,Math.floor((camX+viewW)/T)),ty1=Math.min(floor.H-1,Math.floor((camY+viewH)/T));
+  for(let y=ty0;y<=ty1;y++)for(let x=tx0;x<=tx1;x++){const c=g[y][x];ctx.drawImage(TILES[c==='A'?'#':c][(x*7+y*13)%3],x*T,y*T);}
+  for(const fr of floor.frames){
+    if(fr.x<tx0||fr.x>tx1||fr.y<ty0||fr.y>ty1)continue;
+    const X=fr.x*T+fr.fx*2,Y=fr.y*T+fr.fy*2,on=fr===activeFrame;
+    ctx.fillStyle=on?'#fff0a0':'#caa24d';ctx.fillRect(X+1,Y+1,14,14);
+    ctx.fillStyle='#2b1e0c';ctx.fillRect(X+2,Y+2,12,12);
+    ctx.drawImage(thumbFor(fr),X+2,Y+2);
+  }
+  for(const s of floor.signs)if(s.x>=tx0&&s.x<=tx1&&s.y>=ty0&&s.y<=ty1)drawSign(s);
+  const sx=Math.round(player.x),sy=Math.round(player.y);
+  ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(sx+3,sy+14,10,2);
+  const fr=player.moving?1+(Math.floor(player.t/0.14)%2):0;
+  ctx.drawImage(SPR[player.dir][fr],sx,sy);
+}
+
+/* ---------- 입력 ---------- */
+const CODEMAP={KeyW:'up',KeyS:'down',KeyA:'left',KeyD:'right',ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+addEventListener('keydown',e=>{const k=CODEMAP[e.code];if(k){keys[k]=true;e.preventDefault();}if(e.code==='Escape'){hide(panel);hide(lift);}});
+addEventListener('keyup',e=>{const k=CODEMAP[e.code];if(k)keys[k]=false;});
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
+document.querySelectorAll('#dpad [data-dir]').forEach(b=>{
+  const d=b.dataset.dir;
+  const on=e=>{e.preventDefault();keys[d]=true;if(b.setPointerCapture)try{b.setPointerCapture(e.pointerId);}catch(_){}};
+  const off=()=>{keys[d]=false;};
+  b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',off);
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+});
+
+/* ---------- 구글 번역 ---------- */
+window.googleTranslateElementInit=function(){
+  try{new google.translate.TranslateElement({pageLanguage:'ko',autoDisplay:false},'google_translate_element');$('gtNote').textContent='';}
+  catch(e){$('gtNote').textContent='번역 위젯 오류';}
+};
+setTimeout(()=>{if(!(window.google&&google.translate))$('gtNote').textContent='번역 위젯 안 뜸 — 실제 도메인에서 확인';},6000);
+
+/* ---------- 시작 ---------- */
+resize();addEventListener('resize',resize);
+setFloor(FLOOR1,1,false);
+requestAnimationFrame(loop);
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
+</body>
+</html>
