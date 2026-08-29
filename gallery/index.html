@@ -235,11 +235,20 @@ const FLOORS=[
 const FLOOR1={name:'1층',halls:5,ground:true,
   npc:{park:'모두의 갤러리에 오셨습니다.\n\n【 걷는 법 】\n방향키나 WASD로 움직입니다. 폰이면 오른쪽 아래 단추입니다.\n\n【 보는 법 】\n그림이나 사람 옆에 서면 저절로 설명이 열립니다. 누를 것 없습니다.\n\n【 이 안의 구조 】\n앞에 있는 문으로 들어가면 복도가 나옵니다.\n복도 양쪽이 홀이고, 홀 안에 작가마다 방이 있습니다.\n방 앞에 걸린 대표작 셋을 보고, 마음에 들면 들어가십시오.\n안에 그 작가의 나머지 그림이 있습니다.\n\n복도 끝은 홍보관입니다. 이번 달 어디서 무슨 전시가 열리는지 걸려 있습니다.\n\n오른쪽 위에서 말을 바꿀 수 있습니다.\n\n이곳은 LeDeuxions 가 만들었습니다.'},
   promo:[
-    {slot:1,title:'예시 갤러리 기획전',org:'예시 갤러리',desc:'예시 데이터. 실제 전시장이 자기 배너를 건다.',link:'https://example.com'},
-    {slot:3,title:'예시 후원사',org:'예시 후원사',desc:'예시 데이터. 후원사 배너 자리.',link:''}
+    {slot:1,title:'PDF300',org:'LeDeuxions',
+     desc:'PDF 도구 스물넷. 설치도 가입도 없이 브라우저에서.',link:'https://pdf300.com'},
+    {slot:2,title:'초소',org:'LeDeuxions',
+     desc:'뽑고 합쳐서 막는다. 같은 병사 셋을 모으면 계급이 오른다.',link:'https://ledeuxions.com/games/outpost/'},
+    {slot:3,title:'지휘관',org:'LeDeuxions',
+     desc:'지도 위에서 부대를 움직인다. 싸움은 보이지 않고 보고로 온다.',link:'https://ledeuxions.com/game/%EC%A7%80%ED%9C%98%EA%B4%80/'},
+    {slot:4,title:'어떤 하루',org:'LeDeuxions',
+     desc:'우울은 선택지가 잠기는 것. 겪은 사람이 쓴 이야기.',link:'https://ledeuxions.com/'},
+    {slot:5,title:'이 자리를 빌려드립니다',org:'모두의 갤러리',
+     desc:'전시를 알리고 싶은 갤러리와 미술관을 기다립니다.',link:''}
   ],
   exhibitions:[
-    {title:'개관전 (예시)',when:'2026-12',desc:'첫 100명 작가의 대표작. 예시 데이터.',link:''}
+    {title:'첫 100명 작가를 찾습니다',when:'2026',
+     desc:'세계의 픽셀아트 작가에게 방을 세 달 동안 무료로 빌려드립니다. 백 개 방 한정.',link:''}
   ],
   rooms:{
     '1-1':{artist:'예시 작가 A',country:'KR',about:'항구와 새벽을 그린다. 16색 팔레트.',wall:'cream',floor:'wood',works:[
