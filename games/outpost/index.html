@@ -208,6 +208,52 @@ canvas.addEventListener('pointerup', (e) => {
     dragging = null;
 });
 
+
+// ── 눈에 보이게 (2026-08-29) ──
+//    형: 「쏘는 거나 공격하거나 터지는 이펙트 좀 넣어줘」
+//    지금은 적 체력만 줄어서 뭐가 일어나는지 안 보인다.
+const FX = [];                       // 지나가면 사라지는 것들
+function 총알(x1,y1,x2,y2,색){ FX.push({k:'shot',x1,y1,x2,y2,색,t:0,수명:8}); }
+function 맞음(x,y){            FX.push({k:'hit',x,y,t:0,수명:12}); }
+function 터짐(x,y,크기){       FX.push({k:'boom',x,y,크기:크기||1.5,t:0,수명:20}); }
+function 죽음(x,y){            FX.push({k:'die',x,y,t:0,수명:18}); }
+
+function FX그리기(){
+  for(let i=FX.length-1;i>=0;i--){
+    const f=FX[i]; f.t++;
+    const 남=1-f.t/f.수명;
+    if(남<=0){ FX.splice(i,1); continue; }
+    ctx.save();
+    if(f.k==='shot'){
+      ctx.globalAlpha=남; ctx.strokeStyle=f.색||'#ffe9a8'; ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(f.x1*CELL+CELL/2, f.y1*CELL+CELL/2);
+      ctx.lineTo(f.x2*CELL+CELL/2, f.y2*CELL+CELL/2);
+      ctx.stroke();
+    } else if(f.k==='hit'){
+      ctx.globalAlpha=남; ctx.fillStyle='#fff2c4';
+      const r=3+(1-남)*5;
+      ctx.beginPath(); ctx.arc(f.x*CELL+CELL/2, f.y*CELL+CELL/2, r, 0, 7); ctx.fill();
+    } else if(f.k==='boom'){
+      const r=(1-남)*CELL*f.크기;
+      ctx.globalAlpha=남*0.85; ctx.fillStyle='#ffb347';
+      ctx.beginPath(); ctx.arc(f.x*CELL+CELL/2, f.y*CELL+CELL/2, r, 0, 7); ctx.fill();
+      ctx.globalAlpha=남; ctx.strokeStyle='#fff0d0'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(f.x*CELL+CELL/2, f.y*CELL+CELL/2, r*1.15, 0, 7); ctx.stroke();
+    } else if(f.k==='die'){
+      // 흩어지는 조각 여섯
+      ctx.globalAlpha=남;
+      ctx.fillStyle='#c05a4a';
+      for(let a=0;a<6;a++){
+        const 각=a*Math.PI/3, 거리=(1-남)*CELL*0.9;
+        ctx.fillRect(f.x*CELL+CELL/2+Math.cos(각)*거리-2,
+                     f.y*CELL+CELL/2+Math.sin(각)*거리-2, 3, 3);
+      }
+    }
+    ctx.restore();
+  }
+}
+
 function update() {
     if(waveTime > 0) {
         waveTime--;
@@ -256,9 +302,11 @@ function update() {
                         let finalDmg = curDmg;
                         if(target.type === '방패' && t.type !== 'splash') finalDmg *= 0.5;
                         
+                        총알(x, y, target.x, target.y, t.color);
                         if(t.type === 'splash') {
                             enemies.forEach(e => { if(Math.hypot(e.x - target.x, e.y - target.y) <= 1.5) e.hp -= finalDmg; });
-                        } else { target.hp -= finalDmg; }
+                            터짐(target.x, target.y, 1.6);
+                        } else { target.hp -= finalDmg; 맞음(target.x, target.y); }
                         
                         t.cooldown = t.cd; 
                         playSound('shoot');
@@ -271,13 +319,14 @@ function update() {
     // 적 이동 및 지뢰 판정
     for(let i = enemies.length - 1; i >= 0; i--) {
         let e = enemies[i];
-        if(e.hp <= 0) { enemies.splice(i, 1); continue; }
+        if(e.hp <= 0) { 죽음(e.x, e.y); enemies.splice(i, 1); continue; }
         
         // 지뢰 충돌
         let hitMine = mines.findIndex(m => Math.hypot(m.x - e.x, m.y - e.y) < 0.5);
         if(hitMine !== -1) {
             let mdmg = mines[hitMine].dmg;
             enemies.forEach(en => { if(Math.hypot(en.x - e.x, en.y - e.y) <= 2) en.hp -= mdmg; });
+            터짐(e.x, e.y, 2.2);
             mines.splice(hitMine, 1);
             playSound('mine');
         }
@@ -358,6 +407,8 @@ function draw() {
         ctx.fillStyle = "#1b1b24"; ctx.fillRect(e.x*CELL+4, e.y*CELL-1, CELL-8, 4);
         ctx.fillStyle = "#7ad86a"; ctx.fillRect(e.x*CELL+4, e.y*CELL-1, (CELL-8)*(e.hp/e.maxHp), 4);
     });
+
+    FX그리기();
 }
 
 function updateUI() {
