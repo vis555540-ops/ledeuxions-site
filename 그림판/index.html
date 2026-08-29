@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>형이랑 맺음이랑</title>
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{background:#14110f;color:#ddd6ca;font:14px/1.55 -apple-system,'Apple SD Gothic Neo',sans-serif;
+      height:100vh;display:flex;flex-direction:column;overflow:hidden}
+ #위{flex:1;display:flex;min-height:0}
+ #왼,#오{flex:1;position:relative;min-width:0}
+ #왼{border-right:1px solid #2a2520}
+ canvas{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+ .딱지{position:absolute;top:8px;left:10px;font-size:11px;color:#6b6257;
+       background:rgba(20,17,15,.8);padding:2px 7px;border-radius:2px;pointer-events:none}
+ #연장{position:absolute;top:6px;right:8px;display:flex;gap:4px}
+ #연장 button{background:#1e1a16;color:#b5ac9e;border:1px solid #2f2924;
+              padding:4px 9px;font-size:12px;border-radius:2px;cursor:pointer}
+ #연장 button:hover{border-color:#4a4038}
+ #연장 button.켜짐{background:#c9a227;color:#14110f;border-color:#c9a227;font-weight:700}
+ #아래{height:230px;border-top:1px solid #2a2520;display:flex;flex-direction:column;background:#1a1613}
+ #말들{flex:1;overflow-y:auto;padding:10px 14px}
+ .말{margin-bottom:9px;max-width:80%}
+ .말 .누구{font-size:11px;color:#6b6257;margin-bottom:2px}
+ .말 .몸{background:#201c18;border:1px solid #2a2520;padding:6px 10px;border-radius:3px;white-space:pre-wrap}
+ .말.형{margin-left:auto}
+ .말.형 .누구{text-align:right}
+ .말.형 .몸{background:#252017;border-color:#3d3524}
+ #치는곳{display:flex;gap:6px;padding:9px 12px;border-top:1px solid #2a2520}
+ #글{flex:1;background:#14110f;color:#ddd6ca;border:1px solid #2f2924;border-radius:2px;
+     padding:8px 10px;font:inherit;resize:none;height:38px}
+ #보냄{background:#c9a227;color:#14110f;border:0;padding:0 18px;font-weight:700;border-radius:2px;cursor:pointer}
+</style></head><body>
+
+<div id="위">
+  <div id="왼">
+    <div class="딱지" id="자리">격자 · 마우스를 올리면 자리가 나옵니다</div>
+    <canvas id="격자"></canvas>
+  </div>
+  <div id="오">
+    <div class="딱지">그림판 · 여기에 그리세요</div>
+    <div id="연장">
+      <button id="펜" class="켜짐">펜</button>
+      <button id="지우개">지우개</button>
+      <button id="비움">싹 지움</button>
+      <button id="보내기">맺음에게</button>
+    </div>
+    <canvas id="그림"></canvas>
+  </div>
+</div>
+
+<div id="아래">
+  <div id="말들"></div>
+  <div id="치는곳">
+    <textarea id="글" placeholder="여기에 쓰고 엔터 (줄바꿈은 시프트+엔터)"></textarea>
+    <button id="보냄">보내기</button>
+  </div>
+</div>
+
+<script>
+// ── 격자 ────────────────────────────────────────────
+const 격 = document.getElementById('격자'), gc = 격.getContext('2d');
+const 칸 = 40;
+function 격자그리기(){
+  격.width = 격.parentElement.clientWidth; 격.height = 격.parentElement.clientHeight;
+  gc.fillStyle = '#191614'; gc.fillRect(0,0,격.width,격.height);
+  gc.strokeStyle = '#262019'; gc.lineWidth = 1;
+  for(let x=0;x<격.width;x+=칸){ gc.beginPath(); gc.moveTo(x+.5,0); gc.lineTo(x+.5,격.height); gc.stroke(); }
+  for(let y=0;y<격.height;y+=칸){ gc.beginPath(); gc.moveTo(0,y+.5); gc.lineTo(격.width,y+.5); gc.stroke(); }
+  // 다섯 칸마다 굵게 — 세기 쉽게
+  gc.strokeStyle = '#332a20';
+  for(let x=0;x<격.width;x+=칸*5){ gc.beginPath(); gc.moveTo(x+.5,0); gc.lineTo(x+.5,격.height); gc.stroke(); }
+  for(let y=0;y<격.height;y+=칸*5){ gc.beginPath(); gc.moveTo(0,y+.5); gc.lineTo(격.width,y+.5); gc.stroke(); }
+  gc.fillStyle = '#4a4038'; gc.font = '10px sans-serif';
+  for(let x=0;x<격.width;x+=칸*5) for(let y=0;y<격.height;y+=칸*5)
+    gc.fillText((x/칸)+','+(y/칸), x+3, y+11);
+  점들.forEach(p=>점찍기(p.x,p.y,p.글));
+}
+let 점들 = [];
+function 점찍기(cx,cy,글){
+  gc.fillStyle = '#c9a227';
+  gc.beginPath(); gc.arc(cx*칸, cy*칸, 5, 0, 7); gc.fill();
+  if(글){ gc.fillStyle='#ddd6ca'; gc.font='12px sans-serif'; gc.fillText(글, cx*칸+9, cy*칸+4); }
+}
+격.addEventListener('mousemove', e=>{
+  const r = 격.getBoundingClientRect();
+  const x = Math.round((e.clientX-r.left)/칸), y = Math.round((e.clientY-r.top)/칸);
+  document.getElementById('자리').textContent = '격자 · ' + x + ', ' + y;
+});
+격.addEventListener('click', e=>{
+  const r = 격.getBoundingClientRect();
+  const x = Math.round((e.clientX-r.left)/칸), y = Math.round((e.clientY-r.top)/칸);
+  const 글 = prompt('여기에 뭐라고 적을까요? (그냥 확인 누르면 점만)') || '';
+  점들.push({x,y,글}); 격자그리기();
+  말하기('형', '격자 ' + x + ',' + y + (글 ? ' — ' + 글 : '') + ' 에 표시했습니다');
+});
+
+// ── 그림판 ──────────────────────────────────────────
+const 그 = document.getElementById('그림'), dc = 그.getContext('2d');
+let 그리는중 = false, 연장 = '펜';
+function 그림판준비(){
+  const 담 = 그.toDataURL();
+  그.width = 그.parentElement.clientWidth; 그.height = 그.parentElement.clientHeight;
+  dc.fillStyle = '#f4f0e8'; dc.fillRect(0,0,그.width,그.height);
+  const im = new Image(); im.onload = ()=>dc.drawImage(im,0,0); im.src = 담;
+}
+function 자리(e){
+  const r = 그.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+그.addEventListener('pointerdown', e=>{
+  그리는중 = true; const p = 자리(e);
+  dc.beginPath(); dc.moveTo(p.x, p.y);
+  dc.lineCap = 'round'; dc.lineJoin = 'round';
+  dc.strokeStyle = 연장==='펜' ? '#1a1a1a' : '#f4f0e8';
+  dc.lineWidth = 연장==='펜' ? 3 : 22;
+});
+그.addEventListener('pointermove', e=>{
+  if(!그리는중) return;
+  const p = 자리(e); dc.lineTo(p.x, p.y); dc.stroke();
+});
+addEventListener('pointerup', ()=> 그리는중 = false);
+document.getElementById('펜').onclick = function(){ 연장='펜'; this.classList.add('켜짐'); document.getElementById('지우개').classList.remove('켜짐'); };
+document.getElementById('지우개').onclick = function(){ 연장='지우개'; this.classList.add('켜짐'); document.getElementById('펜').classList.remove('켜짐'); };
+document.getElementById('비움').onclick = ()=>{ dc.fillStyle='#f4f0e8'; dc.fillRect(0,0,그.width,그.height); };
+document.getElementById('보내기').onclick = ()=>{
+  const 그림 = 그.toDataURL('image/png');
+  보내기서버({종류:'그림', 그림, 점들});
+  말하기('형','그림을 보냈습니다');
+};
+
+// ── 채팅 ────────────────────────────────────────────
+function 말하기(누구, 몸){
+  const d = document.createElement('div');
+  d.className = '말' + (누구==='형' ? ' 형' : '');
+  d.innerHTML = '<div class="누구">'+누구+'</div><div class="몸"></div>';
+  d.querySelector('.몸').textContent = 몸;
+  const 방 = document.getElementById('말들');
+  방.appendChild(d); 방.scrollTop = 방.scrollHeight;
+}
+async function 보내기서버(짐){
+  try{ await fetch('/보냄', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(짐)}); }
+  catch(e){ 말하기('맺음','(전달을 못 했습니다 — 서버가 꺼져 있습니다)'); }
+}
+const 글칸 = document.getElementById('글');
+function 보내자(){
+  const t = 글칸.value.trim(); if(!t) return;
+  말하기('형', t); 글칸.value = '';
+  보내기서버({종류:'말', 글:t, 점들});
+}
+document.getElementById('보냄').onclick = 보내자;
+글칸.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); 보내자(); } });
+
+// 맺음이 답하면 여기로 온다
+setInterval(async ()=>{
+  try{
+    const r = await fetch('/받음'); const j = await r.json();
+    (j.새말 || []).forEach(m => 말하기('맺음', m));
+  }catch(e){}
+}, 2000);
+
+addEventListener('resize', ()=>{ 격자그리기(); 그림판준비(); });
+격자그리기(); 그림판준비();
+말하기('맺음','왼쪽은 격자예요. 누르면 그 자리에 표시가 돼요.\n오른쪽은 그림판이고요.\n다 그리면 「맺음에게」를 누르세요.');
+</script>
+</body></html>
