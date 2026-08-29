@@ -38,6 +38,7 @@ body{top:0!important;position:relative}
 #dpad button:active{background:#3a3128}
 #dpad .c{visibility:hidden}
 #tip{position:fixed;left:10px;bottom:10px;font-size:12px;color:var(--dim);background:rgba(14,12,10,.7);padding:5px 8px;border-radius:6px;z-index:4}
+@media (max-width:900px){ #dpad{display:grid} }
 @media (hover:none) and (pointer:coarse){
   #dpad{display:grid}
   #panel{top:auto;bottom:14px;left:12px;right:164px;width:auto;max-height:44vh;overflow:auto;display:flex;gap:10px}
@@ -421,5 +422,19 @@ setFloor(FLOOR1,1,false);
 requestAnimationFrame(loop);
 </script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
+
+<script>
+// 🚨 형 폰에서 방향키가 안 보였다 (2026-08-29).
+//    미디어 쿼리만으로는 안 걸리는 기기가 있어, 손가락이 닿으면 무조건 띄운다.
+(function(){
+  function 띄우기(){
+    var d = document.getElementById('dpad');
+    if (d) d.style.display = 'grid';
+    window.removeEventListener('touchstart', 띄우기);
+  }
+  window.addEventListener('touchstart', 띄우기, {passive:true});
+  if (('ontouchstart' in window) || navigator.maxTouchPoints > 0) 띄우기();
+})();
+</script>
 </body>
 </html>
