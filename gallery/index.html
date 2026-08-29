@@ -354,6 +354,18 @@ function buildFloor(def){
     for(const [tx,ty] of [[cx-18,50],[cx+18,50],[cx-14,52],[cx+14,52],[cx-15,70],[cx+15,70],[cx-10,80],[cx+10,80],[cx-16,66],[cx+16,66]])
       if(grid[ty]&&grid[ty][tx]==='g')put(tx,ty,'t');
     for(const [lx,ly] of [[cx-4,56],[cx+4,56],[cx-5,66],[cx+5,66],[cx-5,70],[cx+5,70],[cx-2,78],[cx+2,78]])put(lx,ly,'l');
+
+    // ── 화단 위 큰 광고 (2026-08-29) ──
+    //    들어오는 문이 아래에 있다. 걸어 올라오면서 아래 화단 것을 먼저 본다.
+    [[cx-13,71,1],[cx+8,71,2],[cx-13,57,3],[cx+8,57,4]].forEach(([bx,by,sl])=>{
+      for(let k=0;k<5;k++) if(grid[by]&&grid[by][bx+k]!==undefined) grid[by][bx+k]='B';
+      frames.push({x:bx,y:by,w:5,fx:0,fy:1,promo:true,slot:sl});
+    });
+    // ── 전등 옆 작은 깃발 — 작가 초대 ──
+    [[cx-3,66,5],[cx+3,70,5]].forEach(([bx,by,sl])=>{
+      if(grid[by]&&grid[by][bx]!==undefined) grid[by][bx]='B';
+      frames.push({x:bx,y:by,w:1,fx:0,fy:1,promo:true,slot:sl});
+    });
     for(const [bx,by] of [[cx-8,57],[cx-7,57],[cx+7,57],[cx+8,57]])put(bx,by,'b');
     put(cx+2,80,'N');npcs.push({x:cx+2,y:80,kind:'park'});
     start={x:cx,y:H-2};
