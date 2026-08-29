@@ -39,6 +39,8 @@
   <div id="오">
     <div class="딱지">그림판 · 여기에 그리세요</div>
     <div id="연장">
+      <label class="btn" for="사진넣기" style="background:#1e1a16;color:#b5ac9e;border:1px solid #2f2924;padding:4px 9px;font-size:12px;border-radius:2px;cursor:pointer">사진</label>
+      <input type="file" id="사진넣기" accept="image/*" multiple style="display:none">
       <button id="펜" class="켜짐">펜</button>
       <button id="지우개">지우개</button>
       <button id="비움">싹 지움</button>
@@ -161,5 +163,104 @@ setInterval(async ()=>{
 addEventListener('resize', ()=>{ 격자그리기(); 그림판준비(); });
 격자그리기(); 그림판준비();
 말하기('맺음','왼쪽은 격자예요. 누르면 그 자리에 표시가 돼요.\n오른쪽은 그림판이고요.\n다 그리면 「맺음에게」를 누르세요.');
+</script>
+
+<script>
+// ── 사진 올려서 그 위에 그리기 (2026-08-29) ──
+//    형: 「여기에 다른 사진 붙이고 싶은데 다른 사진 올리면 무브가 안 되네」
+//    사진을 여러 장 올리고, 끌어서 옮기고, 모서리를 잡아 크기를 바꾼다.
+(function(){
+  const 판 = document.getElementById('그림');
+  const 그 = 판.getContext('2d');
+  const 사진들 = [];
+  let 잡은것 = null, 잡은구석 = null, 시작 = null;
+
+  function 다시그리기(){
+    그.fillStyle = '#f4f0e8'; 그.fillRect(0,0,판.width,판.height);
+    사진들.forEach(s => {
+      그.drawImage(s.im, s.x, s.y, s.w, s.h);
+      if (s === 잡은것) {
+        그.strokeStyle = '#c9a227'; 그.lineWidth = 2;
+        그.strokeRect(s.x, s.y, s.w, s.h);
+        그.fillStyle = '#c9a227';
+        그.fillRect(s.x+s.w-9, s.y+s.h-9, 12, 12);   // 크기 잡는 구석
+      }
+    });
+    if (붓자국) 그.drawImage(붓자국, 0, 0);
+  }
+
+  // 그린 것은 따로 보관한다. 사진을 옮겨도 그림이 안 지워지게
+  let 붓자국 = null;
+  function 붓자국담기(){
+    const c = document.createElement('canvas');
+    c.width = 판.width; c.height = 판.height;
+    c.getContext('2d').drawImage(판, 0, 0);
+    붓자국 = c;
+  }
+
+  document.getElementById('사진넣기').addEventListener('change', e => {
+    [...e.target.files].forEach((f, i) => {
+      const im = new Image();
+      im.onload = () => {
+        const 배 = Math.min(판.width*0.5/im.width, 판.height*0.5/im.height, 1);
+        사진들.push({im, x: 30+i*24, y: 30+i*24, w: im.width*배, h: im.height*배});
+        다시그리기();
+      };
+      im.src = URL.createObjectURL(f);
+    });
+    e.target.value = '';
+  });
+
+  function 자리(e){
+    const r = 판.getBoundingClientRect();
+    return { x:(e.clientX-r.left)*(판.width/r.width), y:(e.clientY-r.top)*(판.height/r.height) };
+  }
+
+  판.addEventListener('pointerdown', e => {
+    const p = 자리(e);
+    for (let i = 사진들.length-1; i >= 0; i--) {
+      const s = 사진들[i];
+      // 오른쪽 아래 구석을 잡으면 크기 바꾸기
+      if (p.x >= s.x+s.w-14 && p.x <= s.x+s.w+6 && p.y >= s.y+s.h-14 && p.y <= s.y+s.h+6) {
+        잡은것 = s; 잡은구석 = true; 시작 = {p, w:s.w, h:s.h};
+        e.stopImmediatePropagation(); 다시그리기(); return;
+      }
+      if (p.x >= s.x && p.x <= s.x+s.w && p.y >= s.y && p.y <= s.y+s.h) {
+        잡은것 = s; 잡은구석 = false; 시작 = {p, x:s.x, y:s.y};
+        e.stopImmediatePropagation(); 다시그리기(); return;
+      }
+    }
+    잡은것 = null;
+    붓자국담기();      // 사진이 아닌 데를 누르면 그리기 시작 — 그 전까지 그린 것을 담아둔다
+  }, true);
+
+  addEventListener('pointermove', e => {
+    if (!잡은것) return;
+    const p = 자리(e);
+    if (잡은구석) {
+      잡은것.w = Math.max(20, 시작.w + (p.x - 시작.p.x));
+      잡은것.h = Math.max(20, 시작.h + (p.y - 시작.p.y));
+    } else {
+      잡은것.x = 시작.x + (p.x - 시작.p.x);
+      잡은것.y = 시작.y + (p.y - 시작.p.y);
+    }
+    다시그리기();
+  }, true);
+
+  addEventListener('pointerup', () => { 잡은구석 = null; 시작 = null; }, true);
+
+  addEventListener('keydown', e => {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && 잡은것) {
+      const i = 사진들.indexOf(잡은것);
+      if (i >= 0) { 사진들.splice(i,1); 잡은것 = null; 다시그리기(); }
+    }
+  });
+
+  // 「싹 지움」을 누르면 사진도 같이 치운다
+  const 비움 = document.getElementById('비움');
+  if (비움) 비움.addEventListener('click', () => {
+    사진들.length = 0; 잡은것 = null; 붓자국 = null; 다시그리기();
+  });
+})();
 </script>
 </body></html>
