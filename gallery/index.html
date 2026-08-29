@@ -355,17 +355,24 @@ function buildFloor(def){
       if(grid[ty]&&grid[ty][tx]==='g')put(tx,ty,'t');
     for(const [lx,ly] of [[cx-4,56],[cx+4,56],[cx-5,66],[cx+5,66],[cx-5,70],[cx+5,70],[cx-2,78],[cx+2,78]])put(lx,ly,'l');
 
-    // ── 화단 위 큰 광고 (2026-08-29) ──
-    //    들어오는 문이 아래에 있다. 걸어 올라오면서 아래 화단 것을 먼저 본다.
-    [[cx-13,71,1],[cx+8,71,2],[cx-13,57,3],[cx+8,57,4]].forEach(([bx,by,sl])=>{
-      for(let k=0;k<5;k++) if(grid[by]&&grid[by][bx+k]!==undefined) grid[by][bx+k]='B';
-      frames.push({x:bx,y:by,w:5,fx:0,fy:1,promo:true,slot:sl});
-    });
-    // ── 전등 옆 작은 깃발 — 작가 초대 ──
-    [[cx-3,66,5],[cx+3,70,5]].forEach(([bx,by,sl])=>{
-      if(grid[by]&&grid[by][bx]!==undefined) grid[by][bx]='B';
-      frames.push({x:bx,y:by,w:1,fx:0,fy:1,promo:true,slot:sl});
-    });
+    // ── 광장 큰 세로 포스터 (2026-08-29) ──
+    //    형: 「이런 거 톡 하고 들어가줘야지 ㅇㅅㅇ 광고주 마음에 들지」
+    //    결은 한국앤컴퍼니 「7인의 시선」 포스터 — 세로로 길고 크다.
+    //    광장(길이 만나는 자리) 양옆에 세운다. 걸어 들어오면 정면으로 보인다.
+    const 포스터 = (bx,by,sl,칸가로,칸세로)=>{
+      for(let dy=0;dy<칸세로;dy++)for(let dx=0;dx<칸가로;dx++)
+        if(grid[by+dy]&&grid[by+dy][bx+dx]!==undefined) grid[by+dy][bx+dx]='B';
+      frames.push({x:bx,y:by,w:칸가로,hh:칸세로,fx:0,fy:0,promo:true,slot:sl});
+    };
+    // 광장 양옆 — 크게 (4칸 × 6칸)
+    포스터(cx-9, 64, 1, 4, 6);
+    포스터(cx+6, 64, 2, 4, 6);
+    // 들어오는 길 양옆 — 먼저 지나친다
+    포스터(cx-8, 76, 3, 3, 5);
+    포스터(cx+6, 76, 4, 3, 5);
+    // 전등 옆 작은 깃발 — 작가 초대 (세로로 좁고 길게)
+    포스터(cx-6, 54, 5, 1, 4);
+    포스터(cx+6, 54, 5, 1, 4);
     for(const [bx,by] of [[cx-8,57],[cx-7,57],[cx+7,57],[cx+8,57]])put(bx,by,'b');
     put(cx+2,80,'N');npcs.push({x:cx+2,y:80,kind:'park'});
     start={x:cx,y:H-2};
@@ -490,11 +497,25 @@ function promoOf(slot){const p=floor.promo.find(p=>p.slot===slot);return p&&(p.t
 function frameKey(fr){return fr.promo?'P-'+fr.slot:fr.room+'-'+fr.slot;}
 function invalidateRoom(key){for(const k of [...thumbs.keys()])if(k.startsWith(key+'-'))thumbs.delete(k);}
 
+
+// 아직 아무도 안 건 포스터 자리 — 비어 보이지 않게 결만 준다
+function 빈포스터(w,h){
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const g=c.getContext('2d');
+  g.fillStyle='#efe7d6';g.fillRect(0,0,w,h);
+  g.strokeStyle='#c9b48a';g.lineWidth=1;g.strokeRect(3.5,3.5,w-7,h-7);
+  g.fillStyle='#b8a684';
+  for(let i=0;i<3;i++)g.fillRect(w*0.2,h*0.62+i*7,w*0.6,2);
+  g.fillStyle='#a08d68';g.fillRect(w*0.28,h*0.2,w*0.44,h*0.32);
+  return c;
+}
+
 function thumbFor(fr){
-  const key=frameKey(fr),w=fr.w*T-4,h=12;
+  // hh 가 있으면 세로로 큰 포스터다 (2026-08-29 형: 「이런 거 톡 하고 들어가줘야지」)
+  const key=frameKey(fr),w=fr.w*T-4,h=fr.hh?fr.hh*T-4:12;
   if(thumbs.has(key))return thumbs.get(key);
   const a=fr.promo?promoOf(fr.slot):workOf(fr.room,fr.slot);let c;
-  if(!a)c=fr.w===1?EMPTY12:EMPTY44;
+  if(!a)c=fr.hh?빈포스터(w,h):(fr.w===1?EMPTY12:EMPTY44);
   else{
     let seed=0;for(const ch of key)seed=(seed*31+ch.charCodeAt(0))|0;
     c=genArt(Math.abs(seed)+floor.id*7,w,h);
@@ -794,10 +815,11 @@ function render(){
     }else ctx.drawImage(baseTiles(c,x,y)[v],x*T,y*T);
   }
   for(const fr of floor.frames){
-    if(fr.x+fr.w-1<tx0||fr.x>tx1||fr.y<ty0||fr.y>ty1)continue;
+    if(fr.x+fr.w-1<tx0||fr.x>tx1||fr.y+(fr.hh||1)-1<ty0||fr.y>ty1)continue;
     const X=fr.x*T+fr.fx*2,Y=fr.y*T+fr.fy*2,on=fr===activeFrame,pw=fr.w*T;
-    ctx.fillStyle=on?'#fff0a0':'#caa24d';ctx.fillRect(X+1,Y+1,pw-2,14);
-    ctx.fillStyle='#2b1e0c';ctx.fillRect(X+2,Y+2,pw-4,12);
+    const ph=fr.hh?fr.hh*T:14;
+    ctx.fillStyle=on?'#fff0a0':'#caa24d';ctx.fillRect(X+1,Y+1,pw-2,ph);
+    ctx.fillStyle='#2b1e0c';ctx.fillRect(X+2,Y+2,pw-4,ph-2);
     ctx.drawImage(thumbFor(fr),X+2,Y+2);
   }
   for(const s of floor.signs)if(s.x>=tx0&&s.x<=tx1&&s.y>=ty0&&s.y<=ty1)drawSign(s);
