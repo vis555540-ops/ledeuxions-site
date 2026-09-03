@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>모두의 미술관 — 블록 빌더</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#87a9c9;
+    font-family:system-ui,-apple-system,"Malgun Gothic",sans-serif; touch-action:none; user-select:none; }
+  #app { position:fixed; inset:0; }
+  canvas { display:block; }
+
+  /* 시작 카드 */
+  #start { position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center;
+    background:rgba(10,14,20,.82); backdrop-filter:blur(6px); }
+  #start .box { background:#141821; color:#eee; padding:26px 28px; border-radius:18px; max-width:340px; text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.5); }
+  #start h1 { font-size:19px; margin-bottom:10px; color:#ffd479; }
+  #start p { font-size:14px; line-height:1.75; color:#cfd6de; margin-bottom:18px; }
+  #start b { color:#ffd479; }
+  #start button { background:#ffd479; color:#1a1206; border:none; padding:14px 34px; font-size:16px;
+    font-weight:800; border-radius:12px; cursor:pointer; }
+
+  /* 조준점 */
+  #dot { position:fixed; left:50%; top:50%; width:14px; height:14px; margin:-7px 0 0 -7px; z-index:5;
+    border:2px solid #fff; border-radius:50%; box-shadow:0 0 3px #000; pointer-events:none; opacity:.9; }
+
+  /* 컨트롤 바 */
+  #ui { position:fixed; left:0; right:0; bottom:0; z-index:10; padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+    display:flex; align-items:flex-end; justify-content:space-between; gap:12px; pointer-events:none; }
+  .col { display:flex; flex-direction:column; gap:10px; pointer-events:auto; }
+  .btn { background:rgba(20,24,30,.72); color:#fff; border:2px solid rgba(255,255,255,.25); border-radius:14px;
+    font-size:15px; font-weight:700; padding:0 16px; height:54px; min-width:56px; display:flex; align-items:center;
+    justify-content:center; cursor:pointer; backdrop-filter:blur(4px); }
+  .btn:active { background:rgba(255,212,121,.85); color:#1a1206; }
+  .btn.big { height:64px; min-width:120px; font-size:17px; }
+  .btn.on { background:rgba(255,212,121,.9); color:#1a1206; border-color:#ffd479; }
+  .row { display:flex; gap:10px; pointer-events:auto; }
+
+  /* 색 팔레트 */
+  #pal { position:fixed; left:50%; top:12px; transform:translateX(-50%); z-index:10; display:flex; gap:7px;
+    background:rgba(20,24,30,.66); padding:7px 9px; border-radius:12px; backdrop-filter:blur(4px); pointer-events:auto; }
+  .sw { width:30px; height:30px; border-radius:7px; border:3px solid transparent; cursor:pointer; }
+  .sw.sel { border-color:#fff; }
+
+  #hint { position:fixed; left:50%; top:54px; transform:translateX(-50%); z-index:9; color:#fff;
+    font-size:13px; background:rgba(20,24,30,.6); padding:6px 12px; border-radius:10px; opacity:.95;
+    transition:opacity .6s; text-align:center; }
+  .hide { display:none !important; }
+  .vrbtn { position:fixed !important; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="dot" class="hide"></div>
+
+<div id="pal" class="hide"></div>
+<div id="hint" class="hide">손가락(또는 마우스)으로 화면을 밀면 둘러봐요</div>
+
+<div id="ui" class="hide">
+  <div class="col">
+    <div class="row">
+      <div class="btn" id="bUp">▲ 위</div>
+      <div class="btn" id="bDn">▼ 아래</div>
+    </div>
+    <div class="btn big" id="bWalk">걷기 ⏵</div>
+  </div>
+  <div class="col" style="align-items:flex-end;">
+    <div class="btn on" id="bPut">＋ 놓기</div>
+    <div class="btn" id="bBreak">－ 부수기</div>
+  </div>
+</div>
+
+<div id="start">
+  <div class="box">
+    <h1>모두의 미술관 · 블록 빌더</h1>
+    <p>손가락으로 화면을 밀면 <b>둘러보고</b>,<br><b>걷기</b> 버튼을 누르면 앞으로 가요.<br><b>놓기·부수기</b>로 블록을 쌓아요.</p>
+    <button id="enter">들어가기</button>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
+
+const COLORS = [
+  { name:'잔디', hex:0x6ab04c }, { name:'흙', hex:0x9c6b3f },
+  { name:'돌', hex:0x9aa0a6 }, { name:'나무', hex:0xcaa06a }, { name:'하늘', hex:0x5aa9e6 },
+];
+let curColor = 0, mode = 'put';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87a9c9);
+scene.fog = new THREE.Fog(0x87a9c9, 28, 80);
+
+const camera = new THREE.PerspectiveCamera(72, innerWidth/innerHeight, 0.1, 400);
+
+// yaw/pitch 로 시선 (pointer-lock 안 씀 — 드래그 방식)
+const player = { pos:new THREE.Vector3(2.5,3.2,13), yaw:0, pitch:-0.2 };
+function applyCam(){
+  camera.position.copy(player.pos);
+  const e = new THREE.Euler(player.pitch, player.yaw, 0, 'YXZ');
+  camera.quaternion.setFromEuler(e);
+}
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.xr.enabled = true;
+document.getElementById('app').appendChild(renderer.domElement);
+const vrb = VRButton.createButton(renderer); vrb.classList.add('vrbtn'); document.body.appendChild(vrb);
+
+scene.add(new THREE.HemisphereLight(0xbfe3ff, 0x556b55, 1.0));
+const sun = new THREE.DirectionalLight(0xfff2d5, 1.0); sun.position.set(20,40,15); scene.add(sun);
+
+// 블록
+const geo = new THREE.BoxGeometry(1,1,1);
+const matCache = {};
+const matFor = i => matCache[i] || (matCache[i] = new THREE.MeshLambertMaterial({ color:COLORS[i].hex }));
+const blocks = new Map(), pickables = [];
+const key = (x,y,z)=>`${x},${y},${z}`;
+function addBlock(x,y,z,ci){
+  const k=key(x,y,z); if(blocks.has(k)) return;
+  const m=new THREE.Mesh(geo, matFor(ci)); m.position.set(x,y,z); m.userData={x,y,z};
+  scene.add(m); blocks.set(k,m); pickables.push(m);
+}
+function removeBlock(m){
+  const {x,y,z}=m.userData; scene.remove(m); blocks.delete(key(x,y,z));
+  const i=pickables.indexOf(m); if(i>=0) pickables.splice(i,1);
+}
+// 시작 지형 + 집
+const N=6;
+for(let x=-N;x<=N;x++) for(let z=-N;z<=N;z++) addBlock(x,0,z,0);
+for(let x=1;x<=4;x++) for(let z=1;z<=4;z++){ if(x===1||x===4||z===1||z===4){ addBlock(x,1,z,2); addBlock(x,2,z,2);} }
+for(let x=1;x<=4;x++) for(let z=1;z<=4;z++) addBlock(x,3,z,3);
+removeBlock(blocks.get(key(2,1,1)));
+
+// UI
+const el = id => document.getElementById(id);
+const start=el('start'), dot=el('dot'), ui=el('ui'), pal=el('pal'), hint=el('hint');
+COLORS.forEach((c,i)=>{ const s=document.createElement('div'); s.className='sw'+(i===0?' sel':'');
+  s.style.background='#'+c.hex.toString(16).padStart(6,'0'); s.onclick=()=>setColor(i); pal.appendChild(s); });
+function setColor(i){ curColor=i; [...pal.children].forEach((e,k)=>e.classList.toggle('sel',k===i)); }
+function setMode(m){ mode=m; el('bPut').classList.toggle('on',m==='put'); el('bBreak').classList.toggle('on',m==='break'); }
+el('bPut').onclick=()=>setMode('put'); el('bBreak').onclick=()=>setMode('break');
+
+let started=false;
+el('enter').onclick=()=>{
+  started=true; start.classList.add('hide');
+  [dot,ui,pal,hint].forEach(e=>e.classList.remove('hide'));
+  setTimeout(()=>hint.style.opacity=0, 4000);
+  applyCam();
+};
+
+// 드래그 시선 (마우스 + 터치). 버튼 위에서는 무시.
+let dragId=null, lastX=0, lastY=0, moved=0;
+function isUI(t){ return t.closest('#ui')||t.closest('#pal')||t.closest('.vrbtn'); }
+renderer.domElement.addEventListener('pointerdown', e=>{
+  if(!started || isUI(e.target)) return;
+  dragId=e.pointerId; lastX=e.clientX; lastY=e.clientY; moved=0;
+});
+addEventListener('pointermove', e=>{
+  if(e.pointerId!==dragId) return;
+  const dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY;
+  moved += Math.abs(dx)+Math.abs(dy);
+  player.yaw -= dx*0.005; player.pitch -= dy*0.005;
+  player.pitch = Math.max(-1.3, Math.min(1.3, player.pitch));
+});
+addEventListener('pointerup', e=>{
+  if(e.pointerId!==dragId) return; dragId=null;
+  if(moved<6) tapAction();     // 거의 안 움직였으면 = 탭 = 블록 놓기/부수기
+});
+
+// 걷기/상하 버튼 (누르는 동안 이동)
+const held={ walk:0, up:0, dn:0 };
+function bindHold(id, k){ const b=el(id);
+  const on=e=>{ e.preventDefault(); held[k]=1; }; const off=()=>held[k]=0;
+  b.addEventListener('pointerdown',on); b.addEventListener('pointerup',off);
+  b.addEventListener('pointerleave',off); b.addEventListener('pointercancel',off);
+}
+bindHold('bWalk','walk'); bindHold('bUp','up'); bindHold('bDn','dn');
+
+// 키보드(데스크탑도 되게)
+const keys={};
+addEventListener('keydown',e=>keys[e.code]=1); addEventListener('keyup',e=>keys[e.code]=0);
+
+// 블록 놓기/부수기 (화면 중앙 조준점 기준)
+const ray=new THREE.Raycaster(), c=new THREE.Vector2(0,0);
+function tapAction(){
+  ray.setFromCamera(c, camera);
+  const hit=ray.intersectObjects(pickables)[0]; if(!hit) return;
+  if(mode==='break'){
+    if(hit.object.userData.y===0 && Math.abs(hit.object.userData.x)===N) return;
+    removeBlock(hit.object);
+  } else {
+    const n=hit.face.normal, p=hit.object.userData;
+    addBlock(p.x+n.x, p.y+n.y, p.z+n.z, curColor);
+  }
+}
+
+// 루프
+const clock=new THREE.Clock(); const fwd=new THREE.Vector3(), right=new THREE.Vector3();
+function frame(){
+  const dt=Math.min(clock.getDelta(),0.05), sp=7*dt;
+  if(started){
+    camera.getWorldDirection(fwd); fwd.y=0; fwd.normalize();
+    right.set(fwd.z,0,-fwd.x);
+    if(held.walk || keys.KeyW) player.pos.addScaledVector(fwd, sp);
+    if(keys.KeyS) player.pos.addScaledVector(fwd,-sp);
+    if(keys.KeyA) player.pos.addScaledVector(right,-sp);
+    if(keys.KeyD) player.pos.addScaledVector(right, sp);
+    if(held.up || keys.Space) player.pos.y += sp;
+    if(held.dn || keys.ShiftLeft) player.pos.y -= sp;
+    if(player.pos.y<1.2) player.pos.y=1.2;
+    if(!renderer.xr.isPresenting) applyCam();
+  }
+  renderer.render(scene,camera);
+}
+renderer.setAnimationLoop(frame);
+addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight); });
+
+// 검증용
+if(location.search.includes('auto')){ el('enter').click(); }
+</script>
+</body>
+</html>
