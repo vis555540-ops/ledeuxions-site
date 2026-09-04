@@ -29,30 +29,14 @@
   .막 button.버금{background:#d8d2bf;box-shadow:0 4px 0 #a9a390;font-size:clamp(14px,3.4vw,17px);padding:10px 26px}
   .막 button:disabled{opacity:.5;cursor:default}
   .막 button:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #c9a83e}
-  #머리{position:absolute;top:0;left:0;right:0;padding:10px 12px;display:flex;justify-content:space-between;
-    align-items:center;color:#f6f1e0;font-weight:700;font-size:clamp(13px,3.4vw,17px);
-    text-shadow:0 2px 4px rgba(0,0,0,.45);z-index:3;pointer-events:none;gap:8px}
-  #시간칸{flex:1;height:10px;background:rgba(0,0,0,.3);border-radius:99px;overflow:hidden}
-  #시간{height:100%;width:100%;background:#f6d365;transition:width .2s linear}
-  #시간.급함{background:#e8674f}
-  .별{font-size:clamp(30px,9vw,52px);letter-spacing:.18em;color:#f6d365}
-  /* 단계 지도 — 목장 길을 따라 지그재그로 놓는다 */
-  #지도칸{width:100%;max-width:340px;max-height:62vh;overflow-y:auto;padding:4px 2px 10px}
-  #개칸{width:100%;max-width:340px;max-height:62vh;overflow-y:auto;padding:4px 2px 10px}
-  .개줄{display:flex;align-items:center;gap:11px;margin:0 0 9px;padding:8px 10px;border-radius:14px;
-        background:rgba(255,253,246,.07);border:2px solid transparent;cursor:pointer}
-  .개줄.고름{border-color:#f6d365;background:rgba(246,211,101,.14)}
-  .개줄.잠김{opacity:.45;cursor:default}
-  .개그림{width:52px;height:52px;flex:0 0 52px;image-rendering:pixelated;background:rgba(0,0,0,.18);border-radius:11px}
-  .개쪽{flex:1;text-align:left}
-  .개이름{font-size:15px;font-weight:700;display:block}
-  .개말{font-size:11.5px;opacity:.72;display:block}
+  /* 단계 지도 */
+  #지도칸{width:100%;max-width:340px;max-height:58vh;overflow-y:auto;padding:4px 2px 10px}
   .탄줄{display:flex;align-items:center;gap:10px;margin:0 0 8px}
   .탄줄.오른{flex-direction:row-reverse}
   .막 #지도칸 .탄{flex:0 0 62px;width:62px;min-width:62px;max-width:62px;height:62px;padding:0;margin:0;
-      border-radius:16px;border:2px solid #6f5a2e;
-      background:#f6d365;color:#3b3218;font-weight:800;font-size:19px;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #c9a83e}
+      border-radius:16px;border:2px solid #6f5a2e;background:#f6d365;color:#3b3218;font-weight:800;
+      font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+      box-shadow:0 3px 0 #c9a83e}
   .막 #지도칸 .탄:active{transform:translateY(2px);box-shadow:0 1px 0 #c9a83e}
   .막 #지도칸 .탄.잠김{background:#5f6b52;border-color:#48523d;color:#aab29c;cursor:default;box-shadow:none}
   .막 #지도칸 .탄.깬{background:#8fd06a;border-color:#4f7a35;box-shadow:0 3px 0 #4f7a35}
@@ -61,8 +45,15 @@
   .탄별{font-size:19px;letter-spacing:.14em;color:#f6d365}
   .탄말{font-size:11.5px;opacity:.7;display:block}
   #메뉴단추{pointer-events:auto;background:rgba(0,0,0,.28);border:0;color:#f6f1e0;border-radius:99px;
-    width:34px;height:34px;font-size:17px;line-height:1;cursor:pointer;flex:0 0 auto;padding:0}
+    width:34px;height:34px;font-size:17px;line-height:1;cursor:pointer;flex:0 0 auto;padding:0;margin:0}
   #메뉴단추:active{background:rgba(0,0,0,.45)}
+  #머리{position:absolute;top:0;left:0;right:0;padding:10px 12px;display:flex;justify-content:space-between;
+    align-items:center;color:#f6f1e0;font-weight:700;font-size:clamp(13px,3.4vw,17px);
+    text-shadow:0 2px 4px rgba(0,0,0,.45);z-index:3;pointer-events:none;gap:8px}
+  #시간칸{flex:1;height:10px;background:rgba(0,0,0,.3);border-radius:99px;overflow:hidden}
+  #시간{height:100%;width:100%;background:#f6d365;transition:width .2s linear}
+  #시간.급함{background:#e8674f}
+  .별{font-size:clamp(30px,9vw,52px);letter-spacing:.18em;color:#f6d365}
   #소리단추{pointer-events:auto;background:rgba(0,0,0,.28);border:0;color:#f6f1e0;border-radius:99px;
     width:2.1em;height:2.1em;font-size:inherit;cursor:pointer}
   #짖기단추{position:absolute;right:14px;bottom:16px;z-index:4;width:clamp(58px,17vw,78px);height:clamp(58px,17vw,78px);
@@ -72,6 +63,16 @@
   #짖기단추.식힘{opacity:.45}
   #짖기단추.보임{display:block}
   .작게{font-size:clamp(12px,3vw,14px);opacity:.65}
+  #개고르기{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:19em}
+  .개칸{width:clamp(52px,15vw,68px);border-radius:12px;padding:4px 2px 3px;background:rgba(255,255,255,.08);
+    border:2px solid transparent;text-align:center;cursor:pointer}
+  .개칸 canvas{display:block;width:100%;aspect-ratio:1;image-rendering:pixelated;image-rendering:crisp-edges}
+  .개칸 b{display:block;font-size:clamp(9px,2.4vw,11px);line-height:1.2;font-weight:700}
+  .개칸 i{display:block;font-size:clamp(8px,2.1vw,10px);opacity:.7;font-style:normal}
+  .개칸.고름{border-color:#f6d365;background:rgba(246,211,101,.18)}
+  .개칸.잠김{opacity:.42;cursor:default}
+  .개칸.잠김 canvas{filter:brightness(0) opacity(.75)}
+  #개설명{min-height:2.6em;font-size:clamp(12px,3.2vw,15px)!important}
 </style>
 </head>
 <body>
@@ -85,18 +86,12 @@
   <h1>양몰이</h1>
   <p>개를 끌어서 양을 울타리에 넣어라.<br>양은 개를 무서워한다. 너무 붙으면 흩어진다.<br>문은 아래쪽 하나뿐이다.</p>
   <p class="작게">화면을 누르면 개가 그리로 간다 · 「짖기」로 넓게 겁준다</p>
+  <div id="개고르기"></div>
+  <p id="개설명" class="작게"></p>
   <button id="이어단추" disabled>읽는 중…</button>
   <button id="처음단추" class="버금 숨김">처음부터</button>
   <button id="지도단추" class="버금">어디까지 왔나</button>
-  <button id="개단추" class="버금">강아지</button>
   <p class="작게" id="모은별"></p>
-</div>
-
-<div class="막 숨김" id="개막">
-  <h1 style="font-size:clamp(20px,5.5vw,30px);margin-bottom:2px">강아지</h1>
-  <p class="작게" id="개셈" style="margin-bottom:10px"></p>
-  <div id="개칸"></div>
-  <button id="개닫기" class="버금">뒤로</button>
 </div>
 
 <div class="막 숨김" id="지도막">
@@ -112,6 +107,7 @@
   <p id="끝풀이"></p>
   <button id="다음단추">다음</button>
   <button id="다시단추" class="버금">다시</button>
+  <button id="개바꾸기단추" class="버금">개 바꾸기</button>
   <button id="끝메뉴단추" class="버금">메뉴로</button>
 </div>
 
@@ -154,7 +150,21 @@ const 양동작 = {가만:{줄:0,수:2,틱:.5}, 걷기:{줄:1,수:4,틱:.13}, �
                앉기:{줄:3,수:2,틱:.6}, 잠:{줄:4,수:2,틱:.7}, 놀람:{줄:5,수:2,틱:.15}};
 const 개동작 = {가만:{줄:0,수:2,틱:.5}, 걷기:{줄:1,수:4,틱:.13}, 달리기:{줄:2,수:4,틱:.09},
                하품:{줄:3,수:4,틱:.2}, 앉기:{줄:4,수:2,틱:.6}, 짖기:{줄:5,수:2,틱:.12}};
-const 시트 = {양:null, 양뒤:null, 개:null, 개뒤:null, 개원본:null};
+const 시트 = {양:null, 양뒤:null, 개:null, 개뒤:null, 개들:{}};
+
+// ── 개 여섯 마리 ---------------------------------------------------
+//  속도: 최고 빠르기 배수, 겁: 양이 이 개를 얼마나 무서워하나, 여는탄: 이 탄에 닿으면 얻는다
+//  짖음: 파일을 못 읽었을 때 쓰는 합성음 주파수 [높은쪽, 낮은쪽]
+const 개들 = [
+  {이름:'보더콜리',   성격:'영리함', 속도:1.0,  겁:1.0,  여는탄:1,  짖음:[330,270], 말:'무엇이든 무난하다. 처음 하기 좋다.'},
+  {이름:'코기',       성격:'겁쟁이', 속도:0.8,  겁:0.8,  여는탄:3,  짖음:[420,330], 말:'느리고 양도 덜 무서워한다. 바짝 붙어 몰 수 있다.'},
+  {이름:'골든리트리버',짧게:'골든',성격:'다정함', 속도:0.9,  겁:0.85, 여는탄:5,  짖음:[360,280], 말:'양이 잘 흩어지지 않는다. 대신 급할 때 답답하다.'},
+  {이름:'진도견',     성격:'맹렬함', 속도:1.25, 겁:1.3,  여는탄:6,  짖음:[200,150], 말:'가장 빠르다. 양이 몹시 놀라니 멀리서 몰아야 한다.'},
+  {이름:'삽살개',     성격:'예민함', 속도:0.85, 겁:1.15, 여는탄:8,  짖음:[480,380], 말:'짖는 소리가 높고 멀리 간다. 짖기가 넓게 먹힌다.'},
+  {이름:'저먼셰퍼드', 짧게:'셰퍼드',성격:'용감함', 속도:1.15, 겁:1.1,  여는탄:9,  짖음:[240,180], 말:'빠르고 짖음이 낮고 세다. 후반 탄에 맞다.'},
+];
+function 개찾기(이름){ return 개들.find(d => d.이름 === 이름) || 개들[0]; }
+let 고른개 = 개들[0];
 
 function 뒤집기(im){
   const d = document.createElement('canvas'); d.width = im.width; d.height = im.height;
@@ -180,7 +190,8 @@ function 동작그리기(e, 표, 앞, 뒤){
 //  소리/*.mp3 는 소리_만들기.py 로 만든 원곡. 못 읽으면 합성음으로 대신한다.
 const 소리 = {
   켬: true, ctx: null, 마지막매: 0, 버퍼: {}, 배경: null, 배경이름: null, 배경음량: null, 효과음량: null,
-  이름들: ['배경_목장','배경_첫화면','이김','짐','들임','짖기','양','누름'],
+  이름들: ['배경_목장','배경_첫화면','이김','짐','들임','양','누름',
+           '짖기_보더콜리','짖기_코기','짖기_골든리트리버','짖기_진도견','짖기_삽살개','짖기_저먼셰퍼드'],
   준비(){
     if (!this.ctx){
       try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ this.ctx = null; return; }
@@ -218,7 +229,7 @@ const 소리 = {
     v.gain.exponentialRampToValueAtTime(0.0001, t+길이);
     o.connect(v).connect(this.효과음량); o.start(t); o.stop(t+길이+0.02);
   },
-  짖기(){ if (!this.틀기('짖기')){ this.음(330,.09,'square',.18,-140); this.음(270,.11,'square',.16,-120,.1); } },
+  짖기(개=고른개){ if (!this.틀기('짖기_'+개.이름)){ const [a,b] = 개.짖음; this.음(a,.09,'square',.18,-a*.42); this.음(b,.11,'square',.16,-b*.44,.1); } },
   매(){
     const now = performance.now(); if (now - this.마지막매 < 450) return; this.마지막매 = now;
     if (!this.틀기('양', .7)) this.음(440,.25,'sawtooth',.06,40);
@@ -236,7 +247,7 @@ const 저장 = {
   읽기(){ try{ return JSON.parse(localStorage.getItem('양몰이')) || {}; }catch(e){ return {}; } },
   쓰기(o){ try{ localStorage.setItem('양몰이', JSON.stringify(o)); }catch(e){} },
 };
-let 기록 = Object.assign({탄:1, 별:{}, 소리:true, 개:0}, 저장.읽기());
+let 기록 = Object.assign({탄:1, 별:{}, 소리:true, 개:'보더콜리'}, 저장.읽기());
 소리.켬 = 기록.소리 !== false;
 
 // ── 탄 --------------------------------------------------------
@@ -245,39 +256,6 @@ const 탄들 = [
   {양:6, 시간:52}, {양:7, 시간:56}, {양:8, 시간:60}, {양:10, 시간:70}, {양:12, 시간:80},
 ];
 function 단계값(n){ const t = 탄들[Math.min(n,탄들.length)-1]; return {양:t.양, 시간:t.시간, 겁: 1 + n*0.04}; }
-
-// ── 강아지 (형: 「메뉴에 가야지 강아지 얻을 수 있는데」 2026-09-04)
-//    그림은 한 장뿐이다. 털 색만 갈아입혀 여러 마리를 만든다.
-const 강아지들 = [
-  {이름:'보더 콜리',   설명:'양몰이의 으뜸',        별:0,  털:null},
-  {이름:'황금 개',     설명:'해 아래 빛난다',       별:6,  털:['#8a5a24','#a06a2a','#c08a44']},
-  {이름:'잿빛 늑대개', 설명:'눈밭에서 왔다',        별:12, 털:['#4a5560','#59656f','#7d8a94']},
-  {이름:'밤빛 개',     설명:'초콜릿을 닮았다',      별:20, 털:['#4a2f22','#5a3a28','#7d5540']},
-  {이름:'눈처럼 흰 개',설명:'별을 다 모아야 온다',  별:27, 털:['#b9b3a6','#cfc9bc','#e6e0d4']},
-];
-const 털바탕 = ['#32282c', '#3a2c28', '#605054'];      // 원본의 어두운 털 세 가지
-function 털갈이(원그림, 새털){
-  if (!새털) return 원그림;
-  const c = document.createElement('canvas');
-  c.width = 원그림.width; c.height = 원그림.height;
-  const g2 = c.getContext('2d');
-  g2.imageSmoothingEnabled = false;
-  g2.drawImage(원그림, 0, 0);
-  const d = g2.getImageData(0, 0, c.width, c.height);
-  const 옛 = 털바탕.map(h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]);
-  const 새 = 새털.map(h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]);
-  for (let i = 0; i < d.data.length; i += 4){
-    if (d.data[i+3] === 0) continue;
-    for (let k = 0; k < 옛.length; k++){
-      if (d.data[i] === 옛[k][0] && d.data[i+1] === 옛[k][1] && d.data[i+2] === 옛[k][2]){
-        d.data[i] = 새[k][0]; d.data[i+1] = 새[k][1]; d.data[i+2] = 새[k][2];
-        break;
-      }
-    }
-  }
-  g2.putImageData(d, 0, 0);
-  return c;
-}
 
 // ── 판 상태 ------------------------------------------------------
 const S = {단계:1, 양들:[], 개:{x:0,y:0,vx:0,vy:0,본다:-1,동작:'가만',칸:0,칸시간:0,쉼:0,짖는중:0},
@@ -330,6 +308,7 @@ function 시작(n){
                  자리:null, 잠까지:0});
   }
   const 개 = S.개;
+  시트.개 = 시트.개들[고른개.이름]; 시트.개뒤 = 뒤집기(시트.개);
   개.x = W*0.5; 개.y = H*0.9; 개.vx = 개.vy = 0; 개.본다 = -1; 개.쉼 = 0; 개.짖는중 = 0; 동작(개,'가만');
   S.목표 = null; S.든양 = 0; S.짖음 = 0; S.짖기쿨 = 0;
   S.총시간 = v.시간; S.남은 = v.시간; S.겁 = v.겁;
@@ -376,7 +355,7 @@ function 양움직임(dt){
   const 떨어짐 = 반*2.6, 이웃 = 반*6.5;
   const 짖는중 = S.짖음 > 0;
   const 도망 = 개반*4.2 * (짖는중 ? 1.7 : 1);
-  const 도망힘 = 175 * S.겁 * (짖는중 ? 1.6 : 1);
+  const 도망힘 = 175 * S.겁 * 고른개.겁 * (짖는중 ? 1.6 : 1);
   for (const s of S.양들){
     const 전x = s.x, 전y = s.y;
     if (s.듦){ 든양움직임(s, dt); 울타리막기(s, 전x, 전y, 반, true); continue; }
@@ -473,7 +452,7 @@ function 개움직임(dt){
   if (S.목표){
     const dx = S.목표.x-개.x, dy = S.목표.y-개.y, d = Math.hypot(dx,dy);
     if (d > 2){
-      const 빠르기 = Math.min(d*4.5, 100);
+      const 빠르기 = Math.min(d*4.5, 100) * 고른개.속도;
       개.vx = dx/d*빠르기; 개.vy = dy/d*빠르기;
       if (Math.abs(dx) > 1) 개.본다 = dx > 0 ? 1 : -1;
     } else { S.목표 = null; }
@@ -486,7 +465,7 @@ function 개움직임(dt){
   개.짖는중 = Math.max(0, 개.짖는중 - dt);
   const 빠 = Math.hypot(개.vx, 개.vy);
   if (개.짖는중 > 0) 동작(개,'짖기');
-  else if (빠 > 48){ 동작(개,'달리기'); 개.쉼 = 0; }
+  else if (빠 > 48*고른개.속도){ 동작(개,'달리기'); 개.쉼 = 0; }
   else if (빠 > 6){ 동작(개,'걷기'); 개.쉼 = 0; }
   else { 개.쉼 += dt; 동작(개, 개.쉼 > 4 ? '앉기' : '가만'); }
   동작틱(개, 개동작, dt);
@@ -613,6 +592,8 @@ function 끝내기(이겼나){
     기록.별[S.단계] = Math.max(기록.별[S.단계]||0, 별수);
     if (!마지막탄) 기록.탄 = Math.max(기록.탄, S.단계+1);
     저장.쓰기(기록); 소리.이김();
+    const 새개 = 개들.filter(d => d.여는탄 === S.단계+1);
+    if (새개.length) setTimeout(() => { document.getElementById('끝풀이').textContent += ` 새 개 「${새개[0].이름}」을 얻었다.`; }, 0);
   } else 소리.짐();
   document.getElementById('끝말').textContent = 이겼나 ? (마지막탄 ? '다 끝냈다' : '다 넣었다') : '시간이 다 됐다';
   document.getElementById('별').textContent = 이겼나 ? '★'.repeat(별수) + '☆'.repeat(3-별수) : '';
@@ -628,8 +609,77 @@ function 끝내기(이겼나){
   document.getElementById('끝막').classList.remove('숨김');
 }
 
-// ── 단계 지도 --------------------------------------------------
-// 형: 「단계 별 세 개 클리어 됐는지 안 됐는지 맵처럼 볼 수 있는 거」 (2026-09-04)
+// ── 시작 --------------------------------------------------------
+울타리자리(); 바탕그리기(); 판크기();
+// ── 첫화면 개 고르기 ---------------------------------------------
+//  작은 칸마다 제 그림을 돌린다. 가만히 있다가(4초) 앉고, 누르면 짖고 다시 일어난다.
+const 고름칸 = [];
+function 개고르기만들기(){
+  const 틀 = document.getElementById('개고르기'); 틀.innerHTML = ''; 고름칸.length = 0;
+  if (개고르기만들기.도는중) return 칸채우기(틀); 개고르기만들기.도는중 = true; 칸채우기(틀);
+  let 전 = performance.now();
+  (function 돌기(now){
+    const dt = Math.min(.1, (now-전)/1000); 전 = now;
+    for (const q of 고름칸){
+      const e = q.e, im = 시트.개들[q.d.이름]; if (!im) continue;
+      e.짖 = Math.max(0, e.짖-dt);
+      if (e.짖 > 0) 동작(e,'짖기');
+      else { e.쉼 += dt; 동작(e, e.쉼 > 4 ? '앉기' : '가만'); }
+      동작틱(e, 개동작, dt);
+      const dd = 개동작[e.동작];
+      q.g.imageSmoothingEnabled = false; q.g.clearRect(0,0,32,32);
+      q.g.drawImage(im, e.칸*칸, dd.줄*칸, 칸, 칸, 0, 0, 칸, 칸);
+    }
+    requestAnimationFrame(돌기);
+  })(전);
+}
+function 칸채우기(틀){
+  for (const d of 개들){
+    const 잠김 = 기록.탄 < d.여는탄;
+    const 칸 = document.createElement('div'); 칸.className = '개칸' + (잠김 ? ' 잠김' : '') + (d === 고른개 ? ' 고름' : '');
+    const c = document.createElement('canvas'); c.width = c.height = 32;
+    칸.appendChild(c);
+    const b = document.createElement('b'); b.textContent = d.짧게 || d.이름; 칸.appendChild(b);
+    const i = document.createElement('i'); i.textContent = 잠김 ? d.여는탄 + '탄에서' : d.성격; 칸.appendChild(i);
+    const e = {본다:-1, 동작:'가만', 칸:0, 칸시간:Math.random(), 쉼:Math.random()*2, x:16, y:16, 짖:0};
+    고름칸.push({d, c, g:c.getContext('2d'), e, 잠김});
+    칸.onclick = () => {
+      if (잠김) return;
+      소리.준비(); 고른개 = d; 기록.개 = d.이름; 저장.쓰기(기록);
+      for (const q of 고름칸) q.칸.classList.toggle('고름', q.d === d);
+      e.짖 = 0.5; e.쉼 = 0; 동작(e,'짖기'); 소리.짖기(d);
+      document.getElementById('개설명').textContent = d.말;
+    };
+    고름칸[고름칸.length-1].칸 = 칸;
+    틀.appendChild(칸);
+  }
+  document.getElementById('개설명').textContent = 고른개.말;
+}
+
+Promise.all([그림읽기('양_동작.png'), ...개들.map(d => 그림읽기('개/'+d.이름+'.png'))]).then(([양im, ...개ims]) => {
+  const 이어 = document.getElementById('이어단추'), 처음 = document.getElementById('처음단추');
+  if (!양im || 개ims.some(i => !i)){ 이어.textContent = '그림을 못 읽었다'; return; }
+  시트.양 = 양im; 시트.양뒤 = 뒤집기(양im);
+  개들.forEach((d, i) => { 시트.개들[d.이름] = 개ims[i]; });
+  고른개 = 개찾기(기록.개); if (기록.탄 < 고른개.여는탄) 고른개 = 개들[0];
+  시트.개 = 시트.개들[고른개.이름]; 시트.개뒤 = 뒤집기(시트.개);
+  첫막차리기();
+  document.getElementById('개바꾸기단추').onclick = () => {
+    document.getElementById('끝막').classList.add('숨김'); 첫막차리기();
+    document.getElementById('첫막').classList.remove('숨김');
+  };
+});
+function 첫막차리기(){
+  const 이어 = document.getElementById('이어단추'), 처음 = document.getElementById('처음단추');
+  개고르기만들기();
+  이어.disabled = false;
+  if (기록.탄 > 1){
+    이어.textContent = `이어하기 ${기록.탄}탄`; 이어.onclick = () => 시작(기록.탄);
+    처음.classList.remove('숨김'); 처음.onclick = () => { 기록.탄 = 1; 저장.쓰기(기록); 시작(1); };
+  } else { 이어.textContent = '시작'; 이어.onclick = () => 시작(1); }
+  document.getElementById('모은별').textContent = 별합() > 0 ? `모은 별 ${별합()}/${탄들.length*3}` : '';
+}
+// ── 단계 지도 (형: 「단계 별 세 개 클리어 됐는지 맵처럼」 2026-09-04)
 function 지도차림(){
   const 칸 = document.getElementById('지도칸');
   칸.innerHTML = '';
@@ -644,13 +694,14 @@ function 지도차림(){
     if (열림) 단추.onclick = () => { 지도닫기(); 시작(i); };
     const 쪽 = document.createElement('div');
     쪽.className = '탄쪽';
+    const 얻는개 = 개들.find(d => d.여는탄 === i);
     쪽.innerHTML = 열림
       ? `<span class="탄별">${'★'.repeat(별)}${'☆'.repeat(3-별)}</span>
-         <span class="탄말">양 ${탄들[i-1].양}마리 · ${탄들[i-1].시간}초</span>`
-      : `<span class="탄말">앞 탄을 깨면 열린다</span>`;
+         <span class="탄말">양 ${탄들[i-1].양}마리 · ${탄들[i-1].시간}초${얻는개 ? ' · '+얻는개.이름 : ''}</span>`
+      : `<span class="탄말">앞 탄을 깨면 열린다${얻는개 ? ' · '+얻는개.이름+'을 얻는다' : ''}</span>`;
     줄.appendChild(단추); 줄.appendChild(쪽); 칸.appendChild(줄);
   }
-  const 만점 = 탄들.filter((_,i) => (기록.별[i+1]||0) === 3).length;
+  const 만점 = 탄들.filter((_, i) => (기록.별[i+1] || 0) === 3).length;
   document.getElementById('지도셈').textContent =
     `별 ${별합()}/${탄들.length*3} · 별 셋 낸 탄 ${만점}/${탄들.length}`;
 }
@@ -658,89 +709,20 @@ function 지도열기(){ 지도차림(); document.getElementById('지도막').cl
                     document.getElementById('첫막').classList.add('숨김'); }
 function 지도닫기(){ document.getElementById('지도막').classList.add('숨김');
                     document.getElementById('첫막').classList.remove('숨김'); }
-// ── 강아지 -----------------------------------------------------
-function 개입히기(){
-  const 고른 = 강아지들[기록.개] || 강아지들[0];
-  const 옷 = 털갈이(시트.개원본, 고른.털);
-  시트.개 = 옷; 시트.개뒤 = 뒤집기(옷);
-}
-function 개미리보기(강, 크기){
-  // 서 있는 첫 칸(32×32)만 잘라 보여준다
-  const c = document.createElement('canvas');
-  c.width = 크기; c.height = 크기;
-  const g2 = c.getContext('2d'); g2.imageSmoothingEnabled = false;
-  const 옷 = 털갈이(시트.개원본, 강.털);
-  g2.drawImage(옷, 0, 0, 32, 32, 0, 0, 크기, 크기);
-  return c.toDataURL();
-}
-function 개차림(){
-  const 칸 = document.getElementById('개칸');
-  칸.innerHTML = '';
-  const 모은 = 별합();
-  강아지들.forEach((강, i) => {
-    const 열림 = 모은 >= 강.별;
-    const 줄 = document.createElement('div');
-    줄.className = '개줄' + (i === 기록.개 ? ' 고름' : '') + (열림 ? '' : ' 잠김');
-    const im = document.createElement('img');
-    im.className = '개그림'; im.src = 개미리보기(강, 52);
-    if (!열림) im.style.filter = 'grayscale(1) brightness(.5)';
-    const 쪽 = document.createElement('div');
-    쪽.className = '개쪽';
-    쪽.innerHTML = 열림
-      ? `<span class="개이름">${강.이름}${i === 기록.개 ? ' ✓' : ''}</span><span class="개말">${강.설명}</span>`
-      : `<span class="개이름">🔒 ???</span><span class="개말">별 ${강.별}개를 모으면 온다 (지금 ${모은}개)</span>`;
-    if (열림) 줄.onclick = () => { 기록.개 = i; 저장.쓰기(기록); 개입히기(); 개차림(); };
-    줄.appendChild(im); 줄.appendChild(쪽); 칸.appendChild(줄);
-  });
-  const 연것 = 강아지들.filter(강 => 모은 >= 강.별).length;
-  document.getElementById('개셈').textContent = `모은 별 ${모은} · 강아지 ${연것}/${강아지들.length}`;
-}
-function 개열기(){ 개차림(); document.getElementById('개막').classList.remove('숨김');
-                  document.getElementById('첫막').classList.add('숨김'); }
-function 개닫기(){ document.getElementById('개막').classList.add('숨김');
-                  document.getElementById('첫막').classList.remove('숨김'); }
-document.getElementById('개단추').onclick = 개열기;
-document.getElementById('개닫기').onclick = 개닫기;
-
-// 첫 화면 다시 그리기 (이어하기 탄·모은 별이 바뀌니까)
-function 첫막차림(){
-  const 이어 = document.getElementById('이어단추'), 처음 = document.getElementById('처음단추');
-  이어.disabled = false;
-  if (기록.탄 > 1){
-    이어.textContent = `이어하기 ${기록.탄}탄`; 이어.onclick = () => 시작(기록.탄);
-    처음.classList.remove('숨김'); 처음.onclick = () => { 기록.탄 = 1; 저장.쓰기(기록); 시작(1); };
-  } else {
-    이어.textContent = '시작'; 이어.onclick = () => 시작(1);
-    처음.classList.add('숨김');
-  }
-  document.getElementById('모은별').textContent =
-    별합() > 0 ? `모은 별 ${별합()}/${탄들.length*3}` : '';
-}
 
 // 놀다가 첫 화면으로 (형: 「메뉴로 가기가 없어」)
 function 메뉴로(){
-  S.도는중 = false;
-  S.목표 = null;
-  소리.배경틀기('배경_첫화면');
-  document.getElementById('끝막').classList.add('숨김');
-  document.getElementById('지도막').classList.add('숨김');
-  document.getElementById('개막').classList.add('숨김');
+  S.도는중 = false; S.목표 = null;
+  try { 소리.배경틀기('배경_첫화면'); } catch(e){}
+  ['끝막','지도막'].forEach(id => document.getElementById(id).classList.add('숨김'));
   document.getElementById('첫막').classList.remove('숨김');
-  첫막차림();
+  첫막차리기();
 }
-document.getElementById('메뉴단추').onclick = 메뉴로;
-document.getElementById('끝메뉴단추').onclick = 메뉴로;
 document.getElementById('지도단추').onclick = 지도열기;
 document.getElementById('지도닫기').onclick = 지도닫기;
+document.getElementById('메뉴단추').onclick = 메뉴로;
+document.getElementById('끝메뉴단추').onclick = 메뉴로;
 
-// ── 시작 --------------------------------------------------------
-울타리자리(); 바탕그리기(); 판크기();
-Promise.all([그림읽기('양_동작.png'), 그림읽기('개_동작.png')]).then(([양im, 개im]) => {
-  const 이어 = document.getElementById('이어단추'), 처음 = document.getElementById('처음단추');
-  if (!양im || !개im){ 이어.textContent = '그림을 못 읽었다'; return; }
-  시트.양 = 양im; 시트.양뒤 = 뒤집기(양im); 시트.개원본 = 개im; 개입히기();
-  첫막차림();
-});
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>

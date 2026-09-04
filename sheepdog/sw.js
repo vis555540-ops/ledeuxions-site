@@ -1,7 +1,7 @@
 // 오프라인용. 파일을 바꾸면 아래 판 번호를 올려야 새 것이 내려간다.
-const 판 = '양몰이-v7';
-const 파일 = ['./','./index.html','./manifest.json','./아이콘.png','./양_동작.png','./개_동작.png',
-  './소리/배경_목장.mp3','./소리/배경_첫화면.mp3','./소리/이김.mp3','./소리/짐.mp3','./소리/들임.mp3','./소리/짖기.mp3','./소리/양.mp3','./소리/누름.mp3'];
+const 판 = '양몰이-v8';
+const 파일 = ['./','./index.html','./manifest.json','./아이콘.png','./양_동작.png','./개/보더콜리.png','./개/코기.png','./개/골든리트리버.png','./개/진도견.png','./개/삽살개.png','./개/저먼셰퍼드.png',
+  './소리/배경_목장.mp3','./소리/배경_첫화면.mp3','./소리/이김.mp3','./소리/짐.mp3','./소리/들임.mp3','./소리/짖기_보더콜리.mp3','./소리/짖기_코기.mp3','./소리/짖기_골든리트리버.mp3','./소리/짖기_진도견.mp3','./소리/짖기_삽살개.mp3','./소리/짖기_저먼셰퍼드.mp3','./소리/양.mp3','./소리/누름.mp3'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(판).then(c => c.addAll(파일)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== 판).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {

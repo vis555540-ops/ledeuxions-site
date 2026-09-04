@@ -8,23 +8,7 @@
  "background_color": "#6f9448",
  "theme_color": "#7fa650",
  "icons": [
-  {
-   "src": "아이콘.png",
-   "sizes": "512x512",
-   "type": "image/png",
-   "purpose": "any"
-  },
-  {
-   "src": "아이콘.png",
-   "sizes": "512x512",
-   "type": "image/png",
-   "purpose": "maskable"
-  }
- ],
- "description": "보더 콜리로 양을 몰아 울타리에 넣는 놀이.",
- "lang": "ko",
- "categories": [
-  "games",
-  "casual"
+  {"src": "아이콘.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+  {"src": "아이콘.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
  ]
 }

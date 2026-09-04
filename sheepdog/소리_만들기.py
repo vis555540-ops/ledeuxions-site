@@ -158,12 +158,24 @@ write('짐', 짐)
 들임 = render([dict(kind='pulse', vol=.4, duty=.25, notes=[('E5',1),('A5',2)], sus=.8)], 240, 1, beats=1, sub=3)
 write('들임', 들임)
 
-# 짖기: 주파수 떨어지는 사각파 + 잡음
-n = int(.13*SR); t = np.arange(n)/SR
-f = 420*np.exp(-t*9)+120; ph = np.cumsum(f)/SR%1
-w = np.where(ph<.5,1,-1)*np.exp(-t*18)*.8 + lowpass(noise(n,5),2500)*np.exp(-t*30)*.9
-w2 = np.concatenate([w, np.zeros(int(.05*SR)), w*.8])
-write('짖기', w2)
+# 짖기: 종별 6개 버전 (주파수가 다름)
+강아지_음성 = {
+    '보더콜리': {'f1':330, 'f2':270},
+    '저먼셰퍼드': {'f1':240, 'f2':180},
+    '코기': {'f1':420, 'f2':330},
+    '진도견': {'f1':200, 'f2':150},
+    '삽살개': {'f1':480, 'f2':380},
+    '골든리트리버': {'f1':360, 'f2':280},
+}
+
+for 종, 음성 in 강아지_음성.items():
+    f1, f2 = 음성['f1'], 음성['f2']
+    n = int(.13*SR); t = np.arange(n)/SR
+    # 주파수: f1 → f2 로 떨어짐 (지수 감소)
+    f = f1*np.exp(-t*9) + f2; ph = np.cumsum(f)/SR%1
+    w = np.where(ph<.5,1,-1)*np.exp(-t*18)*.8 + lowpass(noise(n,5),2500)*np.exp(-t*30)*.9
+    w2 = np.concatenate([w, np.zeros(int(.05*SR)), w*.8])
+    write(f'짖기_{종}', w2)
 # 양 울음: 톱니파 + 떨림
 n = int(.32*SR); t = np.arange(n)/SR
 f = 440*(1+.06*np.sin(2*np.pi*14*t))*(1-.15*t); ph = np.cumsum(f)/SR%1
