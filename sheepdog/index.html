@@ -132,13 +132,38 @@ function 동작그리기(e, 표, 앞, 뒤){
   ag.drawImage(im, sx, d.줄*칸, 칸, 칸, Math.round(e.x-칸/2), Math.round(e.y-칸/2+2), 칸, 칸);
 }
 
-// ── 소리 (파일 없이 합성) ----------------------------------------
+// ── 소리 ---------------------------------------------------------
+//  소리/*.mp3 는 소리_만들기.py 로 만든 원곡. 못 읽으면 합성음으로 대신한다.
 const 소리 = {
-  켬: true, ctx: null, 마지막매: 0,
+  켬: true, ctx: null, 마지막매: 0, 버퍼: {}, 배경: null, 배경이름: null, 배경음량: null, 효과음량: null,
+  이름들: ['배경_목장','배경_첫화면','이김','짐','들임','짖기','양','누름'],
   준비(){
-    if (!this.ctx){ try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ this.ctx = null; } }
-    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    if (!this.ctx){
+      try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ this.ctx = null; return; }
+      this.배경음량 = this.ctx.createGain(); this.배경음량.gain.value = .38; this.배경음량.connect(this.ctx.destination);
+      this.효과음량 = this.ctx.createGain(); this.효과음량.gain.value = .9;  this.효과음량.connect(this.ctx.destination);
+      for (const n of this.이름들)
+        fetch('소리/'+n+'.mp3').then(r => r.ok ? r.arrayBuffer() : Promise.reject())
+          .then(ab => this.ctx.decodeAudioData(ab)).then(bf => { this.버퍼[n] = bf; if (this.배경이름 === n && !this.배경) this.배경틀기(n); })
+          .catch(()=>{});
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
   },
+  틀기(n, 세기=1){
+    if (!this.켬 || !this.ctx) return false;
+    const bf = this.버퍼[n]; if (!bf) return false;
+    const src = this.ctx.createBufferSource(), v = this.ctx.createGain();
+    src.buffer = bf; v.gain.value = 세기; src.connect(v).connect(this.효과음량); src.start(); return true;
+  },
+  배경틀기(n){
+    this.배경이름 = n;
+    if (this.배경){ try{ this.배경.stop(); }catch(e){} this.배경 = null; }
+    if (!this.켬 || !this.ctx || !this.버퍼[n]) return;
+    const src = this.ctx.createBufferSource(); src.buffer = this.버퍼[n]; src.loop = true;
+    src.connect(this.배경음량); src.start(); this.배경 = src;
+  },
+  배경끄기(){ if (this.배경){ try{ this.배경.stop(); }catch(e){} this.배경 = null; } this.배경이름 = null; },
+  // 합성음 (파일을 못 읽었을 때만)
   음(주파, 길이, 꼴='square', 세기=.15, 미끄럼=0, 늦게=0){
     if (!this.켬 || !this.ctx) return;
     const c = this.ctx, t = c.currentTime + 늦게;
@@ -147,22 +172,20 @@ const 소리 = {
     if (미끄럼) o.frequency.linearRampToValueAtTime(Math.max(40, 주파+미끄럼), t+길이);
     v.gain.setValueAtTime(0.0001, t); v.gain.linearRampToValueAtTime(세기, t+0.01);
     v.gain.exponentialRampToValueAtTime(0.0001, t+길이);
-    o.connect(v).connect(c.destination); o.start(t); o.stop(t+길이+0.02);
+    o.connect(v).connect(this.효과음량); o.start(t); o.stop(t+길이+0.02);
   },
-  짖기(){ this.음(330,.09,'square',.18,-140); this.음(270,.11,'square',.16,-120,.1); },
-  매(){   // 양 울음 — 너무 자주 울면 시끄러우니 0.45초에 한 번
+  짖기(){ if (!this.틀기('짖기')){ this.음(330,.09,'square',.18,-140); this.음(270,.11,'square',.16,-120,.1); } },
+  매(){
     const now = performance.now(); if (now - this.마지막매 < 450) return; this.마지막매 = now;
-    if (!this.켬 || !this.ctx) return;
-    const c = this.ctx, t = c.currentTime, o = c.createOscillator(), v = c.createGain();
-    o.type = 'sawtooth';
-    for (let i=0;i<8;i++) o.frequency.setValueAtTime(i%2 ? 500 : 440, t + i*0.035);
-    v.gain.setValueAtTime(0.0001,t); v.gain.linearRampToValueAtTime(0.06,t+0.02); v.gain.exponentialRampToValueAtTime(0.0001,t+0.3);
-    o.connect(v).connect(c.destination); o.start(t); o.stop(t+0.32);
+    if (!this.틀기('양', .7)) this.음(440,.25,'sawtooth',.06,40);
   },
-  들임(){ this.음(660,.08,'triangle',.18); this.음(880,.14,'triangle',.18,0,.08); },
-  이김(){ [523,659,784,1047].forEach((f,i)=>this.음(f,.18,'triangle',.18,0,i*.11)); },
-  짐(){ this.음(220,.35,'sawtooth',.12,-90); this.음(160,.4,'sawtooth',.1,-60,.2); },
+  들임(){ if (!this.틀기('들임')){ this.음(660,.08,'triangle',.18); this.음(880,.14,'triangle',.18,0,.08); } },
+  이김(){ if (!this.틀기('이김')) [523,659,784,1047].forEach((f,i)=>this.음(f,.18,'triangle',.18,0,i*.11)); },
+  짐(){ if (!this.틀기('짐')){ this.음(220,.35,'sawtooth',.12,-90); this.음(160,.4,'sawtooth',.1,-60,.2); } },
+  누름(){ this.틀기('누름', .5); },
 };
+// 폰은 손을 대기 전엔 소리를 못 낸다 — 첫 손길에 깨우고 첫화면 음악을 튼다
+addEventListener('pointerdown', () => { 소리.준비(); if (!S.도는중 && !소리.배경) 소리.배경틀기('배경_첫화면'); }, {passive:true});
 
 // ── 저장 --------------------------------------------------------
 const 저장 = {
@@ -216,7 +239,7 @@ function 울타리막기(e, 전x, 전y, 반, 문통과){
 }
 
 function 시작(n){
-  소리.준비();
+  소리.준비(); 소리.누름(); 소리.배경틀기('배경_목장');
   S.단계 = n;
   const v = 단계값(n);
   판크기();
@@ -265,7 +288,8 @@ addEventListener('keydown', e=>{ if (e.code === 'Space') 짖기(); });
 
 const 소리단추 = document.getElementById('소리단추');
 function 소리단추그리기(){ 소리단추.textContent = 소리.켬 ? '🔊' : '🔇'; }
-소리단추.addEventListener('click', ()=>{ 소리.켬 = !소리.켬; 기록.소리 = 소리.켬; 저장.쓰기(기록); 소리단추그리기(); if (소리.켬) 소리.준비(); });
+소리단추.addEventListener('click', ()=>{ 소리.켬 = !소리.켬; 기록.소리 = 소리.켬; 저장.쓰기(기록); 소리단추그리기();
+  if (소리.켬){ 소리.준비(); 소리.배경틀기(S.도는중 ? '배경_목장' : '배경_첫화면'); } else { const n = 소리.배경이름; 소리.배경끄기(); 소리.배경이름 = n; } });
 소리단추그리기();
 
 // ── 양의 움직임 (이 놀이의 심장) ----------------------------------
@@ -507,6 +531,7 @@ function 끝내기(이겼나){
   const 몫 = S.남은/S.총시간;
   const 별수 = !이겼나 ? 0 : 몫 > 0.5 ? 3 : 몫 > 0.25 ? 2 : 1;
   const 마지막탄 = S.단계 >= 탄들.length;
+  소리.배경틀기('배경_첫화면');
   if (이겼나){
     기록.별[S.단계] = Math.max(기록.별[S.단계]||0, 별수);
     if (!마지막탄) 기록.탄 = Math.max(기록.탄, S.단계+1);
