@@ -51,9 +51,6 @@
   .탄줄.오른 .탄쪽{text-align:right}
   .탄별{font-size:19px;letter-spacing:.14em;color:#f6d365}
   .탄말{font-size:11.5px;opacity:.7;display:block}
-  #메뉴단추{pointer-events:auto;background:rgba(0,0,0,.28);border:0;color:#f6f1e0;border-radius:99px;
-    width:34px;height:34px;font-size:17px;line-height:1;cursor:pointer;flex:0 0 auto;padding:0}
-  #메뉴단추:active{background:rgba(0,0,0,.45)}
   #소리단추{pointer-events:auto;background:rgba(0,0,0,.28);border:0;color:#f6f1e0;border-radius:99px;
     width:2.1em;height:2.1em;font-size:inherit;cursor:pointer}
   #짖기단추{position:absolute;right:14px;bottom:16px;z-index:4;width:clamp(58px,17vw,78px);height:clamp(58px,17vw,78px);
@@ -67,7 +64,7 @@
 </head>
 <body>
 <div id="틀"><div id="폰"><canvas id="판"></canvas>
-<div id="머리"><button id="메뉴단추" title="메뉴로">☰</button><span id="단계">1탄</span><span id="시간칸"><i id="시간"></i></span><span id="셈">양 0/1</span>
+<div id="머리"><span id="단계">1탄</span><span id="시간칸"><i id="시간"></i></span><span id="셈">양 0/1</span>
   <button id="소리단추" title="소리">🔊</button></div>
 <button id="짖기단추">짖기</button>
 </div></div>
@@ -95,7 +92,6 @@
   <p id="끝풀이"></p>
   <button id="다음단추">다음</button>
   <button id="다시단추" class="버금">다시</button>
-  <button id="끝메뉴단추" class="버금">메뉴로</button>
 </div>
 
 <script>
@@ -608,33 +604,6 @@ function 지도열기(){ 지도차림(); document.getElementById('지도막').cl
                     document.getElementById('첫막').classList.add('숨김'); }
 function 지도닫기(){ document.getElementById('지도막').classList.add('숨김');
                     document.getElementById('첫막').classList.remove('숨김'); }
-// 첫 화면 다시 그리기 (이어하기 탄·모은 별이 바뀌니까)
-function 첫막차림(){
-  const 이어 = document.getElementById('이어단추'), 처음 = document.getElementById('처음단추');
-  이어.disabled = false;
-  if (기록.탄 > 1){
-    이어.textContent = `이어하기 ${기록.탄}탄`; 이어.onclick = () => 시작(기록.탄);
-    처음.classList.remove('숨김'); 처음.onclick = () => { 기록.탄 = 1; 저장.쓰기(기록); 시작(1); };
-  } else {
-    이어.textContent = '시작'; 이어.onclick = () => 시작(1);
-    처음.classList.add('숨김');
-  }
-  document.getElementById('모은별').textContent =
-    별합() > 0 ? `모은 별 ${별합()}/${탄들.length*3}` : '';
-}
-
-// 놀다가 첫 화면으로 (형: 「메뉴로 가기가 없어」)
-function 메뉴로(){
-  S.도는중 = false;
-  S.목표 = null;
-  소리.배경틀기('배경_첫화면');
-  document.getElementById('끝막').classList.add('숨김');
-  document.getElementById('지도막').classList.add('숨김');
-  document.getElementById('첫막').classList.remove('숨김');
-  첫막차림();
-}
-document.getElementById('메뉴단추').onclick = 메뉴로;
-document.getElementById('끝메뉴단추').onclick = 메뉴로;
 document.getElementById('지도단추').onclick = 지도열기;
 document.getElementById('지도닫기').onclick = 지도닫기;
 
@@ -644,7 +613,12 @@ Promise.all([그림읽기('양_동작.png'), 그림읽기('개_동작.png')]).th
   const 이어 = document.getElementById('이어단추'), 처음 = document.getElementById('처음단추');
   if (!양im || !개im){ 이어.textContent = '그림을 못 읽었다'; return; }
   시트.양 = 양im; 시트.양뒤 = 뒤집기(양im); 시트.개 = 개im; 시트.개뒤 = 뒤집기(개im);
-  첫막차림();
+  이어.disabled = false;
+  if (기록.탄 > 1){
+    이어.textContent = `이어하기 ${기록.탄}탄`; 이어.onclick = () => 시작(기록.탄);
+    처음.classList.remove('숨김'); 처음.onclick = () => { 기록.탄 = 1; 저장.쓰기(기록); 시작(1); };
+  } else { 이어.textContent = '시작'; 이어.onclick = () => 시작(1); }
+  if (별합() > 0) document.getElementById('모은별').textContent = `모은 별 ${별합()}/${탄들.length*3}`;
 });
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
