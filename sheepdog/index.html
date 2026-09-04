@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#7fa650">
+<title>양몰이</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="아이콘.png">
+<link rel="apple-touch-icon" href="아이콘.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden;background:#2c3a22;
+    font-family:"Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif;
+    user-select:none;-webkit-user-select:none;touch-action:none}
+  #틀{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#2c3a22}
+  #폰{position:relative;background:#6f9448;overflow:hidden;box-shadow:0 0 0 2px rgba(0,0,0,.35),0 18px 50px rgba(0,0,0,.45)}
+  #판{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+  .막{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(28,38,20,.84);color:#f6f1e0;text-align:center;padding:24px;gap:12px;z-index:5}
+  .숨김{display:none!important}
+  .막 h1{font-size:clamp(26px,7vw,46px);font-weight:800;letter-spacing:.06em}
+  .막 p{font-size:clamp(14px,3.6vw,18px);line-height:1.7;opacity:.92;max-width:22em}
+  .막 button{margin-top:6px;padding:14px 34px;font-size:clamp(16px,4vw,20px);font-weight:700;
+    border:0;border-radius:999px;background:#f6d365;color:#3b3218;cursor:pointer;
+    box-shadow:0 4px 0 #c9a83e;min-width:11em}
+  .막 button.버금{background:#d8d2bf;box-shadow:0 4px 0 #a9a390;font-size:clamp(14px,3.4vw,17px);padding:10px 26px}
+  .막 button:disabled{opacity:.5;cursor:default}
+  .막 button:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #c9a83e}
+  #머리{position:absolute;top:0;left:0;right:0;padding:10px 12px;display:flex;justify-content:space-between;
+    align-items:center;color:#f6f1e0;font-weight:700;font-size:clamp(13px,3.4vw,17px);
+    text-shadow:0 2px 4px rgba(0,0,0,.45);z-index:3;pointer-events:none;gap:8px}
+  #시간칸{flex:1;height:10px;background:rgba(0,0,0,.3);border-radius:99px;overflow:hidden}
+  #시간{height:100%;width:100%;background:#f6d365;transition:width .2s linear}
+  #시간.급함{background:#e8674f}
+  .별{font-size:clamp(30px,9vw,52px);letter-spacing:.18em;color:#f6d365}
+  #소리단추{pointer-events:auto;background:rgba(0,0,0,.28);border:0;color:#f6f1e0;border-radius:99px;
+    width:2.1em;height:2.1em;font-size:inherit;cursor:pointer}
+  #짖기단추{position:absolute;right:14px;bottom:16px;z-index:4;width:clamp(58px,17vw,78px);height:clamp(58px,17vw,78px);
+    border-radius:50%;border:0;background:#f6d365;color:#3b3218;font-weight:800;font-size:clamp(14px,3.8vw,18px);
+    box-shadow:0 5px 0 #c9a83e,0 8px 16px rgba(0,0,0,.35);cursor:pointer;display:none}
+  #짖기단추:active{transform:translateY(4px);box-shadow:0 1px 0 #c9a83e}
+  #짖기단추.식힘{opacity:.45}
+  #짖기단추.보임{display:block}
+  .작게{font-size:clamp(12px,3vw,14px);opacity:.65}
+</style>
+</head>
+<body>
+<div id="틀"><div id="폰"><canvas id="판"></canvas>
+<div id="머리"><span id="단계">1탄</span><span id="시간칸"><i id="시간"></i></span><span id="셈">양 0/1</span>
+  <button id="소리단추" title="소리">🔊</button></div>
+<button id="짖기단추">짖기</button>
+</div></div>
+
+<div class="막" id="첫막">
+  <h1>양몰이</h1>
+  <p>개를 끌어서 양을 울타리에 넣어라.<br>양은 개를 무서워한다. 너무 붙으면 흩어진다.<br>문은 아래쪽 하나뿐이다.</p>
+  <p class="작게">화면을 누르면 개가 그리로 간다 · 「짖기」로 넓게 겁준다</p>
+  <button id="이어단추" disabled>읽는 중…</button>
+  <button id="처음단추" class="버금 숨김">처음부터</button>
+  <p class="작게" id="모은별"></p>
+</div>
+
+<div class="막 숨김" id="끝막">
+  <h1 id="끝말">잘했다</h1>
+  <div class="별" id="별"></div>
+  <p id="끝풀이"></p>
+  <button id="다음단추">다음</button>
+  <button id="다시단추" class="버금">다시</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  양몰이 — 2026-09-04 손봄
+//  · 속판 140×303 → 180×390 (32도트 동작 그림에 맞춤)
+//  · 울타리는 문으로만 들어간다 (개는 못 들어간다)
+//  · 개·양 동작 그림 (양_동작.png / 개_동작.png, 32×32 칸)
+//  · 짖기 · 소리(합성, 파일 없음) · 탄 10개 · 진행 저장 · 오프라인(sw.js)
+// ═══════════════════════════════════════════════════════════
+
+// ── 판 크기 --------------------------------------------------
+const 폰비율 = 9/19.5;
+const 안폭 = 180, 안높 = Math.round(안폭/폰비율);        // 180 × 390
+const W = 안폭, H = 안높;
+const 칸 = 32;                                          // 동작 그림 한 칸
+const 양반 = 12, 개반 = 13;                              // 몸통 반지름 (셈용)
+
+const 판 = document.getElementById('판'), g = 판.getContext('2d');
+const 속판 = document.createElement('canvas'); 속판.width = W; 속판.height = H;
+const ag = 속판.getContext('2d'); ag.imageSmoothingEnabled = false;
+const 바탕 = document.createElement('canvas'); 바탕.width = W; 바탕.height = H;   // 한 번만 그린다
+
+function 판크기(){
+  const r = window.devicePixelRatio || 1;
+  let w = window.innerWidth, h = window.innerHeight;
+  if (w/h > 폰비율) w = Math.round(h*폰비율); else h = Math.round(w/폰비율);
+  const 폰 = document.getElementById('폰');
+  폰.style.width = w+'px'; 폰.style.height = h+'px';
+  판.width = Math.round(w*r); 판.height = Math.round(h*r);
+  g.setTransform(r,0,0,r,0,0); g.imageSmoothingEnabled = false;
+}
+addEventListener('resize', 판크기);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) S.마지막 = performance.now(); });
+
+// ── 동작 그림 --------------------------------------------------
+//  줄 = 시트의 몇 번째 줄, 수 = 칸 수, 틱 = 한 칸 머무는 초
+const 양동작 = {가만:{줄:0,수:2,틱:.5}, 걷기:{줄:1,수:4,틱:.13}, 먹기:{줄:2,수:5,틱:.22},
+               앉기:{줄:3,수:2,틱:.6}, 잠:{줄:4,수:2,틱:.7}, 놀람:{줄:5,수:2,틱:.15}};
+const 개동작 = {가만:{줄:0,수:2,틱:.5}, 걷기:{줄:1,수:4,틱:.13}, 달리기:{줄:2,수:4,틱:.09},
+               하품:{줄:3,수:4,틱:.2}, 앉기:{줄:4,수:2,틱:.6}, 짖기:{줄:5,수:2,틱:.12}};
+const 시트 = {양:null, 양뒤:null, 개:null, 개뒤:null};
+
+function 뒤집기(im){
+  const d = document.createElement('canvas'); d.width = im.width; d.height = im.height;
+  const x = d.getContext('2d'); x.translate(im.width,0); x.scale(-1,1); x.drawImage(im,0,0); return d;
+}
+function 그림읽기(src){
+  return new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+}
+// 동작 바꾸기 — 같은 동작이면 그대로, 다르면 첫 칸부터
+function 동작(e, 이름){ if (e.동작 !== 이름){ e.동작 = 이름; e.칸 = 0; e.칸시간 = 0; } }
+function 동작틱(e, 표, dt){
+  const d = 표[e.동작]; e.칸시간 += dt;
+  while (e.칸시간 >= d.틱){ e.칸시간 -= d.틱; e.칸 = (e.칸+1) % d.수; }
+}
+// 그림은 왼쪽을 본다. 본다=+1(오른쪽)이면 뒤집은 시트를 쓴다
+function 동작그리기(e, 표, 앞, 뒤){
+  const d = 표[e.동작], im = e.본다 > 0 ? 뒤 : 앞;
+  const sx = e.본다 > 0 ? im.width - (e.칸+1)*칸 : e.칸*칸;
+  ag.drawImage(im, sx, d.줄*칸, 칸, 칸, Math.round(e.x-칸/2), Math.round(e.y-칸/2+2), 칸, 칸);
+}
+
+// ── 소리 (파일 없이 합성) ----------------------------------------
+const 소리 = {
+  켬: true, ctx: null, 마지막매: 0,
+  준비(){
+    if (!this.ctx){ try{ this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ this.ctx = null; } }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  },
+  음(주파, 길이, 꼴='square', 세기=.15, 미끄럼=0, 늦게=0){
+    if (!this.켬 || !this.ctx) return;
+    const c = this.ctx, t = c.currentTime + 늦게;
+    const o = c.createOscillator(), v = c.createGain();
+    o.type = 꼴; o.frequency.setValueAtTime(주파, t);
+    if (미끄럼) o.frequency.linearRampToValueAtTime(Math.max(40, 주파+미끄럼), t+길이);
+    v.gain.setValueAtTime(0.0001, t); v.gain.linearRampToValueAtTime(세기, t+0.01);
+    v.gain.exponentialRampToValueAtTime(0.0001, t+길이);
+    o.connect(v).connect(c.destination); o.start(t); o.stop(t+길이+0.02);
+  },
+  짖기(){ this.음(330,.09,'square',.18,-140); this.음(270,.11,'square',.16,-120,.1); },
+  매(){   // 양 울음 — 너무 자주 울면 시끄러우니 0.45초에 한 번
+    const now = performance.now(); if (now - this.마지막매 < 450) return; this.마지막매 = now;
+    if (!this.켬 || !this.ctx) return;
+    const c = this.ctx, t = c.currentTime, o = c.createOscillator(), v = c.createGain();
+    o.type = 'sawtooth';
+    for (let i=0;i<8;i++) o.frequency.setValueAtTime(i%2 ? 500 : 440, t + i*0.035);
+    v.gain.setValueAtTime(0.0001,t); v.gain.linearRampToValueAtTime(0.06,t+0.02); v.gain.exponentialRampToValueAtTime(0.0001,t+0.3);
+    o.connect(v).connect(c.destination); o.start(t); o.stop(t+0.32);
+  },
+  들임(){ this.음(660,.08,'triangle',.18); this.음(880,.14,'triangle',.18,0,.08); },
+  이김(){ [523,659,784,1047].forEach((f,i)=>this.음(f,.18,'triangle',.18,0,i*.11)); },
+  짐(){ this.음(220,.35,'sawtooth',.12,-90); this.음(160,.4,'sawtooth',.1,-60,.2); },
+};
+
+// ── 저장 --------------------------------------------------------
+const 저장 = {
+  읽기(){ try{ return JSON.parse(localStorage.getItem('양몰이')) || {}; }catch(e){ return {}; } },
+  쓰기(o){ try{ localStorage.setItem('양몰이', JSON.stringify(o)); }catch(e){} },
+};
+let 기록 = Object.assign({탄:1, 별:{}, 소리:true}, 저장.읽기());
+소리.켬 = 기록.소리 !== false;
+
+// ── 탄 --------------------------------------------------------
+const 탄들 = [
+  {양:1, 시간:30}, {양:2, 시간:34}, {양:3, 시간:38}, {양:4, 시간:44}, {양:5, 시간:48},
+  {양:6, 시간:52}, {양:7, 시간:56}, {양:8, 시간:60}, {양:10, 시간:70}, {양:12, 시간:80},
+];
+function 단계값(n){ const t = 탄들[Math.min(n,탄들.length)-1]; return {양:t.양, 시간:t.시간, 겁: 1 + n*0.04}; }
+
+// ── 판 상태 ------------------------------------------------------
+const S = {단계:1, 양들:[], 개:{x:0,y:0,vx:0,vy:0,본다:-1,동작:'가만',칸:0,칸시간:0,쉼:0,짖는중:0},
+           목표:null, 울:{x:0,y:0,w:0,h:0}, 문:{왼:0,오:0},
+           남은:0, 총시간:0, 도는중:false, 든양:0, 마지막:0, 짖음:0, 짖기쿨:0, 겁:1};
+
+function 울타리자리(){
+  const w = Math.round(W*0.66), h = Math.round(H*0.17);
+  S.울 = {x: Math.round((W-w)/2), y: Math.round(H*0.07), w, h};
+  const 문폭 = 34;
+  S.문 = {왼: Math.round(S.울.x+w/2-문폭/2), 오: Math.round(S.울.x+w/2+문폭/2)};
+}
+
+// 울타리 = 네모의 테두리. 안으로 들어가는 길은 아래 문뿐.
+//  ① 밖에 있던 것이 안으로 들어오려면: 아래에서, 문 폭 안에서만
+//  ② 안에 든 양은 못 나온다  ③ 개는 아예 못 들어온다
+function 울타리막기(e, 전x, 전y, 반, 문통과){
+  const u = S.울, m = 문통과 ? 6 : Math.round(반*0.7);        // 개는 판자에서 조금 더 떨어진다
+  const 안 = (x,y) => x > u.x-m && x < u.x+u.w+m && y > u.y-m && y < u.y+u.h+m;
+  const 전안 = 안(전x,전y);
+  if (!전안){
+    if (안(e.x,e.y)){
+      const 문으로 = 문통과 && 전y >= u.y+u.h && e.x > S.문.왼+반*0.5 && e.x < S.문.오-반*0.5;
+      if (!문으로){
+        // 한 축씩 물러선다 — 판자를 따라 미끄러진다
+        if (안(e.x, 전y)){ e.x = 전x; e.vx *= -0.2; }
+        if (안(e.x, e.y)){ e.y = 전y; e.vy *= -0.2; }
+      }
+    }
+  } else if (문통과 && e.듦){                                  // 든 양은 안에 머문다
+    e.x = Math.max(u.x+반*0.6, Math.min(u.x+u.w-반*0.6, e.x));
+    e.y = Math.max(u.y+반*0.6, Math.min(u.y+u.h-반*0.4, e.y));
+  }
+  e.x = Math.max(반, Math.min(W-반, e.x));
+  e.y = Math.max(반, Math.min(H-반, e.y));
+}
+
+function 시작(n){
+  소리.준비();
+  S.단계 = n;
+  const v = 단계값(n);
+  판크기();
+  S.양들 = [];
+  for (let i=0;i<v.양;i++){
+    let x, y, 번=0;
+    do { x = W*0.16 + Math.random()*W*0.68; y = H*0.46 + Math.random()*H*0.3; 번++; }
+    while (번 < 40 && S.양들.some(o => Math.hypot(o.x-x,o.y-y) < 양반*2.6));
+    S.양들.push({x, y, vx:0, vy:0, 본다: Math.random()<.5?1:-1, 듦:false, 방황: Math.random()*6.283,
+                 동작:'가만', 칸:0, 칸시간:Math.random()*.5, 먹기:0, 쉼:Math.random()*3, 놀람:0, 근처:false,
+                 자리:null, 잠까지:0});
+  }
+  const 개 = S.개;
+  개.x = W*0.5; 개.y = H*0.9; 개.vx = 개.vy = 0; 개.본다 = -1; 개.쉼 = 0; 개.짖는중 = 0; 동작(개,'가만');
+  S.목표 = null; S.든양 = 0; S.짖음 = 0; S.짖기쿨 = 0;
+  S.총시간 = v.시간; S.남은 = v.시간; S.겁 = v.겁;
+  document.getElementById('단계').textContent = n + '탄';
+  document.getElementById('첫막').classList.add('숨김');
+  document.getElementById('끝막').classList.add('숨김');
+  document.getElementById('짖기단추').classList.add('보임');
+  S.도는중 = true; S.마지막 = performance.now();
+  S.틱번호 = (S.틱번호||0) + 1; const 번 = S.틱번호;   // 같은 판이 두 번 돌지 않게
+  requestAnimationFrame(t => 돌기(t, 번));
+}
+
+// ── 손가락·마우스 ------------------------------------------------
+function 자리(e){
+  const t = e.touches ? e.touches[0] : e;
+  const r = 판.getBoundingClientRect();
+  return {x: (t.clientX - r.left) / r.width * W, y: (t.clientY - r.top) / r.height * H};
+}
+function 눌림(e){ e.preventDefault(); if (S.도는중) S.목표 = 자리(e); }
+판.addEventListener('mousedown', 눌림); 판.addEventListener('mousemove', e=>{ if(e.buttons) 눌림(e); });
+판.addEventListener('touchstart', 눌림, {passive:false});
+판.addEventListener('touchmove', 눌림, {passive:false});
+
+function 짖기(){
+  if (!S.도는중 || S.짖기쿨 > 0) return;
+  S.짖음 = 1.1; S.짖기쿨 = 2.0; S.개.짖는중 = 0.55; S.개.쉼 = 0;
+  소리.준비(); 소리.짖기();
+}
+const 짖기단추 = document.getElementById('짖기단추');
+짖기단추.addEventListener('touchstart', e=>{ e.preventDefault(); 짖기(); }, {passive:false});
+짖기단추.addEventListener('mousedown', e=>{ e.preventDefault(); 짖기(); });
+addEventListener('keydown', e=>{ if (e.code === 'Space') 짖기(); });
+
+const 소리단추 = document.getElementById('소리단추');
+function 소리단추그리기(){ 소리단추.textContent = 소리.켬 ? '🔊' : '🔇'; }
+소리단추.addEventListener('click', ()=>{ 소리.켬 = !소리.켬; 기록.소리 = 소리.켬; 저장.쓰기(기록); 소리단추그리기(); if (소리.켬) 소리.준비(); });
+소리단추그리기();
+
+// ── 양의 움직임 (이 놀이의 심장) ----------------------------------
+//  수치는 140판에서 쓰던 것을 180판(×1.29)에 맞춰 올렸다.
+function 양움직임(dt){
+  const 개 = S.개, 반 = 양반;
+  const 떨어짐 = 반*2.6, 이웃 = 반*6.5;
+  const 짖는중 = S.짖음 > 0;
+  const 도망 = 개반*4.2 * (짖는중 ? 1.7 : 1);
+  const 도망힘 = 175 * S.겁 * (짖는중 ? 1.6 : 1);
+  for (const s of S.양들){
+    const 전x = s.x, 전y = s.y;
+    if (s.듦){ 든양움직임(s, dt); 울타리막기(s, 전x, 전y, 반, true); continue; }
+
+    let 밀x=0, 밀y=0, 결x=0, 결y=0, 모x=0, 모y=0, n=0;
+    for (const o of S.양들){
+      if (o===s || o.듦) continue;
+      const dx=s.x-o.x, dy=s.y-o.y, d=Math.hypot(dx,dy);
+      if (d < 이웃 && d > 0){
+        if (d < 떨어짐){ 밀x += dx/d; 밀y += dy/d; }
+        결x += o.vx; 결y += o.vy; 모x += o.x; 모y += o.y; n++;
+      }
+    }
+    let fx=0, fy=0;
+    if (n){
+      결x/=n; 결y/=n; 모x/=n; 모y/=n;
+      fx += (모x-s.x)*0.55 + 결x*2.6;
+      fy += (모y-s.y)*0.55 + 결y*2.6;
+    }
+    fx += 밀x*165; fy += 밀y*165;
+    s.방황 += (Math.random()-0.5)*2.2*dt;
+    const 어슬렁 = s.먹기 > 0 ? 3 : 14;                     // 풀 뜯는 동안은 거의 안 움직인다
+    fx += Math.cos(s.방황)*어슬렁; fy += Math.sin(s.방황)*어슬렁;
+
+    const gx=s.x-개.x, gy=s.y-개.y, gd=Math.hypot(gx,gy);
+    const 근처 = gd < 도망 && gd > 0;
+    if (근처){
+      const f = (도망-gd)/도망;
+      fx += gx/gd*f*도망힘; fy += gy/gd*f*도망힘;
+      if (!s.근처){ s.놀람 = 0.32; s.먹기 = 0; 소리.매(); }   // 처음 눈치챈 순간만 놀란다
+    }
+    s.근처 = 근처;
+
+    const 벽 = 반;                                          // 가장자리를 꺼린다
+    if (s.x < 벽+2) fx += 44;  if (s.x > W-벽-2) fx -= 44;
+    if (s.y < 벽+8) fy += 44;  if (s.y > H-벽-2) fy -= 44;
+    // 울타리 바깥쪽 판자도 꺼린다 (문 앞은 빼고) — 판자에 머리 박고 떠는 것을 막는다
+    const u = S.울;
+    //   판자에 눌린 양은 판자를 따라 문 쪽으로 미끄러진다 (개가 아래에 있을 때만)
+    if (s.y > u.y+u.h && s.y < u.y+u.h+반+6 && s.x > u.x-반 && s.x < u.x+u.w+반 && !(s.x > S.문.왼 && s.x < S.문.오)){
+      if (근처 && 개.y > s.y) fx += Math.sign((S.문.왼+S.문.오)/2 - s.x)*70; else fy += 50;
+    }
+
+    s.vx = (s.vx + fx*dt) * 0.93;
+    s.vy = (s.vy + fy*dt) * 0.93;
+    const 빠 = Math.hypot(s.vx,s.vy), 최고 = 68;
+    if (빠 > 최고){ s.vx = s.vx/빠*최고; s.vy = s.vy/빠*최고; }
+    s.x += s.vx*dt; s.y += s.vy*dt;
+    울타리막기(s, 전x, 전y, 반, true);
+    if (Math.abs(s.vx) > 2) s.본다 = s.vx > 0 ? 1 : -1;
+
+    // 들어왔나
+    if (s.x > u.x && s.x < u.x+u.w && s.y > u.y && s.y < u.y+u.h - 반*0.5){
+      s.듦 = true; S.든양++; s.자리 = null; s.잠까지 = 4 + Math.random()*6;
+      소리.들임();
+    }
+
+    // 동작 고르기
+    s.놀람 = Math.max(0, s.놀람 - dt);
+    const 빠2 = Math.hypot(s.vx, s.vy);
+    if (s.놀람 > 0) 동작(s,'놀람');
+    else if (빠2 > 9){ 동작(s,'걷기'); s.먹기 = 0; }
+    else {
+      if (s.먹기 > 0){ s.먹기 -= dt; 동작(s,'먹기'); }
+      else { s.쉼 -= dt; if (s.쉼 <= 0){ s.먹기 = 2 + Math.random()*3; s.쉼 = 2 + Math.random()*4; } 동작(s,'가만'); }
+    }
+    동작틱(s, 양동작, dt);
+  }
+}
+// 든 양 — 우리 안 제자리로 걸어가서 앉고, 한참 지나면 잔다
+function 든양움직임(s, dt){
+  const u = S.울, 반 = 양반;
+  if (!s.자리){
+    let 번 = 0, x, y;
+    do { x = u.x+반+2 + Math.random()*(u.w-반*2-4); y = u.y+반 + Math.random()*(u.h-반*2); 번++; }
+    while (번 < 30 && S.양들.some(o => o!==s && o.자리 && Math.hypot(o.자리.x-x,o.자리.y-y) < 반*1.9));
+    s.자리 = {x,y};
+  }
+  const dx = s.자리.x-s.x, dy = s.자리.y-s.y, d = Math.hypot(dx,dy);
+  if (d > 1.5){
+    const v = Math.min(28, d*3);
+    s.vx = dx/d*v; s.vy = dy/d*v; s.x += s.vx*dt; s.y += s.vy*dt;
+    if (Math.abs(s.vx) > 2) s.본다 = s.vx > 0 ? 1 : -1;
+    동작(s,'걷기');
+  } else {
+    s.vx = s.vy = 0; s.잠까지 -= dt;
+    동작(s, s.잠까지 <= 0 ? '잠' : '앉기');
+  }
+  동작틱(s, 양동작, dt);
+}
+
+function 개움직임(dt){
+  const 개 = S.개, 전x = 개.x, 전y = 개.y;
+  if (S.목표){
+    const dx = S.목표.x-개.x, dy = S.목표.y-개.y, d = Math.hypot(dx,dy);
+    if (d > 2){
+      const 빠르기 = Math.min(d*4.5, 100);
+      개.vx = dx/d*빠르기; 개.vy = dy/d*빠르기;
+      if (Math.abs(dx) > 1) 개.본다 = dx > 0 ? 1 : -1;
+    } else { S.목표 = null; }
+  } else { 개.vx *= 0.82; 개.vy *= 0.82; }
+  개.x += 개.vx*dt; 개.y += 개.vy*dt;
+  울타리막기(개, 전x, 전y, 개반, false);
+  // 울타리에 막혀 제자리면 목표를 버린다 (안 그러면 계속 판자에 머리를 박는다)
+  if (S.목표 && Math.hypot(개.x-전x, 개.y-전y) < 0.05) S.목표 = null;
+
+  개.짖는중 = Math.max(0, 개.짖는중 - dt);
+  const 빠 = Math.hypot(개.vx, 개.vy);
+  if (개.짖는중 > 0) 동작(개,'짖기');
+  else if (빠 > 48){ 동작(개,'달리기'); 개.쉼 = 0; }
+  else if (빠 > 6){ 동작(개,'걷기'); 개.쉼 = 0; }
+  else { 개.쉼 += dt; 동작(개, 개.쉼 > 4 ? '앉기' : '가만'); }
+  동작틱(개, 개동작, dt);
+}
+
+// ── 그리기 -------------------------------------------------------
+const 나무도트 = [
+  "....KKKK....","..KKGGGGKK..",".KGGGGGGGGK.","KGGGgGGGGGGK","KGGgGGGGGgGK","KGGGGGGGGGGK",
+  ".KGGGGGGGGK.","..KGGGGGGK..","...KKGGKK...",".....KK.....",".....TT.....",".....TT.....",
+  "....KttK....","...KKKKKK...",
+];
+const 나무색 = {'K':'#2c3f1c','G':'#4a7530','g':'#5e8f3d','T':'#5d3f22','t':'#3f2a16'};
+function 나무만들기(){
+  const c = document.createElement('canvas'); c.width = 12; c.height = 14;
+  const x = c.getContext('2d');
+  for (let y=0;y<14;y++) for (let i=0;i<12;i++){
+    const ch = 나무도트[y][i]; if (ch === '.') continue;
+    x.fillStyle = 나무색[ch]; x.fillRect(i,y,1,1);
+  }
+  return c;
+}
+const 나뭇결 = '#9a6b3c', 어둔결 = '#714d29';
+
+// 바탕(풀·길·나무·울타리 뒷판)은 한 번만 그린다
+function 바탕그리기(){
+  const b = 바탕.getContext('2d'); b.imageSmoothingEnabled = false;
+  const P = v => Math.round(v);
+  b.fillStyle = '#79a24c'; b.fillRect(0,0,W,H);
+  b.fillStyle = '#6d9744';
+  for (let y=0;y<H;y+=2) for (let x=(y/2%2?0:1);x<W;x+=2) b.fillRect(x,y,1,1);
+  for (let i=0;i<220;i++){
+    const x = P((i*37)%W), y = P((i*53)%H);
+    b.fillStyle = i%4 ? '#87ad57' : '#5d8639';
+    b.fillRect(x,y,1,1); b.fillRect(x+1,y-1,1,1);
+  }
+  const u = S.울;
+  const 길폭 = 22;
+  for (let y=P(u.y+u.h); y<H; y+=2){
+    const 몫 = (y-(u.y+u.h))/(H-(u.y+u.h));
+    const w = P(길폭 + 몫*12);
+    b.fillStyle = (y/2)%2 ? '#a58a5c' : '#9e8355';
+    b.fillRect(P(W/2-w/2), y, w, 2);
+  }
+  const 나무 = 나무만들기();
+  for (const [tx,ty] of [[6,H*0.40],[W-30,H*0.55],[10,H*0.74],[W-32,H*0.32],[W-26,H*0.84]]){
+    b.drawImage(나무, P(tx), P(ty), 24, 28);
+  }
+  // 울타리 바닥 + 가로 판자 (뒷판). 아랫판자는 나중에 사람 위에 그린다
+  const ux=P(u.x), uy=P(u.y), uw=P(u.w), uh=P(u.h);
+  b.fillStyle = '#8fae5a'; b.fillRect(ux,uy,uw,uh);
+  b.fillStyle = '#84a352';
+  for (let y=uy;y<uy+uh;y+=2) for (let x=ux+(y/2%2?0:1);x<ux+uw;x+=2) b.fillRect(x,y,1,1);
+  const 가로 = (y) => { b.fillStyle = 나뭇결; b.fillRect(ux,y,uw,2); b.fillStyle = 어둔결; b.fillRect(ux,y+2,uw,1); };
+  가로(uy); 가로(uy+P(uh*0.36)); 가로(uy+P(uh*0.70));
+  for (let x=ux; x<=ux+uw-2; x+=P(uw/5)){
+    b.fillStyle = 나뭇결; b.fillRect(x, uy-2, 2, uh+4);
+    b.fillStyle = 어둔결; b.fillRect(x+2, uy-2, 1, uh+4);
+  }
+  b.fillStyle = 나뭇결; b.fillRect(ux+uw-2, uy-2, 2, uh+4);
+  b.fillStyle = 어둔결; b.fillRect(ux+uw, uy-2, 1, uh+4);
+}
+function 앞판자그리기(){
+  const P = v => Math.round(v), u = S.울;
+  const ux=P(u.x), uy=P(u.y), uw=P(u.w), uh=P(u.h), 문왼=S.문.왼, 문오=S.문.오;
+  ag.fillStyle = 나뭇결; ag.fillRect(ux, uy+uh-2, 문왼-ux, 2); ag.fillRect(문오, uy+uh-2, ux+uw-문오, 2);
+  ag.fillStyle = 어둔결; ag.fillRect(ux, uy+uh, 문왼-ux, 1); ag.fillRect(문오, uy+uh, ux+uw-문오, 1);
+  ag.fillStyle = '#5b3d1f'; ag.fillRect(문왼-2, uy+uh-4, 2, 7); ag.fillRect(문오, uy+uh-4, 2, 7);
+}
+
+function 그리기(){
+  ag.drawImage(바탕, 0, 0);
+  // 짖으면 개 둘레에 잠깐 물결
+  if (S.짖음 > 0){
+    const r = (1.1-S.짖음)*60 + 14;
+    ag.strokeStyle = `rgba(255,240,180,${Math.max(0,S.짖음)*0.6})`; ag.lineWidth = 1;
+    ag.beginPath(); ag.arc(Math.round(S.개.x), Math.round(S.개.y), r, 0, 6.283); ag.stroke();
+  }
+  const u = S.울, 앞선 = u.y+u.h-4;
+  const 모두 = [...S.양들.map(s=>({e:s, 표:양동작, 앞:시트.양, 뒤:시트.양뒤})), {e:S.개, 표:개동작, 앞:시트.개, 뒤:시트.개뒤}];
+  모두.sort((a,b)=>a.e.y-b.e.y);
+  for (const m of 모두) if (m.e.y < 앞선) 동작그리기(m.e, m.표, m.앞, m.뒤);
+  앞판자그리기();
+  for (const m of 모두) if (m.e.y >= 앞선) 동작그리기(m.e, m.표, m.앞, m.뒤);
+  // 개가 가는 곳 표시
+  if (S.목표){
+    ag.fillStyle = 'rgba(255,255,255,.55)';
+    const tx = Math.round(S.목표.x), ty = Math.round(S.목표.y);
+    ag.fillRect(tx-3,ty,2,1); ag.fillRect(tx+2,ty,2,1); ag.fillRect(tx,ty-3,1,2); ag.fillRect(tx,ty+2,1,2);
+  }
+}
+function 화면에얹기(){
+  const 폰 = document.getElementById('폰');
+  g.imageSmoothingEnabled = false;
+  g.drawImage(속판, 0, 0, 폰.clientWidth, 폰.clientHeight);
+}
+
+let 셈글 = '';
+function 돌기(t, 번){
+  if (!S.도는중 || 번 !== S.틱번호) return;
+  const dt = Math.min(0.05, (t - S.마지막)/1000); S.마지막 = t;
+  S.남은 -= dt; S.짖음 -= dt; S.짖기쿨 = Math.max(0, S.짖기쿨 - dt);
+  개움직임(dt); 양움직임(dt); 그리기(); 화면에얹기();
+  const 몫 = Math.max(0, S.남은/S.총시간);
+  const 막대 = document.getElementById('시간');
+  막대.style.width = (몫*100)+'%';
+  막대.classList.toggle('급함', 몫 < 0.3);
+  const 글 = `양 ${S.든양}/${S.양들.length}`;
+  if (글 !== 셈글){ 셈글 = 글; document.getElementById('셈').textContent = 글; }
+  짖기단추.classList.toggle('식힘', S.짖기쿨 > 0);
+  if (S.든양 >= S.양들.length){ 끝내기(true); return; }
+  if (S.남은 <= 0){ 끝내기(false); return; }
+  requestAnimationFrame(t => 돌기(t, 번));
+}
+
+function 별합(){ return Object.values(기록.별).reduce((a,b)=>a+b,0); }
+function 끝내기(이겼나){
+  S.도는중 = false; S.목표 = null;
+  짖기단추.classList.remove('보임');
+  const 몫 = S.남은/S.총시간;
+  const 별수 = !이겼나 ? 0 : 몫 > 0.5 ? 3 : 몫 > 0.25 ? 2 : 1;
+  const 마지막탄 = S.단계 >= 탄들.length;
+  if (이겼나){
+    기록.별[S.단계] = Math.max(기록.별[S.단계]||0, 별수);
+    if (!마지막탄) 기록.탄 = Math.max(기록.탄, S.단계+1);
+    저장.쓰기(기록); 소리.이김();
+  } else 소리.짐();
+  document.getElementById('끝말').textContent = 이겼나 ? (마지막탄 ? '다 끝냈다' : '다 넣었다') : '시간이 다 됐다';
+  document.getElementById('별').textContent = 이겼나 ? '★'.repeat(별수) + '☆'.repeat(3-별수) : '';
+  document.getElementById('끝풀이').textContent = 이겼나
+    ? (마지막탄 ? `탄 ${탄들.length}개 모두 넣었다. 모은 별 ${별합()}/${탄들.length*3}.`
+       : 별수 === 3 ? '아주 빨랐다.' : 별수 === 2 ? '괜찮다. 더 빨리 할 수 있다.' : '넣긴 넣었다.')
+    : '양이 겁을 먹으면 흩어진다. 조금 떨어져서 몰아보라.';
+  const 다음 = document.getElementById('다음단추'), 다시 = document.getElementById('다시단추');
+  if (이겼나 && !마지막탄){ 다음.textContent = (S.단계+1) + '탄'; 다음.onclick = () => 시작(S.단계+1); 다시.classList.remove('숨김'); }
+  else if (이겼나){ 다음.textContent = '처음부터'; 다음.onclick = () => { 기록.탄 = 1; 저장.쓰기(기록); 시작(1); }; 다시.classList.remove('숨김'); }
+  else { 다음.textContent = '다시'; 다음.onclick = () => 시작(S.단계); 다시.classList.add('숨김'); }
+  다시.onclick = () => 시작(S.단계);
+  document.getElementById('끝막').classList.remove('숨김');
+}
+
+// ── 시작 --------------------------------------------------------
+울타리자리(); 바탕그리기(); 판크기();
+Promise.all([그림읽기('양_동작.png'), 그림읽기('개_동작.png')]).then(([양im, 개im]) => {
+  const 이어 = document.getElementById('이어단추'), 처음 = document.getElementById('처음단추');
+  if (!양im || !개im){ 이어.textContent = '그림을 못 읽었다'; return; }
+  시트.양 = 양im; 시트.양뒤 = 뒤집기(양im); 시트.개 = 개im; 시트.개뒤 = 뒤집기(개im);
+  이어.disabled = false;
+  if (기록.탄 > 1){
+    이어.textContent = `이어하기 ${기록.탄}탄`; 이어.onclick = () => 시작(기록.탄);
+    처음.classList.remove('숨김'); 처음.onclick = () => { 기록.탄 = 1; 저장.쓰기(기록); 시작(1); };
+  } else { 이어.textContent = '시작'; 이어.onclick = () => 시작(1); }
+  if (별합() > 0) document.getElementById('모은별').textContent = `모은 별 ${별합()}/${탄들.length*3}`;
+});
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>

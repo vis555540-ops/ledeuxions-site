@@ -1,0 +1,14 @@
+{
+ "name": "양몰이",
+ "short_name": "양몰이",
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "orientation": "portrait",
+ "background_color": "#6f9448",
+ "theme_color": "#7fa650",
+ "icons": [
+  {"src": "아이콘.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+  {"src": "아이콘.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+ ]
+}
