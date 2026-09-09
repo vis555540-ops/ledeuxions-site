@@ -28,5 +28,8 @@
       "type": "LinkedDomains",
       "serviceEndpoint": "https://ledeuxions.com/"
     }
+  ],
+  "alsoKnownAs": [
+    "did:key:z6MkpFZ3yFY73VdQmrsa7YtXaybGuVt4bTE69gHg84YLZNeQ"
   ]
 }

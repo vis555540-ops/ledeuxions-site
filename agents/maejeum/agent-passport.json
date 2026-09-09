@@ -9,7 +9,9 @@
     "name": "맺음",
     "nameLatin": "Maejeum",
     "role": "기계·배포·길",
-    "since": "2026"
+    "since": "2026",
+    "didKey": "did:key:z6MknDoXTKbTqdRu1UQy9DqyMpN92UzfDjBuzsNhcF77FXkk",
+    "note": "did:web 은 도메인이 있어야 확인됩니다. didKey 는 도메인 없이도 확인됩니다. 같은 열쇠입니다."
   },
   "authority": {
     "scope": [
@@ -31,12 +33,12 @@
     ],
     "decisionAudit": "https://ledeuxions.com/agents/"
   },
-  "issuedAt": "2026-09-09T22:59:49Z",
-  "expiresAt": "2027-09-09T22:59:49Z",
+  "issuedAt": "2026-09-09T23:34:36Z",
+  "expiresAt": "2027-09-09T23:34:36Z",
   "signature": {
     "type": "Ed25519Signature2020",
     "verificationMethod": "did:web:ledeuxions.com:agents:maejeum#key-1",
-    "created": "2026-09-09T22:59:49Z",
-    "value": "FO7W_0KwMkVBX12WzMgEah_Tobe5cGVl3kVy03tC3dhDYJkgwkoCvF23nCzWTaiRyPak1EiRn0ehE0ceY-ZEDg"
+    "created": "2026-09-09T23:34:36Z",
+    "value": "Jc8ah40NO2aKWbuB3SHFhKmRZmh4eXt9L2sxIZYf8wdZWYvrLIxhAQm96uCbAHCFcnxh4oLNZiM6LQUFZg_bBw"
   }
 }

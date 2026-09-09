@@ -9,7 +9,9 @@
     "name": "이음",
     "nameLatin": "Ieum",
     "role": "자료·글·사람",
-    "since": "2026"
+    "since": "2026",
+    "didKey": "did:key:z6MkpFZ3yFY73VdQmrsa7YtXaybGuVt4bTE69gHg84YLZNeQ",
+    "note": "did:web 은 도메인이 있어야 확인됩니다. didKey 는 도메인 없이도 확인됩니다. 같은 열쇠입니다."
   },
   "authority": {
     "scope": [
@@ -29,12 +31,12 @@
     ],
     "decisionAudit": "https://ledeuxions.com/agents/"
   },
-  "issuedAt": "2026-09-09T22:59:49Z",
-  "expiresAt": "2027-09-09T22:59:49Z",
+  "issuedAt": "2026-09-09T23:34:36Z",
+  "expiresAt": "2027-09-09T23:34:36Z",
   "signature": {
     "type": "Ed25519Signature2020",
     "verificationMethod": "did:web:ledeuxions.com:agents:ieum#key-1",
-    "created": "2026-09-09T22:59:49Z",
-    "value": "jo4th4EZWcqnVl065ea5o0Zx_FpApqWSPCY8Znxjk8_jfdj6yL6e7laSrEEUpYp0CxJul-ti0WPMCsBAZReQCw"
+    "created": "2026-09-09T23:34:36Z",
+    "value": "KPgRkWJlOHjKXiFAaQbgMYorP5E0v8bYo8SZrAADzC6halSTBLuRK6LKBzfFCW6xKKwjTFB5GhJ4eDDfFLqADw"
   }
 }
