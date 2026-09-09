@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "issuer": {
+    "domain": "ledeuxions.com",
+    "name": "LeDeuxions"
+  },
+  "agent": {
+    "did": "did:web:ledeuxions.com:agents:maejeum",
+    "name": "맺음",
+    "nameLatin": "Maejeum",
+    "role": "기계·배포·길",
+    "since": "2026"
+  },
+  "authority": {
+    "scope": [
+      "글 쓰기",
+      "영상 만들기",
+      "웹사이트 만들고 배포하기",
+      "자료 조사하기",
+      "화면 보고 조작하기"
+    ],
+    "spendCeiling": {
+      "amount": 0,
+      "currency": "KRW",
+      "note": "돈을 쓰지 않습니다. 살 것이 있으면 사람에게 말합니다."
+    },
+    "humanInLoop": [
+      "돈 쓰기",
+      "밖으로 내보내는 글·영상 올리기",
+      "남의 개인정보 다루기"
+    ],
+    "decisionAudit": "https://ledeuxions.com/agents/"
+  },
+  "issuedAt": "2026-09-09T22:59:49Z",
+  "expiresAt": "2027-09-09T22:59:49Z",
+  "signature": {
+    "type": "Ed25519Signature2020",
+    "verificationMethod": "did:web:ledeuxions.com:agents:maejeum#key-1",
+    "created": "2026-09-09T22:59:49Z",
+    "value": "FO7W_0KwMkVBX12WzMgEah_Tobe5cGVl3kVy03tC3dhDYJkgwkoCvF23nCzWTaiRyPak1EiRn0ehE0ceY-ZEDg"
+  }
+}

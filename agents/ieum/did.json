@@ -1,0 +1,32 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/suites/jws-2020/v1"
+  ],
+  "id": "did:web:ledeuxions.com:agents:ieum",
+  "verificationMethod": [
+    {
+      "id": "did:web:ledeuxions.com:agents:ieum#key-1",
+      "type": "JsonWebKey2020",
+      "controller": "did:web:ledeuxions.com:agents:ieum",
+      "publicKeyJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "kZUhAGOINP-IXOMWvZYfxhJJ4nuNVee-lSd7LEFCJz0"
+      }
+    }
+  ],
+  "authentication": [
+    "did:web:ledeuxions.com:agents:ieum#key-1"
+  ],
+  "assertionMethod": [
+    "did:web:ledeuxions.com:agents:ieum#key-1"
+  ],
+  "service": [
+    {
+      "id": "did:web:ledeuxions.com:agents:ieum#home",
+      "type": "LinkedDomains",
+      "serviceEndpoint": "https://ledeuxions.com/"
+    }
+  ]
+}

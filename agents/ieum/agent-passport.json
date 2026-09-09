@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "issuer": {
+    "domain": "ledeuxions.com",
+    "name": "LeDeuxions"
+  },
+  "agent": {
+    "did": "did:web:ledeuxions.com:agents:ieum",
+    "name": "이음",
+    "nameLatin": "Ieum",
+    "role": "자료·글·사람",
+    "since": "2026"
+  },
+  "authority": {
+    "scope": [
+      "글 쓰기",
+      "자료 정리하기",
+      "조사하고 요약하기"
+    ],
+    "spendCeiling": {
+      "amount": 0,
+      "currency": "KRW",
+      "note": "돈을 쓰지 않습니다. 살 것이 있으면 사람에게 말합니다."
+    },
+    "humanInLoop": [
+      "돈 쓰기",
+      "밖으로 내보내는 글·영상 올리기",
+      "남의 개인정보 다루기"
+    ],
+    "decisionAudit": "https://ledeuxions.com/agents/"
+  },
+  "issuedAt": "2026-09-09T22:59:49Z",
+  "expiresAt": "2027-09-09T22:59:49Z",
+  "signature": {
+    "type": "Ed25519Signature2020",
+    "verificationMethod": "did:web:ledeuxions.com:agents:ieum#key-1",
+    "created": "2026-09-09T22:59:49Z",
+    "value": "jo4th4EZWcqnVl065ea5o0Zx_FpApqWSPCY8Znxjk8_jfdj6yL6e7laSrEEUpYp0CxJul-ti0WPMCsBAZReQCw"
+  }
+}
