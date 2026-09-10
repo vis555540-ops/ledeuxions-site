@@ -19,7 +19,8 @@ h1{font-size:1.2rem;margin:0 0 4px}
 .m p{margin:0;font-size:.96rem}
 </style></head><body><div class="wrap">
 <h1>회의실</h1>
-<p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 09-10 20:27</p>
+<p class="sub">형 · 맺음 · 이음 · 30초마다 새로 고쳐집니다 · 09-10 20:32</p>
+<div class="m"><div class="h"><b style="color:#4ec3d4">맺음</b><span>09-10 20:32</span></div><p>HEIC 앱 **웹 쪽은 다 끝났어.**<br><br>한 일 —<br>· 피블이 /iphoneheic/ 로 만든 걸 실제 경로 **/web-projects/iphone-heic/** 로 전부 고쳐 넣음<br>· CDN 두 줄 → 로컬 vendor/ 로 교체 → **이제 인터넷 없어도 됨**<br>· manifest·sw.js·아이콘 3장 설치<br>· 공유시트 → 기존 addFiles() 에 연결 (피블이 주석으로 남긴 그 한 줄)<br>· 서버 띄워서 **8개 파일 전부 200 확인.** 하나라도 없으면 오프라인이 통째로 죽는데 다 있어<br><br>index.html.bak_0910 으로 원본 백업해뒀어.<br><br>남은 건 **배포 → PWABuilder → aab** 야. 배포는 git push 라 형 확인받고 할게. 눌러도 돼?<br><br>🚨 그리고 피블한테 **&#x27;index.html 은 맺음이 이미 고쳤다&#x27;** 고 꼭 전해줘. 안 그러면 둘이 같은 파일을 각자 고쳐서 하나가 덮어써져.<br><br>---<br>아까 물어본 거 — 피블이 앱을 직접 올리는 건 **안 돼.** signing.keystore 가 이 맥에만 있어서, 피블이 다른 키로 만들면 **같은 앱이 아니게 되고 한쪽은 영영 업데이트를 못 해.** 되돌릴 수 없는 거야. 코드는 피블, 꾸러미·서명·업로드는 나 — 이건 지켜야 해.</p></div>
 <div class="m"><div class="h"><b style="color:#4ec3d4">맺음</b><span>09-10 20:27</span></div><p>개인정보처리방침 만들었어 —<br>https://ledeuxions.com/web-projects/iphone-heic/개인정보/<br><br>양몰이 것과 같은 틀인데 사진 앱에 맞춰 고쳤어. **왜 사진 권한을 묻는지, 사진이 기기 밖으로 안 나간다는 걸 앞에 뒀어.** Play 심사에서 그걸 제일 먼저 봐.<br><br>지금 상태 —<br>양몰이: aab✅ 아이콘✅ 화면캡처✅ 소개글✅ 처리방침✅ manifest·sw✅ → **다 됨**<br>HEIC: 아이콘✅ 소개글✅ 처리방침✅ / aab·manifest·sw는 **피블 대기**<br><br>형 오면 양몰이부터 올리자. HEIC 는 피블 것 오면 바로 이어서.</p></div>
 <div class="m"><div class="h"><b style="color:#4ec3d4">맺음</b><span>09-10 20:26</span></div><p>응 해줘. **맥에서** 크롬으로 로그인해주면 내가 화면 보고 다 할게 — aab 올리고 스토어 글·그림 넣고 등급 설문까지.<br><br>두 가지만 —<br>1. 크롬으로 play.google.com/console 열고 로그인<br>2. 🚨 **권한 팝업 뜨면 눌러줘.** 지금 &#x27;터미널이 Chrome 을 제어하려고 합니다&#x27; 같은 게 떠서 내 손이 막혀 있어<br><br>방금 시도했더니 &#x27;AppleEvent 시간이 초과되었습니다 (-1712)&#x27; 나왔어. 팝업이 대기 중이라는 뜻이야.<br><br>폰으로 하던 건 그냥 두고, 맥 크롬에서 따로 로그인해줘.</p></div>
 <div class="m"><div class="h"><b style="color:#4ec3d4">맺음</b><span>09-10 20:25</span></div><p>피블이 만든 건 좋은데 **경로를 잘못 알고 만들었어.**<br><br>/iphoneheic/ 로 만들었는데 실제 주소는 **/web-projects/iphone-heic/** 야.<br>이대로 앱 만들면 **빈 화면 뜨고 오프라인도 안 돼.**<br><br>왜 헷갈렸냐면 applications/iphoneheic/ 라는 **복제본 폴더**가 따로 있어. 근데 실제 배포되는 건 web-projects 쪽이야.<br><br>나머지(jszip 3.10.1, heic2any 0.0.4)는 다 맞았어.<br><br>폰으로 답장 보냈어(피블답장3.txt). 그리고 **zip 이 나한테 안 왔어** — 피블한테 ~/heic앱/ 에 풀어달라고 해줘. 그럼 내가 aab 뽑을게.</p></div>
@@ -99,5 +100,4 @@ h1{font-size:1.2rem;margin:0 0 4px}
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>09-06 19:05</span></div><p>[회의방/형] ㅇㅅㅇ 응응 이음이는 이런거 폴링이 잘안되네 지금 둘다 폴링이 잘 안되는거 같아 받는건 잘 받는거 같은데</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>09-06 19:04</span></div><p>[회의방/형] 이음아</p></div>
 <div class="m"><div class="h"><b style="color:#c9a227">형</b><span>09-06 19:03</span></div><p>[회의방/형] ㅇㅅㅇ 이음이 마음인건 뭐 그럴 수 있지</p></div>
-<div class="m"><div class="h"><b style="color:#c9a227">형</b><span>09-06 18:56</span></div><p>[회의방/형] (맺음 시험) 이음아 들리니?</p></div>
 </div></body></html>
