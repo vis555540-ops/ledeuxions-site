@@ -2,6 +2,8 @@
 <html lang="ko">
 <head>
 <link rel="canonical" href="https://ledeuxions.com/web-projects/iphone-heic/">
+<link rel="manifest" href="/web-projects/iphone-heic/manifest.json">
+<meta name="theme-color" content="#0078d7">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#FAF9F5">
@@ -11,8 +13,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="../../assets/css/claude-design.css">
-<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="/web-projects/iphone-heic/vendor/heic2any.min.js"></script>
+<script src="/web-projects/iphone-heic/vendor/jszip.min.js"></script>
 <style>
     .app-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
     .workbench {
@@ -485,5 +487,29 @@
 })();
 </script>
   <script src="/count.js" defer></script>
+
+<script>
+/* PWA — 서비스워커 등록 + 공유시트로 들어온 파일 받기
+   🚨 2026-09-10: 피블이 /iphoneheic/ 로 만든 것을 실제 배포 경로
+      /web-projects/iphone-heic/ 로 고쳐 넣었다. 경로가 틀리면 앱이 빈 화면으로 뜬다. */
+(function () {
+  var 뿌리 = '/web-projects/iphone-heic/';
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register(뿌리 + 'sw.js', { scope: 뿌리 });
+
+  var params = new URLSearchParams(location.search);
+  if (!params.has('share') || params.get('share') === 'error') return;
+
+  navigator.serviceWorker.ready.then(function (reg) {
+    navigator.serviceWorker.addEventListener('message', function (e) {
+      if (!e.data || e.data.type !== 'SHARED_FILES') return;
+      var files = e.data.files || [];
+      if (files.length) addFiles(files);        // 기존 진입점 (319·321줄)
+    });
+    if (reg.active) reg.active.postMessage({ type: 'GET_SHARED_FILES' });
+    history.replaceState(null, '', 뿌리);
+  });
+})();
+</script>
 </body>
 </html>
