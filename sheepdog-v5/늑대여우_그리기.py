@@ -26,11 +26,11 @@ OUT = ns['OUT']
            dict(body_dy=1, head=(0, 1)),
            dict(legs={'FR': (-1, 0, 4), 'BL': (-1, 0, 4)}),
            dict(body_dy=1, head=(0, 1))],
-  # 도망 2칸 — 달리기에서 제일 벌어진 칸과 제일 모인 칸. 꼬리 내리고 귀 눕힘
+  # 도망 2칸 — 달리기에서 제일 벌어진 칸과 제일 모인 칸. 꼬리 내리되 귀는 세운 채로 (형 지시 9/11)
   '도망': [dict(legs={'FL': (3, 0, 5), 'FR': (2, 0, 5), 'BL': (-3, 0, 5), 'BR': (-2, 0, 5)},
-                body_dy=1, head=(1, 1), ears=2, tail=(-1, 2), eyes='open', mouth='half'),
+                body_dy=1, head=(1, 1), ears=0, tail=(-1, 2), eyes='open', mouth='half'),
            dict(legs={'FL': (-3, -1, 4), 'FR': (-2, -1, 4), 'BL': (2, -1, 4), 'BR': (3, -1, 4)},
-                body_dy=-1, head=(0, -1), ears=2, tail=(-1, 2), mouth='half')],
+                body_dy=-1, head=(0, -1), ears=0, tail=(-1, 2), mouth='half')],
 }
 
 밖 = sys.argv[1] if len(sys.argv) > 1 else '.'
