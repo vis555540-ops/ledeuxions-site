@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1c2540">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>양몰이 · Sheepdog — 달빛목장</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="아이콘.png">
+<style>
+  @font-face { font-family:'DungGeunMo'; src:url('글꼴/DungGeunMo.woff2') format('woff2'); font-display:swap; }
+  html,body { margin:0; padding:0; background:#1c2540; height:100%; overflow:hidden; touch-action:none; -webkit-user-select:none; user-select:none; }
+  #판 { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; }
+</style>
+<!-- H5 Games Ads 승인 후 아래 주석을 풀고 광고.준비됨=true 로 바꾼다.
+<script async data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>window.adsbygoogle=window.adsbygoogle||[]; const adBreak=adConfig=function(o){adsbygoogle.push(o);}; adConfig({preloadAdBreaks:'on',sound:'on'});</script>
+-->
+</head>
+<body>
+<div id="판"><canvas id="캔버스"></canvas></div>
+<script src="자료.js"></script>
+<script src="문구.js"></script>
+<script src="저장.js"></script>
+<script src="소리.js"></script>
+<script src="광고.js"></script>
+<script src="그림.js"></script>
+<script src="규칙_생성기.js"></script>
+<script src="게임.js"></script>
+<script src="화면.js"></script>
+<script>
+(function(){
+  const 캔버스=document.getElementById("캔버스"); let 배율=1;
+  function 크기(){ const dpr=Math.min(3,window.devicePixelRatio||1); 배율=Math.min(window.innerWidth/폭, window.innerHeight/높이); 캔버스.width=폭*dpr; 캔버스.height=높이*dpr; 캔버스.style.width=(폭*배율)+"px"; 캔버스.style.height=(높이*배율)+"px"; const c=캔버스.getContext("2d"); c.setTransform(dpr,0,0,dpr,0,0); c.imageSmoothingEnabled=false; }
+  window.addEventListener("resize",크기);
+  저장.불러오기(); 그림.시작(캔버스); 크기();
+  function 좌표(e){ const r=캔버스.getBoundingClientRect(); const p=e.touches?e.touches[0]||e.changedTouches[0]:e; return { x:(p.clientX-r.left)/배율, y:(p.clientY-r.top)/배율 }; }
+  let 누름=false;
+  function 터치(종류,e){ e.preventDefault(); const {x,y}=좌표(e); if (팝업터치(종류,x,y)) return; if (현재화면&&현재화면.터치) 현재화면.터치(종류,x,y); }
+  캔버스.addEventListener("pointerdown",e=>{ 누름=true; 캔버스.setPointerCapture(e.pointerId); 터치("내림",e); });
+  캔버스.addEventListener("pointermove",e=>{ if (누름) 터치("이동",e); });
+  캔버스.addEventListener("pointerup",e=>{ 누름=false; 터치("올림",e); });
+  캔버스.addEventListener("pointercancel",e=>{ 누름=false; 터치("올림",e); });
+  캔버스.addEventListener("contextmenu",e=>e.preventDefault());
+  document.addEventListener("visibilitychange",()=>{ if (document.hidden) { if (현재코드==="S6") { 게임.정지=true; 전환("S7"); } 소리.배경음_멈춤(); } else 소리.배경음_재개(); });
+  let 이전=performance.now();
+  function 루프(now){ const dt=Math.min(0.05,(now-이전)/1000); 이전=now; 화면시간+=dt;
+    if (현재화면&&현재화면.갱신) 현재화면.갱신(dt);
+    if (현재화면&&현재화면.그림) 현재화면.그림();
+    팝업그림();
+    if (알림글) { 알림글.t-=dt; if (알림글.t<=0) 알림글=null; else { 그림.판(15,340,150,22); 그림.글자(알림글.글,90,347,8,색.글어둠,"center",true); } }
+    requestAnimationFrame(루프); }
+  전환("S0"); requestAnimationFrame(루프);
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+})();
+</script>
+</body>
+</html>
