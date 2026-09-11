@@ -1,14 +1,12 @@
 {
- "name": "양몰이 · Sheepdog",
+ "name": "양몰이",
  "short_name": "양몰이",
- "description": "Herd sheep with your dog at Moonlight Farm. Collect dogs, play in the yard, beat 30 stages.",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
  "orientation": "portrait",
- "background_color": "#1c2540",
- "theme_color": "#1c2540",
- "lang": "ko",
+ "background_color": "#6f9448",
+ "theme_color": "#7fa650",
  "icons": [
   {
    "src": "아이콘_192.png",
