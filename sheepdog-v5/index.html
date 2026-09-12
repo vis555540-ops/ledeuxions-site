@@ -14,6 +14,7 @@
   html,body { margin:0; padding:0; background:#1c2540; height:100%; overflow:hidden; touch-action:none; -webkit-user-select:none; user-select:none; }
   #판 { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
   canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; }
+  #인트로 { display:none; position:fixed; inset:0; width:100%; height:100%; object-fit:cover; background:#1c2540; z-index:10; }
 </style>
 <!-- H5 Games Ads 승인 후 아래 주석을 풀고 광고.준비됨=true 로 바꾼다.
 <script async data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
@@ -22,6 +23,8 @@
 </head>
 <body>
 <div id="판"><canvas id="캔버스"></canvas></div>
+<!-- 앱 켤 때 한 번 도는 인트로. 소리 때문에 반드시 탭(사용자 손짓) 뒤에 튼다. -->
+<video id="인트로" playsinline preload="none"></video>
 <script src="자료.js"></script>
 <script src="문구.js"></script>
 <script src="저장.js"></script>
@@ -37,6 +40,26 @@
   function 크기(){ const dpr=Math.min(3,window.devicePixelRatio||1); 배율=Math.min(window.innerWidth/폭, window.innerHeight/높이); 캔버스.width=폭*dpr; 캔버스.height=높이*dpr; 캔버스.style.width=(폭*배율)+"px"; 캔버스.style.height=(높이*배율)+"px"; const c=캔버스.getContext("2d"); c.setTransform(dpr,0,0,dpr,0,0); c.imageSmoothingEnabled=false; }
   window.addEventListener("resize",크기);
   저장.불러오기(); 그림.시작(캔버스); 크기();
+
+  // 인트로 영상. 못 받거나 못 틀면 조용히 건너뛴다 — 영상 때문에 게임이 막히면 안 된다.
+  let 인트로도는중 = false;
+  window.인트로재생 = function(끝나면){
+    if (인트로도는중) return;            // 두 번 부르면 첫 번째가 error 로 죽는다
+    인트로도는중 = true;
+    const v = document.getElementById("인트로");
+    let 끝남 = false;
+    const 마침 = () => { if (끝남) return; 끝남 = true; 인트로도는중 = false;
+      try { v.pause(); } catch(e){}
+      v.style.display = "none"; v.removeAttribute("src"); v.load();
+      끝나면(); };
+    v.addEventListener("ended", 마침, {once:true});
+    v.addEventListener("error", 마침, {once:true});
+    v.addEventListener("pointerdown", 마침);
+    v.src = "영상/인트로.mp4"; v.style.display = "block"; v.muted = false;
+    const p = v.play();
+    if (p && p.catch) p.catch(() => { v.muted = true; const q = v.play(); if (q && q.catch) q.catch(마침); });
+    setTimeout(() => { if (!끝남 && v.readyState === 0) 마침(); }, 5000);
+  };
   function 좌표(e){ const r=캔버스.getBoundingClientRect(); const p=e.touches?e.touches[0]||e.changedTouches[0]:e; return { x:(p.clientX-r.left)/배율, y:(p.clientY-r.top)/배율 }; }
   let 누름=false;
   function 터치(종류,e){ e.preventDefault(); const {x,y}=좌표(e); if (팝업터치(종류,x,y)) return; if (현재화면&&현재화면.터치) 현재화면.터치(종류,x,y); }
