@@ -49,6 +49,55 @@ const 그림 = {
   코인아이콘(x,y) { 그림.원(x,y,4,"#a07020"); 그림.원(x,y-0.5,3.5,색.코인); },
   뼈아이콘(x,y) { 그림.네모(x-4,y-1,8,2,색.뼈); 그림.원(x-4,y-1,1.5,색.뼈); 그림.원(x-4,y+1,1.5,색.뼈); 그림.원(x+4,y-1,1.5,색.뼈); 그림.원(x+4,y+1,1.5,색.뼈); },
   달(x,y,r) { 그림.원(x,y,r,색.달); 그림.원(x-r*0.35,y-r*0.2,r*0.15,"#e8d69a"); 그림.원(x+r*0.2,y+r*0.3,r*0.12,"#e8d69a"); },
+  // ── 목장 풍경 (2026-09-12 형: 「집이랑 나무랑 풀도 없고」) ─────────────
+  언덕(y지평) { // 지평선 뒤로 물러난 두 봉우리. 잔디를 나중에 그려서 아랫도리를 덮는다
+    const c=그림.c;
+    c.fillStyle="#3d6b28"; c.beginPath(); c.ellipse(38,y지평+18,72,44,0,0,Math.PI*2); c.fill();
+    c.fillStyle="#456f2c"; c.beginPath(); c.ellipse(142,y지평+22,66,40,0,0,Math.PI*2); c.fill();
+  },
+  구름(x,y,w) { // 밤구름. 둥근 구름은 픽셀 그림과 안 어울려서 네모로 쌓는다
+    const u=Math.max(2,Math.round(w/9)), C="#28325a";
+    그림.네모(x-u*4,y,     u*8,u, C);
+    그림.네모(x-u*3,y-u,   u*6,u, C);
+    그림.네모(x-u*1,y-u*2, u*3,u, C);
+    그림.네모(x-u*5,y+u,   u*7,u, C);
+  },
+  건초(x,바닥,w) { const c=그림.c; // 건초 더미
+    c.fillStyle="#d8b45c"; c.beginPath(); c.ellipse(x,바닥-w*0.32,w*0.5,w*0.34,0,0,Math.PI*2); c.fill();
+    c.fillStyle="#c29b45"; c.beginPath(); c.ellipse(x,바닥-w*0.2,w*0.5,w*0.22,0,0,Math.PI*2); c.fill();
+    for (let i=0;i<3;i++) 그림.네모(x-w*0.3+i*w*0.3,바닥-w*0.5,1,w*0.4,"#b98f3c");
+  },
+  나무(x,바닥,크기,종류) { // 종류: "침엽" | "활엽"
+    const h=크기, 굵기=Math.max(2,Math.round(크기*0.13));
+    그림.네모(x-굵기/2,바닥-h*0.34,굵기,h*0.34,색.나무2);
+    const c=그림.c;
+    if (종류==="침엽") {
+      for (let k=0;k<3;k++){ const w=크기*(0.46-k*0.11), y=바닥-h*0.3-k*h*0.22;
+        c.fillStyle=k%2?"#2f5c22":"#3a6d2a"; c.beginPath(); c.moveTo(x,y-h*0.3); c.lineTo(x-w,y); c.lineTo(x+w,y); c.closePath(); c.fill(); }
+    } else {
+      c.fillStyle="#3a6d2a"; c.beginPath(); c.ellipse(x,바닥-h*0.6,크기*0.42,크기*0.36,0,0,Math.PI*2); c.fill();
+      c.fillStyle="#47822f"; c.beginPath(); c.ellipse(x-크기*0.14,바닥-h*0.68,크기*0.26,크기*0.2,0,0,Math.PI*2); c.fill();
+    }
+  },
+  집(x,바닥,w) { // 지붕·문·불 켜진 창. 목장 본채
+    const h=w*0.62, 벽y=바닥-h, c=그림.c;
+    그림.네모(x,벽y,w,h,"#c9a06a");                       // 벽
+    그림.네모(x,바닥-3,w,3,"#a8804f");                     // 그림자 띠
+    c.fillStyle="#8c3a2e"; c.beginPath();                   // 지붕
+    c.moveTo(x-4,벽y); c.lineTo(x+w/2,벽y-h*0.55); c.lineTo(x+w+4,벽y); c.closePath(); c.fill();
+    c.fillStyle="#6f2d24"; c.fillRect(Math.round(x-4),Math.round(벽y),Math.round(w+8),2);
+    그림.네모(x+w*0.42,바닥-h*0.46,w*0.2,h*0.46,색.나무2);  // 문
+    const 창=(cx,cy,s)=>{ 그림.네모(cx,cy,s,s,"#ffd66b"); 그림.네모(cx,cy+s/2-0.5,s,1,"#c9a04a"); 그림.네모(cx+s/2-0.5,cy,1,s,"#c9a04a"); };
+    창(x+w*0.12,벽y+h*0.22,w*0.19); 창(x+w*0.7,벽y+h*0.22,w*0.19);
+    그림.네모(x+w*0.16,벽y-h*0.5,w*0.1,h*0.3,"#8c8c8c");    // 굴뚝
+  },
+  울타리(y,x0,x1,간격) {
+    for (let x=x0;x<=x1;x+=간격) 그림.네모(x,y-6,2,8,색.나무);
+    그림.네모(x0,y-4,x1-x0,2,색.나무2); 그림.네모(x0,y-1,x1-x0,2,색.나무2);
+  },
+  풀포기(x,y,크기) { const c=색.잔디2;
+    그림.네모(x,y-크기,1,크기,c); 그림.네모(x-2,y-크기*0.6,1,크기*0.6,c); 그림.네모(x+2,y-크기*0.7,1,크기*0.7,c);
+  },
   잔디(y0,y1) { 그림.네모(0,y0,폭,y1-y0,색.잔디); for (let i=0;i<60;i++){ const h=(i*2654435761>>>0); const x=h%폭, y=y0+((h>>>8)%(y1-y0)); 그림.네모(x,y,2,1,색.잔디2); } },
   // 시트 그리기. 없으면 임시 치비. (x,y) = 발 아래 기준.
   시트그리기(키, 규격이름, 동작, 프레임시간, x, y, 왼쪽, 팔레트색, 옵션) {
