@@ -110,16 +110,9 @@ def dog(P, head=(0,0), body_dy=0, legs=None, sit=False, eyes='open', mouth='clos
     ell(Hd, 9.5, 13.2, 4.6, 3.9, FC)                  # 주둥이
     if P['이마줄']: rect(Hd, 9, 6, 10, 10, FC)
     ell(Hd, 8, 15.5, 3.6, 2.2, FC)
-    # 🚨 2026-09-12 형: 「처음 들어갈 때 있는 개도 이상하고」
-    #    눈을 외곽선 색으로만 찍어서 보더콜리·셰퍼드처럼 머리가 어두운 개는 눈이 묻혔다.
-    #    남는 게 분홍 볼터치뿐이라 그게 눈처럼 보였다. 흰자를 한 칸 깔아 준다.
-    EW = (246, 244, 238)
     if eyes == 'open':
-        rect(Hd, 6, 11, 7, 12, EW); rect(Hd, 11, 11, 12, 12, EW)
         rect(Hd, 7, 11, 7, 12, OUT); rect(Hd, 12, 11, 12, 12, OUT)
     else:
-        for x in (6, 7): put(Hd, x, 11, EW)
-        for x in (12, 13): put(Hd, x, 11, EW)
         for x in (6, 7): put(Hd, x, 12, OUT)
         for x in (12, 13): put(Hd, x, 12, OUT)
     put(Hd, 5, 13, MP); put(Hd, 14, 13, MP)
@@ -154,9 +147,8 @@ DOG = {
     '짖기': [dict(mouth='open', head=(-1, 0), bark=True), dict(mouth='closed')],
 }
 
-import sys
-OUT_DIR = (sys.argv[1] if len(sys.argv) > 1 else '개'); os.makedirs(OUT_DIR, exist_ok=True)
-PV = (sys.argv[2] if len(sys.argv) > 2 else '미리보기'); os.makedirs(PV, exist_ok=True)
+OUT_DIR = '/home/claude/game/개'; os.makedirs(OUT_DIR, exist_ok=True)
+PV = '/home/claude/game/미리보기'; os.makedirs(PV, exist_ok=True)
 
 def build(name, P):
     rows = []
