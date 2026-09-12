@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>양몰이 그림판 — 180×390</title>
+<style>
+  :root { --바닥:#161b2c; --판:#232a42; --글:#e8e6e0; --선:#3a4260; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:var(--바닥); color:var(--글);
+         font:14px/1.5 -apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+         display:flex; flex-direction:column; align-items:center; padding:10px 8px 24px; }
+  h1 { font-size:15px; margin:2px 0 8px; font-weight:600; opacity:.85; }
+  h1 small { font-weight:400; opacity:.6; }
+
+  #무대 { position:relative; touch-action:none; }
+  canvas { display:block; image-rendering:pixelated; background:#0e1220;
+           border:2px solid var(--선); border-radius:4px; cursor:crosshair; }
+  #격자판 { position:absolute; inset:2px; pointer-events:none; }
+
+  .줄 { display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+        margin-top:10px; max-width:420px; }
+  button { background:var(--판); color:var(--글); border:1px solid var(--선);
+           border-radius:8px; padding:9px 12px; font-size:14px; cursor:pointer; min-width:46px; }
+  button:active { transform:translateY(1px); }
+  button.켜짐 { background:#e0b04a; color:#1c2540; border-color:#e0b04a; font-weight:700; }
+
+  #색판 { display:grid; grid-template-columns:repeat(9,1fr); gap:5px; margin-top:10px;
+          width:100%; max-width:360px; }
+  .색 { aspect-ratio:1; border-radius:6px; border:2px solid #0000; cursor:pointer; }
+  .색.고름 { border-color:#fff; box-shadow:0 0 0 2px #000 inset; }
+
+  label { display:inline-flex; align-items:center; gap:5px; font-size:13px; opacity:.8; }
+  input[type=color] { width:42px; height:34px; padding:0; border:1px solid var(--선);
+                      border-radius:8px; background:none; }
+  .귀띔 { font-size:12px; opacity:.55; margin-top:12px; text-align:center; max-width:360px; }
+</style>
+</head>
+<body>
+
+<h1>양몰이 그림판 <small>— 게임 화면과 똑같은 180 × 390</small></h1>
+
+<div id="무대">
+  <canvas id="칠판"></canvas>
+  <canvas id="격자판"></canvas>
+</div>
+
+<div class="줄">
+  <button id="붓" class="켜짐">✏️ 붓</button>
+  <button id="지우개">🩹 지우개</button>
+  <button id="채우기">🪣 채우기</button>
+  <button id="스포이드">💧 색뽑기</button>
+</div>
+
+<div class="줄">
+  <button id="되돌리기">↩︎ 되돌리기</button>
+  <button id="격자">▦ 격자</button>
+  <button id="밑그림">🖼 밑그림</button>
+  <button id="비우기">🗑 비우기</button>
+  <button id="저장">💾 저장</button>
+</div>
+
+<div class="줄">
+  <label>굵기 <input id="굵기" type="range" min="1" max="6" value="1" style="width:110px"></label>
+  <label>내 색 <input id="내색" type="color" value="#ff7ab6"></label>
+</div>
+
+<div id="색판"></div>
+
+<p class="귀띔">
+  그린 건 저절로 기억돼요 — 창을 닫았다 켜도 남아 있어요.<br>
+  「밑그림」을 켜면 지금 마당 그림이 흐리게 깔려서 위에 대고 그릴 수 있어요.<br>
+  다 그리면 「저장」 — 180×390 그대로 내려받아져요.
+</p>
+
+<script>
+const 폭 = 180, 높이 = 390;                       // 게임 캔버스와 같은 크기
+const 무대 = document.getElementById('무대');
+const 칠판 = document.getElementById('칠판'), ctx = 칠판.getContext('2d');
+const 격자판 = document.getElementById('격자판'), gtx = 격자판.getContext('2d');
+칠판.width = 폭; 칠판.height = 높이;
+ctx.imageSmoothingEnabled = false;
+
+// 화면에 몇 배로 키워 보일지 — 폰이든 컴퓨터든 화면에 들어가게
+let 배; function 배정하기(){
+  const 쓸높이 = Math.max(320, window.innerHeight - 330);
+  배 = Math.max(1, Math.min(Math.floor((window.innerWidth - 30) / 폭), Math.floor(쓸높이 / 높이)));
+  for (const c of [칠판, 격자판]) { c.style.width = 폭*배 + 'px'; c.style.height = 높이*배 + 'px'; }
+  격자판.width = 폭*배; 격자판.height = 높이*배; 격자그리기();
+}
+
+// ── 게임이 쓰는 색 (자료.js 의 색표 그대로)
+const 팔레트 = ['#1c2540','#2b3660','#f6e7b0','#5f9a3c','#4f8531','#8a6a3c','#7a5230','#5a3a20',
+                '#4f8fd0','#3a70b0','#8c8c8c','#6a6a6a','#f4f0e6','#f6ead0','#e04848','#57c27d',
+                '#ffd23f','#f2c14e','#4a4a5a','#e07a3a','#2b2b2b','#e0a458','#e6b85c','#f2e6c8',
+                '#8a7b6a','#4a3a2a','#ffffff'];
+let 색 = 팔레트[0], 연장 = '붓', 굵기 = 1;
+
+const 색판 = document.getElementById('색판');
+팔레트.forEach((c, i) => {
+  const d = document.createElement('div');
+  d.className = '색' + (i === 0 ? ' 고름' : ''); d.style.background = c; d.title = c;
+  d.onclick = () => { 색 = c; document.querySelectorAll('.색').forEach(e => e.classList.remove('고름')); d.classList.add('고름'); };
+  색판.appendChild(d);
+});
+document.getElementById('내색').oninput = e => {
+  색 = e.target.value; document.querySelectorAll('.색').forEach(x => x.classList.remove('고름'));
+};
+document.getElementById('굵기').oninput = e => 굵기 = +e.target.value;
+
+// ── 연장 고르기
+for (const 이름 of ['붓','지우개','채우기','스포이드']) {
+  document.getElementById(이름).onclick = () => {
+    연장 = 이름;
+    ['붓','지우개','채우기','스포이드'].forEach(n =>
+      document.getElementById(n).classList.toggle('켜짐', n === 이름));
+  };
+}
+
+// ── 되돌리기 (20단계면 충분하다)
+const 되돌림 = [];
+function 담아두기(){ 되돌림.push(ctx.getImageData(0,0,폭,높이)); if (되돌림.length > 20) 되돌림.shift(); }
+document.getElementById('되돌리기').onclick = () => { const p = 되돌림.pop(); if (p) { ctx.putImageData(p,0,0); 저장해두기(); } };
+
+// ── 격자
+let 격자켜짐 = true;
+function 격자그리기(){
+  gtx.clearRect(0,0,격자판.width,격자판.height);
+  if (!격자켜짐 || 배 < 2) return;
+  gtx.strokeStyle = 'rgba(255,255,255,.09)'; gtx.lineWidth = 1;
+  for (let x = 0; x <= 폭; x++) { gtx.beginPath(); gtx.moveTo(x*배+.5,0); gtx.lineTo(x*배+.5,높이*배); gtx.stroke(); }
+  for (let y = 0; y <= 높이; y++) { gtx.beginPath(); gtx.moveTo(0,y*배+.5); gtx.lineTo(폭*배,y*배+.5); gtx.stroke(); }
+  gtx.strokeStyle = 'rgba(255,255,255,.22)';          // 10칸마다 진하게 — 자리 세기 쉽게
+  for (let x = 0; x <= 폭; x += 10) { gtx.beginPath(); gtx.moveTo(x*배+.5,0); gtx.lineTo(x*배+.5,높이*배); gtx.stroke(); }
+  for (let y = 0; y <= 높이; y += 10) { gtx.beginPath(); gtx.moveTo(0,y*배+.5); gtx.lineTo(폭*배,y*배+.5); gtx.stroke(); }
+}
+document.getElementById('격자').onclick = e => { 격자켜짐 = !격자켜짐; e.target.classList.toggle('켜짐', 격자켜짐); 격자그리기(); };
+document.getElementById('격자').classList.add('켜짐');
+
+// ── 밑그림 — 지금 마당 그림을 흐리게 깔아 대고 그릴 수 있게
+let 밑 = null, 밑켜짐 = false;
+document.getElementById('밑그림').onclick = e => {
+  밑켜짐 = !밑켜짐; e.target.classList.toggle('켜짐', 밑켜짐);
+  무대.style.background = 밑켜짐 ? `url(마당_배경.png) center/100% 100% no-repeat` : 'none';
+  칠판.style.opacity = 밑켜짐 ? .85 : 1;
+};
+
+// ── 찍기
+function 자리(e){
+  const r = 칠판.getBoundingClientRect();
+  return [Math.floor((e.clientX - r.left) / (r.width / 폭)),
+          Math.floor((e.clientY - r.top)  / (r.height / 높이))];
+}
+function 한점(x, y){
+  const n = 굵기, 시 = Math.floor((n-1)/2);
+  if (연장 === '지우개') ctx.clearRect(x-시, y-시, n, n);
+  else { ctx.fillStyle = 색; ctx.fillRect(x-시, y-시, n, n); }
+}
+function 선긋기(x0,y0,x1,y1){        // 붓을 빨리 움직여도 끊기지 않게 두 점 사이를 잇는다
+  const dx = Math.abs(x1-x0), dy = Math.abs(y1-y0);
+  const sx = x0<x1?1:-1, sy = y0<y1?1:-1; let 오차 = dx-dy;
+  for (;;) { 한점(x0,y0); if (x0===x1 && y0===y1) break;
+    const e2 = 2*오차; if (e2 > -dy) { 오차 -= dy; x0 += sx; } if (e2 < dx) { 오차 += dx; y0 += sy; } }
+}
+function 뽑기(x,y){
+  const d = ctx.getImageData(x,y,1,1).data;
+  if (d[3] === 0) return;
+  색 = '#' + [d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
+  document.getElementById('내색').value = 색;
+  document.querySelectorAll('.색').forEach(e=>e.classList.remove('고름'));
+}
+function 채우기실행(x,y){
+  const img = ctx.getImageData(0,0,폭,높이), d = img.data;
+  const 자 = (x,y) => (y*폭+x)*4;
+  const 처음 = [d[자(x,y)],d[자(x,y)+1],d[자(x,y)+2],d[자(x,y)+3]];
+  const t = document.createElement('canvas').getContext('2d');
+  t.fillStyle = 색; t.fillRect(0,0,1,1);
+  const 새 = t.getImageData(0,0,1,1).data;
+  if (처음.every((v,i)=>v===새[i])) return;
+  const 쌓 = [[x,y]];
+  while (쌓.length) {
+    const [cx,cy] = 쌓.pop(); if (cx<0||cy<0||cx>=폭||cy>=높이) continue;
+    const i = 자(cx,cy);
+    if (d[i]!==처음[0]||d[i+1]!==처음[1]||d[i+2]!==처음[2]||d[i+3]!==처음[3]) continue;
+    d[i]=새[0]; d[i+1]=새[1]; d[i+2]=새[2]; d[i+3]=새[3];
+    쌓.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
+  }
+  ctx.putImageData(img,0,0);
+}
+
+let 그리는중 = false, 앞 = null;
+칠판.addEventListener('pointerdown', e => {
+  e.preventDefault(); 칠판.setPointerCapture(e.pointerId);
+  const [x,y] = 자리(e);
+  if (연장 === '스포이드') { 뽑기(x,y); return; }
+  담아두기();
+  if (연장 === '채우기') { 채우기실행(x,y); 저장해두기(); return; }
+  그리는중 = true; 앞 = [x,y]; 한점(x,y);
+});
+칠판.addEventListener('pointermove', e => {
+  if (!그리는중) return; e.preventDefault();
+  const [x,y] = 자리(e); if (앞) 선긋기(앞[0],앞[1],x,y); 앞 = [x,y];
+});
+for (const 끝 of ['pointerup','pointercancel','pointerleave'])
+  칠판.addEventListener(끝, () => { if (그리는중) { 그리는중 = false; 앞 = null; 저장해두기(); } });
+
+// ── 저절로 기억해두기 (형이 실수로 창을 닫아도 그린 게 안 없어지게)
+const 열쇠 = '양몰이_그림판';
+function 저장해두기(){ try { localStorage.setItem(열쇠, 칠판.toDataURL()); } catch(e) {} }
+function 불러오기(){
+  try { const s = localStorage.getItem(열쇠); if (!s) return;
+    const im = new Image(); im.onload = () => ctx.drawImage(im,0,0); im.src = s;
+  } catch(e) {}
+}
+
+document.getElementById('비우기').onclick = () => {
+  if (!confirm('다 지울까요? 되돌리기로 한 번은 되살릴 수 있어요.')) return;
+  담아두기(); ctx.clearRect(0,0,폭,높이); 저장해두기();
+};
+document.getElementById('저장').onclick = () => {
+  const a = document.createElement('a');
+  a.download = '양몰이_그림_' + new Date().toISOString().slice(0,19).replace(/[-:T]/g,'') + '.png';
+  a.href = 칠판.toDataURL('image/png'); a.click();
+};
+
+window.addEventListener('resize', 배정하기);
+배정하기(); 불러오기();
+</script>
+</body>
+</html>
