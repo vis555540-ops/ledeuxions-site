@@ -35,3 +35,11 @@
 
 /sheepdog-v5/*.js
   Cache-Control: no-cache, must-revalidate
+
+# 한글 파일이름은 위의 *.js 규칙에 안 걸린다. 그래서 index.html 에서 주소 뒤에
+# ?v= 판번호를 붙여 넘긴다. 그 index 자체는 반드시 새것이어야 한다.
+/sheepdog/
+  Cache-Control: no-cache, must-revalidate
+
+/sheepdog-v5/
+  Cache-Control: no-cache, must-revalidate
