@@ -10,7 +10,7 @@ const 그림 = {
   동작대응: { 서기:"가만", 걷기:"걷기", 앉기:"앉기", 짖기:"짖기", 겁:"놀람", 도망:"도망", 달리기:"달리기", 하품:"하품", 잠:"잠", 먹기:"먹기" },
   시작(canvas) {
     그림.화면 = canvas; 그림.c = canvas.getContext("2d"); 그림.c.imageSmoothingEnabled = false;
-    const 불러올 = [["양","양_동작.png"],["늑대","늑대.png"],["여우","여우.png"]];
+    const 불러올 = [["양","양_동작.png"],["늑대","늑대.png"],["여우","여우.png"],["마당","yard.png"]];
     견종순서.forEach(k => 불러올.push(["개_"+k, "개/"+k+".png"]));
     불러올.forEach(([키, 경로]) => { const im = new Image(); im.onload=()=>{ 그림.시트[키]=im; }; im.onerror=()=>{}; im.src=경로; });
   },

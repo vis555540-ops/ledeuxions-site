@@ -56,6 +56,8 @@
   <button id="되돌리기">↩︎ 되돌리기</button>
   <button id="격자">▦ 격자</button>
   <button id="밑그림">🖼 밑그림</button>
+  <button id="밑올리기">📂 밑그림 올리기</button>
+  <input id="밑파일" type="file" accept="image/*" hidden>
   <button id="비우기">🗑 비우기</button>
   <button id="저장">💾 저장</button>
 </div>
@@ -69,7 +71,7 @@
 
 <p class="귀띔">
   그린 건 저절로 기억돼요 — 창을 닫았다 켜도 남아 있어요.<br>
-  「밑그림」을 켜면 지금 마당 그림이 흐리게 깔려서 위에 대고 그릴 수 있어요.<br>
+  「밑그림」을 켜면 마당 그림이 흐리게 깔려요. 「밑그림 올리기」로 형 그림을 깔 수도 있어요.<br>
   다 그리면 「저장」 — 180×390 그대로 내려받아져요.
 </p>
 
@@ -138,12 +140,27 @@ document.getElementById('격자').onclick = e => { 격자켜짐 = !격자켜짐;
 document.getElementById('격자').classList.add('켜짐');
 
 // ── 밑그림 — 지금 마당 그림을 흐리게 깔아 대고 그릴 수 있게
-let 밑 = null, 밑켜짐 = false;
+let 밑주소 = 'yard.png', 밑켜짐 = false;
+function 밑깔기(){
+  무대.style.background = 밑켜짐 ? `url("${밑주소}") center/100% 100% no-repeat` : 'none';
+  칠판.style.opacity = 밑켜짐 ? .8 : 1;
+}
 document.getElementById('밑그림').onclick = e => {
-  밑켜짐 = !밑켜짐; e.target.classList.toggle('켜짐', 밑켜짐);
-  무대.style.background = 밑켜짐 ? `url(yard.png) center/100% 100% no-repeat` : 'none';
-  칠판.style.opacity = 밑켜짐 ? .85 : 1;
+  밑켜짐 = !밑켜짐; e.target.classList.toggle('켜짐', 밑켜짐); 밑깔기();
 };
+// 형이 가진 그림을 밑에 깔기 — 폰 사진첩에서도 고를 수 있다
+document.getElementById('밑올리기').onclick = () => document.getElementById('밑파일').click();
+document.getElementById('밑파일').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    밑주소 = r.result; 밑켜짐 = true;
+    document.getElementById('밑그림').classList.add('켜짐'); 밑깔기();
+    try { localStorage.setItem('양몰이_밑그림', 밑주소); } catch(err) {}   // 너무 크면 그냥 넘어간다
+  };
+  r.readAsDataURL(f);
+};
+try { const 저 = localStorage.getItem('양몰이_밑그림'); if (저) 밑주소 = 저; } catch(err) {}
 
 // ── 찍기
 function 자리(e){
