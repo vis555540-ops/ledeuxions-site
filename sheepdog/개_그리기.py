@@ -53,15 +53,17 @@ def recolor(L, mask_fn, c):
   '골든리트리버':dict(몸=(222,174,88), 몸2=(236,198,120), 얼굴=(246,226,172), 얼굴2=(220,196,140), 귀='늘어짐',꼬리='깃털', 이마줄=False, 안장=None,        다리=5, 털=False),
 }
 
-def dog(P, head=(0,0), body_dy=0, legs=None, sit=False, eyes='open', mouth='closed', tail=(0,0), ears=0, bark=False):
+def dog(P, head=(0,0), body_dy=0, legs=None, sit=False, eyes='open', mouth='closed', tail=(0,0), ears=0, bark=False, 아기=False):
+    # 아기: 머리는 어른 것 그대로 두고 몸·다리·꼬리만 줄인다.
+    #       얼굴 눈·코·볼은 좌표가 고정이라 머리를 건드리면 다 어긋난다. 몸만 줄여도 치비가 된다.
     DK, DK2, FC, FC2 = P['몸'], P['몸2'], P['얼굴'], P['얼굴2']
     legs = legs or {}
-    lh = P['다리']
+    lh = 2 if 아기 else P['다리']
     body_dy += (5 - lh)            # 다리 짧으면 몸이 내려온다
     def leg(name, x):
         dx, dy, h = legs.get(name, (0, 0, lh))
         h = min(h, lh)
-        L = layer(); y0 = 22 + body_dy + dy
+        L = layer(); y0 = (25 if 아기 else 22) + body_dy + dy
         rect(L, x+dx, y0, x+dx+2, y0+h, FC if P['이마줄'] else DK)
         rect(L, x+dx, y0, x+dx+2, y0+1, DK)
         rect(L, x+dx, y0+h, x+dx+2, y0+h, FC2 if P['이마줄'] else OUT if False else DK2)
@@ -77,19 +79,30 @@ def dog(P, head=(0,0), body_dy=0, legs=None, sit=False, eyes='open', mouth='clos
         ell(T, 27.5, 14.5, 1.6, 1.6, DK)
     elif k == '처짐':
         ell(T, 27.5, 15, 2.1, 2.1, DK); ell(T, 28.5, 18, 2.0, 2.0, DK); ell(T, 29, 21, 1.7, 1.7, DK); put(T, 29, 22, FC)
-    T = shift(outline(T), tail[0], tail[1] + body_dy)
+    T = shift(outline(T), tail[0] + (1 if 아기 else 0), tail[1] + body_dy + (6 if 아기 else 0))
     # 몸
     B = layer()
-    ell(B, 19.5, 17.5, 8.8, 6.2, DK)
-    recolor(B, lambda x, y: y <= 13, DK2)
-    if P['안장']: recolor(B, lambda x, y: y <= 15 and 13 <= x <= 26, P['안장'])
-    ell(B, 15, 19, 4.2, 4, FC)                       # 가슴
-    rect(B, 13, 21, 25, 23, FC)                       # 배
+    if 아기:
+        # 머리는 어른 것 그대로. 몸을 확 줄여야 「머리 큰 강아지」로 보인다
+        ell(B, 20.5, 20.6, 5.2, 3.7, DK)
+        recolor(B, lambda x, y: y <= 19, DK2)
+        if P['안장']: recolor(B, lambda x, y: y <= 20 and 17 <= x <= 25, P['안장'])
+        ell(B, 17.5, 21.4, 2.6, 2.4, FC)              # 가슴
+        rect(B, 17, 22, 24, 23, FC)                   # 배
+    else:
+        ell(B, 19.5, 17.5, 8.8, 6.2, DK)
+        recolor(B, lambda x, y: y <= 13, DK2)
+        if P['안장']: recolor(B, lambda x, y: y <= 15 and 13 <= x <= 26, P['안장'])
+        ell(B, 15, 19, 4.2, 4, FC)                       # 가슴
+        rect(B, 13, 21, 25, 23, FC)                       # 배
     if P['털']:
         for (x, y) in [(14,14),(17,13),(20,13),(23,14),(26,16),(15,24),(19,24),(23,24)]: put(B, x, y, FC2)
     if sit:
-        ell(B, 25, 23, 3.8, 3.2, DK)
-        rect(B, 23, 25, 26, 26, FC); rect(B, 23, 26, 26, 26, FC2)
+        if 아기:
+            ell(B, 24, 23.5, 3.0, 2.6, DK); rect(B, 22, 25, 25, 26, FC)
+        else:
+            ell(B, 25, 23, 3.8, 3.2, DK)
+            rect(B, 23, 25, 26, 26, FC); rect(B, 23, 26, 26, 26, FC2)
     B = shift(outline(B), 0, body_dy)
     # 귀
     E = layer(); g = P['귀']
@@ -101,7 +114,7 @@ def dog(P, head=(0,0), body_dy=0, legs=None, sit=False, eyes='open', mouth='clos
     else:  # 늘어짐
         c = P['몸'] if not P['털'] else (120,116,114)
         rect(E, 3, 8, 5, 15, c); put(E, 4, 16, c); rect(E, 14, 8, 16, 15, c); put(E, 15, 16, c)
-    E = shift(outline(E), head[0], head[1] + ears)
+    E = shift(outline(E), head[0], head[1] + ears + (5 if 아기 else 0))
     # 머리
     Hd = layer()
     ell(Hd, 9.5, 11.5, 6.2, 5.6, DK)
@@ -133,7 +146,7 @@ def dog(P, head=(0,0), body_dy=0, legs=None, sit=False, eyes='open', mouth='clos
     if P['털']:  # 앞머리
         for x in range(4, 15): put(Hd, x, 9 + (x % 2), DK2)
         for x in (5, 8, 11): put(Hd, x, 10, DK)
-    Hd = shift(outline(Hd), head[0], head[1])
+    Hd = shift(outline(Hd), head[0], head[1] + (5 if 아기 else 0))
     K = layer()
     if bark:
         for (x, y) in [(2, 10), (1, 12), (2, 14), (3, 8), (3, 16)]: put(K, x + head[0], y, OUT)
@@ -158,24 +171,29 @@ import sys
 OUT_DIR = (sys.argv[1] if len(sys.argv) > 1 else '개'); os.makedirs(OUT_DIR, exist_ok=True)
 PV = (sys.argv[2] if len(sys.argv) > 2 else '미리보기'); os.makedirs(PV, exist_ok=True)
 
-def build(name, P):
+def build(name, P, 아기=False, 밖=None):   # 🚨 밖 을 안 주면 어른 자리에 덮어쓴다. 새끼를 뽑을 때 어른이 사라졌었다
     rows = []
     for aname, frames in DOG.items():
-        rows.append([Image.fromarray(dog(P, **kw), 'RGBA') for kw in frames])
+        rows.append([Image.fromarray(dog(P, 아기=아기, **kw), 'RGBA') for kw in frames])
     sheet = Image.new('RGBA', (4 * 32, len(rows) * 32))
     for r, imgs in enumerate(rows):
         for c, im in enumerate(imgs): sheet.paste(im, (c * 32, r * 32))
-    sheet.save(f'{OUT_DIR}/{name}.png')
+    sheet.save(f'{밖 or OUT_DIR}/{name}.png')
     # 미리보기 gif (가만→걷기→앉기→짖기 순서로 한 바퀴)
     gs = []
     for r, dur in [(0, 400), (1, 130), (4, 500), (5, 150), (2, 90)]:
         for im in rows[r] * (2 if r in (1, 2) else 1):
             g = Image.new('RGBA', (192, 192), (124, 186, 96, 255)); g.alpha_composite(im.resize((192, 192), Image.NEAREST))
             gs.append((g.convert('P', palette=Image.ADAPTIVE), dur))
-    gs[0][0].save(f'{PV}/{name}.gif', save_all=True, append_images=[g for g, _ in gs[1:]], duration=[d for _, d in gs], loop=0)
+    gs[0][0].save(f'{PV}/{("새끼_" if 아기 else "")}{name}.gif', save_all=True, append_images=[g for g, _ in gs[1:]], duration=[d for _, d in gs], loop=0)
     return sheet
 
 sheets = {n: build(n, P) for n, P in 종들.items()}
+if os.environ.get('PUPPY'):
+    새끼밖 = OUT_DIR + '/새끼'; os.makedirs(새끼밖, exist_ok=True)
+    for n, P in 종들.items():
+        build(n, P, 아기=True, 밖=새끼밖)
+    print('새끼도 뽑음', 새끼밖)
 # 한 장 모아보기 (가만 첫 칸, 6배)
 board = Image.new('RGBA', (6 * 40 * 6, 40 * 6), (124, 186, 96, 255))
 for i, (n, s) in enumerate(sheets.items()):
