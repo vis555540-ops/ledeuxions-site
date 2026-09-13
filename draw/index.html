@@ -14,7 +14,7 @@
   h1 small { font-weight:400; opacity:.6; }
 
   #무대 { position:relative; touch-action:none; }
-  canvas { display:block; image-rendering:pixelated; background:#0e1220;
+  canvas { display:block; image-rendering:pixelated; background:#f2f4f8;
            border:2px solid var(--선); border-radius:4px; cursor:crosshair; }
   #격자판 { position:absolute; inset:2px; pointer-events:none; }
 
@@ -63,10 +63,11 @@
 </div>
 
 <div class="줄">
-  <label>굵기 <input id="굵기" type="range" min="1" max="6" value="1" style="width:110px"></label>
+  <label>굵기 <span id="굵기값">3</span> <input id="굵기" type="range" min="1" max="12" value="3" style="width:110px"></label>
   <label>내 색 <input id="내색" type="color" value="#ff7ab6"></label>
 </div>
 
+<div class="줄"><span style="font-size:13px;opacity:.75">지금 색</span><span id="지금색" style="display:inline-block;width:34px;height:22px;border-radius:6px;border:1px solid var(--선);background:#5f9a3c"></span></div>
 <div id="색판"></div>
 
 <p class="귀띔">
@@ -96,19 +97,20 @@ const 팔레트 = ['#1c2540','#2b3660','#f6e7b0','#5f9a3c','#4f8531','#8a6a3c','
                 '#4f8fd0','#3a70b0','#8c8c8c','#6a6a6a','#f4f0e6','#f6ead0','#e04848','#57c27d',
                 '#ffd23f','#f2c14e','#4a4a5a','#e07a3a','#2b2b2b','#e0a458','#e6b85c','#f2e6c8',
                 '#8a7b6a','#4a3a2a','#ffffff'];
-let 색 = 팔레트[0], 연장 = '붓', 굵기 = 1;
+let 색 = '#5f9a3c', 연장 = '붓', 굵기 = 3;   // 첫 색은 바탕에서 바로 보이는 잔디 초록
 
 const 색판 = document.getElementById('색판');
 팔레트.forEach((c, i) => {
   const d = document.createElement('div');
-  d.className = '색' + (i === 0 ? ' 고름' : ''); d.style.background = c; d.title = c;
-  d.onclick = () => { 색 = c; document.querySelectorAll('.색').forEach(e => e.classList.remove('고름')); d.classList.add('고름'); };
+  d.className = '색' + (c === '#5f9a3c' ? ' 고름' : ''); d.style.background = c; d.title = c;
+  d.onclick = () => { 색 = c; document.getElementById('지금색').style.background = c; document.querySelectorAll('.색').forEach(e => e.classList.remove('고름')); d.classList.add('고름'); };
   색판.appendChild(d);
 });
 document.getElementById('내색').oninput = e => {
-  색 = e.target.value; document.querySelectorAll('.색').forEach(x => x.classList.remove('고름'));
+  색 = e.target.value; document.getElementById('지금색').style.background = 색;
+  document.querySelectorAll('.색').forEach(x => x.classList.remove('고름'));
 };
-document.getElementById('굵기').oninput = e => 굵기 = +e.target.value;
+document.getElementById('굵기').oninput = e => { 굵기 = +e.target.value; document.getElementById('굵기값').textContent = 굵기; };
 
 // ── 연장 고르기
 for (const 이름 of ['붓','지우개','채우기','스포이드']) {
@@ -142,8 +144,11 @@ document.getElementById('격자').classList.add('켜짐');
 // ── 밑그림 — 지금 마당 그림을 흐리게 깔아 대고 그릴 수 있게
 let 밑주소 = 'yard.png', 밑켜짐 = false;
 function 밑깔기(){
-  무대.style.background = 밑켜짐 ? `url("${밑주소}") center/100% 100% no-repeat` : 'none';
-  칠판.style.opacity = 밑켜짐 ? .8 : 1;
+  // 칠판을 흐리게 하면 그린 색이 연해 보여 「안 칠해진다」고 느낀다. 밑그림 쪽을 흐리게 한다.
+  무대.style.background = 밑켜짐
+    ? `linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,.55)), url("${밑주소}") center/100% 100% no-repeat`
+    : 'none';
+  칠판.style.opacity = 1;
 }
 document.getElementById('밑그림').onclick = e => {
   밑켜짐 = !밑켜짐; e.target.classList.toggle('켜짐', 밑켜짐); 밑깔기();
@@ -183,7 +188,7 @@ function 뽑기(x,y){
   const d = ctx.getImageData(x,y,1,1).data;
   if (d[3] === 0) return;
   색 = '#' + [d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('');
-  document.getElementById('내색').value = 색;
+  document.getElementById('내색').value = 색; document.getElementById('지금색').style.background = 색;
   document.querySelectorAll('.색').forEach(e=>e.classList.remove('고름'));
 }
 function 채우기실행(x,y){
