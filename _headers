@@ -22,3 +22,16 @@
 
 /sheepdog-v5/sw.js
   Cache-Control: no-cache, no-store, must-revalidate
+
+# 🚨 코드 파일도 4시간 캐시로 나가고 있었다. 한쪽만 새것이면 서로 안 맞아 화면이 검게 죽는다.
+/sheepdog/*.js
+  Cache-Control: no-cache, must-revalidate
+
+/sheepdog/*.json
+  Cache-Control: no-cache, must-revalidate
+
+/sheepdog/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/sheepdog-v5/*.js
+  Cache-Control: no-cache, must-revalidate
