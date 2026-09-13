@@ -77,7 +77,7 @@
     if (알림글) { 알림글.t-=dt; if (알림글.t<=0) 알림글=null; else { 그림.판(15,340,150,22); 그림.글자(알림글.글,90,347,8,색.글어둠,"center",true); } }
     requestAnimationFrame(루프); }
   전환("S0"); requestAnimationFrame(루프);
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 })();
 </script>
 </body>

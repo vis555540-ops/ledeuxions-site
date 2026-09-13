@@ -13,3 +13,12 @@
 # 첫 화면도 자주 고친다. '/' 는 위의 *.html 규칙에 안 걸린다
 /
   Cache-Control: no-cache, must-revalidate
+
+# 🚨 2026-09-13: 형 크롬에서 고친 게 하나도 안 보였다. 파이어폭스는 됐다.
+#   서비스워커 파일(sw.js)이 4시간 캐시라 크롬이 옛 워커를 붙들고 있었고,
+#   그 워커가 옛 코드를 캐시에서 계속 내줬다. 워커 파일만은 절대 캐시하지 않는다.
+/sheepdog/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/sheepdog-v5/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
