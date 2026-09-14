@@ -47,7 +47,7 @@ const 날씨_주소 = "https://api.open-meteo.com/v1/forecast?latitude=37.57&lon
 const 날씨_다시보기 = 30*60*1000;  // 30분마다
 // 강아지 집 — 가게에서 산다 (형 「집은 그냥 사기로 하자」). 그림은 맺음 임시, 형이 픽셀로 다시 그릴 예정
 const 집목록 = [
-  { 코드:"나무", 이름:{ko:"나무 집",en:"Wood house"},   값:20 },
+  { 코드:"basic", 이름:{ko:"BASIC",en:"BASIC"},        값:20, 그림:"집/basic.png", 글자줄:10 },   // 형이 Piskel 로 그린 첫 집 (2026-09-14). 위 10줄은 BASIC 글자 — 마당에선 잘라 낸다
   { 코드:"빨강", 이름:{ko:"빨간 지붕",en:"Red roof"},   값:40 },
   { 코드:"벽돌", 이름:{ko:"벽돌 집",en:"Brick house"},  값:70 },
 ];
