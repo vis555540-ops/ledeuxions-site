@@ -100,7 +100,7 @@ const 게임 = {
     p.x=Math.max(8,Math.min(폭-8,p.x)); p.y=Math.max(게임.밭위+24,Math.min(게임.우리위+게임.우리높이-4,p.y));
     // 보조견 — 대형 자리로 따라온다
     게임.보조.forEach((b, i) => {
-      const 자리 = 게임.대형자리(i), tx = Math.max(8, Math.min(폭-8, p.x+자리.x)), ty = Math.max(게임.밭위+24, Math.min(게임.우리위+게임.우리높이-4, p.y+자리.y));
+      const 자리 = 게임.대형자리(i), tx = Math.max(8, Math.min(폭-8, p.x+자리.x)), ty = Math.max(게임.밭위+24, Math.min(게임.우리위-8, p.y+자리.y));   // 우리 위로는 안 올라간다
       const dx = tx-b.x, dy = ty-b.y, L = Math.hypot(dx,dy);
       const v = 게임.속도()*0.95*d;
       if (L > 2) { const m = Math.min(v, L); b.x += dx/L*m; b.y += dy/L*m; b.왼쪽 = dx < 0; b.동작 = L>50 ? "달리기" : "걷기"; }
