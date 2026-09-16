@@ -54,6 +54,10 @@ const 문구 = {
   소개_삽살개:{ko:"귀신도 쫓는 한국 개",en:"Chases ghosts and wolves"},
   소개_저먼셰퍼드:{ko:"늑대가 못 오게 지켜요",en:"Wolves keep away"},
   털색_기본:{ko:"기본",en:"Classic"}, 털색_어둠:{ko:"진한 털",en:"Dark coat"}, 털색_밝음:{ko:"밝은 털",en:"Light coat"},
+  훈장:{ko:"훈장",en:"Medals"}, 목욕:{ko:"목욕",en:"Bath"}, 목욕시킴:{ko:"뽀송뽀송해졌어요",en:"All dry and fluffy"},
+  성격:{ko:"성격",en:"Personality"},
+  성격_활발:{ko:"활발",en:"Lively"}, 성격_겁많음:{ko:"겁많음",en:"Timid"}, 성격_느긋:{ko:"느긋",en:"Easy-going"},
+  성격_장난꾸러기:{ko:"장난꾸러기",en:"Playful"}, 성격_차분:{ko:"차분",en:"Calm"},
   미션:{ko:"미션",en:"Tasks"}, 오프라인_제목:{ko:"자는 동안 모았어요",en:"Collected while you were away"}, 이름:{ko:"이름",en:"Name"}, 이름_묻기:{ko:"이 개의 이름은? (8자까지)",en:"Name this dog (8 letters)"},
   탄_성공_컷:{ko:"양들이 돌아왔어요",en:"The sheep are home"},
 };
