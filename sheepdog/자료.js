@@ -30,7 +30,19 @@ const 색 = {
 };
 
 const 마당최대 = 5;
-const 대형_해금탄 = 30;      // 이 탄부터 마당 강아지들이 같이 나와 대형을 짠다 (형 2026-09-16)
+const 대형_해금탄 = 30;
+// 대회 — 양을 정해진 모양으로 세우면 이긴다 (형 2026-09-16 「양을 그 모양으로 만드는 것」)
+const 대회표 = [
+  { 코드:"마을", 이름:{ko:"마을 대회",en:"Village trial"}, 모양:"삼각", 양:6, 초:75,  상대:300, 코인:30 },
+  { 코드:"지역", 이름:{ko:"지역 대회",en:"Regional trial"}, 모양:"사각", 양:8, 초:85,  상대:380, 코인:60 },
+  { 코드:"전국", 이름:{ko:"전국 대회",en:"National trial"}, 모양:"삼삼", 양:9, 초:100, 상대:460, 코인:120 },
+];
+function 대회자리(모양) {                 // 밭 한가운데에 자리를 잡는다
+  const cx = 90, cy = 170, d = 26;
+  if (모양 === "삼각") return [{x:cx,y:cy-d},{x:cx-d,y:cy},{x:cx+d,y:cy},{x:cx-d*1.6,y:cy+d},{x:cx,y:cy+d},{x:cx+d*1.6,y:cy+d}];
+  if (모양 === "사각") return [{x:cx-d,y:cy-d},{x:cx,y:cy-d},{x:cx+d,y:cy-d},{x:cx-d,y:cy},{x:cx+d,y:cy},{x:cx-d,y:cy+d},{x:cx,y:cy+d},{x:cx+d,y:cy+d}];
+  const 자리=[]; for (let r=-1;r<=1;r++) for (let c=-1;c<=1;c++) 자리.push({x:cx+c*d, y:cy+r*d}); return 자리;   // 3×3
+}      // 이 탄부터 마당 강아지들이 같이 나와 대형을 짠다 (형 2026-09-16)
 // 성격 — 강아지마다 하나씩. 마당 패턴이 성격을 본다 (형 2026-09-16)
 const 성격표 = ["활발", "겁많음", "느긋", "장난꾸러기", "차분"];
 function 성격정하기(아이디){ let h=0; for (const c of 아이디) h=(h*31+c.charCodeAt(0))%100000; return 성격표[h%성격표.length]; }
