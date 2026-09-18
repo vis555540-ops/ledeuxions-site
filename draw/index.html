@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>양몰이 그림판 — 180×390</title>
+<link rel="canonical" href="https://ledeuxions.com/draw/">
+
 <style>
   :root { --바닥:#161b2c; --판:#232a42; --글:#e8e6e0; --선:#3a4260; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -123,7 +125,7 @@ for (const 이름 of ['붓','지우개','채우기','스포이드']) {
 
 // ── 되돌리기 (20단계면 충분하다)
 const 되돌림 = [];
-function 담아두기(){ 되돌림.push(ctx.getImageData(0,0,폭,높이)); if (되돌림.length > 20) 되돌림.shift(); }
+function 담아두기(){ try { 되돌림.push(ctx.getImageData(0,0,폭,높이)); } catch(e) { return; } if (되돌림.length > 20) 되돌림.shift(); }
 document.getElementById('되돌리기').onclick = () => { const p = 되돌림.pop(); if (p) { ctx.putImageData(p,0,0); 저장해두기(); } };
 
 // ── 격자
@@ -212,12 +214,16 @@ function 채우기실행(x,y){
 
 let 그리는중 = false, 앞 = null;
 칠판.addEventListener('pointerdown', e => {
-  e.preventDefault(); 칠판.setPointerCapture(e.pointerId);
+  e.preventDefault();
+  // 🚨 setPointerCapture·getImageData 가 던지면 그 뒤 「칠하기」가 통째로 안 돌아간다.
+  //    2026-09-13 형이 「칠해지지 않네」 한 원인. 칠하는 일은 무슨 일이 있어도 먼저 한다.
   const [x,y] = 자리(e);
   if (연장 === '스포이드') { 뽑기(x,y); return; }
-  담아두기();
-  if (연장 === '채우기') { 채우기실행(x,y); 저장해두기(); return; }
-  그리는중 = true; 앞 = [x,y]; 한점(x,y);
+  if (연장 === '채우기') { try { 담아두기(); } catch(err) {} 채우기실행(x,y); 저장해두기(); return; }
+  그리는중 = true; 앞 = [x,y];
+  한점(x,y);                                   // ← 먼저 칠한다
+  try { 칠판.setPointerCapture(e.pointerId); } catch(err) {}
+  try { 담아두기(); } catch(err) {}
 });
 칠판.addEventListener('pointermove', e => {
   if (!그리는중) return; e.preventDefault();
@@ -244,6 +250,17 @@ document.getElementById('저장').onclick = () => {
   a.download = '양몰이_그림_' + new Date().toISOString().slice(0,19).replace(/[-:T]/g,'') + '.png';
   a.href = 칠판.toDataURL('image/png'); a.click();
 };
+
+// 포인터 이벤트가 안 오는 기기 대비 — 마우스·터치로도 받는다
+if (!window.PointerEvent) {
+  const 좌표 = t => ({clientX:t.clientX, clientY:t.clientY});
+  칠판.addEventListener('mousedown', e => { const [x,y]=자리(e); 그리는중=true; 앞=[x,y]; 한점(x,y); });
+  칠판.addEventListener('mousemove', e => { if(!그리는중) return; const [x,y]=자리(e); if(앞) 선긋기(앞[0],앞[1],x,y); 앞=[x,y]; });
+  window.addEventListener('mouseup', () => { if(그리는중){그리는중=false; 앞=null; 저장해두기();} });
+  칠판.addEventListener('touchstart', e => { e.preventDefault(); const [x,y]=자리(좌표(e.touches[0])); 그리는중=true; 앞=[x,y]; 한점(x,y); }, {passive:false});
+  칠판.addEventListener('touchmove', e => { e.preventDefault(); if(!그리는중) return; const [x,y]=자리(좌표(e.touches[0])); if(앞) 선긋기(앞[0],앞[1],x,y); 앞=[x,y]; }, {passive:false});
+  칠판.addEventListener('touchend', () => { if(그리는중){그리는중=false; 앞=null; 저장해두기();} });
+}
 
 window.addEventListener('resize', 배정하기);
 배정하기(); 불러오기();
