@@ -46,5 +46,5 @@ while len(판들) < 150:
     씨 += 1
     p = 만들기(씨, 양수=2 if len(판들) % 3 else 3, 되감기=12 + (len(판들) % 10))
     if p: 판들.append(p)
-open("판.json", "w", encoding="utf-8").write(json.dumps(판들, ensure_ascii=False))
+open("levels.json", "w", encoding="utf-8").write(json.dumps(판들, ensure_ascii=False))
 print("판", len(판들), "개 만듦")
