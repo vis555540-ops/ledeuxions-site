@@ -27,21 +27,21 @@
 <video id="인트로" playsinline preload="none"></video>
 <!-- 🚨 파일 이름이 한글이면 Cloudflare 의 캐시 규칙(_headers 의 *.js)이 안 걸린다.
      그래서 주소 뒤에 판 번호를 붙여 캐시를 넘긴다. 코드를 고치면 이 v= 를 같이 올릴 것. -->
-<script src="자료.js?v=5.11"></script>
-<script src="문구.js?v=5.11"></script>
-<script src="저장.js?v=5.11"></script>
-<script src="소리.js?v=5.11"></script>
-<script src="광고.js?v=5.11"></script>
-<script src="그림.js?v=5.11"></script>
-<script src="규칙_생성기.js?v=5.11"></script>
-<script src="게임.js?v=5.11"></script>
-<script src="화면.js?v=5.11"></script>
+<script src="자료.js?v=5.12"></script>
+<script src="문구.js?v=5.12"></script>
+<script src="저장.js?v=5.12"></script>
+<script src="소리.js?v=5.12"></script>
+<script src="광고.js?v=5.12"></script>
+<script src="그림.js?v=5.12"></script>
+<script src="규칙_생성기.js?v=5.12"></script>
+<script src="게임.js?v=5.12"></script>
+<script src="화면.js?v=5.12"></script>
 <script>
 (function(){
   const 캔버스=document.getElementById("캔버스"); let 배율=1;
   function 크기(){ const dpr=Math.min(3,window.devicePixelRatio||1); 배율=Math.min(window.innerWidth/폭, window.innerHeight/높이); 캔버스.width=폭*dpr; 캔버스.height=높이*dpr; 캔버스.style.width=(폭*배율)+"px"; 캔버스.style.height=(높이*배율)+"px"; const c=캔버스.getContext("2d"); c.setTransform(dpr,0,0,dpr,0,0); c.imageSmoothingEnabled=false; }
   window.addEventListener("resize",크기);
-  저장.불러오기(); 그림.시작(캔버스); 크기();
+  저장.불러오기(); 저장.주인장열기(); 그림.시작(캔버스); 크기();
 
   // 인트로 영상. 못 받거나 못 틀면 조용히 건너뛴다 — 영상 때문에 게임이 막히면 안 된다.
   let 인트로도는중 = false;
