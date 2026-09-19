@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>오늘의 양몰이 — 하루 한 판 · LeDeuxions</title>
+<link rel="canonical" href="https://ledeuxions.com/오늘/">
+<meta name="description" content="하루에 한 판. 강아지를 움직여 양을 우리에 넣는 퍼즐. 오늘은 모두가 같은 문제를 풉니다.">
+<meta property="og:title" content="오늘의 양몰이">
+<meta property="og:description" content="하루 한 판. 오늘은 모두가 같은 문제를 풉니다.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#1c2540">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Game","name":"오늘의 양몰이","url":"https://ledeuxions.com/오늘/","inLanguage":"ko","description":"하루에 한 판 바뀌는 양몰이 퍼즐.","publisher":{"@type":"Person","name":"LeDeuxions","url":"https://ledeuxions.com/"}}</script>
+<style>
+  :root{ --바탕:#1c2540; --판:#5f9a3c; --판2:#4f8531; --글:#f4f0e6; --금:#e0b04a; --흙:#8a6a3c; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--바탕); color:var(--글);
+        font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+        display:flex; flex-direction:column; align-items:center; min-height:100dvh; padding:16px 12px 28px; }
+  h1{ font-size:19px; margin:4px 0 2px; letter-spacing:-.4px; }
+  .날{ color:#b9c2d8; font-size:13px; margin-bottom:12px; }
+  #판{ display:grid; gap:2px; background:#3a2a1a; padding:6px; border-radius:10px;
+       touch-action:manipulation; user-select:none; }
+  .칸{ width:min(12.4vw,52px); height:min(12.4vw,52px); background:var(--판); border-radius:4px;
+       display:grid; place-items:center; font-size:min(7vw,28px); line-height:1; }
+  .칸.짝{ background:var(--판2); }
+  .칸.벽{ background:#6a6a6a; box-shadow:inset 0 -3px 0 #555; }
+  .칸.우리{ background:#c8a060; box-shadow:inset 0 0 0 3px #8a6a3c; }
+  .줄{ margin:14px 0 4px; font-size:15px; }
+  .줄 b{ color:var(--금); }
+  .단추들{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center; }
+  button{ font:inherit; font-size:14px; padding:9px 14px; border-radius:9px; border:0;
+          background:#2f3a5e; color:var(--글); cursor:pointer; }
+  button.금{ background:var(--금); color:#20263c; font-weight:700; }
+  button:disabled{ opacity:.45; }
+  .끝{ margin-top:14px; padding:14px 16px; background:#222b47; border-radius:12px; text-align:center; max-width:340px; }
+  .끝 .크게{ font-size:20px; font-weight:700; color:var(--금); }
+  .도움{ color:#9aa3bd; font-size:12.5px; margin-top:16px; text-align:center; line-height:1.6; max-width:340px; }
+  a{ color:#9fc0ff; }
+</style>
+</head>
+<body>
+<h1>🐑 오늘의 양몰이</h1>
+<div class="날" id="날"></div>
+<div id="판"></div>
+<div class="줄">움직인 수 <b id="수">0</b><span id="남음"></span></div>
+<div class="단추들">
+  <button id="되돌리기">← 한 수 무르기</button>
+  <button id="다시">처음부터</button>
+</div>
+<div id="끝자리"></div>
+<div class="도움">
+  강아지(🐕)를 눌러서 움직이면 양(🐑)이 밀립니다. 양을 모두 흙빛 칸에 넣으면 끝.<br>
+  화살표 키 · 화면 쓸기(스와이프)로도 움직입니다.<br>
+  문제는 매일 자정에 바뀌고, 오늘은 모두가 같은 문제를 풉니다.<br><br>
+  <a href="/sheepdog/">양몰이 게임 하러 가기</a> · <a href="/">LeDeuxions</a>
+</div>
+<script>
+const 칸수 = 7;
+let 판, 개, 양들, 우리들, 벽들, 수 = 0, 기록 = [], 끝났나 = false;
+
+function 오늘글() {                       // 한국 시간 기준 날짜
+  const d = new Date(Date.now() + (new Date().getTimezoneOffset() + 540) * 60000);
+  return d;
+}
+function 날짜글(d) { return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`; }
+function 번호(d) {                        // 2026-01-01 을 1번으로
+  const 시작 = Date.UTC(2026, 0, 1);
+  return Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - 시작) / 86400000);
+}
+
+fetch("levels.json").then(r => r.json()).then(판들 => {
+  const d = 오늘글();
+  const p = 판들[번호(d) % 판들.length];
+  document.getElementById("날").textContent = 날짜글(d) + " · " + (번호(d) + 1) + "번째 판";
+  시작(p);
+  const 한 = JSON.parse(localStorage.getItem("오늘의양몰이") || "{}");
+  if (한.날 === 키()) 보여주기(한.수, true);
+});
+
+function 키() { const d = 오늘글(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+
+function 시작(p) {
+  판 = p;
+  벽들 = new Set(p.벽.map(a => a.join(",")));
+  우리들 = new Set(p.우리.map(a => a.join(",")));
+  양들 = p.양.map(a => a.slice());
+  개 = p.개.slice();
+  수 = 0; 기록 = []; 끝났나 = false;
+  document.getElementById("끝자리").innerHTML = "";
+  그리기();
+}
+
+function 그리기() {
+  const 자리 = document.getElementById("판");
+  자리.style.gridTemplateColumns = `repeat(${칸수}, auto)`;
+  자리.innerHTML = "";
+  for (let y = 0; y < 칸수; y++) for (let x = 0; x < 칸수; x++) {
+    const k = document.createElement("div");
+    const 키 = x + "," + y;
+    k.className = "칸" + ((x + y) % 2 ? " 짝" : "") + (벽들.has(키) ? " 벽" : "") + (우리들.has(키) ? " 우리" : "");
+    if (개[0] === x && 개[1] === y) k.textContent = "🐕";
+    else if (양들.some(s => s[0] === x && s[1] === y)) k.textContent = "🐑";
+    else if (벽들.has(키)) k.textContent = "🪨";
+    자리.appendChild(k);
+  }
+  document.getElementById("수").textContent = 수;
+  const 남 = 양들.filter(s => !우리들.has(s.join(","))).length;
+  document.getElementById("남음").textContent = 끝났나 ? "" : `  ·  남은 양 ${남}마리`;
+}
+
+function 움직임(dx, dy) {
+  if (끝났나) return;
+  const nx = 개[0] + dx, ny = 개[1] + dy;
+  if (nx < 0 || ny < 0 || nx >= 칸수 || ny >= 칸수) return;
+  const 키 = nx + "," + ny;
+  if (벽들.has(키)) return;
+  const i = 양들.findIndex(s => s[0] === nx && s[1] === ny);
+  if (i >= 0) {                                  // 양을 민다
+    const sx = nx + dx, sy = ny + dy;
+    if (sx < 0 || sy < 0 || sx >= 칸수 || sy >= 칸수) return;
+    const 키2 = sx + "," + sy;
+    if (벽들.has(키2) || 양들.some(s => s[0] === sx && s[1] === sy)) return;
+    기록.push({ 개: 개.slice(), 양: 양들.map(s => s.slice()) });
+    양들[i] = [sx, sy];
+  } else 기록.push({ 개: 개.slice(), 양: 양들.map(s => s.slice()) });
+  개 = [nx, ny]; 수++;
+  그리기();
+  if (양들.every(s => 우리들.has(s.join(",")))) 이김();
+}
+
+function 이김() {
+  끝났나 = true;
+  localStorage.setItem("오늘의양몰이", JSON.stringify({ 날: 키(), 수 }));
+  보여주기(수, false);
+}
+
+function 보여주기(푼수, 이미) {
+  끝났나 = true;
+  const d = 오늘글();
+  const 자랑 = `달빛목장 오늘의 양몰이 ${d.getMonth()+1}/${d.getDate()} — ${푼수}수 🐑🐕\nhttps://ledeuxions.com/오늘/`;
+  document.getElementById("끝자리").innerHTML =
+    `<div class="끝"><div class="크게">${이미 ? "오늘은 이미 풀었어요" : "다 넣었다!"}</div>
+     <div style="margin:6px 0 10px">${푼수}수로 끝냈어요</div>
+     <div class="단추들"><button class="금" id="자랑">자랑 글 복사</button></div>
+     <div style="margin-top:8px;font-size:12.5px;color:#9aa3bd">내일 자정에 새 문제가 나와요</div></div>`;
+  document.getElementById("자랑").onclick = async () => {
+    try { await navigator.clipboard.writeText(자랑); document.getElementById("자랑").textContent = "복사됐어요 ✓"; }
+    catch (e) { prompt("복사해서 붙여넣으세요", 자랑); }
+  };
+  그리기();
+}
+
+document.getElementById("되돌리기").onclick = () => {
+  if (끝났나 || !기록.length) return;
+  const 앞 = 기록.pop(); 개 = 앞.개; 양들 = 앞.양; 수 = Math.max(0, 수 - 1); 그리기();
+};
+document.getElementById("다시").onclick = () => { if (판) 시작(판); };
+
+addEventListener("keydown", e => {
+  const m = { ArrowUp: [0,-1], ArrowDown: [0,1], ArrowLeft: [-1,0], ArrowRight: [1,0] }[e.key];
+  if (m) { e.preventDefault(); 움직임(m[0], m[1]); }
+});
+const 판자리 = document.getElementById("판");
+판자리.addEventListener("click", e => {          // 칸을 누르면 그쪽으로 한 칸 (형 2026-09-19)
+  const 칸들 = [...판자리.children]; const i = 칸들.indexOf(e.target.closest(".칸"));
+  if (i < 0) return;
+  const x = i % 칸수, y = Math.floor(i / 칸수);
+  const dx = x - 개[0], dy = y - 개[1];
+  if (!dx && !dy) return;
+  if (Math.abs(dx) >= Math.abs(dy)) 움직임(Math.sign(dx), 0); else 움직임(0, Math.sign(dy));
+});
+let 시작점 = null;
+판자리.addEventListener("touchstart", e => { 시작점 = e.touches[0]; }, { passive: true });
+판자리.addEventListener("touchend", e => {
+  if (!시작점) return;
+  const t = e.changedTouches[0], dx = t.clientX - 시작점.clientX, dy = t.clientY - 시작점.clientY;
+  if (Math.abs(dx) < 18 && Math.abs(dy) < 18) { 시작점 = null; return; }
+  if (Math.abs(dx) > Math.abs(dy)) 움직임(dx > 0 ? 1 : -1, 0); else 움직임(0, dy > 0 ? 1 : -1);
+  시작점 = null;
+}, { passive: true });
+</script>
+<script src="/count.js" defer></script>
+</body>
+</html>

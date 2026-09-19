@@ -47,6 +47,20 @@ const 저장 = {
       if (개.아픔 && 지금 - 개.아픔 > 아픔_저절로*3600000) { 개.아픔 = 0; 개.젖음 = 0; }
     }
   },
+  // 주인장 열쇠 — 주소에 ?주인장=달빛 을 붙이면 전부 열린다 (형 2026-09-18). 스토어 판에는 영향 없음
+  주인장열기() {
+    try { if (!decodeURIComponent(location.search).includes("주인장=달빛")) return false; } catch(e) { return false; }
+    const d = 저장.자료;
+    d.코인 = 9999; d.뼈다귀 = 999; d.인트로봄 = true; d.최고탄 = 30; d.집 = "별의집"; d.돌아온양 = 100;
+    for (let i = 0; i < 30; i++) d.별[i] = 3;
+    견종순서.forEach(견종 => [0,1,2].forEach(색 => {
+      if (!d.개.find(g => g.견종 === 견종 && g.털색 === 색)) d.개.push(저장.새개(견종, 색));
+    }));
+    d.개.forEach((g, i) => { g.레벨 = 20; g.기분 = 100; g.배 = 100; g.마당 = i < 마당최대; });
+    d.선택개 = d.개[0].아이디;
+    저장.하기();
+    return true;
+  },
   비오나() { try { if (decodeURIComponent(location.search).includes("비=1")) return true; } catch(e) {} const w = 저장.자료.날씨; return !!(w && w.비); },
   // 서울 날씨를 30분마다 한 번 본다. 인터넷이 없으면 마지막으로 본 것을 쓴다.
   async 날씨보기() {
