@@ -157,7 +157,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://ledeuxions.com/notes/basement-water-from-below/ko/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://ledeuxions.com/notes/concrete-waterproofing-admixture/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/notes/concrete-waterproofing-admixture/ko/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -490,7 +500,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://ledeuxions.com/notes/radiant-barrier-air-gap/ko/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://ledeuxions.com/notes/west-facing-windows-heat/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/notes/west-facing-windows-heat/ko/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -500,12 +520,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://ledeuxions.com/notes/what-seismic-rating-means/ko/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://ledeuxions.com/notes/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://ledeuxions.com/notes/ko/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://ledeuxions.com/notes/living-room-size-tv-era/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/notes/living-room-size-tv-era/ko/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -535,4 +570,5 @@
   <url><loc>https://ledeuxions.com/%EB%AA%A8%EC%95%84%EB%B3%B4%EA%B8%B0/</loc><lastmod>2026-09-18</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://ledeuxions.com/museum/</loc><lastmod>2026-09-18</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://ledeuxions.com/w/</loc><lastmod>2026-09-18</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://ledeuxions.com/%EC%83%88%EB%A1%9C%EC%9A%B4%EA%B2%83/</loc><lastmod>2026-09-19</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>
 </urlset>
