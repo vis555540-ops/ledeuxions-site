@@ -150,7 +150,27 @@
     말이 안 나오면 폰 소리가 꺼져 있는지 보세요.<br>
     저장한 말은 이 폰에만 남습니다. 다른 폰에는 안 갑니다.
   </p>
+
+  <p class="note" style="margin-top:18px">
+    <b style="color:var(--on)">다른 폰으로 보내기</b><br>
+    저장한 말을 주소 하나에 담습니다. 그 주소를 문자로 보내면 받는 쪽에 그대로 들어갑니다.
+    서버에 올라가지 않고 주소 안에만 들어갑니다.
+  </p>
+  <div class="fsrow">
+    <button id="shareBtn">주소 만들기</button>
+  </div>
+
   <button class="mini" id="closeBtn" style="width:100%;padding:14px;margin-top:6px">닫기</button>
+</dialog>
+
+<dialog id="recvDlg">
+  <h1 style="font-size:17px;margin:0 0 2px">문장판을 받았습니다</h1>
+  <p class="note" id="recvNote"></p>
+  <div class="fsrow">
+    <button id="recvAdd">지금 것에 더하기</button>
+    <button id="recvSet">이것으로 바꾸기</button>
+  </div>
+  <button class="mini" id="recvNo" style="width:100%;padding:14px;margin-top:10px">안 받기</button>
 </dialog>
 
 <script>
@@ -313,6 +333,57 @@ rateEl.oninput = () => { st.rate = Number(rateEl.value); save(); applyRate(); };
 
 document.getElementById("setBtn").onclick = () => dlg.showModal();
 document.getElementById("closeBtn").onclick = () => dlg.close();
+
+/* ───────── 문장판 주고받기 (2026-09-19) ─────────
+   말 목록을 주소(#판=…) 안에 담는다. 서버에 아무것도 안 올라간다.
+   치료실·복지관에서 만든 판을 문자 한 통으로 건넬 수 있게. */
+function 담기(list){
+  const b = new TextEncoder().encode(JSON.stringify(list));
+  let s = ""; b.forEach(c => s += String.fromCharCode(c));
+  return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function 풀기(s){
+  s = s.replace(/-/g,"+").replace(/_/g,"/");
+  const bin = atob(s), b = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) b[i] = bin.charCodeAt(i);
+  const v = JSON.parse(new TextDecoder().decode(b));
+  return Array.isArray(v) ? v.filter(t => typeof t === "string" && t.trim()).slice(0,200) : null;
+}
+
+document.getElementById("shareBtn").onclick = async () => {
+  if(!st.list.length){ alert("저장한 말이 아직 없습니다."); return; }
+  const 주소 = location.origin + location.pathname + "#판=" + 담기(st.list);
+  const 글 = "말해요 문장판 (말 " + st.list.length + "개)\n" + 주소;
+  try{
+    if(navigator.share){ await navigator.share({ title:"말해요 문장판", text:글 }); return; }
+    await navigator.clipboard.writeText(주소);
+    const b = document.getElementById("shareBtn");
+    b.textContent = "복사됐습니다"; setTimeout(()=> b.textContent = "주소 만들기", 1600);
+  }catch(e){ prompt("이 주소를 복사해서 보내세요", 주소); }
+};
+
+(function 받기(){
+  let h = location.hash || "";
+  try{ h = decodeURIComponent(h); }catch(e){}      // 폰 앱이 한글을 %ED%8C%90 로 바꿔 보낸다
+  const m = h.match(/판=([A-Za-z0-9\-_]+)/);
+  if(!m) return;
+  let 온것 = null;
+  try{ 온것 = 풀기(m[1]); }catch(e){}
+  history.replaceState(null, "", location.pathname);   // 주소창은 바로 지운다
+  if(!온것 || !온것.length) return;
+  const d = document.getElementById("recvDlg");
+  document.getElementById("recvNote").textContent =
+    "말 " + 온것.length + "개가 왔습니다. 예: " + 온것.slice(0,3).join(" · ");
+  document.getElementById("recvAdd").onclick = () => {
+    온것.forEach(t => { if(!st.list.includes(t)) st.list.push(t); });
+    save(); render(); d.close();
+  };
+  document.getElementById("recvSet").onclick = () => {
+    st.list = 온것.slice(); save(); render(); d.close();
+  };
+  document.getElementById("recvNo").onclick = () => d.close();
+  d.showModal();
+})();
 
 /* ───────── 화면이 꺼지면 곤란하다 ───────── */
 let wake = null;

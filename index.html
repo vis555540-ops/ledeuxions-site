@@ -149,6 +149,61 @@
 </div>
 </footer>
 </div>
+
+<!-- 오늘의 알림 — 하루 한 번만 뜬다 (형 2026-09-19 "홈페이지 오면 팝업으로") -->
+<style>
+  #오늘알림{position:fixed;left:50%;bottom:22px;transform:translate(-50%,140%);z-index:60;
+            width:min(420px,calc(100vw - 28px));background:#fffdf8;color:#1f1e1b;
+            border:1px solid #d9d4c6;border-radius:14px;padding:18px 20px 16px;
+            box-shadow:0 18px 44px rgba(31,30,27,.16);
+            font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Serif KR',serif;
+            transition:transform .42s cubic-bezier(.2,.8,.25,1),opacity .3s;opacity:0}
+  #오늘알림.떴다{transform:translate(-50%,0);opacity:1}
+  #오늘알림 .꼬리{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#8b8a85}
+  #오늘알림 h3{margin:7px 0 4px;font-size:18px;font-weight:600;letter-spacing:-.2px}
+  #오늘알림 p{margin:0;font-size:13.5px;line-height:1.6;color:#5c5b57}
+  #오늘알림 .줄{display:flex;gap:9px;align-items:center;margin-top:14px;flex-wrap:wrap}
+  #오늘알림 a.가기{background:#1f1e1b;color:#faf9f5;text-decoration:none;
+                   padding:10px 17px;border-radius:9px;font-size:14px;font-weight:600}
+  #오늘알림 a.곁{color:#5c5b57;text-decoration:none;font-size:13px;border-bottom:1px solid #d9d4c6;padding-bottom:1px}
+  #오늘알림 button.닫기{position:absolute;top:9px;right:10px;border:0;background:none;
+                        color:#a5a39b;font-size:19px;line-height:1;cursor:pointer;padding:5px 7px}
+  @media (prefers-color-scheme:dark){
+    #오늘알림{background:#20232b;color:#f2f0ea;border-color:#3a3f4b;box-shadow:0 18px 44px rgba(0,0,0,.5)}
+    #오늘알림 p,#오늘알림 a.곁{color:#a8adb9}
+    #오늘알림 a.가기{background:#e6e2d6;color:#1f1e1b}
+    #오늘알림 a.곁{border-bottom-color:#3a3f4b}
+  }
+</style>
+<script>
+(function(){
+  var d = new Date(Date.now() + (new Date().getTimezoneOffset() + 540) * 60000);   // 한국 날짜
+  var 오늘 = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+  var 번 = Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(2026,0,1)) / 86400000) + 1;
+  try { if (localStorage.getItem("홈알림본날") === 오늘) return; } catch(e) {}
+
+  var 상자 = document.createElement("div");
+  상자.id = "오늘알림";
+  상자.innerHTML =
+    '<button class="닫기" aria-label="닫기">&times;</button>' +
+    '<div class="꼬리">' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 · ' + 번 + '번째 판</div>' +
+    '<h3>오늘의 양몰이</h3>' +
+    '<p>강아지를 움직여 양을 우리에 넣습니다. 오늘은 모두가 같은 문제를 풉니다.</p>' +
+    '<div class="줄"><a class="가기" href="/오늘/">오늘 판 풀기</a>' +
+    '<a class="곁" href="/새로운것/">새로 온 것</a></div>';
+  document.body.appendChild(상자);
+  setTimeout(function(){ 상자.classList.add("떴다"); }, 900);
+
+  function 닫기(){
+    상자.classList.remove("떴다");
+    try { localStorage.setItem("홈알림본날", 오늘); } catch(e) {}
+    setTimeout(function(){ 상자.remove(); }, 420);
+  }
+  상자.querySelector(".닫기").onclick = 닫기;
+  상자.querySelector("a.가기").onclick = function(){ try { localStorage.setItem("홈알림본날", 오늘); } catch(e) {} };
+  상자.querySelector("a.곁").onclick  = function(){ try { localStorage.setItem("홈알림본날", 오늘); } catch(e) {} };
+})();
+</script>
   <script src="/count.js" defer></script>
 </body>
 </html>
