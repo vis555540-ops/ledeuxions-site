@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1c2540">
+<meta name="description" content="LeDeuxions 픽셀 사무실 — 걸어다니며 둘러보는 자리. 아직 1단계(걷기)만 있습니다.">
+<title>사무실 — LeDeuxions</title>
+<link rel="canonical" href="https://ledeuxions.com/사무실/">
+<style>
+  html,body{margin:0;padding:0;background:#1c2540;height:100%;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+  #판{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+  #안내{position:fixed;left:0;right:0;bottom:14px;text-align:center;color:#cfd6ea;
+        font:13px/1.5 -apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+        pointer-events:none;opacity:.85;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+  #나가기{position:fixed;top:12px;left:12px;color:#cfd6ea;text-decoration:none;
+          font:13px -apple-system,sans-serif;background:rgba(0,0,0,.25);
+          padding:7px 12px;border-radius:8px;backdrop-filter:blur(4px)}
+</style>
+</head>
+<body>
+<a id="나가기" href="/">← LeDeuxions</a>
+<div id="판"><canvas id="캔버스"></canvas></div>
+<p id="안내">바닥을 누르면 그리로 걸어갑니다</p>
+<script>
+(function(){
+  // 1단계: 방 + 걷기만. 채팅·다른 사람 보기는 다음 단계(실시간 서버 필요, 부장 쪽).
+  const 폭=320, 높이=200;
+  const 캔버스=document.getElementById("캔버스");
+  const c=캔버스.getContext("2d");
+  let 배율=1;
+  function 크기(){
+    const dpr=Math.min(3,window.devicePixelRatio||1);
+    배율=Math.min(window.innerWidth/폭, window.innerHeight/높이);
+    캔버스.width=폭*dpr; 캔버스.height=높이*dpr;
+    캔버스.style.width=(폭*배율)+"px"; 캔버스.style.height=(높이*배율)+"px";
+    c.setTransform(dpr,0,0,dpr,0,0); c.imageSmoothingEnabled=false;
+  }
+  window.addEventListener("resize",크기); 크기();
+
+  // ---- 방 (자리표시 — 나중에 형 그림으로 바꾼다) ----
+  const 방={x:20,y:30,w:280,h:140};
+  const 가구=[
+    {x:방.x+16, y:방.y+18, w:56, h:30, c:"#6b4a34", 이름:"책상"},
+    {x:방.x+230,y:방.y+90, w:34, h:34, c:"#3f6b3f", 이름:"화분"},
+    {x:방.x+90, y:방.y+8,  w:70, h:14, c:"#2d3a5c", 이름:"창"},
+  ];
+
+  // ---- 캐릭터 ----
+  const 나={x:방.x+방.w/2, y:방.y+방.h-30, tx:null, ty:null, 방향:"down", 걸음:0};
+  const 속도=55; // px/초
+
+  function 안(x,y){ return x>=방.x+8 && x<=방.x+방.w-8 && y>=방.y+40 && y<=방.y+방.h-8; }
+
+  function 좌표(e){
+    const r=캔버스.getBoundingClientRect();
+    const p=e.touches?e.touches[0]||e.changedTouches[0]:e;
+    return {x:(p.clientX-r.left)/배율, y:(p.clientY-r.top)/배율};
+  }
+  function 누름(e){
+    e.preventDefault();
+    const {x,y}=좌표(e);
+    if (안(x,y)){ 나.tx=x; 나.ty=y; }
+  }
+  캔버스.addEventListener("pointerdown",누름);
+
+  function 갱신(dt){
+    if (나.tx==null) return;
+    const dx=나.tx-나.x, dy=나.ty-나.y;
+    const 거리=Math.hypot(dx,dy);
+    if (거리<2){ 나.tx=null; 나.ty=null; return; }
+    나.방향= Math.abs(dx)>Math.abs(dy) ? (dx>0?"right":"left") : (dy>0?"down":"up");
+    const 이동=Math.min(거리, 속도*dt);
+    나.x += dx/거리*이동; 나.y += dy/거리*이동;
+    나.걸음 += dt*8;
+  }
+
+  function 사각(x,y,w,h,col){ c.fillStyle=col; c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); }
+
+  function 그리기(){
+    // 배경
+    사각(0,0,폭,높이,"#141a30");
+    // 방 바닥
+    사각(방.x,방.y,방.w,방.h,"#caa06a");
+    for (let i=방.y+40;i<방.y+방.h;i+=10) 사각(방.x,i,방.w,1,"#b9905c");
+    // 벽
+    사각(방.x,방.y,방.w,40,"#3a2c22");
+    // 가구
+    가구.forEach(g=>{ 사각(g.x,g.y,g.w,g.h,g.c); });
+    // 캐릭터 그림자
+    사각(나.x-6,나.y+9,12,3,"rgba(0,0,0,.25)");
+    // 캐릭터 (자리표시 — 단순 픽셀 사람)
+    const 흔들=Math.sin(나.걸음)*1.2*(나.tx!=null?1:0);
+    사각(나.x-4,나.y-14+흔들,8,10,"#e0b98a"); // 몸
+    사각(나.x-5,나.y-18+흔들,10,6,"#2b2b2b"); // 머리
+    사각(나.x-4,나.y-4,3,7,"#28324f");  사각(나.x+1,나.y-4,3,7,"#28324f"); // 다리
+    // 목표점 표시
+    if (나.tx!=null){
+      c.strokeStyle="rgba(255,255,255,.5)"; c.lineWidth=1;
+      c.beginPath(); c.arc(나.tx,나.ty,4,0,Math.PI*2); c.stroke();
+    }
+  }
+
+  let 이전=performance.now();
+  function 루프(now){
+    const dt=Math.min(0.05,(now-이전)/1000); 이전=now;
+    갱신(dt); 그리기();
+    requestAnimationFrame(루프);
+  }
+  requestAnimationFrame(루프);
+})();
+</script>
+</body>
+</html>
