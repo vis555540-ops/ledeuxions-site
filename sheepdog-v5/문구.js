@@ -81,6 +81,7 @@ const 문구 = {
   제목_양몰이:{ko:"양몰이",en:"Sheepdog"}, 제목_달빛목장:{ko:"달빛목장",en:"Moonlight Farm"},
   탭해서_시작:{ko:"탭해서 시작",en:"Tap to start"}, 띵동소리:{ko:"띵동",en:"Ding-dong"},
   확률_첫세번:{ko:"처음 세 번은 없는 것만 나와요",en:"First 3 pulls: only ones you don't have"},
+  눌러서_이름:{ko:"눌러서 이름 바꾸기",en:"Tap to rename"},
   탄_성공_컷:{ko:"양들이 돌아왔어요",en:"The sheep are home"},
 };
 function 글(키){ const 항=문구[키]; if(!항) return 키; const l=(typeof 저장!=="undefined"&&저장.자료)?저장.자료.언어:"ko"; return 항[l]||항.ko; }
