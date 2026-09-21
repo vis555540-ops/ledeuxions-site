@@ -78,11 +78,18 @@ const 응가_최대 = 6;
 const 날씨_주소 = "https://api.open-meteo.com/v1/forecast?latitude=37.57&longitude=126.98&current=precipitation,weather_code";
 const 날씨_다시보기 = 30*60*1000;  // 30분마다
 // 강아지 집 — 가게에서 산다 (형 「집은 그냥 사기로 하자」). 그림은 맺음 임시, 형이 픽셀로 다시 그릴 예정
+// ★고침 집 10채로 확장 (5 → 420 코인). 그림은 house/*.png 64×64
 const 집목록 = [
-  { 코드:"basic", 이름:{ko:"기본 집",en:"Basic house"}, 값:20, 그림:"집/basic.png" },   // 형이 Piskel 로 그린 첫 집 (2026-09-14). BASIC 글자는 형 말대로 지웠다
-  { 코드:"별빛", 이름:{ko:"별빛 집",en:"Starlight house"}, 값:40, 그림:"집/starlight.png" },   // 형 그림 (2026-09-14). 빨간 지붕(맺음 임시) 자리를 대신한다
-  { 코드:"예쁜", 이름:{ko:"예쁜 집",en:"Pretty house"}, 값:70, 그림:"집/pretty.png" },   // 형 그림 (2026-09-14). 벽돌 집(맺음 임시) 자리를 대신한다
-  { 코드:"별의집", 이름:{ko:"별의 집",en:"House of stars"}, 값:100, 그림:"집/star.png" },   // 형 그림
+  { 코드:"box",    이름:{ko:"종이 상자",en:"Cardboard box"},  값:5,   그림:"house/box.png" },
+  { 코드:"basic",  이름:{ko:"나무 집",en:"Wooden house"},     값:20,  그림:"house/wood.png" },
+  { 코드:"red",    이름:{ko:"빨간지붕 집",en:"Red roof"},      값:45,  그림:"house/red.png" },
+  { 코드:"예쁜",   이름:{ko:"벽돌 집",en:"Brick house"},       값:80,  그림:"house/brick.png" },
+  { 코드:"log",    이름:{ko:"통나무 집",en:"Log cabin"},       값:120, 그림:"house/log.png" },
+  { 코드:"별빛",   이름:{ko:"별빛 집",en:"Starlight house"},   값:170, 그림:"house/star.png" },
+  { 코드:"garden", 이름:{ko:"정원 집",en:"Garden cottage"},    값:230, 그림:"house/garden.png" },
+  { 코드:"glass",  이름:{ko:"유리 온실",en:"Glass house"},     값:290, 그림:"house/glass.png" },
+  { 코드:"castle", 이름:{ko:"작은 성",en:"Little castle"},     값:350, 그림:"house/castle.png" },
+  { 코드:"별의집", 이름:{ko:"달 집",en:"House of the moon"},   값:420, 그림:"house/moon.png" },
 ];
 const 젖음_시간당 = 15;          // 비 맞으면 한 시간에 이만큼 젖는다 → 2시간 반이면 아프다
 const 마름_시간당 = 60;          // 비 그치거나 집이 있으면 이만큼 마른다
