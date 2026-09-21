@@ -10,8 +10,8 @@ const 그림 = {
   동작대응: { 서기:"가만", 걷기:"걷기", 앉기:"앉기", 짖기:"짖기", 겁:"놀람", 도망:"도망", 달리기:"달리기", 하품:"하품", 잠:"잠", 먹기:"먹기" },
   시작(canvas) {
     그림.화면 = canvas; 그림.c = canvas.getContext("2d"); 그림.c.imageSmoothingEnabled = false;
-    const 불러올 = [["양","양_동작.png"],["늑대","늑대.png"],["여우","여우.png"],["마당","yard.png"],["상자","배경/상자.png"]];
-    견종순서.forEach(k => 불러올.push(["개_"+k, "개/"+k+".png"]));
+    const 불러올 = [["양","양_동작.png"],["늑대","늑대.png"],["여우","여우.png"],["마당","yard.png"],["마당앞","yard_front.png"],["상자","배경/상자.png"],["상자앞","배경/상자앞.png"]];
+    견종순서.forEach(k => { 불러올.push(["개_"+k, "개/"+k+".png"]); 불러올.push(["개_"+k+"_아기", "개/"+k+"_아기.png"]); });   // ★ 아기·앞겹 시트는 있으면 쓰고 없으면 그냥 넘어간다
     불러올.forEach(([키, 경로]) => { const im = new Image(); im.onload=()=>{ 그림.시트[키]=im; }; im.onerror=()=>{}; im.src=경로; });
   },
   // 털색 1·2 = 원본 시트의 색을 HSL 로 돌린 사본. 외곽선(어두운 색)·흰색은 안 건드린다.
@@ -35,8 +35,8 @@ const 그림 = {
   네모(x,y,w,h,f,테두리) { const c=그림.c; c.fillStyle=f; c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); if (테두리) { c.strokeStyle=테두리; c.lineWidth=1; c.strokeRect(Math.round(x)+0.5,Math.round(y)+0.5,Math.round(w)-1,Math.round(h)-1); } },
   둥근(x,y,w,h,r,f,테두리) { const c=그림.c; c.beginPath(); c.roundRect(Math.round(x)+0.5,Math.round(y)+0.5,w-1,h-1,r); c.fillStyle=f; c.fill(); if (테두리) { c.strokeStyle=테두리; c.lineWidth=1; c.stroke(); } },
   원(x,y,r,f) { const c=그림.c; c.beginPath(); c.arc(x,y,r,0,Math.PI*2); c.fillStyle=f; c.fill(); },
-  글자(t,x,y,크기,f,정렬,굵게) { const c=그림.c; c.font=(굵게?"bold ":"")+(크기||8)+"px 'DungGeunMo','Galmuri','NeoDunggeunmo',monospace"; c.fillStyle=f||색.글; c.textAlign=정렬||"left"; c.textBaseline="top"; c.fillText(t,Math.round(x),Math.round(y)); },
-  글자테두리(t,x,y,크기,f,정렬) { const c=그림.c; c.font="bold "+크기+"px 'DungGeunMo','Galmuri','NeoDunggeunmo',monospace"; c.textAlign=정렬||"left"; c.textBaseline="top"; c.lineWidth=3; c.strokeStyle=색.글어둠; c.strokeText(t,Math.round(x),Math.round(y)); c.fillStyle=f; c.fillText(t,Math.round(x),Math.round(y)); },
+  글자(t,x,y,크기,f,정렬,굵게) { const c=그림.c; c.font=(굵게?"bold ":"")+Math.max(7,크기||8)+"px 'DungGeunMo','Galmuri','NeoDunggeunmo',monospace"; c.fillStyle=f||색.글; c.textAlign=정렬||"left"; c.textBaseline="top"; c.fillText(t,Math.round(x),Math.round(y)); },
+  글자테두리(t,x,y,크기,f,정렬) { const c=그림.c; c.font="bold "+크기+"px 'DungGeunMo','Galmuri','NeoDunggeunmo',monospace"; c.textAlign=정렬||"left"; c.textBaseline="top"; c.lineWidth=3; c.lineJoin="round"; c.strokeStyle=색.글어둠; c.strokeText(t,Math.round(x),Math.round(y)); c.fillStyle=f; c.fillText(t,Math.round(x),Math.round(y)); },
   버튼(b, 눌림) { // b:{x,y,w,h,글,색,비활성}
     const f = b.비활성 ? "#6a6a7a" : (눌림 ? "#c9a24e" : (b.색||"#e0b04a"));
     그림.둥근(b.x, b.y+2, b.w, b.h, 4, "#5a3a1a"); 그림.둥근(b.x, b.y, b.w, b.h, 4, f, "#5a3a1a");
@@ -151,21 +151,28 @@ const 그림 = {
   // 시트 그리기. 없으면 임시 치비. (x,y) = 발 아래 기준.
   시트그리기(키, 규격이름, 동작, 프레임시간, x, y, 왼쪽, 팔레트색, 옵션) {
     옵션 = 옵션||{};
-    let im = 그림.시트[키]; if (im && 옵션.털색) im = 그림.색치환(키, 옵션.털색);
+    let 크기 = 옵션.크기 || 1;
+    let 쓸키 = 키;
+    // ★고침 아기 전용 시트가 있으면 줄이지 말고 그걸 1배로 쓴다 (가장 깨끗하다)
+    if (크기 < 1 && 그림.시트[키+"_아기"]) { 쓸키 = 키+"_아기"; 크기 = 1; }
+    let im = 그림.시트[쓸키]; if (im && 옵션.털색) im = 그림.색치환(쓸키, 옵션.털색);
     const 규격=그림.시트규격[규격이름], c=그림.c, 줄이름 = 그림.동작대응[동작]||동작;
     if (im && 규격 && 규격.줄[줄이름]) {
       const [줄,수] = 규격.줄[줄이름]; const f = Math.floor(프레임시간*6)%수;
-      const 크기 = 옵션.크기 || 1;
-      const 폭2 = Math.round(규격.폭 * 크기), 높이2 = Math.round(규격.높이 * (크기 * 0.92 + 0.08));
-      c.save(); c.translate(Math.round(x), Math.round(y)); if (왼쪽) c.scale(-1,1);
+      // ★고침 가로·세로를 같은 비율로. 전에는 높이만 (크기*0.92+0.08) 이라
+      //   16×17 · 24×25 처럼 비듿한 크기로 그려져 강아지가 눈에 띄게 일그러졌다
+      const 폭2 = Math.round(규격.폭 * 크기), 높이2 = Math.round(규격.높이 * 크기);
+      c.save(); c.imageSmoothingEnabled = false;
+      c.translate(Math.round(x), Math.round(y)); if (왼쪽) c.scale(-1,1);
       c.drawImage(im, f*규격.폭, 줄*규격.높이, 규격.폭, 규격.높이, -Math.round(폭2/2), -높이2, 폭2, 높이2); c.restore(); return;
     }
     그림.임시치비(규격이름, 동작, 프레임시간, x, y, 왼쪽, 팔레트색, 옵션);
   },
   // 임시 치비: 큰 머리, 볼터치, 검정 외곽선. 발 아래 기준점 (x,y).
   임시치비(종류, 동작, t, x, y, 왼쪽, 몸색, 옵션) {
+    옵션 = 옵션||{};
     const c=그림.c; const 뜀 = (동작==="걷기"||동작==="달리기"||동작==="도망") ? (Math.floor(t*8)%2) : 0; const 앉음 = 동작==="앉기";
-    c.save(); c.translate(Math.round(x), Math.round(y)-뜀); if (왼쪽) c.scale(-1,1);
+    c.save(); c.translate(Math.round(x), Math.round(y)-뜀); if (옵션.크기 && 옵션.크기 !== 1) c.scale(옵션.크기, 옵션.크기); if (왼쪽) c.scale(-1,1);
     const 외곽="#1a1a1a";
     if (종류==="양") {
       c.fillStyle=외곽; c.fillRect(-9,-14,18,12); c.fillStyle=몸색; c.fillRect(-8,-13,16,10);
@@ -197,10 +204,11 @@ const 그림 = {
   임시개색: { 보더콜리:"#2b2b2b", 코기:"#e0a458", 골든리트리버:"#e6b85c", 진도견:"#f2e6c8", 삽살개:"#8a7b6a", 저먼셰퍼드:"#4a3a2a" },
   // 레벨이 낮을수록 작게 그린다 = 강아지. 세로를 더 줄여 몸이 짧아 보이게 (형 2026-09-13)
   자람크기(개) {
-    const lv = 개.레벨 || 1;          // 32 로 나눠떨어지는 배율만 쓴다 — 아니면 픽셀이 지워진다 (피블)
-    if (lv <= 3) return 0.5;          // 16px
-    if (lv <= 9) return 0.75;         // 24px
-    return 1;                         // 32px
+    // ★고침 레벨(= 코인으로 산 것)이 아니라 「함께 지낸 날」로 자란다.
+    //   돈으로 키우는 게 아니라 데리고 지내면서 키우는 느낌이 되게.
+    const 날 = (개.함께 && 개.함께.날) || 0;
+    if (날 < 5) return 0.5;           // 16×16 — 아기·어린 강아지
+    return 1;                         // 32×32 — 다 자란 개
   },
   개그리기(개, 동작, t, x, y, 왼쪽, 크기) {
     let 몸색 = 그림.임시개색[개.견종]||"#888";
