@@ -108,3 +108,5 @@ function 표시능력(견종){ const b=견종표[견종]; const s=v=>Math.max(1,
   return { 속도:s(b.속도), 짖기:s(b.짖기범위), 진정:s(2-b.겁), 위협:s(b.위협+0.6) }; }
 function 경험필요(lv){ return 20 + lv*10; }
 const 첫뽑기_보상탄 = 3;
+const 산책_하루상한 = 3000;      // 하루에 셈하는 걸음 (형 2026-09-21)
+const 산책_코인당 = 30;          // 30걸음마다 코인 1

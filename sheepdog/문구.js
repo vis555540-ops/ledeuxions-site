@@ -64,6 +64,17 @@ const 문구 = {
   성격_활발:{ko:"활발",en:"Lively"}, 성격_겁많음:{ko:"겁많음",en:"Timid"}, 성격_느긋:{ko:"느긋",en:"Easy-going"},
   성격_장난꾸러기:{ko:"장난꾸러기",en:"Playful"}, 성격_차분:{ko:"차분",en:"Calm"},
   미션:{ko:"미션",en:"Tasks"}, 오프라인_제목:{ko:"자는 동안 모았어요",en:"Collected while you were away"}, 이름:{ko:"이름",en:"Name"}, 이름_묻기:{ko:"이 개의 이름은? (8자까지)",en:"Name this dog (8 letters)"},
+  기다렸어요:{ko:"집 앞에서 기다리고 있었어요",en:"They were waiting by the house"},
+  많이_기다렸어요:{ko:"많이 기다렸어요! 달려옵니다",en:"They waited a long time — here they come!"},
+  쓰담_안내:{ko:"손가락으로 문질러 주세요",en:"Rub with your finger"},
+  산책:{ko:"산책",en:"Walk"}, 걸음:{ko:"걸음",en:"steps"},
+  산책_안내:{ko:"폰을 들고 걸으면 같이 걸어요",en:"Hold your phone and walk together"},
+  산책_센서없음:{ko:"이 기기는 걸음을 셀 수 없어요",en:"This device can't count steps"},
+  산책_다했어요:{ko:"오늘 산책은 여기까지예요",en:"That's enough walking for today"},
+  띵동_1:{ko:"누가 왔나 봐요. 문을 열어 볼까요?",en:"Someone's at the door. Open it?"},
+  띵동_2:{ko:"문 앞에 상자가 놓여 있어요.",en:"There's a box at the door."},
+  띵동_3:{ko:"안에 강아지가 혼자 있었어요.",en:"A puppy was inside, all alone."},
+  띵동_4:{ko:"같이 갈래?",en:"Want to come with me?"},
   탄_성공_컷:{ko:"양들이 돌아왔어요",en:"The sheep are home"},
 };
 function 글(키){ const 항=문구[키]; if(!항) return 키; const l=(typeof 저장!=="undefined"&&저장.자료)?저장.자료.언어:"ko"; return 항[l]||항.ko; }
