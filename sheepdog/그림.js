@@ -11,7 +11,7 @@ const 그림 = {
   시작(canvas) {
     그림.화면 = canvas; 그림.c = canvas.getContext("2d"); 그림.c.imageSmoothingEnabled = false;
     const 불러올 = [["양","양_동작.png"],["늑대","늑대.png"],["여우","여우.png"],["마당","yard.png"],["마당앞","yard_front.png"],["상자","배경/상자.png"],["상자앞","배경/상자앞.png"]];
-    견종순서.forEach(k => { 불러올.push(["개_"+k, "개/"+k+".png"]); 불러올.push(["개_"+k+"_아기", "개/"+k+"_아기.png"]); });   // ★ 아기·앞겹 시트는 있으면 쓰고 없으면 그냥 넘어간다
+    견종순서.forEach(k => { 불러올.push(["개_"+k, "개/"+k+".png"]); 불러올.push(["개_"+k+"_아기", "개/"+k+"_아기.png"]); 불러올.push(["얼굴_"+k, "얼굴/"+k+".png"]); });   // 아기·얼굴 시트는 있으면 쓰고 없으면 넘어간다   // ★ 아기·앞겹 시트는 있으면 쓰고 없으면 그냥 넘어간다
     불러올.forEach(([키, 경로]) => { const im = new Image(); im.onload=()=>{ 그림.시트[키]=im; }; im.onerror=()=>{}; im.src=경로; });
   },
   // 털색 1·2 = 원본 시트의 색을 HSL 로 돌린 사본. 외곽선(어두운 색)·흰색은 안 건드린다.
