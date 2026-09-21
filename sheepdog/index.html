@@ -17,8 +17,9 @@
   #인트로 { display:none; position:fixed; inset:0; width:100%; height:100%; object-fit:cover; background:#1c2540; z-index:10; }
 </style>
 <!-- H5 Games Ads 승인 후 아래 주석을 풀고 광고.준비됨=true 로 바꾼다.
-<script async data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>window.adsbygoogle=window.adsbygoogle||[]; const adBreak=adConfig=function(o){adsbygoogle.push(o);}; adConfig({preloadAdBreaks:'on',sound:'on'});</script>
+<!-- 광고 스크립트는 1차 출시에서 뺐다 (형 결정 · 피블 P2).
+     게시자 번호가 XXXX 인 가짜였고, 아이 대상 앱이라 인증된 광고만 넣을 수 있다.
+     광고.js 는 window.adBreak 이 없으면 저절로 꺼진다. 승인 뒤에 여기만 되살리면 된다. -->
 -->
 </head>
 <body>
@@ -27,15 +28,15 @@
 <video id="인트로" playsinline preload="none"></video>
 <!-- 🚨 파일 이름이 한글이면 Cloudflare 의 캐시 규칙(_headers 의 *.js)이 안 걸린다.
      그래서 주소 뒤에 판 번호를 붙여 캐시를 넘긴다. 코드를 고치면 이 v= 를 같이 올릴 것. -->
-<script src="자료.js?v=5.16"></script>
-<script src="문구.js?v=5.16"></script>
-<script src="저장.js?v=5.16"></script>
-<script src="소리.js?v=5.16"></script>
-<script src="광고.js?v=5.16"></script>
-<script src="그림.js?v=5.16"></script>
-<script src="규칙_생성기.js?v=5.16"></script>
-<script src="게임.js?v=5.16"></script>
-<script src="화면.js?v=5.16"></script>
+<script src="자료.js?v=5.17"></script>
+<script src="문구.js?v=5.17"></script>
+<script src="저장.js?v=5.17"></script>
+<script src="소리.js?v=5.17"></script>
+<script src="광고.js?v=5.17"></script>
+<script src="그림.js?v=5.17"></script>
+<script src="규칙_생성기.js?v=5.17"></script>
+<script src="게임.js?v=5.17"></script>
+<script src="화면.js?v=5.17"></script>
 <script>
 (function(){
   const 캔버스=document.getElementById("캔버스"); let 배율=1;

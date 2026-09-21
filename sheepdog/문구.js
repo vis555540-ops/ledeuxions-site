@@ -76,6 +76,11 @@ const 문구 = {
   띵동_3:{ko:"안에 강아지가 혼자 있었어요.",en:"A puppy was inside, all alone."},
   띵동_4:{ko:"같이 갈래?",en:"Want to come with me?"},
   오늘_남음:{ko:"오늘 남은 횟수",en:"Left today"},
+  이름_지어주기:{ko:"이름 지어 주기",en:"Give a name"},
+  꾹_눌러보기:{ko:"강아지를 꾹 누르면 가까이 와요",en:"Press and hold a dog to bring it close"},
+  제목_양몰이:{ko:"양몰이",en:"Sheepdog"}, 제목_달빛목장:{ko:"달빛목장",en:"Moonlight Farm"},
+  탭해서_시작:{ko:"탭해서 시작",en:"Tap to start"}, 띵동소리:{ko:"띵동",en:"Ding-dong"},
+  확률_첫세번:{ko:"처음 세 번은 없는 것만 나와요",en:"First 3 pulls: only ones you don't have"},
   탄_성공_컷:{ko:"양들이 돌아왔어요",en:"The sheep are home"},
 };
 function 글(키){ const 항=문구[키]; if(!항) return 키; const l=(typeof 저장!=="undefined"&&저장.자료)?저장.자료.언어:"ko"; return 항[l]||항.ko; }
