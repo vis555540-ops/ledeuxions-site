@@ -75,6 +75,7 @@ const 문구 = {
   띵동_2:{ko:"문 앞에 상자가 놓여 있어요.",en:"There's a box at the door."},
   띵동_3:{ko:"안에 강아지가 혼자 있었어요.",en:"A puppy was inside, all alone."},
   띵동_4:{ko:"같이 갈래?",en:"Want to come with me?"},
+  오늘_남음:{ko:"오늘 남은 횟수",en:"Left today"},
   탄_성공_컷:{ko:"양들이 돌아왔어요",en:"The sheep are home"},
 };
 function 글(키){ const 항=문구[키]; if(!항) return 키; const l=(typeof 저장!=="undefined"&&저장.자료)?저장.자료.언어:"ko"; return 항[l]||항.ko; }
