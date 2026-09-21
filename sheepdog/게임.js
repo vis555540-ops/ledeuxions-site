@@ -47,10 +47,10 @@ const 게임 = {
   대회확인() {
     const 후보 = 게임.양들.filter(s => s.상태 === "들판");
     const 쓴 = new Set(); let 찬 = 0;
-    for (const 자 of 게임.자리) {
-      let 제일 = -1, 가까움 = 13;
+    for (const 자 of 게임.자리) { 자.찼다 = false;
+      let 제일 = -1, 가까움 = 15;
       후보.forEach((s, i) => { if (쓴.has(i)) return; const L = Math.hypot(s.x-자.x, s.y-자.y); if (L < 가까움) { 가까움 = L; 제일 = i; } });
-      if (제일 >= 0) { 쓴.add(제일); 찬++; }
+      if (제일 >= 0) { 쓴.add(제일); 찬++; 자.찼다 = true; }
     }
     게임.채운수 = 찬;
     if (찬 >= 게임.자리.length) {
@@ -124,8 +124,24 @@ const 게임 = {
       for (const o of 게임.양들) { if (o===s||o.상태!=="들판") continue; const ox=s.x-o.x, oy=s.y-o.y, ol=Math.hypot(ox,oy)||1; if (ol<14) { ax+=ox/ol*(14-ol)*40; ay+=oy/ol*(14-ol)*40; } else if (ol<45) { ax-=ox/ol*10; ay-=oy/ol*10; } }
       // 늑대 회피
       for (const w of 게임.늑대들) { if (w.상태==="도망") continue; const wx=s.x-w.x, wy=s.y-w.y, wl=Math.hypot(wx,wy)||1; if (wl<30) { ax+=wx/wl*300; ay+=wy/wl*300; s.놀람=0.3; } }
-      // 배회
-      ax += Math.sin(s.t*1.3)*30; ay += Math.cos(s.t*0.9)*30;
+      // 대회 — 자리에 들어온 양은 거기 머문다 (형 2026-09-22 「양을 자리에 세우는 게 불가능」)
+      //   먼저 넣은 양이 배회하다 빠져나가서 끝이 안 났다. 놀라면 다시 풀린다.
+      let 자리잡음 = false;
+      if (게임.대회 && s.놀람 < 0.12) {
+        let 가까운=null, 최소=16;
+        for (const 자 of 게임.자리) {
+          if (자.잡은 && 자.잡은 !== s) continue;
+          const L = Math.hypot(s.x-자.x, s.y-자.y);
+          if (L < 최소) { 최소 = L; 가까운 = 자; }
+        }
+        if (가까운) { 가까운.잡은 = s; s.자리 = 가까운; 자리잡음 = true;
+          ax = (가까운.x - s.x)*30; ay = (가까운.y - s.y)*30; }
+      }
+      if (!자리잡음) {
+        if (s.자리) { if (s.자리.잡은===s) s.자리.잡은=null; s.자리=null; }
+        // 배회
+        ax += Math.sin(s.t*1.3)*30; ay += Math.cos(s.t*0.9)*30;
+      }
       // 벽 반발 (구석에 박히지 않게)
       const 위벽=게임.밭위+30; if (s.x<18) ax=Math.max(ax,(18-s.x)*30); if (s.x>폭-18) ax=Math.min(ax,-(s.x-(폭-18))*30); if (s.y<위벽+16) ay=Math.max(ay,(위벽+16-s.y)*30);
       // 우리 문 앞이면 빨려 들어감 (난이도 완화)
@@ -286,7 +302,7 @@ const 게임 = {
       if (그림.시트["양"] && s.색!=="흰") 그림.원(s.x, s.y-4, 3, 양색표[s.색]); }
     // 개
     if (게임.대회) {                        // 자리 표시 — 양이 서야 할 곳
-      게임.자리.forEach(자 => { 그림.원(자.x, 자.y, 9, "rgba(255,255,255,0.18)"); 그림.원(자.x, 자.y, 6, "rgba(255,255,255,0.10)"); });
+      게임.자리.forEach(자 => { 그림.원(자.x, 자.y, 9, 자.찼다?"rgba(90,220,130,0.45)":"rgba(255,255,255,0.18)"); 그림.원(자.x, 자.y, 6, 자.찼다?"rgba(120,240,160,0.35)":"rgba(255,255,255,0.10)"); });
       그림.글자(글("대회_설명")+"  "+게임.채운수+"/"+게임.자리.length, 90, 게임.밭위+6, 7, 색.글, "center", true);
     }
     for (const b of 게임.보조) 그림.개그리기(b.개, b.동작, 게임.프레임+b.x*0.01, b.x, b.y+8, b.왼쪽, 그림.자람크기(b.개)*0.9);
