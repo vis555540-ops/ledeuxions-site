@@ -38,6 +38,7 @@ const 문구 = {
   개인정보:{ko:"개인정보처리방침",en:"Privacy policy"}, 켜짐:{ko:"켜짐",en:"On"}, 꺼짐:{ko:"꺼짐",en:"Off"},
   돌아온_양:{ko:"돌아온 양",en:"Sheep home"},
   준비중:{ko:"준비 중",en:"Coming soon"}, 다음_목장:{ko:"다음 목장을 준비하고 있어요",en:"The next farm is on its way"},
+  한번더_나가기:{ko:"한 번 더 누르면 나가요",en:"Press back again to exit"},
   닫기:{ko:"닫기",en:"Close"}, 예:{ko:"예",en:"Yes"}, 아니오:{ko:"아니오",en:"No"},
   잠김:{ko:"잠김",en:"Locked"}, 쓰다듬기:{ko:"쓰다듬기",en:"Pet"}, 공:{ko:"공",en:"Ball"}, 밥:{ko:"밥",en:"Feed"}, 배불러:{ko:"배불러요",en:"Not hungry"},
   집사기:{ko:"집 사기",en:"House"}, 집가게:{ko:"강아지 집 가게",en:"Dog house shop"}, 사기:{ko:"사기",en:"Buy"},
