@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate" hreflang="en" href="https://pdf300.com/target-size">
+<link rel="alternate" hreflang="ja" href="https://pdf300.com/ja/target-size">
+<link rel="alternate" hreflang="es" href="https://pdf300.com/es/target-size">
+<link rel="alternate" hreflang="pt" href="https://pdf300.com/pt/target-size">
+<link rel="alternate" hreflang="de" href="https://pdf300.com/de/target-size">
+<link rel="alternate" hreflang="x-default" href="https://pdf300.com/target-size">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF を指定サイズに圧縮（正確な MB/KB）— 無料 | PDF300</title>
+<meta name="description" content="PDF を指定の正確なサイズ（例：5MB、300KB）に圧縮します。メール、ポータルサイト、入札提出のアップロード制限に最適です。無料で登録不要、使用後即削除。">
+<meta name="keywords" content="pdf サイズ調整 pdf を 5mb に圧縮 pdf を特定サイズに減らす pdf を 300kb に target size pdf コンプレッサー">
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<style>
+  :root{--primary:#0078d7;--accent:#ff8c00;--bg:#f5f6f8;--card:#fff;--line:#e3e6ea;--mut:#667;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:#1a1d21;line-height:1.5}
+  .wrap{max-width:640px;margin:0 auto;padding:20px 16px 60px}
+  h1{font-size:1.5rem;margin:.2em 0}
+  .sub{color:var(--mut);font-size:.92rem;margin-bottom:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  label{display:block;font-weight:600;font-size:.9rem;margin:14px 0 6px}
+  input[type=number],select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:1rem}
+  .drop{border:2px dashed #b9c2cc;border-radius:10px;padding:26px;text-align:center;color:var(--mut);cursor:pointer;transition:.15s}
+  .drop:hover,.drop.over{border-color:var(--primary);background:#f0f7ff;color:var(--primary)}
+  .row{display:flex;gap:10px;align-items:flex-end}
+  .row>div{flex:1}
+  .btn{width:100%;padding:13px;border:0;border-radius:8px;background:var(--primary);color:#fff;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:18px}
+  .btn:disabled{background:#aeb6bf;cursor:not-allowed}
+  .btn.accent{background:var(--accent)}
+  .status{margin-top:14px;padding:12px;border-radius:8px;font-size:.92rem;display:none}
+  .status.show{display:block}
+  .status.ok{background:#e7f6ec;color:#1a7f3c}
+  .status.err{background:#fdecec;color:#c0392b}
+  .status.info{background:#eef4fb;color:#235}
+  .muted{color:var(--mut);font-size:.82rem;margin-top:8px}
+  .badge{display:inline-block;background:#eef4fb;color:#235;border-radius:6px;padding:2px 8px;font-size:.78rem;margin-right:6px}
+  .hide{display:none}
+  .bar{height:8px;background:#e3e6ea;border-radius:6px;overflow:hidden;margin-top:10px}
+  .bar>i{display:block;height:100%;width:0;background:var(--primary);transition:width .3s}
+  .adslot{margin:16px 0;min-height:90px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📄 PDF を指定サイズに圧縮</h1>
+  <div class="sub">任意の PDF を <b>必要な正確なサイズに</b> (例：5MB、300KB)。メール添付ファイルやアップロード制限に最適です。 <span class="badge">登録不要</span><span class="badge">使用後即削除</span></div>
+
+  <div class="adslot"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2824624880449066" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
+
+  <div class="card" id="toolCard">
+    <label>1) PDF ファイル</label>
+    <div class="drop" id="drop">ここへ PDF をドロップするか、クリックして選択</div>
+    <input type="file" id="file" accept="application/pdf" class="hide">
+    <div class="muted" id="fileInfo"></div>
+
+    <div class="row">
+      <div>
+        <label>2) 目標サイズ</label>
+        <input type="number" id="targetVal" value="5" min="1" step="0.1">
+      </div>
+      <div style="flex:.6">
+        <label>単位</label>
+        <select id="targetUnit"><option value="MB">MB</option><option value="KB">KB</option></select>
+      </div>
+    </div>
+    <div class="muted">例：5MB / 300KB。可能な限りその直下まで鋭く圧縮します。無料、1 日 10 ファイルまで。</div>
+
+    <button class="btn accent" id="runBtn" disabled>圧縮</button>
+    <div class="bar hide" id="barWrap"><i id="bar"></i></div>
+    <div class="status" id="runStatus"></div>
+  </div>
+
+  <div class="adslot"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2824624880449066" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
+
+  <div class="muted">⚠️ 出力は画像ベースの PDF（テキスト選択不可）— サイズ制限を満たすために設計されています。© 2017–2026 LeDeuxions</div>
+</div>
+
+<script>
+const API = 'https://api.ledeuxions.com';
+const $ = id => document.getElementById(id);
+let apiKey = localStorage.getItem('ld_apikey') || '';
+let theFile = null;
+
+function show(el, msg, kind){ el.className = 'status show ' + (kind||'info'); el.textContent = msg; }
+
+async function ensureKey(){
+  if (apiKey) return;
+  try{
+    const email = 'anon-' + Date.now().toString(36) + Math.random().toString(36).slice(2,8) + '@pdf300.ledeuxions.com';
+    const r = await fetch(API + '/signup', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email})});
+    const j = await r.json();
+    if (j.apiKey){ apiKey = j.apiKey; localStorage.setItem('ld_apikey', apiKey); }
+  }catch(e){}
+}
+ensureKey();
+try{ (adsbygoogle=window.adsbygoogle||[]).push({}); (adsbygoogle=window.adsbygoogle||[]).push({}); }catch(e){}
+
+$('drop').onclick = ()=> $('file').click();
+$('drop').ondragover = e=>{e.preventDefault();$('drop').classList.add('over');};
+$('drop').ondragleave = ()=> $('drop').classList.remove('over');
+$('drop').ondrop = e=>{e.preventDefault();$('drop').classList.remove('over'); if(e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]);};
+$('file').onchange = e=>{ if(e.target.files[0]) pickFile(e.target.files[0]); };
+function pickFile(f){
+  if (f.type !== 'application/pdf'){ show($('runStatus'),'PDF files only','err'); return; }
+  theFile = f;
+  $('fileInfo').textContent = 'Selected: ' + f.name + '  (' + (f.size/1024/1024).toFixed(2) + 'MB)';
+  $('drop').textContent = '✅ ' + f.name;
+  $('runBtn').disabled = false;
+}
+
+$('runBtn').onclick = async () => {
+  if (!theFile) return;
+  let val = parseFloat($('targetVal').value);
+  const unit = $('targetUnit').value;
+  if (!val || val<=0){ show($('runStatus'),'Enter a target size','err'); return; }
+  const targetKb = Math.round(unit==='MB' ? val*1024 : val);
+
+  $('runBtn').disabled = true;
+  $('barWrap').classList.remove('hide'); $('bar').style.width='30%';
+  show($('runStatus'),'Compressing… (fitting your target)','info');
+
+  await ensureKey();
+  const fd = new FormData();
+  fd.append('file', theFile);
+  fd.append('target_kb', String(targetKb));
+  try{
+    const r = await fetch(API + '/v1/pdf-compress', {method:'POST', headers:{'X-API-Key': apiKey}, body: fd});
+    $('bar').style.width='80%';
+    if (!r.ok){
+      let msg; try{ msg=(await r.json()).error; }catch(_){ msg='HTTP '+r.status; }
+      if (r.status===429) msg='Daily free limit (10) reached — try again tomorrow!';
+      throw new Error(msg);
+    }
+    const resultKb = r.headers.get('X-Result-KB');
+    const hit = r.headers.get('X-Hit-Target');
+    const blob = await r.blob();
+    $('bar').style.width='100%';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const base = theFile.name.replace(/\.pdf$/i,'');
+    a.href=url; a.download = base + '_' + (unit==='MB'?val+'MB':targetKb+'KB') + '.pdf'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 8000);
+    const note = (hit==='1') ? 'target met' : 'slightly over (max compression)';
+    show($('runStatus'),'✅ Done! Result '+ (resultKb||'?') +'KB ('+note+') — downloaded','ok');
+  }catch(e){ show($('runStatus'),'Error: '+e.message,'err'); }
+  finally{ $('runBtn').disabled=false; setTimeout(()=>{$('barWrap').classList.add('hide');$('bar').style.width='0';},1200); }
+};
+</script>
+  <script src="/count.js" defer></script>
+</body>
+</html>
