@@ -45,13 +45,8 @@ const 게임 = {
     게임.남은시간 = k.초; 게임.등장타이머 = 0.6; 게임.튜토 = null;
   },
   대회확인() {
-    const 후보 = 게임.양들.filter(s => s.상태 === "들판");
-    const 쓴 = new Set(); let 찬 = 0;
-    for (const 자 of 게임.자리) { 자.찼다 = false;
-      let 제일 = -1, 가까움 = 15;
-      후보.forEach((s, i) => { if (쓴.has(i)) return; const L = Math.hypot(s.x-자.x, s.y-자.y); if (L < 가까움) { 가까움 = L; 제일 = i; } });
-      if (제일 >= 0) { 쓴.add(제일); 찬++; 자.찼다 = true; }
-    }
+    let 찬 = 0;                                   // 들어간 양만 센다 — 줄어들지 않는다
+    for (const 자 of 게임.자리) { 자.찼다 = !!(자.잡은 && 자.잡은.들어감); if (자.찼다) 찬++; }
     게임.채운수 = 찬;
     if (찬 >= 게임.자리.length) {
       게임.점수 = Math.round(게임.남은시간*8 + (게임.규칙.양총수 - 게임.손실)*20);
@@ -110,6 +105,7 @@ const 게임 = {
     const 겁 = 게임.겁(); const 도주반경 = 38*겁;
     for (const s of 게임.양들) {
       if (s.상태!=="들판") continue; s.t += d;
+      if (s.들어감) { const 자=s.자리, k=Math.min(1,d*6); s.x+=(자.x-s.x)*k; s.y+=(자.y-s.y)*k; s.vx=0; s.vy=0; s.놀람=0; continue; }   // 자석 — 힘을 안 받는다
       let ax=0, ay=0;
       // 개 회피
       const dx=s.x-p.x, dy=s.y-p.y, L=Math.hypot(dx,dy)||1;
@@ -124,24 +120,23 @@ const 게임 = {
       for (const o of 게임.양들) { if (o===s||o.상태!=="들판") continue; const ox=s.x-o.x, oy=s.y-o.y, ol=Math.hypot(ox,oy)||1; if (ol<14) { ax+=ox/ol*(14-ol)*40; ay+=oy/ol*(14-ol)*40; } else if (ol<45) { ax-=ox/ol*10; ay-=oy/ol*10; } }
       // 늑대 회피
       for (const w of 게임.늑대들) { if (w.상태==="도망") continue; const wx=s.x-w.x, wy=s.y-w.y, wl=Math.hypot(wx,wy)||1; if (wl<30) { ax+=wx/wl*300; ay+=wy/wl*300; s.놀람=0.3; } }
-      // 대회 — 자리에 들어온 양은 거기 머문다 (형 2026-09-22 「양을 자리에 세우는 게 불가능」)
-      //   먼저 넣은 양이 배회하다 빠져나가서 끝이 안 났다. 놀라면 다시 풀린다.
-      let 자리잡음 = false;
-      if (게임.대회 && s.놀람 < 0.12) {
-        let 가까운=null, 최소=16;
+      // 대회 — 자리에 들어온 양은 자석처럼 붙어 안 움직인다 (형 2026-09-23 「원안에 들어가면 자석처럼 양이 서있어야」)
+      //   예전(9/22)엔 놀라면 다시 풀려서 빠져나갔다. 이제 한 번 들어가면 끝까지 그 자리.
+      if (게임.대회) {
+        let 가까운=null, 최소=15;
         for (const 자 of 게임.자리) {
-          if (자.잡은 && 자.잡은 !== s) continue;
+          if (자.잡은) continue;
           const L = Math.hypot(s.x-자.x, s.y-자.y);
           if (L < 최소) { 최소 = L; 가까운 = 자; }
         }
-        if (가까운) { 가까운.잡은 = s; s.자리 = 가까운; 자리잡음 = true;
-          ax = (가까운.x - s.x)*30; ay = (가까운.y - s.y)*30; }
+        if (가까운) {
+          가까운.잡은 = s; s.자리 = 가까운; s.들어감 = true; s.vx = 0; s.vy = 0; s.놀람 = 0;
+          게임.글자들.push({x:가까운.x,y:가까운.y-12,글:"+1",t:0.8,색:색.좋음}); 게임.입자(가까운.x,가까운.y,색.좋음,6); 소리.재생("들임");
+          continue;
+        }
       }
-      if (!자리잡음) {
-        if (s.자리) { if (s.자리.잡은===s) s.자리.잡은=null; s.자리=null; }
-        // 배회
-        ax += Math.sin(s.t*1.3)*30; ay += Math.cos(s.t*0.9)*30;
-      }
+      // 배회
+      ax += Math.sin(s.t*1.3)*30; ay += Math.cos(s.t*0.9)*30;
       // 벽 반발 (구석에 박히지 않게)
       const 위벽=게임.밭위+30; if (s.x<18) ax=Math.max(ax,(18-s.x)*30); if (s.x>폭-18) ax=Math.min(ax,-(s.x-(폭-18))*30); if (s.y<위벽+16) ay=Math.max(ay,(위벽+16-s.y)*30);
       // 우리 문 앞이면 빨려 들어감 (난이도 완화)
