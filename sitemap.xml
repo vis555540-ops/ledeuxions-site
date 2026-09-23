@@ -256,6 +256,30 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://ledeuxions.com/applications/iphoneheic/ja/</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/applications/iphoneheic/es/</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/applications/iphoneheic/pt/</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/applications/iphoneheic/de/</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://ledeuxions.com/web-projects/imgworks/</loc>
     <lastmod>2026-06-28</lastmod>
     <changefreq>weekly</changefreq>

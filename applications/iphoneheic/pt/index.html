@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt">
 <head>
-<link rel="canonical" href="https://ledeuxions.com/applications/iphoneheic/en/">
+<link rel="canonical" href="https://ledeuxions.com/applications/iphoneheic/pt/">
 <link rel="alternate" hreflang="ko" href="https://ledeuxions.com/applications/iphoneheic/ko/">
 <link rel="alternate" hreflang="en" href="https://ledeuxions.com/applications/iphoneheic/en/">
 <link rel="alternate" hreflang="ja" href="https://ledeuxions.com/applications/iphoneheic/ja/">
@@ -14,11 +14,11 @@
 <meta name="theme-color" content="#FAF9F5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="HEIC Converter">
-<meta name="description" content="HEIC to JPG converter PWA. Add to home screen for offline use.">
+<meta name="apple-mobile-web-app-title" content="Conversor HEIC">
+<meta name="description" content="Converta fotos HEIC do iPhone para JPG grátis. Suas fotos não são enviadas a nenhum servidor: tudo acontece no seu aparelho. Sem instalar, funciona offline.">
 <link rel="manifest" href="../manifest.json">
 <link rel="apple-touch-icon" href="../assets/icons/icon-192.png">
-<title>HEIC Converter · PWA — LeDeuxions</title>
+<title>Converter HEIC para JPG — Grátis, sem upload | LeDeuxions</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,15 +49,15 @@
             <span>LeDeuxions</span>
         </a>
         <div class="nav-links" data-nav-menu style="display:flex">
-            <a href="../ko/" class="nav-link">KO</a><a href="../ja/" class="nav-link">JA</a><a href="../es/" class="nav-link">ES</a><a href="../pt/" class="nav-link">PT</a><a href="../de/" class="nav-link">DE</a>
+            <a href="../ko/" class="nav-link">KO</a><a href="../en/" class="nav-link">EN</a><a href="../ja/" class="nav-link">JA</a><a href="../es/" class="nav-link">ES</a><a href="../de/" class="nav-link">DE</a>
         </div>
     </div>
 </nav>
 
 <header class="app-hero container-narrow">
-    <div class="eyebrow" style="margin-bottom:8px;">PWA · Works Offline</div>
-    <h1 style="margin:0 0 8px;font-size:clamp(2rem,5vw,2.8rem);">HEIC <em style="color:var(--accent);font-style:italic;">Converter</em></h1>
-    <p class="lead" style="margin-bottom:0;">iPhone photos to JPG. Add to home screen for offline use.</p>
+    <div class="eyebrow" style="margin-bottom:8px;">Grátis · Sem upload</div>
+    <h1 style="margin:0 0 8px;font-size:clamp(2rem,5vw,2.8rem);">HEIC para <em style="color:var(--accent);font-style:italic;">JPG</em></h1>
+    <p class="lead" style="margin-bottom:0;">Fotos do iPhone em JPG. Suas fotos nunca saem do seu aparelho.</p>
 </header>
 
 <main class="container-narrow" style="padding-bottom:var(--space-9);">
@@ -66,32 +66,32 @@
     <div class="dropzone" id="drop">
         <div class="dropzone-icon">🖼️</div>
         <div class="dropzone-text">
-            <strong>Select or drop your photos</strong><br>
+            <strong>Escolha ou arraste suas fotos</strong><br>
             <small>HEIC · HEIF · JPG · PNG</small>
         </div>
         <input type="file" id="fileInput" accept=".heic,.heif,image/heic,image/heif,image/jpeg,image/png" multiple hidden>
     </div>
-    <p class="status-text" id="statusText">Select HEIC photos to convert to JPG.</p>
+    <p class="status-text" id="statusText">Escolha fotos HEIC para converter em JPG.</p>
     <ul class="file-list" id="fileList"></ul>
-    <button class="btn btn-primary btn-block" id="convertButton" style="margin-top:var(--space-5);" disabled>Convert</button>
+    <button class="btn btn-primary btn-block" id="convertButton" style="margin-top:var(--space-5);" disabled>Converter</button>
 </div>
 
 <div class="card" id="nextSteps" hidden style="margin-top:var(--space-5);padding:var(--space-5);">
-    <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">Saved. What next?</h3>
-    <div class="info-row"><a href="https://pdf300.com/image-to-pdf" style="color:inherit">Put these photos in one PDF</a><span class="v">→</span></div>
-    <div class="info-row"><a href="https://pdf300.com/compress-pdf" style="color:inherit">Make a PDF smaller for email</a><span class="v">→</span></div>
-    <div class="info-row"><a href="https://pdf300.com/target-size" style="color:inherit">Compress a PDF to an exact size (e.g. 200 KB)</a><span class="v">→</span></div>
-    <div class="info-row"><a href="/sheepdog/" style="color:inherit">Take a 2-minute break — Sheepdog game</a><span class="v">🐑</span></div>
+    <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">Salvo. E agora?</h3>
+    <div class="info-row"><a href="https://pdf300.com/image-to-pdf" style="color:inherit">Juntar estas fotos em um PDF</a><span class="v">→</span></div>
+    <div class="info-row"><a href="https://pdf300.com/compress-pdf" style="color:inherit">Diminuir um PDF para enviar por e-mail</a><span class="v">→</span></div>
+    <div class="info-row"><a href="https://pdf300.com/target-size" style="color:inherit">Comprimir um PDF para um tamanho exato (ex. 200 KB)</a><span class="v">→</span></div>
+    <div class="info-row"><a href="/sheepdog/" style="color:inherit">Descanse 2 minutos — jogo do cão pastor</a><span class="v">🐑</span></div>
 </div>
 
 <div class="card" style="margin-top:var(--space-5);padding:var(--space-5);">
     <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">Info</h3>
-    <div class="info-row"><span class="k">Quality</span><span class="v">High</span></div>
-    <div class="info-row"><span class="k">Privacy</span><span class="v">100% Local</span></div>
-    <div class="info-row"><span class="k">Offline</span><span class="v">After install</span></div>
+    <div class="info-row"><span class="k">Qualidade</span><span class="v">Alta</span></div>
+    <div class="info-row"><span class="k">Privacidade</span><span class="v">100% local</span></div>
+    <div class="info-row"><span class="k">Offline</span><span class="v">Após instalar</span></div>
 </div>
 
-<p style="text-align:center;margin:26px 0 8px;font-size:.92rem;line-height:1.6;opacity:.75">Need those photos in one PDF? <a href="https://pdf300.com" style="color:inherit;text-decoration:underline">pdf300.com</a> — merge, split, compress. No install.</p>
+<p style="text-align:center;margin:26px 0 8px;font-size:.92rem;line-height:1.6;opacity:.75">Quer essas fotos em um só PDF? <a href="https://pdf300.com" style="color:inherit;text-decoration:underline">pdf300.com</a> — juntar, dividir, comprimir. Sem instalar.</p>
 
 </main>
 
@@ -99,7 +99,7 @@
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions.</span>
-            <span><a href="/applications/">← Applications</a></span>
+            <span><a href="/applications/">← Aplicativos</a></span>
         </div>
     </div>
 </footer>
@@ -144,14 +144,14 @@
             list.appendChild(li);
         });
         btn.disabled = items.length === 0;
-        statusText.textContent = items.length ? items.length + ' selected' : 'Select HEIC photos to convert to JPG.';
+        statusText.textContent = items.length ? items.length + ' selecionadas' : 'Escolha fotos HEIC para converter em JPG.';
     }
     btn.addEventListener('click', async function () {
         btn.disabled = true;
         for (var i = 0; i < items.length; i++) {
             var it = items[i];
             if (it.done) continue;
-            statusText.textContent = 'Converting… (' + (i + 1) + '/' + items.length + ')';
+            statusText.textContent = 'Convertendo… (' + (i + 1) + '/' + items.length + ')';
             try {
                 var isHeic = /heic|heif/i.test(it.file.type) || /\.(heic|heif)$/i.test(it.file.name);
                 var blob = isHeic
@@ -163,7 +163,7 @@
                 render();
             } catch (e) { console.error(e); }
         }
-        statusText.textContent = 'Done · ' + items.filter(function (x) { return x.done; }).length + ' saved';
+        statusText.textContent = 'Pronto · ' + items.filter(function (x) { return x.done; }).length + ' salvas';
         if (items.some(function (x) { return x.done; })) document.getElementById('nextSteps').hidden = false;
         btn.disabled = false;
     });

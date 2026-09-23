@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
 <head>
-<link rel="canonical" href="https://ledeuxions.com/applications/iphoneheic/en/">
+<link rel="canonical" href="https://ledeuxions.com/applications/iphoneheic/ja/">
 <link rel="alternate" hreflang="ko" href="https://ledeuxions.com/applications/iphoneheic/ko/">
 <link rel="alternate" hreflang="en" href="https://ledeuxions.com/applications/iphoneheic/en/">
 <link rel="alternate" hreflang="ja" href="https://ledeuxions.com/applications/iphoneheic/ja/">
@@ -14,11 +14,11 @@
 <meta name="theme-color" content="#FAF9F5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="HEIC Converter">
-<meta name="description" content="HEIC to JPG converter PWA. Add to home screen for offline use.">
+<meta name="apple-mobile-web-app-title" content="HEIC変換">
+<meta name="description" content="iPhoneのHEIC写真をJPGに無料変換。写真はサーバーに送られず、端末の中だけで変換します。インストール不要、オフラインでも使えます。">
 <link rel="manifest" href="../manifest.json">
 <link rel="apple-touch-icon" href="../assets/icons/icon-192.png">
-<title>HEIC Converter · PWA — LeDeuxions</title>
+<title>HEIC を JPG に変換 — 無料・アップロード不要 | LeDeuxions</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,15 +49,15 @@
             <span>LeDeuxions</span>
         </a>
         <div class="nav-links" data-nav-menu style="display:flex">
-            <a href="../ko/" class="nav-link">KO</a><a href="../ja/" class="nav-link">JA</a><a href="../es/" class="nav-link">ES</a><a href="../pt/" class="nav-link">PT</a><a href="../de/" class="nav-link">DE</a>
+            <a href="../ko/" class="nav-link">KO</a><a href="../en/" class="nav-link">EN</a><a href="../es/" class="nav-link">ES</a><a href="../pt/" class="nav-link">PT</a><a href="../de/" class="nav-link">DE</a>
         </div>
     </div>
 </nav>
 
 <header class="app-hero container-narrow">
-    <div class="eyebrow" style="margin-bottom:8px;">PWA · Works Offline</div>
-    <h1 style="margin:0 0 8px;font-size:clamp(2rem,5vw,2.8rem);">HEIC <em style="color:var(--accent);font-style:italic;">Converter</em></h1>
-    <p class="lead" style="margin-bottom:0;">iPhone photos to JPG. Add to home screen for offline use.</p>
+    <div class="eyebrow" style="margin-bottom:8px;">無料 · アップロード不要</div>
+    <h1 style="margin:0 0 8px;font-size:clamp(2rem,5vw,2.8rem);">HEIC を <em style="color:var(--accent);font-style:italic;">JPG</em> に</h1>
+    <p class="lead" style="margin-bottom:0;">iPhoneの写真をJPGに。写真は端末の外に出ません。</p>
 </header>
 
 <main class="container-narrow" style="padding-bottom:var(--space-9);">
@@ -66,32 +66,32 @@
     <div class="dropzone" id="drop">
         <div class="dropzone-icon">🖼️</div>
         <div class="dropzone-text">
-            <strong>Select or drop your photos</strong><br>
+            <strong>写真を選ぶか、ここにドロップ</strong><br>
             <small>HEIC · HEIF · JPG · PNG</small>
         </div>
         <input type="file" id="fileInput" accept=".heic,.heif,image/heic,image/heif,image/jpeg,image/png" multiple hidden>
     </div>
-    <p class="status-text" id="statusText">Select HEIC photos to convert to JPG.</p>
+    <p class="status-text" id="statusText">JPGに変換するHEIC写真を選んでください。</p>
     <ul class="file-list" id="fileList"></ul>
-    <button class="btn btn-primary btn-block" id="convertButton" style="margin-top:var(--space-5);" disabled>Convert</button>
+    <button class="btn btn-primary btn-block" id="convertButton" style="margin-top:var(--space-5);" disabled>変換する</button>
 </div>
 
 <div class="card" id="nextSteps" hidden style="margin-top:var(--space-5);padding:var(--space-5);">
-    <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">Saved. What next?</h3>
-    <div class="info-row"><a href="https://pdf300.com/image-to-pdf" style="color:inherit">Put these photos in one PDF</a><span class="v">→</span></div>
-    <div class="info-row"><a href="https://pdf300.com/compress-pdf" style="color:inherit">Make a PDF smaller for email</a><span class="v">→</span></div>
-    <div class="info-row"><a href="https://pdf300.com/target-size" style="color:inherit">Compress a PDF to an exact size (e.g. 200 KB)</a><span class="v">→</span></div>
-    <div class="info-row"><a href="/sheepdog/" style="color:inherit">Take a 2-minute break — Sheepdog game</a><span class="v">🐑</span></div>
+    <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">保存しました。次は？</h3>
+    <div class="info-row"><a href="https://pdf300.com/image-to-pdf" style="color:inherit">写真をまとめて1つのPDFに</a><span class="v">→</span></div>
+    <div class="info-row"><a href="https://pdf300.com/compress-pdf" style="color:inherit">メール用にPDFを小さく</a><span class="v">→</span></div>
+    <div class="info-row"><a href="https://pdf300.com/target-size" style="color:inherit">PDFを指定サイズに圧縮（例: 200KB）</a><span class="v">→</span></div>
+    <div class="info-row"><a href="/sheepdog/" style="color:inherit">2分だけ休憩 — 羊飼いゲーム</a><span class="v">🐑</span></div>
 </div>
 
 <div class="card" style="margin-top:var(--space-5);padding:var(--space-5);">
-    <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">Info</h3>
-    <div class="info-row"><span class="k">Quality</span><span class="v">High</span></div>
-    <div class="info-row"><span class="k">Privacy</span><span class="v">100% Local</span></div>
-    <div class="info-row"><span class="k">Offline</span><span class="v">After install</span></div>
+    <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">情報</h3>
+    <div class="info-row"><span class="k">画質</span><span class="v">高</span></div>
+    <div class="info-row"><span class="k">プライバシー</span><span class="v">100% 端末内</span></div>
+    <div class="info-row"><span class="k">オフライン</span><span class="v">ホーム画面に追加後</span></div>
 </div>
 
-<p style="text-align:center;margin:26px 0 8px;font-size:.92rem;line-height:1.6;opacity:.75">Need those photos in one PDF? <a href="https://pdf300.com" style="color:inherit;text-decoration:underline">pdf300.com</a> — merge, split, compress. No install.</p>
+<p style="text-align:center;margin:26px 0 8px;font-size:.92rem;line-height:1.6;opacity:.75">写真を1つのPDFにしたい？ <a href="https://pdf300.com" style="color:inherit;text-decoration:underline">pdf300.com</a> — 結合・分割・圧縮。インストール不要。</p>
 
 </main>
 
@@ -99,7 +99,7 @@
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions.</span>
-            <span><a href="/applications/">← Applications</a></span>
+            <span><a href="/applications/">← アプリ一覧</a></span>
         </div>
     </div>
 </footer>
@@ -144,14 +144,14 @@
             list.appendChild(li);
         });
         btn.disabled = items.length === 0;
-        statusText.textContent = items.length ? items.length + ' selected' : 'Select HEIC photos to convert to JPG.';
+        statusText.textContent = items.length ? items.length + '枚 選択' : 'JPGに変換するHEIC写真を選んでください。';
     }
     btn.addEventListener('click', async function () {
         btn.disabled = true;
         for (var i = 0; i < items.length; i++) {
             var it = items[i];
             if (it.done) continue;
-            statusText.textContent = 'Converting… (' + (i + 1) + '/' + items.length + ')';
+            statusText.textContent = '変換中… (' + (i + 1) + '/' + items.length + ')';
             try {
                 var isHeic = /heic|heif/i.test(it.file.type) || /\.(heic|heif)$/i.test(it.file.name);
                 var blob = isHeic
@@ -163,7 +163,7 @@
                 render();
             } catch (e) { console.error(e); }
         }
-        statusText.textContent = 'Done · ' + items.filter(function (x) { return x.done; }).length + ' saved';
+        statusText.textContent = '完了 · ' + items.filter(function (x) { return x.done; }).length + '枚 保存';
         if (items.some(function (x) { return x.done; })) document.getElementById('nextSteps').hidden = false;
         btn.disabled = false;
     });
