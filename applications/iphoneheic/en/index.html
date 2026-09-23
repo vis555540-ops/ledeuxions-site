@@ -69,6 +69,14 @@
     <button class="btn btn-primary btn-block" id="convertButton" style="margin-top:var(--space-5);" disabled>Convert</button>
 </div>
 
+<div class="card" id="nextSteps" hidden style="margin-top:var(--space-5);padding:var(--space-5);">
+    <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">Saved. What next?</h3>
+    <div class="info-row"><a href="https://pdf300.com/image-to-pdf" style="color:inherit">Put these photos in one PDF</a><span class="v">→</span></div>
+    <div class="info-row"><a href="https://pdf300.com/compress-pdf" style="color:inherit">Make a PDF smaller for email</a><span class="v">→</span></div>
+    <div class="info-row"><a href="https://pdf300.com/target-size" style="color:inherit">Compress a PDF to an exact size (e.g. 200 KB)</a><span class="v">→</span></div>
+    <div class="info-row"><a href="/sheepdog/" style="color:inherit">Take a 2-minute break — Sheepdog game</a><span class="v">🐑</span></div>
+</div>
+
 <div class="card" style="margin-top:var(--space-5);padding:var(--space-5);">
     <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">Info</h3>
     <div class="info-row"><span class="k">Quality</span><span class="v">High</span></div>
@@ -149,6 +157,7 @@
             } catch (e) { console.error(e); }
         }
         statusText.textContent = 'Done · ' + items.filter(function (x) { return x.done; }).length + ' saved';
+        if (items.some(function (x) { return x.done; })) document.getElementById('nextSteps').hidden = false;
         btn.disabled = false;
     });
 })();

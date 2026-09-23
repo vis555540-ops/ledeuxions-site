@@ -96,6 +96,14 @@
     </div>
 </div>
 
+<div class="card" id="nextSteps" hidden style="margin-top:var(--space-5);padding:var(--space-5);">
+    <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">저장됐어요. 다음엔?</h3>
+    <div class="info-row"><a href="https://pdf300.com/image-to-pdf" style="color:inherit">사진 여러 장을 PDF 하나로</a><span class="v">→</span></div>
+    <div class="info-row"><a href="https://pdf300.com/compress-pdf" style="color:inherit">메일에 붙일 PDF 용량 줄이기</a><span class="v">→</span></div>
+    <div class="info-row"><a href="https://pdf300.com/target-size" style="color:inherit">PDF를 정한 크기로 (예: 200KB)</a><span class="v">→</span></div>
+    <div class="info-row"><a href="/sheepdog/" style="color:inherit">2분 쉬어가기 — 양몰이 게임</a><span class="v">🐑</span></div>
+</div>
+
 <div class="card" style="margin-top:var(--space-5);padding:var(--space-5);">
     <h3 style="margin:0 0 var(--space-3);font-size:1rem;font-weight:600;">정보</h3>
     <div class="info-row"><span class="k">품질</span><span class="v">고화질</span></div>
@@ -192,6 +200,7 @@ window.APP_TEXTS = {
             }
         }
         statusText.textContent = '완료 · ' + items.filter(function (x) { return x.done; }).length + '장 저장';
+        if (items.some(function (x) { return x.done; })) document.getElementById('nextSteps').hidden = false;
         btn.disabled = false;
     });
 })();
