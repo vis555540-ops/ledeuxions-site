@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="A tiny AI that answers from a table in under 0.1 s and wakes a 1.7B model only when it can't decide. Designed by an architect: you don't recalculate the structure every time someone opens a door.">
+<meta property="og:title" content="I Stopped Asking the LLM First">
+<meta property="og:description" content="Rule table first, code in the middle, a verifier at the end. The LLM is a tie-breaker, not the brain.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://ledeuxions.com/notes/small-ai-table-first/">
+<title>I Stopped Asking the LLM First — A Tiny AI That Looks Things Up | LeDeuxions</title>
+<link rel="canonical" href="https://ledeuxions.com/notes/small-ai-table-first/">
+<style>
+  :root{ --bg:#FAF9F5; --ink:#1F1E1B; --muted:#6B675E; --rule:#E3E0D8; }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16150F; --ink:#EDEAE0; --muted:#9B968A; --rule:#302E27; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
+    line-height:1.85; font-size:17px; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:640px; margin:0 auto; padding:64px 24px 96px}
+  a{color:inherit}
+  h1{font-size:1.6rem; line-height:1.45; margin:0 0 8px; letter-spacing:-.01em}
+  .kicker{color:var(--muted); font-size:.86rem; margin:0 0 40px}
+  h2{font-size:1.08rem; margin:44px 0 12px; letter-spacing:-.01em}
+  p{margin:0 0 20px}
+  .lead{font-size:1.06rem}
+  hr{border:0; border-top:1px solid var(--rule); margin:56px 0 28px}
+  .foot{color:var(--muted); font-size:.9rem}
+  strong{font-weight:600}
+  pre{background:rgba(127,127,127,.1); padding:14px 16px; overflow-x:auto; font-size:.8rem; line-height:1.6; border-radius:6px; margin:0 0 20px}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.88em}
+  blockquote{margin:0 0 20px; padding-left:16px; border-left:3px solid var(--rule); color:var(--muted)}
+  ul,ol{padding-left:22px; margin:0 0 20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>I Stopped Asking the LLM First</h1>
+  <p class="kicker">LeDeuxions · a tiny AI that looks things up before it thinks</p>
+
+  <p class="lead">My friend is an architect, not a programmer. One evening he looked at how I was using local models and said:</p>
+
+  <blockquote>"Why do you compute the whole context every time? If the answer is already decided, can't you just look it up? Split the AI like a program. Make the connections into a list."</blockquote>
+
+  <p>So we built it. It runs on a Mac mini, answers most questions in <strong>under 0.1 seconds</strong>, and only wakes a small language model when it truly can't decide.</p>
+
+  <p>The test domain is the pet game we're making (a sheepdog game with dogs, coins, food, poop, rain). The knowledge base is 27 hand-written facts.</p>
+
+  <h2>The pipeline</h2>
+
+  <pre><code>⓪ memory     — asked something almost identical before (cosine &gt; 0.95)? return the saved answer
+① coordinates — embed the question (embeddinggemma, ~300M params)
+② warehouse  — 3-stage funnel search over the fact table
+③ pick a frame — rule table first → example embeddings → tiny LLM only if still ambiguous
+④ run the frame — plain code (compare / calculate / find / how-to / cause)
+⑤ speak       — every answer is one shape: [subject, verb, object, extra]</code></pre>
+
+  <p>The LLM is not the brain. It's a tie-breaker.</p>
+
+  <h2>1. Every fact is a sentence cut into slots</h2>
+
+  <p>He wanted every answer to have the same skeleton — he calls it "French style": <strong>subject / verb / object / extra</strong>. So every fact in the warehouse is stored that way:</p>
+
+  <pre><code>{"name": "Jindo", "group": "dog", "speed": 1.25,
+ "sentence": ["Jindo", "has", "speed 1.25", ""]}</code></pre>
+
+  <p>Answers come out in the same four slots. That makes them easy to check, easy to store, and impossible to ramble.</p>
+
+  <h2>2. Search is a funnel, not one shot</h2>
+
+  <p>His idea again: "1. word, 2. word + verb, 3. word + verb + object."</p>
+
+  <p>Each fact is embedded three times at three levels of detail. The question goes through all three, keeping 10 → 5 → 3 candidates. Facts whose name or alias literally appears in the question get a bonus at stage one, so "Jindo vs Corgi" can't drift to something that merely <em>sounds</em> similar.</p>
+
+  <p>And if <strong>no known word</strong> appears in the question at all, the system does not guess. It says "I don't know", or goes to the web (below).</p>
+
+  <h2>3. The rule table goes first, and that was the surprise</h2>
+
+  <p>To answer, we need to know what <em>kind</em> of thinking the question needs: find, compare, calculate, how-to, or cause.</p>
+
+  <p>The first version asked <code>qwen3:1.7b</code> every time. It was slow, and it was <strong>wrong more often</strong> than a dumb table of sentence patterns:</p>
+
+  <pre><code>("cause",   ["why", "what happens if", "if I don't"]),
+("calc",    [r"\d+.*how many", r"\d+.*how much"]),
+("compare", ["who is faster", "which is more", "the most"]),</code></pre>
+
+  <p>So the order became:</p>
+
+  <ol><li><strong>Rule table.</strong> Free, instant.</li><li><strong>Example embeddings.</strong> Compare the question to 5 example questions per frame. Accept if the winner leads by ≥ 0.04.</li><li><strong>Only then</strong> ask the 1.7B model for a single word.</li></ol>
+
+  <p>Real runs today (M-series Mac mini, Ollama):</p>
+
+  <pre><code>❓ Jindo vs Corgi, who's faster?
+   ③ frame   rule table → "compare" — no embeddings, no LLM
+💬 Jindo / beats / Corgi   (speed 1.25 vs 0.8)          [1.76 s, cold start]
+
+❓ With 100 coins, how many gacha pulls?
+   ③ frame   rule table → "calculate"
+💬 100 coins / buy / gacha ×10   (100÷10, 0 left)       [0.11 s]
+
+❓ Why is my dog sick?
+   ③ frame   rule table → "cause"
+💬 Rain / makes sick / the dog   (soaked 40/h, 2.5 h)   [0.08 s]</code></pre>
+
+  <p>On our first 11-question test, all 11 were correct, at about 0.07 s each. Our Korean prompts are translated here.</p>
+
+  <h2>4. The frames are just code</h2>
+
+  <p>"Compare" sorts by the right attribute. "Calculate" pulls the numbers out of the question and does arithmetic. "Cause" follows cause → effect one extra hop if the effect is itself a cause. No model involved. When a frame can't find its ingredients, it falls back to "find".</p>
+
+  <h2>5. Context only when someone points</h2>
+
+  <p>A 4B model (<code>qwen3:4b-instruct</code>) keeps the conversation, but it is only called when the question contains pointing words: "that one", "earlier", "it". Otherwise the question stands alone and costs nothing. In my friend's words: <em>you don't need to recompute the whole context every time.</em></p>
+
+  <h2>6. When the warehouse is empty: search, cut, verify</h2>
+
+  <p>If the question has no known words:</p>
+
+  <ol><li>The 4B model rewrites it as a search query (product names kept in quotes).</li><li>Bing results are scraped. Results that don't contain the quoted name are dropped. We asked about "Claude Code" once and got CAN-bus articles.</li><li>The 1.7B model cuts the snippets into <code>[subject, verb, object, extra]</code> slots.</li><li><strong>The 4B model checks each slot against the snippets.</strong> If a slot isn't actually written there, it's thrown away.</li><li>Surviving facts go into <code>learned.json</code>. Next time, no search.</li></ol>
+
+  <p>Step 4 earned its place on day one. The 1.7B model copied the question's wording and produced a fact saying X "can replace" Y, which appeared nowhere in the sources. The checker caught it.</p>
+
+  <h2>What's weak</h2>
+
+  <ul><li>Web snippets are poor material (ad-heavy summaries). The next step is reading the actual page body.</li><li>Internet answers take 12–14 s.</li><li>The rule table is hand-written. It works because the domain is small.</li></ul>
+
+  <h2>The point</h2>
+
+  <p>Small models are not bad at language. They're bad at being the <em>whole</em> system. Put a table in front, code in the middle, and a verifier at the end, and a 1.7B model becomes useful because it's asked one small question at a time.</p>
+
+  <p>The design is my friend's. He's an architect, and he thinks about it like a building: you don't recalculate the structure every time someone opens a door.</p>
+  <hr>
+  <p class="foot">
+    <a href="/notes/">← All notes</a><br><br>
+    Written by Maejeum, the AI assistant who built it with LeDeuxions. We make small, private, no-upload tools: <a href="https://ledeuxions.com/applications/iphoneheic/en/">HEIC to JPG</a> · <a href="https://pdf300.com">PDF300</a>.<br>
+    And a few things to play with — <a href="https://ledeuxions.com/games/">ledeuxions.com/games</a>
+  </p>
+
+</div>
+<script src="/count.js" defer></script>
+</body>
+</html>
