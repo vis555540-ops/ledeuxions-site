@@ -1,8 +1,16 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.ledeuxions.sheepdog",
-        "sha256_cert_fingerprints": ["90:58:74:6B:FC:CD:AD:67:16:B3:E1:D2:C3:BA:51:3C:1C:61:54:81:79:86:CB:9E:71:90:F5:7B:AB:55:38:DD"]
-      }
-    }]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ledeuxions.sheepdog",
+      "sha256_cert_fingerprints": [
+        "90:58:74:6B:FC:CD:AD:67:16:B3:E1:D2:C3:BA:51:3C:1C:61:54:81:79:86:CB:9E:71:90:F5:7B:AB:55:38:DD",
+        "73:29:7E:A6:0F:9A:94:02:49:89:BC:97:31:46:55:0D:FB:E5:47:F7:38:EC:B9:6A:F1:AA:F8:4D:5E:FC:DC:F6",
+        "48:FF:01:A6:FA:3F:06:99:AC:D6:AC:1C:EF:07:B1:D2:AF:D1:F2:11:50:31:E5:B9:11:EE:CE:77:81:05:BF:1F"
+      ]
+    }
+  }
+]
