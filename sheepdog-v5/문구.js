@@ -48,6 +48,7 @@ const 문구 = {
   잠김:{ko:"잠김",en:"Locked"}, 쓰다듬기:{ko:"쓰다듬기",en:"Pet"}, 공:{ko:"공",en:"Ball"}, 밥:{ko:"밥",en:"Feed"}, 배불러:{ko:"배불러요",en:"Not hungry"},
   집사기:{ko:"집 사기",en:"House"}, 집가게:{ko:"강아지 집 가게",en:"Dog house shop"}, 사기:{ko:"사기",en:"Buy"},
   집_생김:{ko:"강아지 집이 생겼어요!",en:"The dog house is ready!"},
+  집_바꾸기:{ko:"집 바꾸기",en:"Change house"}, 집_쓰기:{ko:"쓰기",en:"Use"}, 집_가짐:{ko:"내 집",en:"Owned"}, 집_바꿈:{ko:"집을 바꿨어요!",en:"House changed!"},
   비_집없음:{ko:"비가 와요! 집이 있으면 비를 피해요",en:"It's raining! A house keeps dogs dry"},
   수의사:{ko:"수의사 선생님",en:"Vet"}, 다나았어요:{ko:"다 나았어요!",en:"All better!"}, 배고파:{ko:"배고파요",en:"Hungry"},
   오늘_다함:{ko:"오늘은 충분히 놀았어요",en:"Enough play for today"},
