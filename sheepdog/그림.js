@@ -35,12 +35,12 @@ const 그림 = {
   네모(x,y,w,h,f,테두리) { const c=그림.c; c.fillStyle=f; c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); if (테두리) { c.strokeStyle=테두리; c.lineWidth=1; c.strokeRect(Math.round(x)+0.5,Math.round(y)+0.5,Math.round(w)-1,Math.round(h)-1); } },
   둥근(x,y,w,h,r,f,테두리) { const c=그림.c; c.beginPath(); c.roundRect(Math.round(x)+0.5,Math.round(y)+0.5,w-1,h-1,r); c.fillStyle=f; c.fill(); if (테두리) { c.strokeStyle=테두리; c.lineWidth=1; c.stroke(); } },
   원(x,y,r,f) { const c=그림.c; c.beginPath(); c.arc(x,y,r,0,Math.PI*2); c.fillStyle=f; c.fill(); },
-  글자(t,x,y,크기,f,정렬,굵게) { const c=그림.c; c.font=(굵게?"bold ":"")+Math.max(7,크기||8)+"px 'DungGeunMo','Galmuri','NeoDunggeunmo',monospace"; c.fillStyle=f||색.글; c.textAlign=정렬||"left"; c.textBaseline="top"; c.fillText(t,Math.round(x),Math.round(y)); },
+  글자(t,x,y,크기,f,정렬,굵게,최대폭) { const c=그림.c; c.font=(굵게?"bold ":"")+Math.max(7,크기||8)+"px 'DungGeunMo','Galmuri','NeoDunggeunmo',monospace"; c.fillStyle=f||색.글; c.textAlign=정렬||"left"; c.textBaseline="top"; if (최대폭) c.fillText(t,Math.round(x),Math.round(y),최대폭); else c.fillText(t,Math.round(x),Math.round(y)); },
   글자테두리(t,x,y,크기,f,정렬) { const c=그림.c; c.font="bold "+크기+"px 'DungGeunMo','Galmuri','NeoDunggeunmo',monospace"; c.textAlign=정렬||"left"; c.textBaseline="top"; c.lineWidth=3; c.lineJoin="round"; c.strokeStyle=색.글어둠; c.strokeText(t,Math.round(x),Math.round(y)); c.fillStyle=f; c.fillText(t,Math.round(x),Math.round(y)); },
   버튼(b, 눌림) { // b:{x,y,w,h,글,색,비활성}
     const f = b.비활성 ? "#6a6a7a" : (눌림 ? "#c9a24e" : (b.색||"#e0b04a"));
     그림.둥근(b.x, b.y+2, b.w, b.h, 4, "#5a3a1a"); 그림.둥근(b.x, b.y, b.w, b.h, 4, f, "#5a3a1a");
-    그림.글자(b.글, b.x+b.w/2, b.y+(b.h-(b.크기||10))/2, b.크기||10, b.글색||색.글어둠, "center", true);
+    그림.글자(b.글, b.x+b.w/2, b.y+(b.h-(b.크기||10))/2, b.크기||10, b.글색||색.글어둠, "center", true, b.w-6);
   },
   판(x,y,w,h) { 그림.둥근(x,y+2,w,h,5,"#3a2a1a"); 그림.둥근(x,y,w,h,5,색.판,색.판테두리); },
   안에(b,x,y) { return x>=b.x && x<=b.x+b.w && y>=b.y && y<=b.y+b.h; },

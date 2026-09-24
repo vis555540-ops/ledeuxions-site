@@ -103,6 +103,11 @@ const 게임 = {
     });
     // 양
     const 겁 = 게임.겁(); const 도주반경 = 38*겁;
+    const 차분 = 차분도(게임.개);                      // 레벨 높을수록 양이 덜 흩어지고 무리지어 따라온다
+    //   개 가까이 있는 양들의 가운데 → 개에서 그쪽으로 한 방향. 친한 양은 모두 이 한 방향으로 같이 걷는다(흩어지지 않게).
+    let 흐름x=0, 흐름y=0; if (차분>0) { let cx=0, cy=0, n=0;
+      for (const s of 게임.양들) if (s.상태==="들판" && !s.들어감 && Math.hypot(s.x-p.x,s.y-p.y)<도주반경*2.4) { cx+=s.x; cy+=s.y; n++; }
+      if (n) { const gx=cx/n-p.x, gy=cy/n-p.y, gl=Math.hypot(gx,gy)||1; 흐름x=gx/gl; 흐름y=gy/gl; } }
     for (const s of 게임.양들) {
       if (s.상태!=="들판") continue; s.t += d;
       if (s.들어감) { const 자=s.자리, k=Math.min(1,d*6); s.x+=(자.x-s.x)*k; s.y+=(자.y-s.y)*k; s.vx=0; s.vy=0; s.놀람=0; continue; }   // 자석 — 힘을 안 받는다
@@ -111,13 +116,18 @@ const 게임 = {
       const dx=s.x-p.x, dy=s.y-p.y, L=Math.hypot(dx,dy)||1;
       if (L<도주반경) { const f=0.4+(도주반경-L)/도주반경; ax+=dx/L*f*520*겁; ay+=dy/L*f*520*겁; s.놀람=0.4; }
       if (게임.짖기효과>0 && L<게임.짖기반경) { ax+=dx/L*1400*겁; ay+=dy/L*1400*겁; s.놀람=0.8; }
+      // 베이브처럼 (형 2026-09-24 「화내서 데려오는 게 아니라 알아서 잘 가주고, 튀어나가는 애들만 잡아주고」)
+      //   친한 양은 개가 가까이 오기만 해도 반대쪽으로 천천히 걸어간다. 멀리 떨어진 양은 안 따라오니 개가 데려와야 한다.
+      else if (차분>0 && L<도주반경*2.4) { const f=Math.min(1,(도주반경*2.4-L)/(도주반경*1.4)); ax+=흐름x*f*60*차분; ay+=흐름y*f*60*차분; }
       for (const b of 게임.보조) {      // 보조견도 양을 민다 (혼자보다 조금 약하게)
         const bx=s.x-b.x, by=s.y-b.y, bl=Math.hypot(bx,by)||1;
         if (bl<도주반경) { const f=0.4+(도주반경-bl)/도주반경; ax+=bx/bl*f*380*겁; ay+=by/bl*f*380*겁; s.놀람=Math.max(s.놀람,0.3); }
         if (게임.짖기효과>0 && bl<게임.짖기반경) { ax+=bx/bl*700*겁; ay+=by/bl*700*겁; }
       }
       // 양끼리
-      for (const o of 게임.양들) { if (o===s||o.상태!=="들판") continue; const ox=s.x-o.x, oy=s.y-o.y, ol=Math.hypot(ox,oy)||1; if (ol<14) { ax+=ox/ol*(14-ol)*40; ay+=oy/ol*(14-ol)*40; } else if (ol<45) { ax-=ox/ol*10; ay-=oy/ol*10; } }
+      let 옆vx=0, 옆vy=0, 옆수=0;
+      for (const o of 게임.양들) { if (o===s||o.상태!=="들판"||o.들어감) continue; const ox=s.x-o.x, oy=s.y-o.y, ol=Math.hypot(ox,oy)||1; if (ol<14) { ax+=ox/ol*(14-ol)*40; ay+=oy/ol*(14-ol)*40; } else if (ol<45) { ax-=ox/ol*10*(1+차분); ay-=oy/ol*10*(1+차분); } if (ol<45) { 옆vx+=o.vx; 옆vy+=o.vy; 옆수++; } }
+      if (옆수 && 차분>0) { ax += (옆vx/옆수 - s.vx)*2*차분; ay += (옆vy/옆수 - s.vy)*2*차분; }   // 옆 양과 같은 쪽으로 걷는다
       // 늑대 회피
       for (const w of 게임.늑대들) { if (w.상태==="도망") continue; const wx=s.x-w.x, wy=s.y-w.y, wl=Math.hypot(wx,wy)||1; if (wl<30) { ax+=wx/wl*300; ay+=wy/wl*300; s.놀람=0.3; } }
       // 대회 — 자리에 들어온 양은 자석처럼 붙어 안 움직인다 (형 2026-09-23 「원안에 들어가면 자석처럼 양이 서있어야」)
@@ -136,7 +146,7 @@ const 게임 = {
         }
       }
       // 배회
-      ax += Math.sin(s.t*1.3)*30; ay += Math.cos(s.t*0.9)*30;
+      const 헤맴 = 30*(1-0.5*Math.min(1,차분)); ax += Math.sin(s.t*1.3)*헤맴; ay += Math.cos(s.t*0.9)*헤맴;
       // 벽 반발 (구석에 박히지 않게)
       const 위벽=게임.밭위+30; if (s.x<18) ax=Math.max(ax,(18-s.x)*30); if (s.x>폭-18) ax=Math.min(ax,-(s.x-(폭-18))*30); if (s.y<위벽+16) ay=Math.max(ay,(위벽+16-s.y)*30);
       // 우리 문 앞이면 빨려 들어감 (난이도 완화)
@@ -148,7 +158,7 @@ const 게임 = {
         if (m.종류==="미끄럼" && s.x>m.x&&s.x<m.x+m.w&&s.y>m.y&&s.y<m.y+m.h) 빠름=1.6;
       }
       const 감쇠=Math.exp(-8*d); s.vx = (s.vx+ax*d)*감쇠; s.vy = (s.vy+ay*d)*감쇠; const sp=Math.hypot(s.vx,s.vy); const 최대=46*빠름; if (sp>최대) { s.vx*=최대/sp; s.vy*=최대/sp; }
-      s.x+=s.vx*d; s.y+=s.vy*d; if (s.놀람>0) s.놀람-=d; if (s.튐>0) s.튐-=d;
+      s.x+=s.vx*d; s.y+=s.vy*d; if (s.놀람>0) s.놀람-=d*(1+차분); if (s.튐>0) s.튐-=d;
       s.x=Math.max(6,Math.min(폭-6,s.x)); s.y=Math.max(게임.밭위+30,s.y);
       // 우리 판정 (대회에는 우리가 없다)
       if (!게임.대회 && s.y > 게임.우리위+6) {

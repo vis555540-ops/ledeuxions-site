@@ -1,7 +1,7 @@
 // 문구.js — 모든 글자. 키는 한국어. en 이 비면 ko 로 대체.
 const 문구 = {
   시작:{ko:"시작",en:"Start"}, 이어하기:{ko:"이어하기",en:"Continue"},
-  개집:{ko:"개집",en:"Kennel"}, 뽑기:{ko:"뽑기",en:"Adopt"}, 교배:{ko:"교배",en:"Breed"},
+  개집:{ko:"내 강아지",en:"My Dogs"}, 뽑기:{ko:"뽑기",en:"Adopt"}, 교배:{ko:"교배",en:"Breed"},
   설정:{ko:"설정",en:"Settings"}, 지도:{ko:"지도",en:"Map"}, 마당:{ko:"마당",en:"Yard"},
   건너뛰기:{ko:"건너뛰기",en:"Skip"}, 탭해서_계속:{ko:"눌러서 계속",en:"Tap to continue"},
   탄:{ko:"탄",en:"Stage"}, 양:{ko:"양",en:"Sheep"}, 마리:{ko:"마리",en:""},
@@ -20,7 +20,7 @@ const 문구 = {
   튜토_호루라기:{ko:"호루라기 뒤 늑대를 눌러요",en:"Whistle, then tap the wolf"},
   잃음:{ko:"잃음",en:"Lost"},
   레벨:{ko:"레벨",en:"Lv"}, 레벨업:{ko:"레벨업",en:"Level up"}, 간식:{ko:"간식",en:"Treat"},
-  마당에_내보내기:{ko:"마당에 내보내기",en:"Send to yard"}, 마당에서_들이기:{ko:"개집에 들이기",en:"Bring in"},
+  마당에_내보내기:{ko:"마당에 내보내기",en:"Send to yard"}, 마당에서_들이기:{ko:"마당에서 들이기",en:"Bring in"},
   마당_꽉참:{ko:"마당은 5마리까지",en:"Yard holds 5"},
   속도:{ko:"속도",en:"Speed"}, 짖기범위:{ko:"짖기",en:"Bark"}, 양진정:{ko:"진정",en:"Calm"}, 늑대위협:{ko:"위협",en:"Guard"},
   기분:{ko:"기분",en:"Mood"},
