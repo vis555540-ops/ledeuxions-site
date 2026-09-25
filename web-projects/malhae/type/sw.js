@@ -1,5 +1,5 @@
 // 오프라인 캐시 — 인터넷이 끊겨도 말은 할 수 있어야 한다
-const C = "malhae-type-v1";
+const C = "malhae-type-v2";
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(C).then(c => c.addAll(["./", "./index.html", "./manifest.json"])));
   self.skipWaiting();
