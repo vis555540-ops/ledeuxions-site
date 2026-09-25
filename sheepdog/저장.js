@@ -6,7 +6,7 @@ const 저장 = {
     return {
       판, 코인:0, 뼈다귀:0, 별:[], 최고탄:0, 돌아온양:0,
       개:[ 저장.새개("보더콜리", 0) ], 선택개:"보더콜리_0",
-      출석:{ 연속:0, 마지막:"" }, 훈장:{ 받음:{} }, 대회:{ 최고:{} }, 광고:{ 날:"", 횟수:0 }, 교배:{ 완료시각:0 }, 응가:[], 집:false, 가진집:[], 날씨:null, 비마지막본:0,
+      출석:{ 연속:0, 마지막:"" }, 훈장:{ 받음:{} }, 대회:{ 최고:{} }, 광고:{ 날:"", 횟수:0 }, 교배:{ 완료시각:0 }, 응가:[], 집:false, 가진집:[], 집안:{ 가짐:[] }, 놀이시간:{ 분:0, 날:"", 초:0, 더:0, 끝낸날:"" }, 날씨:null, 비마지막본:0,
       인트로봄:false, 분양봄:false, 꾹해봄:false, 언어:(navigator.language||"ko").startsWith("ko")?"ko":"en",
       산책:{ 날:"", 걸음:0, 코인:0 }, 설정:{ 효과음:true, 배경음:true, 진동:true }, 뽑기횟수:0, 마지막접속:0, 미션:{ 날:"", 진행:[0,0,0], 받음:[false,false,false] },
     };
@@ -64,6 +64,8 @@ const 저장 = {
     저장.하기();
     return true;
   },
+  // 밤 — 기기 시계로 21시~6시. 시험용 주소 ?밤=1
+  밤인가() { try { if (decodeURIComponent(location.search).includes("밤=1")) return true; } catch(e) {} const h = new Date().getHours(); return h>=21 || h<6; },
   비오나() { try { if (decodeURIComponent(location.search).includes("비=1")) return true; } catch(e) {} const w = 저장.자료.날씨; return !!(w && w.비); },
   // 서울 날씨를 30분마다 한 번 본다. 인터넷이 없으면 마지막으로 본 것을 쓴다.
   async 날씨보기() {
@@ -108,6 +110,11 @@ const 저장 = {
     // ★ 2026-09-24 산 집을 기억한다 — 예전엔 지금 집 하나만 있었다. 산 집끼리는 공짜로 바꿔 쓴다
     if (!Array.isArray(d.가진집)) d.가진집 = [];
     if (d.집 && !d.가진집.includes(d.집)) d.가진집.push(d.집);
+    // ★ 2026-09-25 집 안 꾸미기 — 산 가구 목록. 예전 저장엔 없다
+    if (!d.집안 || typeof d.집안 !== "object") d.집안 = { 가짐:[] };
+    if (!Array.isArray(d.집안.가짐)) d.집안.가짐 = [];
+    // ★ 2026-09-25 놀이 시간(부모 설정) — 분 0 = 끄기
+    if (!d.놀이시간 || typeof d.놀이시간 !== "object") d.놀이시간 = { 분:0, 날:"", 초:0, 더:0, 끝낸날:"" };
     if (!d.개.find(x=>x.아이디===d.선택개)) d.선택개 = d.개[0].아이디;
     d.개.forEach(x => { if (x.마당 === undefined) x.마당 = false; });
     if (!d.개.some(x=>x.마당)) d.개[0].마당 = true;
