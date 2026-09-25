@@ -30,6 +30,26 @@ const 그림 = {
     }
     cx.putImageData(d,0,0); 그림.시트[캐시키]=cv; return cv;
   },
+  // ★ 2026-09-25 딸 테스터 — 색 양이 흰 양에 점 하나라 우리 색과 안 맞아 보였다. 흰 털 픽셀만 양 색으로 바꾼다
+  //    얼굴(살색)·눈·다리·테두리 같은 어두운 픽셀은 그대로 둔다
+  양색치환(키, 색이름) {
+    const 캐시키 = 키+"@"+색이름; if (그림.시트[캐시키]) return 그림.시트[캐시키];
+    const im = 그림.시트[키]; if (!im || 색이름==="흰" || !양색표[색이름]) return im;
+    const cv = document.createElement("canvas"); cv.width=im.width; cv.height=im.height; const cx=cv.getContext("2d"); cx.drawImage(im,0,0);
+    const d = cx.getImageData(0,0,cv.width,cv.height), p=d.data, W=cv.width;
+    const 표 = { 검:[[78,78,88],[58,58,66]], 갈:[[176,126,72],[146,100,54]], 점박이:[[236,228,214],[208,198,182]] }[색이름];
+    const 점 = [122,96,78];
+    for (let i=0;i<p.length;i+=4) {
+      if (p[i+3]<10) continue; const R=p[i],G=p[i+1],B=p[i+2], mx=Math.max(R,G,B), mn=Math.min(R,G,B);
+      if (mn < 190 || mx-mn > 30) continue;               // 흰 털만
+      const 밝음 = mn > 238 ? 0 : 1;
+      let c = 표[밝음];
+      if (색이름==="점박이") { const k=i/4, lx=(k%W)%32, ly=Math.floor(k/W)%32;
+        if (((lx>>2)*7 + (ly>>2)*13) % 5 === 0) c = 점; }
+      p[i]=c[0]; p[i+1]=c[1]; p[i+2]=c[2];
+    }
+    cx.putImageData(d,0,0); 그림.시트[캐시키]=cv; return cv;
+  },
   팔레트:null,
   지우기(색1) { const c=그림.c; c.fillStyle=색1||색.밤하늘; c.fillRect(0,0,폭,높이); },
   네모(x,y,w,h,f,테두리) { const c=그림.c; c.fillStyle=f; c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); if (테두리) { c.strokeStyle=테두리; c.lineWidth=1; c.strokeRect(Math.round(x)+0.5,Math.round(y)+0.5,Math.round(w)-1,Math.round(h)-1); } },
@@ -156,6 +176,7 @@ const 그림 = {
     // ★고침 아기 전용 시트가 있으면 줄이지 말고 그걸 1배로 쓴다 (가장 깨끗하다)
     if (크기 < 1 && 그림.시트[키+"_아기"]) { 쓸키 = 키+"_아기"; 크기 = 1; }
     let im = 그림.시트[쓸키]; if (im && 옵션.털색) im = 그림.색치환(쓸키, 옵션.털색);
+    if (im && 옵션.양색) im = 그림.양색치환(쓸키, 옵션.양색);
     const 규격=그림.시트규격[규격이름], c=그림.c, 줄이름 = 그림.동작대응[동작]||동작;
     if (im && 규격 && 규격.줄[줄이름]) {
       const [줄,수] = 규격.줄[줄이름]; const f = Math.floor(프레임시간*6)%수;
