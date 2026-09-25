@@ -1023,47 +1023,77 @@ S15: { 컷:0, t:0, 흔들:0,
     if (Math.floor(화면시간*1.6)%2===0) 그림.글자테두리(글("탭해서_계속"), 90, 356, 8, "#ffe9a0", "center"); },
   터치(종류,x,y){ if (종류!=="내림") return; 소리.재생("누름"); this.컷++;
     if (this.컷 > 3) { 저장.자료.분양봄 = true; 저장.하기(); 전환("S3"); } } },
-// ── S14 산책 — 폰을 들고 걸으면 강아지가 같이 걷는다
-S14: { 걸음:0, 흔듦:0, 지난값:0, 올라감:false, 마지막걸음:0, 스크롤:0, 개들:[], 센서:null, 안됨:false, 알림t:0,
+// ── S14 산책 — 「진짜 산책 🚶」 (2026-09-25 형 승인, 쉬운 쪽). 폰을 들고 실제로 걸으면 가속도 센서로 걸음을 센다.
+//    위치(GPS)는 안 쓴다. 걸음 수는 폰 밖으로 안 나간다(어린이 앱). 300걸음 = 🦴 간식 + 코인, 보상은 하루 3번까지.
+//    단계: 시작(안내·안전 문구) → 걷기 → 끝(보상). 센서가 없거나 막히면 「구경」(예전처럼 화면에서만 같이 걷기).
+S14: { 단계:"시작", 걸음:0, 스크롤:0, 개들:[], 센서:null, 안됨:false, 멈춤:false, 마지막걸음:-9999, 올라감:false,
+  부드:null, 기준:null, 받은이벤트:0, 깨움:null, 보상받음:false, 버튼:[], 안내t:0,
+  지금(){ return performance.now(); },        // 헤드리스 시험에서 시계를 바꿔 끼울 자리
   들어감(){ 소리.배경음("목장"); 저장.하루갱신();
-    const d=저장.자료; this.걸음=d.산책.걸음; this.스크롤=0; this.안됨=false; this.알림t=0; this.마지막걸음=0;
-    const y표=[306,302,309];                                  // ★ 일직선 등간격이라 군대 행진처럼 보였다
-    this.개들 = d.개.filter(x=>x.마당).slice(0,3).map((개,i)=>({개, x:46+i*38, y:y표[i]||304, 위상:i*0.83, 하트:0}));
-    if (!this.개들.length && d.개[0]) this.개들=[{개:d.개[0], x:70, y:306, 위상:0, 하트:0}];
-    const 붙이기 = () => { this.센서 = (e)=>this.흔들림(e); window.addEventListener("devicemotion", this.센서); };
+    const d=저장.자료; if (d.산책.보상==null) d.산책.보상=0;
+    this.단계="시작"; this.걸음=0; this.스크롤=0; this.안됨=false; this.멈춤=false; this.보상받음=false; this.안내t=0;
+    const 고른=저장.선택개(), y표=[306,302,309];
+    const 목록=[고른, ...d.개.filter(x=>x.마당 && x!==고른)].filter(Boolean).slice(0,3);   // ★ 고른 강아지가 맨 앞
+    this.개들 = 목록.map((개,i)=>({개, x:[92,58,126][i], y:y표[i], 위상:i*0.83, 하트:0}));
+    this.보임 = ()=>{ if (현재코드!=="S14") return;
+      if (document.hidden) { if (this.단계==="걷기") this.멈춤=true; this.깨움끄기(); }
+      else if (this.단계==="걷기") { this.안내t=3.5; this.깨움켜기(); } };
+    document.addEventListener("visibilitychange", this.보임); },
+  나감(){ this.센서끄기(); this.깨움끄기();
+    if (this.보임) { document.removeEventListener("visibilitychange", this.보임); this.보임=null; } 저장.하기(); },
+  센서끄기(){ if (this.센서) { window.removeEventListener("devicemotion", this.센서); this.센서=null; } },
+  async 깨움켜기(){ try { if (!navigator.wakeLock || this.깨움 || document.hidden) return;
+      const w = await navigator.wakeLock.request("screen");
+      if (현재코드!=="S14" || this.단계!=="걷기") { w.release(); return; }
+      this.깨움 = w; w.addEventListener("release", ()=>{ if (this.깨움===w) this.깨움=null; }); } catch(e) {} },
+  깨움끄기(){ try { if (this.깨움) this.깨움.release(); } catch(e) {} this.깨움=null; },
+  // ★ iOS 는 손가락을 뗄 때(올림) 물어야 허락 창이 뜬다. 그래서 시작 버튼은 올림에서 누른다
+  시작(){ this.단계="걷기"; this.걸음=0; this.멈춤=false; this.보상받음=false; this.받은이벤트=0; this.부드=null; this.기준=null;
+    this.올라감=false; this.마지막걸음=-9999; this.안됨=false; this.깨움켜기();
+    if (this.센서) return;                                   // 「한 번 더」면 센서는 이미 붙어 있다
+    const 붙이기 = () => { this.센서 = (e)=>this.흔들림(e); window.addEventListener("devicemotion", this.센서);
+      // ★ 센서 API 는 있는데 값이 안 오는 기기(컴퓨터 등)가 있다 → 조금 기다려 보고 구경으로
+      setTimeout(()=>{ if (현재코드==="S14" && this.단계==="걷기" && !this.받은이벤트) this.못씀(); }, 2000); };
     try {
-      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function")
-        DeviceMotionEvent.requestPermission().then(r => { if (r==="granted") 붙이기(); else this.안됨=true; }).catch(()=>{ this.안됨=true; });
-      else if (typeof DeviceMotionEvent !== "undefined") 붙이기();
-      else this.안됨=true;
-    } catch(e) { this.안됨=true; }
-    // ★ 센서가 없으면 막다른 길이었다. 알려 주고 마당으로 돌려보낸다
-    setTimeout(()=>{ if (현재코드==="S14" && this.안됨) { 알림(글("산책_센서없음")); 전환("S3"); } }, 1600); },
-  나감(){ if (this.센서) { window.removeEventListener("devicemotion", this.센서); this.센서=null; } 저장.하기(); },
+      if (typeof DeviceMotionEvent === "undefined") return this.못씀();
+      // ★ 안드로이드 크롬에도 requestPermission 이 생겼고 "prompt" 같은 답을 주기도 한다 → 답과 상관없이 붙여 보고,
+      //   2초 안에 값이 안 오면 그때 구경으로 (거절되면 값이 안 온다)
+      if (typeof DeviceMotionEvent.requestPermission === "function")
+        DeviceMotionEvent.requestPermission().then(붙이기, 붙이기);
+      else 붙이기();
+    } catch(e) { this.못씀(); } },
+  못씀(){ this.안됨=true; this.단계="구경"; this.센서끄기(); 알림(글("산책_센서없음")); },
+  // 걸음 찾기: 가속도(중력 포함) 크기 → 저역 필터 → 천천히 따라가는 기준(중력)을 빼고 → 문턱 넘는 봉우리 하나 = 한 걸음 (250ms 안엔 또 안 셈)
   흔들림(e){
-    const a = e.accelerationIncludingGravity || e.acceleration; if (!a) return;
+    const a = e.accelerationIncludingGravity; if (!a || a.x==null) return;
+    this.받은이벤트++;
     const 크기 = Math.hypot(a.x||0, a.y||0, a.z||0);
-    const 지금 = Date.now();
-    if (크기 > 12.4 && !this.올라감 && 지금 - this.마지막걸음 > 260) { this.올라감=true; this.마지막걸음=지금; this.한걸음(); }
-    else if (크기 < 10.6) this.올라감=false; },
-  한걸음(){
-    const d=저장.자료; 저장.하루갱신();
-    if (d.산책.걸음 >= 산책_하루상한) { if (this.알림t<=0) { 알림(글("산책_다했어요")); this.알림t=4; } return; }
-    d.산책.걸음++; this.걸음=d.산책.걸음; this.스크롤 += 4;
-    if (d.산책.걸음 % 산책_코인당 === 0) {
-      d.코인++; d.산책.코인++; 소리.재생("코인");
-      for (const p of this.개들) { p.개.기분=Math.min(100,p.개.기분+1); p.하트=1;
-        p.개.함께 = p.개.함께 || {밥:0,놀이:0,날:0,마지막날:""}; p.개.함께.놀이++; 마음주기(p.개, 1); }
+    if (this.부드==null) { this.부드=크기; this.기준=크기; return; }
+    this.부드 += 0.35*(크기-this.부드);
+    this.기준 += 0.03*(크기-this.기준);
+    const v = this.부드 - this.기준, 지금 = this.지금();
+    if (!this.올라감 && v > 1.1) { this.올라감=true;
+      if (지금 - this.마지막걸음 >= 250) { this.마지막걸음=지금; this.한걸음(); } }
+    else if (this.올라감 && v < 0.3) this.올라감=false; },
+  한걸음(){ if (this.단계!=="걷기" || this.멈춤 || document.hidden) return;   // ★ 앱을 안 볼 땐 안 센다
+    const d=저장.자료; 저장.하루갱신(); if (d.산책.보상==null) d.산책.보상=0;
+    this.걸음++; d.산책.걸음++; this.스크롤 += 4;
+    if (this.걸음 >= 산책_목표) this.다걸음(); },
+  다걸음(){ const d=저장.자료; this.단계="끝";
+    if (d.산책.보상 < 산책_하루보상) {
+      d.산책.보상++; d.산책.코인 = (d.산책.코인||0) + 산책_코인; d.코인 += 산책_코인; this.보상받음=true;
+      for (const p of this.개들) { p.개.기분=Math.min(100,p.개.기분+15); p.하트=2;
+        p.개.함께 = p.개.함께 || {밥:0,놀이:0,날:0,마지막날:""}; p.개.함께.놀이++; 마음주기(p.개, 3); }
+      const 고른=this.개들[0]; if (고른) 고른.개.배=Math.min(100,(고른.개.배??70)+5);   // 🦴 간식
+      소리.재생("이김"); 소리.진동([40,30,60]); 저장.미션진행(1);
       처음이면("산책", 글안전("처음_산책","처음 같이 산책했어요"));
-      저장.미션진행(1); 저장.하기();
-    } },
-  갱신(dt){ if (this.알림t>0) this.알림t-=dt;
+    } else { 소리.재생("누름"); for (const p of this.개들) p.하트=1.2; }
+    저장.하기(); this.깨움끄기(); },
+  갱신(dt){ if (this.안내t>0) this.안내t-=dt;
     for (const p of this.개들) if (p.하트>0) p.하트-=dt;
-    // ★ 안 걷는데 화면만 계속 흘러서, 걸음이 세지는지 알 수가 없었다
-    this.걷는중 = (Date.now() - this.마지막걸음) < 1500;
+    this.걷는중 = this.단계==="구경" || (this.단계==="걷기" && !this.멈춤 && (this.지금() - this.마지막걸음) < 1500);
     if (this.걷는중) this.스크롤 = (this.스크롤 + dt*34) % 360; },
-  그림(){ 그림.지우기();
-    const c=그림.c, d=저장.자료, 시=new Date().getHours(), 밤=(시>=19||시<6);
+  배경(){ const 시=new Date().getHours(), 밤=(시>=19||시<6);
     그림.네모(0,0,폭,높이, 밤?"#1c2540":"#8fc7e8");
     if (밤) { 그림.달(146,44,11); for (let i=0;i<26;i++){ const x=(i*67+(i*i*11)%53)%폭, y=(i*31+(i*i*5)%37)%118; 그림.원(x,y,i%4?1:1.6,"#fff8e0"); } }
     else { 그림.원(146,44,13,"#ffe9a0"); }
@@ -1075,21 +1105,63 @@ S14: { 걸음:0, 흔듦:0, 지난값:0, 올라감:false, 마지막걸음:0, 스�
       그림.원(x+30,64,11,"#ffffff"); 그림.원(x+42,60,14,"#ffffff"); 그림.원(x+56,66,10,"#ffffff"); }
     그림.네모(0,212,폭,높이-212, 밤?"#2a3a2a":"#5f9a3c");
     그림.네모(0,212,폭,3, 밤?"#3a5030":"#79b350");
-    그림.네모(0,292,폭,30, 밤?"#4a4238":"#b09a70");           // ★ 강아지 발이 길 위에 제대로 놓이게 26 → 30
+    그림.네모(0,292,폭,30, 밤?"#4a4238":"#b09a70");
     for (let i=-1;i<8;i++){ const x=정수(i*30 - this.스크롤%30); 그림.네모(x,306,14,3, 밤?"#5a5248":"#c8b48a"); }
     for (let i=-1;i<6;i++){ const x=정수(i*46 - this.스크롤%46); 그림.풀포기(x+10, 232, 6); 그림.풀포기(x+28, 262, 5); 그림.풀포기(x+16, 336, 6); }
     for (let i=-1;i<4;i++){ const x=정수(i*84 - this.스크롤%84); 그림.나무(x+20, 216, 38, "활엽"); }
     for (const p of this.개들) { 그림자(p.x, p.y+1, 8);
       그림.개그리기(p.개, this.걷는중?"걷기":"앉기", 화면시간+p.위상, p.x, p.y, false);
-      if (p.하트>0) 그림.글자("♥", p.x, p.y-38-(1-p.하트)*8, 9, "#ff8aa0", "center", true); }
-    그림.판(10,48,160,62);
-    그림.글자(글("산책"), 90, 53, 10, 색.글어둠, "center", true);
-    그림.글자(글("걸음")+" "+this.걸음+" / "+산책_하루상한, 90, 70, 8, 색.글어둠, "center", true);
-    그림.막대(26, 86, 128, 7, Math.min(1, this.걸음/산책_하루상한), 색.좋음);
-    그림.코인아이콘(74, 100); 그림.글자("+"+d.산책.코인, 84, 95, 8, 색.글어둠, "left", true);
-    그림.글자테두리(글(this.안됨 ? "산책_센서없음" : "산책_안내"), 90, 352, 8, this.안됨?"#ffb0b0":"#ffffff", "center");
-    const 뒤={...뒤로버튼(),코드:"뒤"}; 그림.버튼(뒤); this.버튼=[뒤]; },
-  터치(종류,x,y){ if (종류!=="내림") return; const b=버튼누름(this.버튼,x,y); if (b&&b.코드==="뒤") 전환("S3"); } },
+      if (p.하트>0) 그림.글자("♥", p.x, p.y-38-(1-Math.min(1,p.하트))*8, 9, "#ff8aa0", "center", true); }
+    if (this.단계==="끝" && this.보상받음 && this.개들[0]) 말풍선(this.개들[0].x, this.개들[0].y-34, "🦴", 9); },
+  그림(){ 그림.지우기(); this.배경();
+    const d=저장.자료, 남은=Math.max(0, 산책_하루보상-(d.산책.보상||0)); this.버튼=[];
+    const 뒤={...뒤로버튼(),코드:"뒤"};
+    if (this.단계==="시작") {
+      그림.판(10,52,160,150);
+      그림.글자(글("진짜산책"), 90, 60, 11, 색.글어둠, "center", true);
+      그림.글자(글("진짜산책_목표"), 90, 80, 8, 색.글어둠, "center", true, 150);
+      그림.글자(글("진짜산책_보상"), 90, 93, 7, 색.글어둠, "center", false, 150);
+      그림.둥근(18,108,144,34,4,"#fff1c8","#e0a458");
+      그림.글자(글("진짜산책_안전1"), 90, 113, 8, "#8a3a1a", "center", true, 138);
+      그림.글자(글("진짜산책_안전2"), 90, 127, 8, "#8a3a1a", "center", true, 138);
+      그림.글자(글("진짜산책_켜둠"), 90, 148, 7, 색.글어둠, "center", false, 150);
+      그림.글자(글("오늘_남음")+" "+남은+"/"+산책_하루보상, 90, 160, 7, 색.글어둠, "center", false, 150);
+      const 시작={x:40,y:174,w:100,h:22,글:글("진짜산책_시작"),크기:9,코드:"시작"}; 그림.버튼(시작); this.버튼.push(시작);
+    } else if (this.단계==="걷기") {
+      그림.판(10,52,160,86);
+      그림.글자(글("진짜산책"), 90, 58, 9, 색.글어둠, "center", true);
+      그림.글자(String(this.걸음), 90, 72, 32, 색.글어둠, "center", true);
+      그림.글자(글("걸음"), 90, 106, 8, 색.글어둠, "center", true);
+      그림.막대(22, 120, 136, 9, this.걸음/산책_목표, 색.좋음);
+      그림.글자(this.걸음+" / "+산책_목표, 90, 130, 7, 색.글어둠, "center", false);
+      if (this.멈춤) {
+        그림.판(20,150,140,56);
+        그림.글자(글("진짜산책_멈춤"), 90, 157, 9, 색.글어둠, "center", true, 132);
+        그림.글자(글("진짜산책_뒤에선"), 90, 171, 7, 색.글어둠, "center", false, 132);
+        const 계속={x:50,y:184,w:80,h:18,글:글("계속"),크기:8,코드:"계속"}; 그림.버튼(계속); this.버튼.push(계속);
+      } else if (this.안내t>0) 그림.글자테두리(글("진짜산책_뒤에선"), 90, 150, 7, "#ffe9a0", "center");
+      그림.글자테두리(글("진짜산책_안전2"), 90, 352, 8, "#ffffff", "center");
+    } else if (this.단계==="끝") {
+      그림.판(14,60,152,130);
+      그림.글자(글("진짜산책_완료"), 90, 70, 12, 색.글어둠, "center", true);
+      그림.글자(this.걸음+" "+글("걸음"), 90, 90, 9, 색.글어둠, "center", true);
+      if (this.보상받음) {
+        그림.글자("🦴 "+글("진짜산책_간식"), 90, 106, 8, 색.글어둠, "center", true, 144);
+        그림.코인아이콘(78, 126); 그림.글자("+"+산책_코인, 88, 121, 9, 색.글어둠, "left", true);
+      } else 그림.글자(글("진짜산책_오늘다"), 90, 110, 8, 색.글어둠, "center", true, 144);
+      const 또={x:22,y:152,w:66,h:24,글:글("진짜산책_또"),크기:8,코드:"또"}, 집={x:92,y:152,w:66,h:24,글:글("마당"),크기:8,코드:"뒤",색:"#a8d890"};
+      그림.버튼(또); 그림.버튼(집); this.버튼.push(또, 집);
+    } else {   // 구경 — 센서가 없어도 예전처럼 같이 걷는 모습은 본다
+      그림.판(10,52,160,44);
+      그림.글자(글("산책"), 90, 58, 10, 색.글어둠, "center", true);
+      그림.글자(글("산책_센서없음"), 90, 76, 8, "#8a3a1a", "center", true, 150);
+      그림.글자테두리(글("진짜산책_구경"), 90, 352, 8, "#ffffff", "center");
+    }
+    그림.버튼(뒤); this.버튼.push(뒤); },
+  터치(종류,x,y){ if (종류!=="올림") return; const b=버튼누름(this.버튼,x,y); if (!b) return;
+    if (b.코드==="뒤") { 전환("S3"); return; }
+    if (b.코드==="시작" || b.코드==="또") { this.시작(); return; }
+    if (b.코드==="계속") { this.멈춤=false; this.깨움켜기(); } } },
 // ── S16 집 안 (2026-09-25 형 「강아지 집 안 꾸미기」). 칸은 정해져 있고, 아래 가게에서 사면 그 칸에 놓인다
 S16: { 버튼:[], 칸:[], 반짝:null,
   자리: { 액자:{x:90,y:98}, 램프:{x:24,y:212}, 러그:{x:90,y:252}, 방석:{x:90,y:250}, 밥그릇:{x:152,y:276}, 장난감:{x:34,y:278} },
