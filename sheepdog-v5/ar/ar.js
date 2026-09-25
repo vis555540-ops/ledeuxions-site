@@ -1,0 +1,256 @@
+// ar.js — AR 산책 (2026-09-25). three.js r170 (ar/three.module.min.js, 받아 둔 것 — 빌드 없음)
+// 흐름: 시작 → 어른 확인(두 자리 덧셈) → immersive-ar → 바닥 고리(레티클) → 톡 = 강아지 놓기
+//       → 강아지가 폰이 보는 쪽으로 천천히 걸어감(뒷모습 4칸) · 발자국 → 1.5m 넘게 멀어지면 앉아서 기다림
+// 안 되는 기기(아이폰·컴퓨터)는 안내 + 2D 미리보기만. 카메라 화면은 저장·전송하지 않는다.
+import * as THREE from "./three.module.min.js";
+
+const $ = (id) => document.getElementById(id);
+const 그림들 = ["back_1", "back_2", "back_3", "back_4", "sit"];
+const 이미지 = {};
+for (const n of 그림들) { const im = new Image(); im.src = "ar/" + n + ".png"; 이미지[n] = im; }
+
+const 돌아가기 = () => { location.href = "./"; };
+for (const id of ["back1", "back3", "back4"]) $(id).onclick = 돌아가기;
+
+// ── 쉬는 시간·놀이 시간 (2026-09-25 형 「AR 에 쉬는 시간 필수」)
+//   AR 은 한 번에 5분 → 쉬는 화면으로 끝나고, 그 뒤 10분은 잠김(게임의 AR 버튼도 이 값을 읽는다).
+//   이 페이지에 머문 시간은 게임 설정의 「놀이 시간」에 들어간다. 게임 저장 덩어리(양몰이_v5)는 읽기만 하고,
+//   더할 초는 따로(sheepdog_ar_play) 적어 두면 게임이 켜질 때 합친다 — 뒤로가기로 되살아난 게임이 덮어쓰지 않게.
+const AR최대초 = 5 * 60, 쉼초 = 10 * 60;
+const 쓴키 = "sheepdog_ar_used", 쉼키 = "sheepdog_ar_rest_until", 놀이키 = "sheepdog_ar_play", 저장키 = "양몰이_v5";
+const 오늘 = () => { const t = new Date(); return t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0"); };
+const 읽기 = (k) => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+// 「그만하기」로 껐다 다시 켜도 5분이 새로 시작되지 않게: 10분 안에 다시 켜면 쓴 시간을 이어서 센다
+function 앞서쓴초() { const u = 읽기(쓴키); return (u && Date.now() - u.마지막 < 쉼초 * 1000) ? (u.초 || 0) : 0; }
+function 쉼남은초() { const u = +(localStorage.getItem(쉼키) || 0); return Math.max(0, Math.ceil((u - Date.now()) / 1000)); }
+function 놀이끝났나() {
+  const d = 읽기(저장키), n = d && d.놀이시간; if (!n || !n.분) return false;
+  const t = 오늘(), r = 읽기(놀이키), 대기 = (r && r.날 === t) ? (r.초 || 0) : 0;
+  const 초 = (n.날 === t ? (n.초 || 0) : 0) + 대기, 더 = n.날 === t ? (n.더 || 0) : 0;
+  return n.끝낸날 === t || 초 >= (n.분 + 더) * 60;
+}
+function 놀이더하기(초) {
+  try { const t = 오늘(); let r = 읽기(놀이키); if (!r || r.날 !== t) r = { 날: t, 초: 0 };
+    r.초 += 초; localStorage.setItem(놀이키, JSON.stringify(r)); } catch (e) {}
+}
+const 분초 = (s) => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+function 보이기(id) { for (const k of ["start", "gate", "rest", "playover"]) $(k).hidden = k !== id; }
+// AR 중이 아니면 지금 어떤 화면이어야 하는지
+function 화면정하기() {
+  if (놀이끝났나()) return 보이기("playover");
+  const 남 = 쉼남은초(); if (남 > 0) { $("restleft").textContent = 분초(남); return 보이기("rest"); }
+  if (!$("rest").hidden || !$("playover").hidden) 보이기("start");
+}
+setInterval(() => {
+  if (document.hidden) return;
+  놀이더하기(1);
+  if (session) { if (놀이끝났나()) { 끝낼까 = "놀이"; session.end(); } return; }
+  if ($("gate").hidden) 화면정하기(); else if (놀이끝났나() || 쉼남은초() > 0) 화면정하기();
+}, 1000);
+
+// ── 2D 미리보기 (시작 화면에서 늘 돈다 — AR 안 되는 폰에서는 이게 전부)
+const pv = $("preview"), pc = pv.getContext("2d");
+let pvT = 0, pvLast = performance.now();
+function 미리보기(now) {
+  const dt = Math.max(0, Math.min(0.1, (now - pvLast) / 1000)); pvLast = now; pvT += dt;
+  const W = pv.width, H = pv.height;
+  pc.fillStyle = "#c8955a"; pc.fillRect(0, 0, W, H);
+  pc.fillStyle = "#b07e48";                              // 멀어지는 마루 줄
+  for (let i = 0; i < 8; i++) { const k = ((i + pvT * 0.8) % 8) / 8, y = 40 + k * k * (H - 40); pc.fillRect(0, y, W, 1 + k * 2); }
+  pc.fillStyle = "#e9dcc5"; pc.fillRect(0, 0, W, 40);   // 벽
+  for (let i = 0; i < 6; i++) {                          // 발자국 (강아지 뒤로 남음)
+    const k = ((i / 6) + pvT * 0.25) % 1, y = 150 - (1 - k) * 90, s = 3 + k * 5;
+    pc.globalAlpha = 0.25 + k * 0.5; 발자국그림(pc, W / 2 + (i % 2 ? -8 : 8) * (0.5 + k), y + 20, s); }
+  pc.globalAlpha = 1;
+  const im = 이미지["back_" + (1 + (Math.floor(pvT * 6) % 4))];
+  if (im.complete && im.naturalWidth) pc.drawImage(im, W / 2 - 55, 42 + Math.abs(Math.sin(pvT * 6 * Math.PI / 2)) * -3, 110, 110);
+  requestAnimationFrame(미리보기);
+}
+function 발자국그림(c, x, y, s) {
+  c.fillStyle = "#6b4423";
+  c.beginPath(); c.ellipse(x, y, s, s * 0.85, 0, 0, Math.PI * 2); c.fill();
+  for (const [dx, dy] of [[-1, -1.3], [-0.35, -1.75], [0.35, -1.75], [1, -1.3]]) {
+    c.beginPath(); c.arc(x + dx * s, y + dy * s, s * 0.38, 0, Math.PI * 2); c.fill(); }
+}
+requestAnimationFrame(미리보기);
+
+// ── 되는 기기인지
+let arOK = false;
+(async () => {
+  try { arOK = !!(navigator.xr && await navigator.xr.isSessionSupported("immersive-ar")); } catch (e) { arOK = false; }
+  if (!arOK) {
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    $("nosupport").hidden = false;
+    $("nosupport").innerHTML = ios
+      ? "🍎 아이폰은 아직 AR 산책이 안 돼요.<br>위에서 걸어가는 강아지를 구경해요!"
+      : "😢 이 기기에서는 AR이 아직 안 돼요.<br>안드로이드 폰의 크롬에서 열어 주세요.<br>(그동안 위에서 강아지를 구경해요)";
+    $("lead").hidden = true;
+    $("go").hidden = true;
+  }
+})();
+
+// ── 어른 확인 (두 자리 덧셈). 틀리면 새 문제
+let 정답 = 0;
+function 새문제() {
+  const a = 11 + Math.floor(Math.random() * 28), b = 11 + Math.floor(Math.random() * 18);
+  정답 = a + b; $("q").textContent = a + " + " + b + " = ?"; $("ans").value = "";
+}
+$("go").onclick = () => { if (!arOK) return; 화면정하기(); if ($("start").hidden) return; 새문제(); $("err").textContent = ""; $("start").hidden = true; $("gate").hidden = false; setTimeout(() => $("ans").focus(), 50); };
+$("back2").onclick = () => { $("gate").hidden = true; $("start").hidden = false; };
+$("ans").addEventListener("keydown", (e) => { if (e.key === "Enter") $("ok").click(); });
+$("ok").onclick = () => {
+  if (parseInt($("ans").value, 10) !== 정답) { $("err").textContent = "다시 해 볼까요?"; 새문제(); return; }
+  $("err").textContent = "";
+  if (놀이끝났나() || 쉼남은초() > 0) return 화면정하기();
+  AR시작();                                   // ★ 누른 그 순간에 불러야 브라우저가 허락해 준다(사용자 동작)
+};
+
+// ── AR
+let 끝낼까 = null, 세션시작 = 0;
+let renderer, scene, camera, session, hitSource, reticle, dog, dogMat, tex = {}, paws = [], pawGeo, pawTex;
+const 상태 = { 놓음: false, 기다림: false, 방향: new THREE.Vector3(0, 0, -1), 걸은: 0, 발: 0, t: 0, 칸: 0, 마지막: 0 };
+const 키 = 0.26, 속도 = 0.12, 멀다 = 1.5, 가깝다 = 1.0, 발간격 = 0.07, 발최대 = 60;
+
+function 준비() {
+  if (renderer) return;
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.xr.enabled = true;
+  renderer.xr.setReferenceSpaceType("local");
+  renderer.domElement.style.display = "none";
+  document.body.appendChild(renderer.domElement);
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 30);
+
+  reticle = new THREE.Mesh(new THREE.RingGeometry(0.05, 0.065, 32).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.9 }));
+  reticle.matrixAutoUpdate = false; reticle.visible = false; scene.add(reticle);
+
+  const ld = new THREE.TextureLoader();
+  for (const n of 그림들) { const t = ld.load("ar/" + n + ".png"); t.colorSpace = THREE.SRGBColorSpace; tex[n] = t; }
+  dogMat = new THREE.MeshBasicMaterial({ map: tex.back_1, transparent: true, alphaTest: 0.15, side: THREE.DoubleSide });
+  dog = new THREE.Mesh(new THREE.PlaneGeometry(키, 키).translate(0, 키 / 2, 0), dogMat);   // 발이 바닥에 닿게
+  dog.visible = false; scene.add(dog);
+  // 그림자 한 점 (떠 보이지 않게)
+  const sh = new THREE.Mesh(new THREE.CircleGeometry(0.07, 24).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false }));
+  sh.position.y = 0.002; sh.scale.set(1, 1, 0.55); dog.add(sh);
+
+  const cv = document.createElement("canvas"); cv.width = cv.height = 64;
+  발자국그림(cv.getContext("2d"), 32, 40, 11);
+  pawTex = new THREE.CanvasTexture(cv); pawTex.colorSpace = THREE.SRGBColorSpace;
+  pawGeo = new THREE.PlaneGeometry(0.035, 0.035).rotateX(-Math.PI / 2);
+}
+
+async function AR시작() {
+  try {
+    준비();
+    const overlay = $("overlay");
+    session = await navigator.xr.requestSession("immersive-ar", {
+      requiredFeatures: ["hit-test"], optionalFeatures: ["dom-overlay"], domOverlay: { root: overlay } });
+    끝낼까 = null; 세션시작 = performance.now() - 앞서쓴초() * 1000;
+    overlay.classList.add("on"); $("gate").hidden = true;
+    // 그만하기 버튼을 누를 때 강아지가 옮겨지지 않게
+    $("exit").addEventListener("beforexrselect", (e) => e.preventDefault());
+    $("exit").onclick = () => session && session.end();
+    session.addEventListener("end", 끝남);
+    session.addEventListener("select", 톡);
+    renderer.domElement.style.display = "block";
+    await renderer.xr.setSession(session);
+    const viewer = await session.requestReferenceSpace("viewer");
+    hitSource = await session.requestHitTestSource({ space: viewer });
+    상태.놓음 = false; 상태.기다림 = false; 힌트("바닥을 천천히 비춰 주세요 🔍");
+    renderer.setAnimationLoop(그리기);
+  } catch (e) {
+    console.warn("AR 시작 못함", e);
+    $("gate").hidden = true; $("start").hidden = false; $("overlay").classList.remove("on");
+    $("nosupport").hidden = false;
+    $("nosupport").innerHTML = "😢 AR을 켜지 못했어요.<br>카메라를 허락했는지, <b>Google Play 서비스 AR</b>이 깔려 있는지 봐 주세요.";
+    if (session) try { session.end(); } catch (_) {}
+  }
+}
+
+function 힌트(s) { const h = $("hint"); if (h.textContent !== s) h.textContent = s; }
+
+function 톡() {
+  if (!reticle.visible) return;
+  const p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3();
+  reticle.matrix.decompose(p, q, s);
+  dog.position.copy(p); dog.visible = true;
+  상태.놓음 = true; 상태.기다림 = false; 상태.걸은 = 0; 상태.t = 0; 상태.마지막 = 0;
+  for (const m of paws) { scene.remove(m); m.material.dispose(); } paws = [];
+  // 처음 방향 = 폰에서 강아지 쪽 (뒷모습이 보이게)
+  if (상태.폰) { const d = p.clone().sub(상태.폰); d.y = 0; if (d.lengthSq() > 1e-4) 상태.방향.copy(d.normalize()); }
+}
+
+function 발자국(pos, dir) {
+  상태.발 ^= 1;
+  const side = new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(상태.발 ? 0.022 : -0.022);
+  const m = new THREE.Mesh(pawGeo, new THREE.MeshBasicMaterial({ map: pawTex, transparent: true, opacity: 0.85, depthWrite: false }));
+  m.position.copy(pos).add(side); m.position.y += 0.003;
+  m.rotation.y = Math.atan2(-dir.x, -dir.z);
+  m.userData.t = 0; scene.add(m); paws.push(m);
+  if (paws.length > 발최대) { const o = paws.shift(); scene.remove(o); o.material.dispose(); }
+}
+
+const 앞 = new THREE.Vector3(), 폰 = new THREE.Vector3(), 폰q = new THREE.Quaternion();
+function 그리기(time, frame) {
+  const dt = 상태.마지막 ? Math.min(0.1, (time - 상태.마지막) / 1000) : 0; 상태.마지막 = time;
+  if (!frame) return;
+  const 지난초 = (performance.now() - 세션시작) / 1000;
+  if (지난초 >= AR최대초 && !끝낼까) { 끝낼까 = "쉼"; 쉬기시작(); session.end(); return; }
+  const ref = renderer.xr.getReferenceSpace();
+  const vp = frame.getViewerPose(ref);
+  if (vp) { const o = vp.transform.position, r = vp.transform.orientation;
+    폰.set(o.x, o.y, o.z); 폰q.set(r.x, r.y, r.z, r.w); 상태.폰 = 폰; }
+  const hits = hitSource ? frame.getHitTestResults(hitSource) : [];
+  if (hits.length) { const pose = hits[0].getPose(ref); reticle.visible = true; reticle.matrix.fromArray(pose.transform.matrix); }
+  else reticle.visible = false;
+  reticle.material.opacity = 상태.놓음 ? 0.35 : 0.9;
+  const 곧쉼 = 지난초 >= AR최대초 - 30;
+
+  if (!상태.놓음) 힌트(reticle.visible ? "화면을 톡! 눌러 강아지를 놓아요 🐕" : "바닥을 천천히 비춰 주세요 🔍");
+  else if (vp) {
+    상태.t += dt;
+    const d = dog.position.clone().sub(폰); d.y = 0; const 거리 = d.length();
+    if (!상태.기다림 && 거리 > 멀다) 상태.기다림 = true;
+    else if (상태.기다림 && 거리 < 가깝다) 상태.기다림 = false;
+    if (상태.기다림) {
+      dogMat.map = tex.sit;   // 앉아서 기다림
+      힌트("강아지가 기다려요 🐾 가까이 가 볼까요?");
+    } else if (상태.t < 1.0) {
+      dogMat.map = tex.back_1; 힌트("강아지를 따라가요! 🐾");
+    } else {
+      // 폰이 보는 쪽(수평)으로 천천히 방향을 튼다
+      앞.set(0, 0, -1).applyQuaternion(폰q); 앞.y = 0;
+      if (앞.lengthSq() > 1e-4) { 앞.normalize(); 상태.방향.lerp(앞, Math.min(1, dt * 1.2)).normalize(); }
+      const step = 속도 * dt;
+      dog.position.addScaledVector(상태.방향, step);
+      상태.걸은 += step;
+      if (상태.걸은 >= 발간격) { 상태.걸은 = 0; 발자국(dog.position, 상태.방향); }
+      상태.칸 = Math.floor(상태.t * 6) % 4;
+      dogMat.map = tex["back_" + (상태.칸 + 1)];
+      힌트("강아지를 따라가요! 🐾");
+    }
+    // 폰 쪽을 보게 (세로축만) — 뒷모습 그림이라 늘 등이 보인다
+    dog.rotation.y = Math.atan2(폰.x - dog.position.x, 폰.z - dog.position.z);
+    for (const m of paws) { m.userData.t += dt; m.material.opacity = Math.max(0, 0.85 - m.userData.t / 25); }
+  }
+  if (곧쉼) 힌트("⏰ 곧 쉬는 시간이에요. 강아지한테 인사해요 👋");
+  renderer.render(scene, camera);
+}
+function 쉬기시작() { try { localStorage.setItem(쉼키, String(Date.now() + 쉼초 * 1000)); localStorage.removeItem(쓴키); } catch (e) {} }
+
+function 끝남() {
+  if (끝낼까 !== "쉼") try { localStorage.setItem(쓴키, JSON.stringify({ 초: Math.round((performance.now() - 세션시작) / 1000), 마지막: Date.now() })); } catch (e) {}
+  renderer.setAnimationLoop(null);
+  if (hitSource) try { hitSource.cancel(); } catch (_) {}
+  hitSource = null; session = null;
+  dog.visible = false; reticle.visible = false; 상태.놓음 = false;
+  for (const m of paws) { scene.remove(m); m.material.dispose(); } paws = [];
+  renderer.domElement.style.display = "none";
+  $("overlay").classList.remove("on"); 보이기("start"); 화면정하기();
+}
+
+화면정하기();

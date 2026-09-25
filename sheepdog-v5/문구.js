@@ -100,6 +100,8 @@ const 문구 = {
   진짜산책_오늘다:{ko:"오늘 선물은 다 받았어요",en:"All of today's gifts received"},
   진짜산책_또:{ko:"한 번 더",en:"Again"},
   진짜산책_구경:{ko:"화면 속에서 같이 걸어요",en:"Walking together on screen"},
+  AR산책:{ko:"AR 산책 📷",en:"AR Walk 📷"}, AR쉼:{ko:"쉬는 시간이에요 🐕💤",en:"Rest time 🐕💤"},
+  공_던지는법:{ko:"화면을 꾹 눌렀다 떼면 던져요",en:"Press, hold, then let go to throw"}, 처음_공:{ko:"꾹 눌렀다 떼면 공을 던져요!",en:"Hold, then let go to throw!"}, 처음_간식:{ko:"냠냠! 간식을 줬어요",en:"Yum! You gave a treat"},
   띵동_1:{ko:"누가 왔나 봐요. 문을 열어 볼까요?",en:"Someone's at the door. Open it?"},
   띵동_2:{ko:"문 앞에 상자가 놓여 있어요.",en:"There's a box at the door."},
   띵동_3:{ko:"안에 강아지가 혼자 있었어요.",en:"A puppy was inside, all alone."},

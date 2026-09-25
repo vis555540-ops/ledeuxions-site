@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>AR 산책 — 양몰이</title>
+<!-- AR 산책 (2026-09-25 형 「AR 부탁한다」). 카메라로 책상·바닥을 비추고 톡 누르면 골든이가 나와서 걸어간다.
+     WebXR immersive-ar + hit-test (안드로이드 크롬·ARCore). 카메라 화면은 저장·전송하지 않는다. 위치(GPS) 안 씀. -->
+<style>
+  :root{ --bg:#8fc7e8; --card:#fffaf0; --ink:#4a3218; --accent:#f2a93b; --accent2:#e07b39; --soft:#fff1c8; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; height:100%; background:var(--bg); color:var(--ink);
+    font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif; }
+  body{ display:flex; align-items:center; justify-content:center; padding:16px; overflow-x:hidden;
+    background:linear-gradient(#8fc7e8 0 62%, #79b350 62% 63%, #5f9a3c 63%); }
+  .card{ width:100%; max-width:380px; background:var(--card); border:4px solid #b07e48; border-radius:18px;
+    padding:20px 18px; text-align:center; box-shadow:0 6px 0 #8a5a2a; }
+  h1{ font-size:26px; margin:4px 0 6px; }
+  p{ margin:8px 0; line-height:1.5; font-size:16px; }
+  .small{ font-size:13px; opacity:.85; }
+  .note{ background:var(--soft); border:2px dashed #e0a458; border-radius:12px; padding:8px 10px; font-size:14px; color:#8a3a1a; }
+  button{ font:inherit; font-weight:700; font-size:19px; border:0; border-radius:14px; padding:14px 18px; width:100%;
+    margin-top:12px; background:var(--accent); color:#fff; box-shadow:0 4px 0 var(--accent2); cursor:pointer; }
+  button:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--accent2); }
+  button.sub{ background:#a8d890; box-shadow:0 4px 0 #6fa65a; color:#2c4a1c; font-size:16px; }
+  canvas#preview{ width:220px; height:180px; image-rendering:auto; display:block; margin:6px auto; border-radius:12px; background:#c8955a; }
+  .gateq{ font-size:30px; font-weight:800; margin:10px 0; }
+  input#ans{ font:inherit; font-size:28px; width:120px; text-align:center; padding:8px; border:3px solid #b07e48; border-radius:12px; }
+  .err{ color:#c0392b; min-height:1.4em; font-weight:700; }
+  [hidden]{ display:none !important; }
+  /* AR 중 화면 위 글 (dom-overlay) */
+  #overlay{ position:fixed; inset:0; pointer-events:none; display:none; }
+  #overlay.on{ display:block; }
+  #hint{ position:absolute; left:16px; right:16px; top:max(16px, env(safe-area-inset-top)); text-align:center;
+    background:rgba(255,250,240,.92); color:var(--ink); border-radius:14px; padding:10px 12px; font-size:18px; font-weight:700; }
+  #exit{ position:absolute; left:50%; transform:translateX(-50%); bottom:max(24px, env(safe-area-inset-bottom)); width:auto;
+    min-width:160px; pointer-events:auto; margin:0; }
+</style>
+</head>
+<body>
+<div class="card" id="start">
+  <h1>AR 산책 📷</h1>
+  <canvas id="preview" width="220" height="180" aria-label="걸어가는 골든리트리버"></canvas>
+  <p id="lead">폰 카메라로 <b>책상이나 바닥</b>을 비추고<br>톡! 누르면 강아지가 나와요.<br>강아지를 따라 천천히 걸어 봐요.</p>
+  <p class="note">🙋 엄마·아빠랑 같이 해요 · 걸을 땐 주변을 봐요<br>📷 카메라 화면은 저장하거나 보내지 않아요</p>
+  <p id="nosupport" class="note" hidden></p>
+  <button id="go">시작하기</button>
+  <button id="back1" class="sub">← 게임으로 돌아가기</button>
+</div>
+
+<div class="card" id="gate" hidden>
+  <h1>어른 확인 🙋</h1>
+  <p>카메라를 켜기 전에 어른이 풀어 주세요.</p>
+  <div class="gateq" id="q"></div>
+  <input id="ans" type="number" inputmode="numeric" autocomplete="off" aria-label="답">
+  <div class="err" id="err"></div>
+  <button id="ok">확인하고 카메라 켜기</button>
+  <p class="small">📷 카메라 화면은 저장하거나 보내지 않아요. 위치도 쓰지 않아요.</p>
+  <button id="back2" class="sub">← 돌아가기</button>
+</div>
+
+<div class="card" id="rest" hidden>
+  <img src="ar/sit.png" alt="" width="120" height="120" style="image-rendering:auto">
+  <h1>눈이랑 다리 쉬는 시간이에요 🐕💤</h1>
+  <p>AR 산책은 한 번에 5분까지예요.<br>강아지도 잠깐 쉬어요.</p>
+  <p class="note">다시 하려면 <b id="restleft">10:00</b> 기다려요</p>
+  <button id="back3" class="sub">← 게임으로 돌아가기</button>
+</div>
+
+<div class="card" id="playover" hidden>
+  <h1>오늘 놀이 시간 끝~ 💤</h1>
+  <p>강아지들 잘 시간이에요.<br>(어른이 정한 놀이 시간이 다 됐어요)</p>
+  <button id="back4" class="sub">← 게임으로 돌아가기</button>
+</div>
+
+<div id="overlay">
+  <div id="hint">바닥을 천천히 비춰 주세요</div>
+  <button id="exit">그만하기</button>
+</div>
+
+<script type="module" src="ar/ar.js?v=5.40"></script>
+</body>
+</html>
