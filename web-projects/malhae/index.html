@@ -37,11 +37,7 @@
   <span class="sub">눌러서 소리내기 · 베타</span>
 </header>
 
-<textarea id="say" placeholder="여기에 직접 쓰거나, 아래 버튼을 누르세요" inputmode="text"></textarea>
-<div class="row">
-  <button class="btn" id="speakBtn">🔊 말하기</button>
-  <button class="btn g" id="clearBtn" style="flex:.5">지우기</button>
-</div>
+<!-- 2026-09-25 형: 맨 위 타이핑 칸 뺌 (장인어른 타이핑 힘드심). 버튼 누르면 바로 말함 -->
 
 <nav class="tabs" id="tabs"></nav>
 <main id="grid"></main>
@@ -72,9 +68,6 @@ function speak(t){
   u.lang='ko-KR'; if(voice)u.voice=voice; u.rate=.95; u.pitch=1;
   speechSynthesis.speak(u);
 }
-const say=document.getElementById('say');
-document.getElementById('speakBtn').onclick=()=>speak(say.value);
-document.getElementById('clearBtn').onclick=()=>{say.value='';say.focus();};
 
 const tabs=document.getElementById('tabs'), grid=document.getElementById('grid');
 let cur=Object.keys(PHRASES)[0];
@@ -89,7 +82,7 @@ function renderGrid(){
   grid.innerHTML='';
   PHRASES[cur].forEach(p=>{
     const b=document.createElement('button'); b.className='phrase'; b.textContent=p;
-    b.onclick=()=>{ say.value=p; speak(p); }; // 누르면 말하고 창에도 표시
+    b.onclick=()=>speak(p); // 누르면 바로 말함
     grid.appendChild(b);
   });
 }
