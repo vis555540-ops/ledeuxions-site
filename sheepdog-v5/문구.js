@@ -84,7 +84,7 @@ const 문구 = {
   띵동_4:{ko:"같이 갈래?",en:"Want to come with me?"},
   오늘_남음:{ko:"오늘 남은 횟수",en:"Left today"},
   이름_지어주기:{ko:"이름 지어 주기",en:"Give a name"},
-  쓰담_처음안내:{ko:"강아지를 꾹 누른 채 문질러 주세요 🐾",en:"Press and rub the dog to pet 🐾"},
+  쓰담_처음안내:{ko:"꾹 누른 채 문지르면 쓰다듬기 · 가만히 꾹 누르면 놀이",en:"Hold & rub to pet · Hold still to play"},
   부르기_안내:{ko:"땅을 톡 누르면 강아지가 와요",en:"Tap the ground to call your dog"},
   응가_안내:{ko:"톡! 치우기",en:"Tap to clean"}, 처음_응가:{ko:"깨끗해졌어요! 응가를 치우면 코인이 생겨요",en:"All clean! Cleaning up earns coins"},
   터그:{ko:"터그",en:"Tug"}, 터그_안내:{ko:"위아래로 힘껏 당겨요!",en:"Pull up and down hard!"}, 터그_이김:{ko:"이겼다!",en:"You won!"},
