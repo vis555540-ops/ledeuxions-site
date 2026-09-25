@@ -188,13 +188,22 @@ const flashT= document.getElementById("flashT");
 const dlg   = document.getElementById("dlg");
 
 /* ───────── 저장 ───────── */
-const KEY = "malhae_type_v2";   // 2026-09-25 형: 문구 5개로 바꿈 (v1 은 글자 크기만 이어받음)
+const KEY = "malhae_type_v1";
 const DEFAULTS = [
-  "입안 닦아줘",
-  "목 불편해",
-  "아니야",
-  "문 조금 닫아",
-  "문 조금 열어"
+  "여보",
+  "와봐",
+  "여기",
+  "여기 봐봐",
+  "아니야 다른데야",
+  "귓구멍",
+  "입안",
+  "입술",
+  "목",
+  "물",
+  "화장실",
+  "아파요",
+  "괜찮아요",
+  "고마워요"
 ];
 
 function load(){
@@ -202,9 +211,7 @@ function load(){
     const raw = localStorage.getItem(KEY);
     if(raw) return JSON.parse(raw);
   }catch(e){}
-  let fs = 30;
-  try{ const o = JSON.parse(localStorage.getItem("malhae_type_v1")||"null"); if(o && o.fs) fs = o.fs; }catch(e){}
-  return { list: DEFAULTS.slice(), fs: fs };
+  return { list: DEFAULTS.slice(), fs: 30 };
 }
 function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
