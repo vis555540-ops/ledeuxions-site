@@ -112,6 +112,8 @@ const 문구 = {
   부르기_안내:{ko:"땅을 톡 누르면 강아지가 와요",en:"Tap the ground to call your dog"},
   응가_안내:{ko:"톡! 치우기",en:"Tap to clean"}, 처음_응가:{ko:"깨끗해졌어요! 응가를 치우면 코인이 생겨요",en:"All clean! Cleaning up earns coins"},
   늑대_조심:{ko:"조심! 늑대!",en:"Watch out! Wolf!"}, 여우_조심:{ko:"조심! 여우!",en:"Watch out! Fox!"},
+  집에_들어가:{ko:"집에 들어가",en:"Go inside"}, 집안내1:{ko:"강아지를 가만히 꾹",en:"Hold still on a dog"}, 집안내2:{ko:"→ 🏠 집에 들어가",en:"→ 🏠 Go inside"},
+  집안_나와:{ko:"나와!",en:"Come out!"}, 집안_들어와:{ko:"들어와!",en:"Come in!"}, 집안_쉼:{ko:"쉬고 있어요",en:"Resting"}, 집안_나감:{ko:"잘 쉬고 마당에 나갔어요",en:"Had a good rest and went out"},
   터그:{ko:"터그",en:"Tug"}, 터그_안내:{ko:"위아래로 힘껏 당겨요!",en:"Pull up and down hard!"}, 터그_이김:{ko:"이겼다!",en:"You won!"},
   응가_치우면_코인:{ko:"응가를 치우면 코인이 생겨요",en:"Clean up poop to earn coins"},
   비밀코드:{ko:"비밀 코드",en:"Secret code"}, 코드_확인:{ko:"확인",en:"OK"}, 코드_다름:{ko:"코드가 달라요",en:"That code doesn't match"},
