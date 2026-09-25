@@ -15,6 +15,22 @@ const 그림 = {
     불러올.forEach(([키, 경로]) => { const im = new Image(); im.onload=()=>{ 그림.시트[키]=im; }; im.onerror=()=>{}; im.src=경로; });
   },
   // 털색 1·2 = 원본 시트의 색을 HSL 로 돌린 사본. 외곽선(어두운 색)·흰색은 안 건드린다.
+  // ★ 2026-09-25 형 「귀여워서 늑대인지 몰랐다」 — 새로 안 그리고, 늑대·여우 시트를 조금 어둡게 + 눈 빨갛게 + 귀 끝 한 점 뾰족하게
+  조심판(키) { const 있던 = 그림.시트[키+"_조심"]; if (있던) return 있던;
+    const im = 그림.시트[키]; if (!im || !im.width) return null;
+    try { const cv = document.createElement("canvas"); cv.width = im.width; cv.height = im.height;
+      const x2 = cv.getContext("2d"); x2.drawImage(im, 0, 0);
+      const W = cv.width, H = cv.height, d = x2.getImageData(0, 0, W, H), a = d.data, 원 = new Uint8ClampedArray(a);
+      const 밝 = i => 원[i+3] > 128 && 원[i]+원[i+1]+원[i+2] > 450, 어둠 = i => 원[i+3] > 128 && 원[i]+원[i+1]+원[i+2] < 200;
+      for (let y=0; y<H; y++) for (let x=0; x<W; x++) { const i=(y*W+x)*4; if (원[i+3] < 128) continue;
+        const 칸y = y % 32;
+        if (칸y < 18 && x%32 > 0 && x%32 < 31 && 어둠(i) && 밝(i-4) && 밝(i+4)) { a[i]=235; a[i+1]=40; a[i+2]=40; continue; }   // 눈 → 빨강
+        a[i] = 원[i]*0.72; a[i+1] = 원[i+1]*0.7; a[i+2] = Math.min(255, 원[i+2]*0.78 + 8); }                           // 조금 어둡게
+      for (let fy=0; fy<H; fy+=32) for (let fx=0; fx<W; fx+=32) {                                                   // 귀 끝 — 칸마다 맨 윗줄 덩어리 위에 한 점
+        let 윗=-1; for (let y=fy; y<fy+32 && 윗<0; y++) for (let x=fx; x<fx+32; x++) if (원[(y*W+x)*4+3] > 128) { 윗=y; break; }
+        if (윗 <= fy) continue;
+        for (let x=fx; x<fx+32; x++) { const i=(윗*W+x)*4; if (원[i+3] > 128 && (x===fx || 원[i-1] <= 128)) { const j=((윗-1)*W+x)*4; a[j]=26; a[j+1]=22; a[j+2]=30; a[j+3]=255; } } }
+      x2.putImageData(d, 0, 0); 그림.시트[키+"_조심"] = cv; return cv; } catch(e) { return null; } },
   색치환(키, 털색) {
     const 캐시키 = 키+"#"+털색; if (그림.시트[캐시키]) return 그림.시트[캐시키];
     const im = 그림.시트[키]; if (!im || !털색회전[털색]) return im;
