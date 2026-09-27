@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="canonical" href="https://ledeuxions.com/web-projects/game-world/suika/">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#3a2a1a">
@@ -35,7 +34,7 @@
 </head>
 <body>
   <a class="back" href="../">← Games</a>
-  <a class="back" href="../ranking/" style="left:auto;right:16px;">🏆 Ranking</a>
+  <a class="back" href="../../ranking/" style="left:auto;right:16px;">🏆 Ranking</a>
   <h1>🍉 Fruit Merge</h1>
   <div id="top"><span id="sc">0</span><span id="best">Best 0</span></div>
   <div id="wrap">
@@ -131,7 +130,7 @@ function start(){ overEl.classList.remove('show'); score=0; scEl.textContent=0; 
 document.getElementById('retry').addEventListener('click',start);
 if(window.Matter) start(); else document.getElementById('hint').textContent='Physics engine failed to load — check your connection';
 </script>
-<script src="../arcade.js"></script>
+<script src="../../arcade.js"></script>
 <div style="text-align:center;font-size:12px;opacity:.45;margin:10px 0 16px;">🍉 Made by LeDeuxions</div>
   <script src="/count.js" defer></script>
 </body>

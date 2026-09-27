@@ -34,9 +34,6 @@ Request-rate: 30/1m
 
 # Sitemap 위치 지정
 Sitemap: https://ledeuxions.com/sitemap.xml
-Sitemap: https://ledeuxions.com/web-projects/stamp/sitemap.xml
-Sitemap: https://ledeuxions.com/web-projects/pdf300/sitemap.xml
-Sitemap: https://ledeuxions.com/web-projects/freecomfortlab/sitemap.xml
 
 # 특정 크롤러 차단
 User-agent: AhrefsBot
