@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://pdf300.com/</loc>
-    <lastmod>2026-09-25</lastmod><changefreq>weekly</changefreq><priority>1.0</priority>
+    <lastmod>2026-09-27</lastmod><changefreq>weekly</changefreq><priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://pdf300.com/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://pdf300.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://pdf300.com/es/"/>
@@ -13,7 +13,7 @@
   </url>
   <url>
     <loc>https://pdf300.com/ja/</loc>
-    <lastmod>2026-09-25</lastmod><changefreq>weekly</changefreq><priority>0.9</priority>
+    <lastmod>2026-09-27</lastmod><changefreq>weekly</changefreq><priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://pdf300.com/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://pdf300.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://pdf300.com/es/"/>
@@ -24,7 +24,7 @@
   </url>
   <url>
     <loc>https://pdf300.com/es/</loc>
-    <lastmod>2026-09-25</lastmod><changefreq>weekly</changefreq><priority>0.9</priority>
+    <lastmod>2026-09-27</lastmod><changefreq>weekly</changefreq><priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://pdf300.com/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://pdf300.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://pdf300.com/es/"/>
@@ -35,7 +35,7 @@
   </url>
   <url>
     <loc>https://pdf300.com/pt/</loc>
-    <lastmod>2026-09-25</lastmod><changefreq>weekly</changefreq><priority>0.9</priority>
+    <lastmod>2026-09-27</lastmod><changefreq>weekly</changefreq><priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://pdf300.com/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://pdf300.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://pdf300.com/es/"/>
@@ -46,7 +46,7 @@
   </url>
   <url>
     <loc>https://pdf300.com/de/</loc>
-    <lastmod>2026-09-25</lastmod><changefreq>weekly</changefreq><priority>0.9</priority>
+    <lastmod>2026-09-27</lastmod><changefreq>weekly</changefreq><priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://pdf300.com/"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://pdf300.com/ja/"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://pdf300.com/es/"/>
@@ -55,129 +55,129 @@
     <xhtml:link rel="alternate" hreflang="ko" href="https://ledeuxions.com/web-projects/pdf300/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pdf300.com/"/>
   </url>
-  <url><loc>https://pdf300.com/target-size</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/merge-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://pdf300.com/compress-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://pdf300.com/split-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://pdf300.com/rotate-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/crop-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/pdf-multiple-pages-per-sheet</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/add-page-numbers-to-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/add-watermark-to-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/sign-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/redact-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/pdf-to-image</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/image-to-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/pdf-to-text</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/edit-pdf-metadata</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/compress-pdf-high-quality</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/pdf-ocr</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/password-protect-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/remove-pdf-password</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/remove-pdf-metadata</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/repair-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/add-page-numbers-server</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/pdf-n-up-server</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/office-to-pdf</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/watermark-pdf-server</loc><lastmod>2026-08-31</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://pdf300.com/ja/compress-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/compress-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/compress-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/compress-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/merge-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/merge-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/merge-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/merge-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/image-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/image-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/image-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/image-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/add-page-numbers-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/add-page-numbers-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/add-page-numbers-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/add-page-numbers-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/add-page-numbers-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/add-page-numbers-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/add-page-numbers-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/add-page-numbers-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/add-watermark-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/add-watermark-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/add-watermark-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/add-watermark-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/compress-pdf-high-quality</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/compress-pdf-high-quality</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/compress-pdf-high-quality</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/compress-pdf-high-quality</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/crop-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/crop-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/crop-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/crop-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/edit-pdf-metadata</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/edit-pdf-metadata</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/edit-pdf-metadata</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/edit-pdf-metadata</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/office-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/office-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/office-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/office-to-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/password-protect-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/password-protect-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/password-protect-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/password-protect-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/pdf-multiple-pages-per-sheet</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/pdf-multiple-pages-per-sheet</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/pdf-multiple-pages-per-sheet</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/pdf-multiple-pages-per-sheet</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/pdf-n-up-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/pdf-n-up-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/pdf-n-up-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/pdf-n-up-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/pdf-ocr</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/pdf-ocr</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/pdf-ocr</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/pdf-ocr</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/pdf-to-image</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/pdf-to-image</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/pdf-to-image</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/pdf-to-image</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/pdf-to-text</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/pdf-to-text</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/pdf-to-text</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/pdf-to-text</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/redact-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/redact-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/redact-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/redact-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/remove-pdf-metadata</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/remove-pdf-metadata</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/remove-pdf-metadata</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/remove-pdf-metadata</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/remove-pdf-password</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/remove-pdf-password</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/remove-pdf-password</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/remove-pdf-password</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/repair-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/repair-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/repair-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/repair-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/rotate-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/rotate-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/rotate-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/rotate-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/sign-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/sign-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/sign-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/sign-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/split-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/split-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/split-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/split-pdf</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/target-size</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/target-size</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/target-size</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/target-size</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/ja/watermark-pdf-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/es/watermark-pdf-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/pt/watermark-pdf-server</loc><lastmod>2026-09-23</lastmod></url>
-  <url><loc>https://pdf300.com/de/watermark-pdf-server</loc><lastmod>2026-09-23</lastmod></url>
+  <url><loc>https://pdf300.com/target-size</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/merge-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pdf300.com/compress-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pdf300.com/split-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pdf300.com/rotate-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/crop-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/pdf-multiple-pages-per-sheet</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/add-page-numbers-to-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/add-watermark-to-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/sign-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/redact-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/pdf-to-image</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/image-to-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/pdf-to-text</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/edit-pdf-metadata</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/compress-pdf-high-quality</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/pdf-ocr</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/password-protect-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/remove-pdf-password</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/remove-pdf-metadata</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/repair-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/add-page-numbers-server</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/pdf-n-up-server</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/office-to-pdf</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/watermark-pdf-server</loc><lastmod>2026-09-27</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pdf300.com/ja/compress-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/compress-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/compress-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/compress-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/merge-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/merge-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/merge-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/merge-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/image-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/image-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/image-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/image-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/add-page-numbers-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/add-page-numbers-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/add-page-numbers-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/add-page-numbers-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/add-page-numbers-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/add-page-numbers-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/add-page-numbers-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/add-page-numbers-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/add-watermark-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/add-watermark-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/add-watermark-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/add-watermark-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/compress-pdf-high-quality</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/compress-pdf-high-quality</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/compress-pdf-high-quality</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/compress-pdf-high-quality</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/crop-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/crop-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/crop-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/crop-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/edit-pdf-metadata</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/edit-pdf-metadata</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/edit-pdf-metadata</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/edit-pdf-metadata</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/office-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/office-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/office-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/office-to-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/password-protect-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/password-protect-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/password-protect-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/password-protect-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/pdf-multiple-pages-per-sheet</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/pdf-multiple-pages-per-sheet</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/pdf-multiple-pages-per-sheet</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/pdf-multiple-pages-per-sheet</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/pdf-n-up-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/pdf-n-up-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/pdf-n-up-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/pdf-n-up-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/pdf-ocr</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/pdf-ocr</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/pdf-ocr</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/pdf-ocr</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/pdf-to-image</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/pdf-to-image</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/pdf-to-image</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/pdf-to-image</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/pdf-to-text</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/pdf-to-text</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/pdf-to-text</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/pdf-to-text</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/redact-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/redact-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/redact-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/redact-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/remove-pdf-metadata</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/remove-pdf-metadata</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/remove-pdf-metadata</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/remove-pdf-metadata</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/remove-pdf-password</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/remove-pdf-password</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/remove-pdf-password</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/remove-pdf-password</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/repair-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/repair-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/repair-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/repair-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/rotate-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/rotate-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/rotate-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/rotate-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/sign-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/sign-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/sign-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/sign-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/split-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/split-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/split-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/split-pdf</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/target-size</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/target-size</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/target-size</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/target-size</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/ja/watermark-pdf-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/es/watermark-pdf-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/pt/watermark-pdf-server</loc><lastmod>2026-09-27</lastmod></url>
+  <url><loc>https://pdf300.com/de/watermark-pdf-server</loc><lastmod>2026-09-27</lastmod></url>
 </urlset>
