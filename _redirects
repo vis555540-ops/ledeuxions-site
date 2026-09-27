@@ -10,6 +10,9 @@
 /v1/web-projects/   https://ledeuxions.com/web-projects/   301
 /v1                 https://ledeuxions.com/                301
 /v1/*               https://ledeuxions.com/                301
+# 같은 꼴의 가짜 주소 78개(/web-projects/en/…) — 그런 폴더는 없었다. 영어 첫 화면으로.
+/web-projects/en    https://ledeuxions.com/en/             301
+/web-projects/en/*  https://ledeuxions.com/en/             301
 
 # 2026-09-27 — 서치콘솔 404(589) 정리. 옛 위키 사이트맵(웹 아카이브 2023-06)에 있던 주소 중
 #   지금 같은 글·자리가 있는 것만 그 자리로 넘긴다. 짝 없는 건 홈으로 몰지 않는다.
