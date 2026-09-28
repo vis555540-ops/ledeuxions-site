@@ -1,0 +1,42 @@
+{
+  "name": "HWP 뷰어 — 한글 파일 바로 열기",
+  "short_name": "HWP 뷰어",
+  "description": "한글(.hwp, .hwpx) 파일을 설치 없이 바로 엽니다. 파일은 기기 밖으로 나가지 않아요.",
+  "id": "/tools/hwp/",
+  "start_url": "/tools/hwp/",
+  "scope": "/tools/hwp/",
+  "display": "standalone",
+  "background_color": "#FAF9F5",
+  "theme_color": "#1F4E8C",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "file_handlers": [
+    {
+      "action": "/tools/hwp/",
+      "accept": {
+        "application/x-hwp": [".hwp"],
+        "application/haansofthwp": [".hwp"],
+        "application/vnd.hancom.hwp": [".hwp"],
+        "application/vnd.hancom.hwpx": [".hwpx"],
+        "application/hwp+zip": [".hwpx"]
+      },
+      "launch_type": "single-client"
+    }
+  ],
+  "share_target": {
+    "action": "/tools/hwp/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "file",
+          "accept": [".hwp", ".hwpx", "application/x-hwp", "application/haansofthwp", "application/vnd.hancom.hwp", "application/vnd.hancom.hwpx", "application/octet-stream", "application/zip"]
+        }
+      ]
+    }
+  }
+}

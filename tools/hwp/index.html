@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="canonical" href="https://ledeuxions.com/tools/hwp/">
+<meta name="theme-color" content="#1F4E8C">
+<title>HWP 뷰어 (베타) — 한글 파일 열기 · hwp pdf 변환 · 설치 없이 바로 | LeDeuxions</title>
+<meta name="description" content="한글(.hwp, .hwpx) 파일을 프로그램 설치 없이 브라우저에서 바로 여는 무료 HWP 뷰어입니다. 파일은 기기 밖으로 나가지 않고, PDF로 저장(인쇄)도 됩니다. 휴대폰에서도 열려요.">
+<meta name="keywords" content="hwp 뷰어, 한글 파일 열기, hwp pdf 변환, hwpx 뷰어, 한글 뷰어 설치 없이, 한글 파일 핸드폰에서 열기, hwp 파일 열기, 온라인 hwp 뷰어">
+<meta property="og:title" content="HWP 뷰어 — 한글 파일, 설치 없이 바로 열기">
+<meta property="og:description" content=".hwp · .hwpx 파일을 브라우저에서 바로. 업로드 없음, PDF로 저장 가능.">
+<meta property="og:url" content="https://ledeuxions.com/tools/hwp/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://ledeuxions.com/tools/hwp/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="LeDeuxions">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="modulepreload" href="lib/rhwp.js?v=0.8.6">
+<link rel="preload" href="lib/rhwp_bg.wasm" as="fetch" type="application/wasm" crossorigin>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"HWP 뷰어","url":"https://ledeuxions.com/tools/hwp/","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","inLanguage":"ko","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},"description":"한글(.hwp, .hwpx) 파일을 설치 없이 브라우저에서 여는 무료 뷰어. 업로드 없음, PDF로 저장."}
+</script>
+<style>
+:root{
+  --bg:#FAF9F5; --card:#fff; --sunk:#F0EEE5; --ink:#1F1E1B; --ink2:#5C5B57; --mute:#8B8A85;
+  --line:#E8E5DA; --blue:#1F4E8C; --blue-soft:#E6EDF6; --accent:#D97757; --deep:#8B3A1C;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--blue)}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;gap:10px;height:56px}
+.top a.home{font-weight:700;color:var(--ink);text-decoration:none}
+.top .sep{color:var(--mute)}
+.beta{display:inline-block;font-size:.72rem;font-weight:700;color:var(--deep);background:#F5E6DE;border-radius:999px;padding:1px 8px;vertical-align:middle;margin-left:4px}
+h1{font-size:clamp(1.6rem,6.5vw,2.3rem);line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em}
+.lead{color:var(--ink2);margin:0 0 18px}
+.drop{display:block;border:2px dashed #B9C8DD;background:var(--card);border-radius:var(--r);padding:34px 16px;text-align:center;cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--blue);background:var(--blue-soft)}
+.drop b{display:block;font-size:1.15rem;margin-bottom:4px}
+.drop .btn{margin-top:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border-radius:10px;border:0;background:var(--blue);color:#fff;font:inherit;font-weight:700;cursor:pointer;text-decoration:none}
+.btn.ghost{background:var(--sunk);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.safe{display:flex;gap:8px;align-items:flex-start;margin:14px 0 0;padding:12px 14px;background:#EEF5EC;border-radius:10px;color:#2F5A2B;font-size:.95rem}
+.status{margin:12px 0 0;font-size:.92rem;color:var(--ink2);min-height:1.4em}
+.status.err{color:#B3261E;font-weight:600}
+.info{margin:34px 0 20px;color:var(--ink2);font-size:.95rem}
+.info h2{font-size:1.05rem;color:var(--ink);margin:26px 0 6px}
+.info ul{padding-left:20px;margin:6px 0}
+.fine{font-size:.8rem;color:var(--mute);border-top:1px solid var(--line);padding:16px 0 40px;margin-top:30px}
+
+/* 보기 화면 */
+#viewer{display:none}
+body.viewing #intro{display:none}
+body.viewing #viewer{display:block}
+.bar{position:sticky;top:0;z-index:10;background:rgba(250,249,245,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1100px;margin:0 auto;padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fname{flex:1 1 100%;font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink2)}
+.ib{min-width:40px;height:40px;border-radius:9px;border:1px solid var(--line);background:#fff;font:inherit;font-weight:700;cursor:pointer;padding:0 10px;color:var(--ink)}
+.ib:disabled{opacity:.4}
+.pg{font-size:.9rem;font-variant-numeric:tabular-nums;min-width:70px;text-align:center}
+.grow{flex:1}
+.bar .btn{min-height:40px;padding:0 14px;font-size:.92rem}
+.short{display:none}
+@media (max-width:480px){.bar-in{gap:4px;padding:6px 8px}.ib{min-width:36px;padding:0 6px}.pg{min-width:52px;font-size:.85rem}#zfit{font-size:.8rem}.short{display:inline}.long{display:none}.bar .btn{padding:0 10px}}
+#pages{padding:14px 8px 60px;display:flex;flex-direction:column;align-items:center;gap:14px;background:#E9E7E0;min-height:80vh}
+.page{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12);position:relative;overflow:hidden;flex:none}
+.page>svg{display:block;width:100%;height:100%}
+.page .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:.9rem}
+.page .perr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#B3261E;font-size:.9rem;padding:20px;text-align:center}
+.vnote{text-align:center;font-size:.8rem;color:var(--mute);padding:0 12px 30px;background:#E9E7E0;margin:0}
+
+@media print{
+  @page{margin:0}
+  body{background:#fff}
+  #intro,.bar,.vnote,.noprint{display:none!important}
+  #viewer{display:block!important}
+  #pages{padding:0;gap:0;background:#fff;display:block}
+  .page{box-shadow:none;margin:0 auto;break-after:page;page-break-after:always;width:var(--pw)!important;height:var(--ph)!important}
+  .page:last-child{break-after:auto;page-break-after:auto}
+}
+</style>
+</head>
+<body>
+<div id="intro">
+  <div class="wrap">
+    <div class="top"><a class="home" href="/">LeDeuxions</a><span class="sep">/</span><a href="/web-projects/">도구</a></div>
+    <h1>HWP 뷰어 <span class="beta">베타</span></h1>
+    <p class="lead">한글 파일(.hwp · .hwpx)을 <b>프로그램 설치 없이</b> 바로 엽니다. 휴대폰에서도 돼요.</p>
+
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept=".hwp,.hwpx,application/x-hwp,application/haansofthwp,application/vnd.hancom.hwp,application/vnd.hancom.hwpx" hidden>
+      <b>한글 파일을 여기에 끌어다 놓으세요</b>
+      <span style="color:var(--ink2)">또는</span><br>
+      <span class="btn">파일 고르기</span>
+    </label>
+    <p class="safe">🔒 <span><b>파일은 기기 밖으로 나가지 않아요.</b> 서버로 올리지 않고 이 브라우저 안에서만 엽니다.</span></p>
+    <p class="status" id="status" role="status">뷰어 준비 중…</p>
+
+    <section class="info">
+      <h2>이렇게 쓰세요</h2>
+      <ul>
+        <li>파일을 고르면 바로 쪽 단위로 보입니다. <b>＋ / －</b> 로 확대·축소.</li>
+        <li><b>PDF로 저장</b>을 누르면 인쇄 창이 뜹니다. 대상(프린터)에서 <b>「PDF로 저장」</b>을 고르세요.</li>
+        <li>한 번 열어두면 인터넷이 끊겨도 다시 쓸 수 있습니다.</li>
+      </ul>
+      <h2>베타라서 아직 부족한 점</h2>
+      <ul>
+        <li>한글 전용 글꼴(함초롬·HY 등)은 비슷한 글꼴로 바꿔 보여서 줄바꿈이 원본과 조금 다를 수 있습니다.</li>
+        <li>복잡한 도형·수식·차트는 어긋날 수 있습니다. 보기 전용이며 편집은 안 됩니다.</li>
+        <li>암호가 걸린 문서, 배포용 문서는 열지 못할 수 있습니다.</li>
+      </ul>
+    </section>
+    <p class="fine">
+      본 제품은 한컴의 HWP 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.<br>
+      「한글」, 「HWP」, 「HWPX」는 주식회사 한글과컴퓨터의 등록 상표이며, 이 도구는 한글과컴퓨터와 관계가 없는 독립 도구입니다.<br>
+      문서 해석·그리기: <a href="https://github.com/edwardkim/rhwp" rel="noopener">rhwp</a> (MIT License, © 2025-2026 Edward Kim) · <a href="lib/LICENSE-rhwp.txt">라이선스 전문</a><br>
+      © 2005–2026 LeDeuxions · <a href="/privacy/">개인정보처리방침</a>
+    </p>
+  </div>
+</div>
+
+<div id="viewer">
+  <div class="bar">
+    <div class="bar-in">
+      <div class="fname" id="fname"></div>
+      <button class="ib" id="close" title="다른 파일 열기" aria-label="다른 파일 열기">←</button>
+      <button class="ib" id="prev" aria-label="이전 쪽">‹</button>
+      <span class="pg" id="pg">1 / 1</span>
+      <button class="ib" id="next" aria-label="다음 쪽">›</button>
+      <span class="grow"></span>
+      <button class="ib" id="zout" aria-label="축소">－</button>
+      <button class="ib" id="zfit" aria-label="화면 맞춤" title="화면 맞춤">맞춤</button>
+      <button class="ib" id="zin" aria-label="확대">＋</button>
+      <button class="btn" id="print"><span class="long">PDF로 저장</span><span class="short">PDF</span></button>
+    </div>
+  </div>
+  <div id="pages"></div>
+  <p class="vnote">🔒 이 파일은 기기 밖으로 나가지 않았어요 · HWP 뷰어 베타 · 본 제품은 한컴의 HWP 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.</p>
+</div>
+
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
