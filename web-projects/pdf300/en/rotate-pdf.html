@@ -21,6 +21,7 @@
 <meta property="og:description" content="Rotate pages that came in sideways and drag them into the right order. Runs in your browser, no upload.">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "Do my files get uploaded?", "acceptedAnswer": {"@type": "Answer", "text": "No. This tool runs in your browser with JavaScript, so the file never leaves your device. Once the page has loaded you can even go offline and it still works."}},{"@type": "Question", "name": "Is there a watermark or a sign-up?", "acceptedAnswer": {"@type": "Answer", "text": "Neither. No account, no watermark on the output. The practical limit is your device memory — large scanned files use more of it."}}]}</script>
+<link rel="stylesheet" href="/assets/css/claude-design.css">
 <style>
     /* ============================================================
        PDF300 — Dark premium theme (overrides claude-design.css vars)
@@ -681,6 +682,21 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
 .lp .qa p{margin:0;line-height:1.7;color:var(--text-secondary,#B7B0A4)}
 .lp .back{display:block;margin-top:40px;color:var(--text-muted,#837C70)}
 </style>
+<style id="guide-css">
+.lp .guide{margin-top:44px;padding-top:8px;border-top:1px solid var(--border,#2C2722)}
+.lp p,.lp ul li{line-height:1.75;color:var(--text-secondary,#B7B0A4)}
+.lp ul{padding-left:20px;margin:0 0 16px}
+.lp ul li{margin-bottom:8px}
+.lp p b,.lp li b{color:var(--text-primary,#F6F2EA)}
+.lp a{color:var(--accent-deep,#F3AE8E)}
+.lp .go{color:#14110F}
+.lp .note{font-size:.9rem;color:var(--text-muted,#837C70)}
+.lp .related{margin-top:28px;padding:16px 18px;border:1px solid var(--border,#2C2722);border-radius:10px}
+.lp .related h2{margin-top:0}
+.lp .meta{font-size:.85rem;color:var(--text-muted,#837C70);margin:-8px 0 26px}
+.footer-links a{margin-right:12px}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 </head>
 <body>
 <nav class="nav">
@@ -694,9 +710,10 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
         </button>
         <div class="nav-links" data-nav-menu>
             <a href="/" class="nav-link" data-nav-link>Home</a>
+            <a href="/guides/" class="nav-link" data-nav-link>Guides</a>
             <a href="https://ledeuxions.com/web-projects/" class="nav-link active" data-nav-link>Web Tools</a>
             <a href="https://ledeuxions.com/work/" class="nav-link" data-nav-link>Work</a>
-            <a href="https://ledeuxions.com/contact/" class="nav-link" data-nav-link>Contact</a>
+            <a href="/contact" class="nav-link" data-nav-link>Contact</a>
             <a href="https://ledeuxions.com/web-projects/pdf300/" class="nav-link" hreflang="ko" data-nav-link>한국어</a>
         </div>
     </div>
@@ -714,6 +731,39 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
   <h2>Questions</h2>
   <div class="qa"><b>Do my files get uploaded?</b><p>No. This tool runs in your browser with JavaScript, so the file never leaves your device. Once the page has loaded you can even go offline and it still works.</p></div><div class="qa"><b>Is there a watermark or a sign-up?</b><p>Neither. No account, no watermark on the output. The practical limit is your device memory — large scanned files use more of it.</p></div>
 
+  <section class="guide">
+<h2 style="font-size:1.4rem">Guide: doing it well</h2>
+<h2>When pages need turning or reordering</h2>
+<p>Sideways pages come from scanners fed landscape pages, from phone photos taken at an angle, and from merged files where one source was set up differently. Out-of-order pages come from double-sided scanning, from merging in the wrong sequence, or from someone adding an appendix at the front. A reader will put up with one sideways page; a reviewer going through fifty applications will not enjoy it.</p>
+
+<h2>What the tool does</h2>
+<p><a href="/#organize">Rotate &amp; reorder</a> shows every page as a thumbnail. You can turn single pages by 90°, turn all pages at once (90° left, 90° right, or 180°), move pages up and down, and remove pages you do not want. Then save one new PDF.</p>
+<p>Rotation is stored as a page setting inside the PDF rather than by redrawing the page. That means rotating does not reduce quality, does not make the file bigger, and keeps text selectable.</p>
+
+<h2>Step by step</h2>
+<ol>
+<li><b>Choose the PDF.</b>Thumbnails appear after a moment; long files take longer to preview.</li>
+<li><b>Fix orientation.</b>If every page is wrong the same way, use the rotate-all buttons. Otherwise turn pages one by one.</li>
+<li><b>Fix order and remove extras.</b>Blank pages from double-sided scanning are a common thing to delete.</li>
+<li><b>Name and save.</b>Open the result and check the first and last few pages.</li>
+</ol>
+
+<h2>Tips</h2>
+<p>For double-sided scans where the back sides came out upside down, rotate those pages 180°. For a scanned booklet where all odd pages came first and then all even pages, it is often faster to <a href="/split-pdf">split</a> the file into two halves and rebuild it with <a href="/merge-pdf">Merge</a>. Removing blank or unnecessary pages is also the most effective way to get a document under an upload limit — fewer pages means more space per page when you <a href="/target-size">compress to a target size</a>.</p>
+
+<h2>Privacy</h2>
+<p>Everything runs in your browser. Thumbnails are drawn by pdf.js and the new file is written by pdf-lib in this tab. The PDF is never uploaded.</p>
+
+<h2>Common problems</h2>
+<p><b>The page looks right here but sideways in another app.</b> A few older viewers ignore the rotation setting. Modern browsers, Adobe Reader, macOS Preview and phone viewers all respect it.</p>
+<p><b>The text on a scan is slightly tilted.</b> This tool turns in 90° steps only; it does not straighten a crooked scan. Rescanning with the page flat against the glass is the fix.</p>
+<p><b>The file will not open.</b> Remove the password first, or try <a href="/repair-pdf">Repair PDF</a> for damaged files.</p>
+
+<h2>More questions</h2>
+<div class="qa"><b>Does rotating reduce quality?</b><p>No. Only the page's rotation setting changes; the content is not re-encoded.</p></div><div class="qa"><b>Can I rotate just one page?</b><p>Yes. Each thumbnail has its own rotate controls.</p></div><div class="qa"><b>Can I delete pages here?</b><p>Yes. Removed pages are left out of the saved file.</p></div><div class="qa"><b>Will links and text still work?</b><p>Yes. Text stays selectable and links inside the pages remain.</p></div><div class="qa"><b>Is there a watermark?</b><p>No watermark and no sign-up.</p></div>
+<div class="related"><h2>Related guides</h2><ul><li><a href="/guides/merging-documents-for-applications">Merging documents for visa and job applications: order, size and naming</a></li><li><a href="/guides/why-scanned-pdfs-are-large">Why scanned PDFs are so large, and how to fix it</a></li></ul></div>
+</section>
+
   <nav class="more-tools" style="margin:28px 0 8px;font-size:.92rem;line-height:1.9"><h2>More PDF tools</h2><p><a href="add-page-numbers-server">Add Page Numbers on the Server</a> · <a href="add-page-numbers-to-pdf">Add Page Numbers to PDF</a> · <a href="add-watermark-to-pdf">Add Watermark to PDF</a> · <a href="compress-pdf">Compress PDF</a> · <a href="compress-pdf-high-quality">High-Quality PDF Compression</a> · <a href="crop-pdf">Crop PDF</a> · <a href="edit-pdf-metadata">Edit PDF Metadata</a> · <a href="image-to-pdf">Image to PDF</a> · <a href="merge-pdf">Merge PDF</a> · <a href="office-to-pdf">Word, Excel, PowerPoint to PDF</a> · <a href="password-protect-pdf">Password Protect a PDF</a> · <a href="pdf-multiple-pages-per-sheet">PDF 2 or 4 Pages Per Sheet</a> · <a href="pdf-n-up-server">N-up PDF on the Server</a> · <a href="pdf-ocr">PDF OCR</a> · <a href="pdf-to-image">PDF to Image</a> · <a href="pdf-to-text">PDF to Text</a> · <a href="redact-pdf">Redact PDF</a> · <a href="remove-pdf-metadata">Remove PDF Metadata</a> · <a href="remove-pdf-password">Remove a PDF Password</a> · <a href="repair-pdf">Repair a Broken PDF</a> · <a href="sign-pdf">Sign a PDF</a> · <a href="split-pdf">Split PDF</a> · <a href="target-size">Compress PDF to Target Size (Exact MB/KB)</a> · <a href="watermark-pdf-server">Watermark a PDF on the Server</a></p></nav>
   <a class="back" href="./">← All 24 PDF tools</a>
 </main>
@@ -721,10 +771,12 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions. PDF300 v2026.05 · 14 browser + 10 server tools</span>
+            <span class="footer-links"><a href="/guides/">Guides</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></span>
             <span><a href="https://ledeuxions.com/web-projects/">← More tools</a></span>
         </div>
     </div>
 </footer>
+<script src="/assets/js/common.js"></script>
 <script src="/count.js" defer></script>
 </body>
 </html>

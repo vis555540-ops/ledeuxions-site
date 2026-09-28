@@ -21,6 +21,7 @@
 <meta property="og:description" content="Put text like DRAFT or CONFIDENTIAL across every page of a PDF. Runs in your browser.">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "Do my files get uploaded?", "acceptedAnswer": {"@type": "Answer", "text": "No. This tool runs in your browser with JavaScript, so the file never leaves your device. Once the page has loaded you can even go offline and it still works."}},{"@type": "Question", "name": "Is there a watermark or a sign-up?", "acceptedAnswer": {"@type": "Answer", "text": "Neither. No account, no watermark on the output. The practical limit is your device memory — large scanned files use more of it."}}]}</script>
+<link rel="stylesheet" href="/assets/css/claude-design.css">
 <style>
     /* ============================================================
        PDF300 — Dark premium theme (overrides claude-design.css vars)
@@ -694,9 +695,10 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
         </button>
         <div class="nav-links" data-nav-menu>
             <a href="/" class="nav-link" data-nav-link>Home</a>
+            <a href="/guides/" class="nav-link" data-nav-link>Guides</a>
             <a href="https://ledeuxions.com/web-projects/" class="nav-link active" data-nav-link>Web Tools</a>
             <a href="https://ledeuxions.com/work/" class="nav-link" data-nav-link>Work</a>
-            <a href="https://ledeuxions.com/contact/" class="nav-link" data-nav-link>Contact</a>
+            <a href="/contact" class="nav-link" data-nav-link>Contact</a>
             <a href="https://ledeuxions.com/web-projects/pdf300/" class="nav-link" hreflang="ko" data-nav-link>한국어</a>
         </div>
     </div>
@@ -721,10 +723,12 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions. PDF300 v2026.05 · 14 browser + 10 server tools</span>
+            <span class="footer-links"><a href="/guides/">Guides</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></span>
             <span><a href="https://ledeuxions.com/web-projects/">← More tools</a></span>
         </div>
     </div>
 </footer>
+<script src="/assets/js/common.js"></script>
 <script src="/count.js" defer></script>
 </body>
 </html>

@@ -21,6 +21,7 @@
 <meta property="og:description" content="Combine several PDF files into one, right in your browser. Your files never leave your device. Free, no sign-up, no watermark.">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "Are my files uploaded to a server?", "acceptedAnswer": {"@type": "Answer", "text": "No. Merging runs in your browser using JavaScript. Nothing is sent over the network, so the tool also works with the page open and the network off."}},{"@type": "Question", "name": "Is there a watermark or a page limit?", "acceptedAnswer": {"@type": "Answer", "text": "No watermark, and no sign-up. The practical limit is your device memory — large scanned files use more of it."}}]}</script>
+<link rel="stylesheet" href="/assets/css/claude-design.css">
 <style>
     /* ============================================================
        PDF300 — Dark premium theme (overrides claude-design.css vars)
@@ -682,6 +683,21 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
 .lp .qa p{margin:0;line-height:1.7;color:var(--text-secondary,#B7B0A4)}
 .lp .back{display:block;margin-top:40px;color:var(--text-muted,#837C70)}
 </style>
+<style id="guide-css">
+.lp .guide{margin-top:44px;padding-top:8px;border-top:1px solid var(--border,#2C2722)}
+.lp p,.lp ul li{line-height:1.75;color:var(--text-secondary,#B7B0A4)}
+.lp ul{padding-left:20px;margin:0 0 16px}
+.lp ul li{margin-bottom:8px}
+.lp p b,.lp li b{color:var(--text-primary,#F6F2EA)}
+.lp a{color:var(--accent-deep,#F3AE8E)}
+.lp .go{color:#14110F}
+.lp .note{font-size:.9rem;color:var(--text-muted,#837C70)}
+.lp .related{margin-top:28px;padding:16px 18px;border:1px solid var(--border,#2C2722);border-radius:10px}
+.lp .related h2{margin-top:0}
+.lp .meta{font-size:.85rem;color:var(--text-muted,#837C70);margin:-8px 0 26px}
+.footer-links a{margin-right:12px}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 </head>
 <body>
 <nav class="nav">
@@ -695,9 +711,10 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
         </button>
         <div class="nav-links" data-nav-menu>
             <a href="/" class="nav-link" data-nav-link>Home</a>
+            <a href="/guides/" class="nav-link" data-nav-link>Guides</a>
             <a href="https://ledeuxions.com/web-projects/" class="nav-link active" data-nav-link>Web Tools</a>
             <a href="https://ledeuxions.com/work/" class="nav-link" data-nav-link>Work</a>
-            <a href="https://ledeuxions.com/contact/" class="nav-link" data-nav-link>Contact</a>
+            <a href="/contact" class="nav-link" data-nav-link>Contact</a>
             <a href="https://ledeuxions.com/web-projects/pdf300/" class="nav-link" hreflang="ko" data-nav-link>한국어</a>
         </div>
     </div>
@@ -714,6 +731,39 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
   <h2>Questions</h2>
   <div class="qa"><b>Are my files uploaded to a server?</b><p>No. Merging runs in your browser using JavaScript. Nothing is sent over the network, so the tool also works with the page open and the network off.</p></div><div class="qa"><b>Is there a watermark or a page limit?</b><p>No watermark, and no sign-up. The practical limit is your device memory — large scanned files use more of it.</p></div>
 
+  <section class="guide">
+<h2 style="font-size:1.4rem">Guide: doing it well</h2>
+<h2>When merging helps</h2>
+<p>Many application forms have a single upload slot for "supporting documents". Visa applications, university admissions, grant proposals and job portals all do this. Sending five separate files is not an option, and sending them in the wrong order makes the reader work harder. Merging also helps with email: one attachment named clearly is easier to file than six named <i>scan0001.pdf</i> to <i>scan0006.pdf</i>.</p>
+
+<h2>Step by step</h2>
+<ol>
+<li><b>Collect every file first.</b>Put them in one folder so nothing gets left out. If some of them are photos, turn them into a PDF with <a href="/image-to-pdf">Image to PDF</a> before merging.</li>
+<li><b>Add them to the <a href="/#merge">Merge</a> tool.</b>You can select several at once or drop them in.</li>
+<li><b>Set the order with the ▲▼ buttons.</b>The list top to bottom becomes page order in the merged file.</li>
+<li><b>Name the output.</b>Change <i>merged.pdf</i> to something the reader will recognise, such as <i>Kim_Minjun_visa_documents.pdf</i>.</li>
+<li><b>Open the result and page through it.</b>Check that the page count is the sum of the parts and that nothing is sideways.</li>
+</ol>
+
+<h2>Getting the order right</h2>
+<p>If the form lists required documents, follow its order exactly. If it does not, a sensible default is: the application form or cover letter, identity documents, then evidence in the order it is referred to. Put signed pages where the reader expects them, not at the end. Our guide on <a href="/guides/merging-documents-for-applications">merging documents for applications</a> goes through this in more detail.</p>
+
+<h2>Size</h2>
+<p>Merging does not compress anything — the result is roughly the sum of the inputs. If the merged file is over the limit, compress it afterwards with <a href="/target-size">Compress to target size</a>, or compress only the heaviest part (usually a scan) before merging so the text documents stay sharp.</p>
+
+<h2>Privacy</h2>
+<p>Merging runs entirely in your browser with pdf-lib. The files are read from your disk into this tab and the new file is written back to your disk. Nothing is sent over the network, so you can load the page, disconnect, and it still works.</p>
+
+<h2>Common problems</h2>
+<p><b>One file will not load.</b> It is probably password-protected. Remove the password with the <a href="/remove-pdf-password">password removal tool</a> (you need to know it), then merge.</p>
+<p><b>Bookmarks disappeared.</b> Pages are copied into a new document, and the bookmark list (outline) of the source files is not carried over. Page content, links inside pages and images are kept.</p>
+<p><b>Pages are the wrong way round.</b> Fix them after merging with <a href="/rotate-pdf">Rotate &amp; reorder</a>.</p>
+
+<h2>More questions</h2>
+<div class="qa"><b>How many files can I merge?</b><p>There is no fixed number. The practical limit is your device's memory; dozens of ordinary PDFs are fine.</p></div><div class="qa"><b>Can I merge only some pages from a file?</b><p>Split out the pages you need first with the Split tool, then merge the pieces.</p></div><div class="qa"><b>Does merging reduce quality?</b><p>No. Pages are copied as they are, without re-encoding.</p></div><div class="qa"><b>Can I merge Word files?</b><p>Convert them to PDF first with the Office to PDF tool, then merge.</p></div><div class="qa"><b>Is there a watermark?</b><p>No watermark and no sign-up.</p></div>
+<div class="related"><h2>Related guides</h2><ul><li><a href="/guides/merging-documents-for-applications">Merging documents for visa and job applications: order, size and naming</a></li><li><a href="/guides/are-online-pdf-tools-safe">Is it safe to use online PDF tools? What happens to your files</a></li></ul></div>
+</section>
+
   <nav class="more-tools" style="margin:28px 0 8px;font-size:.92rem;line-height:1.9"><h2>More PDF tools</h2><p><a href="add-page-numbers-server">Add Page Numbers on the Server</a> · <a href="add-page-numbers-to-pdf">Add Page Numbers to PDF</a> · <a href="add-watermark-to-pdf">Add Watermark to PDF</a> · <a href="compress-pdf">Compress PDF</a> · <a href="compress-pdf-high-quality">High-Quality PDF Compression</a> · <a href="crop-pdf">Crop PDF</a> · <a href="edit-pdf-metadata">Edit PDF Metadata</a> · <a href="image-to-pdf">Image to PDF</a> · <a href="office-to-pdf">Word, Excel, PowerPoint to PDF</a> · <a href="password-protect-pdf">Password Protect a PDF</a> · <a href="pdf-multiple-pages-per-sheet">PDF 2 or 4 Pages Per Sheet</a> · <a href="pdf-n-up-server">N-up PDF on the Server</a> · <a href="pdf-ocr">PDF OCR</a> · <a href="pdf-to-image">PDF to Image</a> · <a href="pdf-to-text">PDF to Text</a> · <a href="redact-pdf">Redact PDF</a> · <a href="remove-pdf-metadata">Remove PDF Metadata</a> · <a href="remove-pdf-password">Remove a PDF Password</a> · <a href="repair-pdf">Repair a Broken PDF</a> · <a href="rotate-pdf">Rotate PDF</a> · <a href="sign-pdf">Sign a PDF</a> · <a href="split-pdf">Split PDF</a> · <a href="target-size">Compress PDF to Target Size (Exact MB/KB)</a> · <a href="watermark-pdf-server">Watermark a PDF on the Server</a></p></nav>
   <a class="back" href="./">← All 24 PDF tools</a>
 </main>
@@ -721,10 +771,12 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions. PDF300 v2026.05 · 14 browser + 10 server tools</span>
+            <span class="footer-links"><a href="/guides/">Guides</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></span>
             <span><a href="https://ledeuxions.com/web-projects/">← More tools</a></span>
         </div>
     </div>
 </footer>
+<script src="/assets/js/common.js"></script>
 <script src="/count.js" defer></script>
 </body>
 </html>

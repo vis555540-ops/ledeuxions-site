@@ -21,6 +21,7 @@
 <meta property="og:description" content="Shrink a PDF so it fits an email or an upload limit. Two ways: in-browser re-encoding, or higher-quality server compression.">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "Why are there two compress tools?", "acceptedAnswer": {"@type": "Answer", "text": "The browser tool re-encodes the pages as images — fast, private, and good enough for scans. The server tool keeps text sharp and usually makes a smaller file, but the file has to be sent to the server for that."}},{"@type": "Question", "name": "Can I hit an exact size, like 2 MB?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — that is what the Target size page is for. It tries settings until the file lands under the size you name."}}]}</script>
+<link rel="stylesheet" href="/assets/css/claude-design.css">
 <style>
     /* ============================================================
        PDF300 — Dark premium theme (overrides claude-design.css vars)
@@ -682,6 +683,21 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
 .lp .qa p{margin:0;line-height:1.7;color:var(--text-secondary,#B7B0A4)}
 .lp .back{display:block;margin-top:40px;color:var(--text-muted,#837C70)}
 </style>
+<style id="guide-css">
+.lp .guide{margin-top:44px;padding-top:8px;border-top:1px solid var(--border,#2C2722)}
+.lp p,.lp ul li{line-height:1.75;color:var(--text-secondary,#B7B0A4)}
+.lp ul{padding-left:20px;margin:0 0 16px}
+.lp ul li{margin-bottom:8px}
+.lp p b,.lp li b{color:var(--text-primary,#F6F2EA)}
+.lp a{color:var(--accent-deep,#F3AE8E)}
+.lp .go{color:#14110F}
+.lp .note{font-size:.9rem;color:var(--text-muted,#837C70)}
+.lp .related{margin-top:28px;padding:16px 18px;border:1px solid var(--border,#2C2722);border-radius:10px}
+.lp .related h2{margin-top:0}
+.lp .meta{font-size:.85rem;color:var(--text-muted,#837C70);margin:-8px 0 26px}
+.footer-links a{margin-right:12px}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 </head>
 <body>
 <nav class="nav">
@@ -695,9 +711,10 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
         </button>
         <div class="nav-links" data-nav-menu>
             <a href="/" class="nav-link" data-nav-link>Home</a>
+            <a href="/guides/" class="nav-link" data-nav-link>Guides</a>
             <a href="https://ledeuxions.com/web-projects/" class="nav-link active" data-nav-link>Web Tools</a>
             <a href="https://ledeuxions.com/work/" class="nav-link" data-nav-link>Work</a>
-            <a href="https://ledeuxions.com/contact/" class="nav-link" data-nav-link>Contact</a>
+            <a href="/contact" class="nav-link" data-nav-link>Contact</a>
             <a href="https://ledeuxions.com/web-projects/pdf300/" class="nav-link" hreflang="ko" data-nav-link>한국어</a>
         </div>
     </div>
@@ -714,6 +731,40 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
   <h2>Questions</h2>
   <div class="qa"><b>Why are there two compress tools?</b><p>The browser tool re-encodes the pages as images — fast, private, and good enough for scans. The server tool keeps text sharp and usually makes a smaller file, but the file has to be sent to the server for that.</p></div><div class="qa"><b>Can I hit an exact size, like 2 MB?</b><p>Yes — that is what the Target size page is for. It tries settings until the file lands under the size you name.</p></div>
 
+  <section class="guide">
+<h2 style="font-size:1.4rem">Guide: doing it well</h2>
+<h2>When you need to compress a PDF</h2>
+<p>Most people meet this problem at the last step of something else: an email that bounces because the attachment is over 20 or 25 MB, a job portal that refuses anything above 2 MB, a government form that stops at 300 KB or 500 KB. The document itself is fine — it is just carrying more data than the page needs. That extra weight is nearly always images: scanned pages, phone photos, or pictures pasted into a Word file at full camera resolution.</p>
+
+<h2>Two ways to compress, and how to choose</h2>
+<p><b>Browser compression</b> (the <a href="/#compress">Compress</a> tool) draws every page as a JPG and builds a new PDF from those pictures. It runs on your own computer, so nothing is uploaded. The four levels set two numbers: the widest a page can be in pixels, and the JPG quality. Low is 1600 px at quality 85, Medium 1280 px at 72, High 1024 px at 60, and Extreme 800 px at 45. You can also type your own values.</p>
+<p>The trade-off is that the result is image-only. Text can no longer be selected or searched, and a screen reader cannot read it. For a scan that was already a picture, you lose nothing. For a text document exported from Word, you lose the text layer.</p>
+<p><b>Server compression</b> (<a href="/compress-pdf-high-quality">High-quality compress</a>) sends the file to our server, where Ghostscript rewrites it with its "ebook" preset: images are resampled to about 150 dpi, while text and vector drawings stay as they are. Text stays sharp and searchable. This is usually the better choice for reports, CVs and anything with small print.</p>
+
+<h2>Step by step</h2>
+<ol>
+<li><b>Look at what is heavy.</b>A 40-page text PDF of 8 MB almost certainly contains a few huge images. A 3-page scan of 8 MB is simply scanned at too high a resolution.</li>
+<li><b>Try the gentlest setting first.</b>Start with Low or Medium. Open the result and zoom to 100 % on the page with the smallest print.</li>
+<li><b>Step down only if you must.</b>If the file is still too big, go one level harder rather than jumping to Extreme.</li>
+<li><b>Need an exact number?</b>Use <a href="/target-size">Compress to target size</a>, which searches for the sharpest version that fits under the limit you type.</li>
+</ol>
+
+<h2>Keeping it readable</h2>
+<p>Small print is what breaks first. A page 1024 px wide is roughly 120 dpi on A4 — fine for body text, marginal for footnotes and stamps. If an official seal or a signature has to stay legible, check it specifically before you submit. Grey-and-white documents compress much better than colour ones; if your scanner has a greyscale mode, rescanning in greyscale often does more than any compression setting.</p>
+
+<h2>Privacy</h2>
+<p>Browser compression never uploads the file; the work happens in this tab using pdf.js and pdf-lib. High-quality compression does upload it. On the server the file is processed in a temporary folder that is deleted as soon as the response is sent, and we do not keep a copy.</p>
+
+<h2>Common problems</h2>
+<p><b>The file got bigger.</b> This happens with PDFs that were already efficient text files. Re-drawing text as pictures adds weight. Use server compression instead, or leave the file as it is.</p>
+<p><b>The output is blurry.</b> Raise the max width or the JPG quality one notch. Blur at 800 px is expected.</p>
+<p><b>The browser tab froze.</b> Very long scans use a lot of memory. Split the file into parts with <a href="/split-pdf">Split</a>, compress each part, then <a href="/merge-pdf">merge</a> them back.</p>
+
+<h2>More questions</h2>
+<div class="qa"><b>Will compression remove my password?</b><p>The browser tool cannot open encrypted files. Remove the password first with the password tool, compress, then protect it again if you need to.</p></div><div class="qa"><b>Why can't I select the text after compressing?</b><p>Browser mode turns every page into a picture. Use high-quality server compression if you need the text layer.</p></div><div class="qa"><b>Is there a size limit?</b><p>Browser mode is limited only by your device's memory. The server accepts files up to 100 MB.</p></div><div class="qa"><b>Can I compress several PDFs at once?</b><p>One at a time. If they are going to the same place, merging them first and compressing once is often quicker.</p></div><div class="qa"><b>Does it add a watermark?</b><p>No. There is no watermark, no sign-up, and browser tools have no daily limit.</p></div>
+<div class="related"><h2>Related guides</h2><ul><li><a href="/guides/reduce-pdf-under-300kb">How to reduce a PDF to under 300 KB without making it unreadable</a></li><li><a href="/guides/why-scanned-pdfs-are-large">Why scanned PDFs are so large, and how to fix it</a></li></ul></div>
+</section>
+
   <nav class="more-tools" style="margin:28px 0 8px;font-size:.92rem;line-height:1.9"><h2>More PDF tools</h2><p><a href="add-page-numbers-server">Add Page Numbers on the Server</a> · <a href="add-page-numbers-to-pdf">Add Page Numbers to PDF</a> · <a href="add-watermark-to-pdf">Add Watermark to PDF</a> · <a href="compress-pdf-high-quality">High-Quality PDF Compression</a> · <a href="crop-pdf">Crop PDF</a> · <a href="edit-pdf-metadata">Edit PDF Metadata</a> · <a href="image-to-pdf">Image to PDF</a> · <a href="merge-pdf">Merge PDF</a> · <a href="office-to-pdf">Word, Excel, PowerPoint to PDF</a> · <a href="password-protect-pdf">Password Protect a PDF</a> · <a href="pdf-multiple-pages-per-sheet">PDF 2 or 4 Pages Per Sheet</a> · <a href="pdf-n-up-server">N-up PDF on the Server</a> · <a href="pdf-ocr">PDF OCR</a> · <a href="pdf-to-image">PDF to Image</a> · <a href="pdf-to-text">PDF to Text</a> · <a href="redact-pdf">Redact PDF</a> · <a href="remove-pdf-metadata">Remove PDF Metadata</a> · <a href="remove-pdf-password">Remove a PDF Password</a> · <a href="repair-pdf">Repair a Broken PDF</a> · <a href="rotate-pdf">Rotate PDF</a> · <a href="sign-pdf">Sign a PDF</a> · <a href="split-pdf">Split PDF</a> · <a href="target-size">Compress PDF to Target Size (Exact MB/KB)</a> · <a href="watermark-pdf-server">Watermark a PDF on the Server</a></p></nav>
   <a class="back" href="./">← All 24 PDF tools</a>
 </main>
@@ -721,10 +772,12 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions. PDF300 v2026.05 · 14 browser + 10 server tools</span>
+            <span class="footer-links"><a href="/guides/">Guides</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></span>
             <span><a href="https://ledeuxions.com/web-projects/">← More tools</a></span>
         </div>
     </div>
 </footer>
+<script src="/assets/js/common.js"></script>
 <script src="/count.js" defer></script>
 </body>
 </html>

@@ -21,6 +21,7 @@
 <meta property="og:description" content="Turn a scanned PDF into text you can select and search. Runs on a server.">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "Do my files get uploaded?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — this one runs on a server, so the file is sent over the network and processed there. If you would rather nothing left your device, use the browser tools on the main page instead."}},{"@type": "Question", "name": "Is there a watermark or a sign-up?", "acceptedAnswer": {"@type": "Answer", "text": "Neither. No account, no watermark on the output. The practical limit is your device memory — large scanned files use more of it."}}]}</script>
+<link rel="stylesheet" href="/assets/css/claude-design.css">
 <style>
     /* ============================================================
        PDF300 — Dark premium theme (overrides claude-design.css vars)
@@ -681,6 +682,21 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
 .lp .qa p{margin:0;line-height:1.7;color:var(--text-secondary,#B7B0A4)}
 .lp .back{display:block;margin-top:40px;color:var(--text-muted,#837C70)}
 </style>
+<style id="guide-css">
+.lp .guide{margin-top:44px;padding-top:8px;border-top:1px solid var(--border,#2C2722)}
+.lp p,.lp ul li{line-height:1.75;color:var(--text-secondary,#B7B0A4)}
+.lp ul{padding-left:20px;margin:0 0 16px}
+.lp ul li{margin-bottom:8px}
+.lp p b,.lp li b{color:var(--text-primary,#F6F2EA)}
+.lp a{color:var(--accent-deep,#F3AE8E)}
+.lp .go{color:#14110F}
+.lp .note{font-size:.9rem;color:var(--text-muted,#837C70)}
+.lp .related{margin-top:28px;padding:16px 18px;border:1px solid var(--border,#2C2722);border-radius:10px}
+.lp .related h2{margin-top:0}
+.lp .meta{font-size:.85rem;color:var(--text-muted,#837C70);margin:-8px 0 26px}
+.footer-links a{margin-right:12px}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 </head>
 <body>
 <nav class="nav">
@@ -694,9 +710,10 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
         </button>
         <div class="nav-links" data-nav-menu>
             <a href="/" class="nav-link" data-nav-link>Home</a>
+            <a href="/guides/" class="nav-link" data-nav-link>Guides</a>
             <a href="https://ledeuxions.com/web-projects/" class="nav-link active" data-nav-link>Web Tools</a>
             <a href="https://ledeuxions.com/work/" class="nav-link" data-nav-link>Work</a>
-            <a href="https://ledeuxions.com/contact/" class="nav-link" data-nav-link>Contact</a>
+            <a href="/contact" class="nav-link" data-nav-link>Contact</a>
             <a href="https://ledeuxions.com/web-projects/pdf300/" class="nav-link" hreflang="ko" data-nav-link>한국어</a>
         </div>
     </div>
@@ -714,6 +731,39 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
   <h2>Questions</h2>
   <div class="qa"><b>Do my files get uploaded?</b><p>Yes — this one runs on a server, so the file is sent over the network and processed there. If you would rather nothing left your device, use the browser tools on the main page instead.</p></div><div class="qa"><b>Is there a watermark or a sign-up?</b><p>Neither. No account, no watermark on the output. The practical limit is your device memory — large scanned files use more of it.</p></div>
 
+  <section class="guide">
+<h2 style="font-size:1.4rem">Guide: doing it well</h2>
+<h2>When you need OCR</h2>
+<p>A scanned PDF is a picture of a document. It looks like text, but your computer only sees pixels: you cannot search it, copy a sentence out of it, or have it read aloud. OCR (optical character recognition) looks at the shapes of letters and works out what they say. It is what you need when you want to quote from an old scanned contract, search a pile of scanned invoices, or turn a printed page back into editable text.</p>
+
+<h2>Two kinds of output</h2>
+<p><b>Plain text.</b> The recognised text comes back as a .txt file or can be copied to the clipboard. Use this when you want to edit or reuse the words.</p>
+<p><b>Searchable PDF.</b> The scan stays exactly as it looks, and an invisible layer of recognised text is placed behind each page. You can then search it and select text in any PDF reader. Use this when the document itself matters — signatures, stamps, layout — but you also want it to be searchable.</p>
+
+<h2>Step by step</h2>
+<ol>
+<li><b>Choose the scanned PDF in the <a href="/#srv-ocr">OCR</a> tool.</b></li>
+<li><b>Choose the language.</b>Options are English, Korean, Korean + English, Japanese and Simplified Chinese. Choosing the right language matters a lot for accuracy.</li>
+<li><b>Run it and check the result.</b>Skim the text for obvious mistakes, especially numbers.</li>
+</ol>
+
+<h2>Getting accurate results</h2>
+<p>OCR is only as good as the scan. A flat, straight page scanned at 300 dpi in black and white or greyscale gives the best results. Phone photos work if the page is lit evenly and fills the frame. Accuracy drops with handwriting, very small print, coloured backgrounds, tables with many lines, and pages that are skewed. Numbers deserve a second look: 0 and O, 1 and l, 5 and S are the usual confusions.</p>
+<p>If the PDF already has a text layer (you can select words in it), you do not need OCR — use <a href="/pdf-to-text">PDF to Text</a>, which runs in your browser and is exact.</p>
+
+<h2>Privacy</h2>
+<p>OCR runs on our server, not in your browser, because the recognition engine (Tesseract, via OCRmyPDF for searchable PDFs) is too heavy to run in a web page. The file is uploaded, processed in a temporary folder, and that folder is deleted when the response is sent. We do not keep the file or the recognised text. For sensitive documents, consider <a href="/redact-pdf">redacting</a> anything you do not need first.</p>
+
+<h2>Common problems</h2>
+<p><b>The text is gibberish.</b> The wrong language was selected, or the scan is too low-resolution. Try again with the correct language.</p>
+<p><b>File too large.</b> OCR accepts files up to 30 MB. Split long scans into parts with <a href="/split-pdf">Split</a>.</p>
+<p><b>Server unavailable.</b> The server tools depend on one machine. If it is down, the browser tools still work; try OCR again later.</p>
+
+<h2>More questions</h2>
+<div class="qa"><b>How many pages can I OCR?</b><p>The limit is 30 MB per file. Very long documents take longer; split them if the request times out.</p></div><div class="qa"><b>Does OCR change how the PDF looks?</b><p>The searchable PDF keeps the scan as it was and adds hidden text behind it.</p></div><div class="qa"><b>Can it read handwriting?</b><p>Poorly. The engine is trained on printed text.</p></div><div class="qa"><b>Is it free?</b><p>Server tools are free for 5 uses per day. A $0.99 day pass removes the limit for 24 hours.</p></div><div class="qa"><b>Do you keep my document?</b><p>No. It is processed in a temporary folder that is removed after the result is sent back.</p></div>
+<div class="related"><h2>Related guides</h2><ul><li><a href="/guides/why-scanned-pdfs-are-large">Why scanned PDFs are so large, and how to fix it</a></li><li><a href="/guides/are-online-pdf-tools-safe">Is it safe to use online PDF tools? What happens to your files</a></li></ul></div>
+</section>
+
   <nav class="more-tools" style="margin:28px 0 8px;font-size:.92rem;line-height:1.9"><h2>More PDF tools</h2><p><a href="add-page-numbers-server">Add Page Numbers on the Server</a> · <a href="add-page-numbers-to-pdf">Add Page Numbers to PDF</a> · <a href="add-watermark-to-pdf">Add Watermark to PDF</a> · <a href="compress-pdf">Compress PDF</a> · <a href="compress-pdf-high-quality">High-Quality PDF Compression</a> · <a href="crop-pdf">Crop PDF</a> · <a href="edit-pdf-metadata">Edit PDF Metadata</a> · <a href="image-to-pdf">Image to PDF</a> · <a href="merge-pdf">Merge PDF</a> · <a href="office-to-pdf">Word, Excel, PowerPoint to PDF</a> · <a href="password-protect-pdf">Password Protect a PDF</a> · <a href="pdf-multiple-pages-per-sheet">PDF 2 or 4 Pages Per Sheet</a> · <a href="pdf-n-up-server">N-up PDF on the Server</a> · <a href="pdf-to-image">PDF to Image</a> · <a href="pdf-to-text">PDF to Text</a> · <a href="redact-pdf">Redact PDF</a> · <a href="remove-pdf-metadata">Remove PDF Metadata</a> · <a href="remove-pdf-password">Remove a PDF Password</a> · <a href="repair-pdf">Repair a Broken PDF</a> · <a href="rotate-pdf">Rotate PDF</a> · <a href="sign-pdf">Sign a PDF</a> · <a href="split-pdf">Split PDF</a> · <a href="target-size">Compress PDF to Target Size (Exact MB/KB)</a> · <a href="watermark-pdf-server">Watermark a PDF on the Server</a></p></nav>
   <a class="back" href="./">← All 24 PDF tools</a>
 </main>
@@ -721,10 +771,12 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions. PDF300 v2026.05 · 14 browser + 10 server tools</span>
+            <span class="footer-links"><a href="/guides/">Guides</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></span>
             <span><a href="https://ledeuxions.com/web-projects/">← More tools</a></span>
         </div>
     </div>
 </footer>
+<script src="/assets/js/common.js"></script>
 <script src="/count.js" defer></script>
 </body>
 </html>

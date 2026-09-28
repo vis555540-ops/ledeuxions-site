@@ -14,8 +14,6 @@
 <link rel="canonical" href="https://pdf300.com/ja/target-size">
 <meta name="description" content="PDF を指定の正確なサイズ（例：5MB、300KB）に圧縮します。メール、ポータルサイト、入札提出のアップロード制限に最適です。無料で登録不要、使用後即削除。">
 <meta name="keywords" content="pdf サイズ調整 pdf を 5mb に圧縮 pdf を特定サイズに減らす pdf を 300kb に target size pdf コンプレッサー">
-<!-- Google AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <style>
   :root{--primary:#0078d7;--accent:#ff8c00;--bg:#f5f6f8;--card:#fff;--line:#e3e6ea;--mut:#667;}
   *{box-sizing:border-box}
@@ -43,15 +41,12 @@
   .hide{display:none}
   .bar{height:8px;background:#e3e6ea;border-radius:6px;overflow:hidden;margin-top:10px}
   .bar>i{display:block;height:100%;width:0;background:var(--primary);transition:width .3s}
-  .adslot{margin:16px 0;min-height:90px;text-align:center}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>📄 PDF を指定サイズに圧縮</h1>
   <div class="sub">任意の PDF を <b>必要な正確なサイズに</b> (例：5MB、300KB)。メール添付ファイルやアップロード制限に最適です。 <span class="badge">登録不要</span><span class="badge">使用後即削除</span></div>
-
-  <div class="adslot"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2824624880449066" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
 
   <div class="card" id="toolCard">
     <label>1) PDF ファイル</label>
@@ -76,8 +71,6 @@
     <div class="status" id="runStatus"></div>
   </div>
 
-  <div class="adslot"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2824624880449066" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
-
   <div class="muted">⚠️ 出力は画像ベースの PDF（テキスト選択不可）— サイズ制限を満たすために設計されています。© 2017–2026 LeDeuxions</div>
 </div>
 
@@ -99,7 +92,6 @@ async function ensureKey(){
   }catch(e){}
 }
 ensureKey();
-try{ (adsbygoogle=window.adsbygoogle||[]).push({}); (adsbygoogle=window.adsbygoogle||[]).push({}); }catch(e){}
 
 $('drop').onclick = ()=> $('file').click();
 $('drop').ondragover = e=>{e.preventDefault();$('drop').classList.add('over');};

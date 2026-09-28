@@ -21,6 +21,7 @@
 <meta property="og:description" content="ブラウザ内で複数の PDF ファイルを 1 つに結合。ファイルはデバイスから離れません。無料、登録不要、ウォーターマークなし。">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "ファイルはサーバーにアップロードされますか？", "acceptedAnswer": {"@type": "Answer", "text": "いいえ。結合処理はブラウザ内の JavaScript で実行され、ネットワーク経由でデータは送信されません。そのため、ページが開いている状態やネットワークがオフの状態でも動作します。"}},{"@type": "Question", "name": "ウォーターマークやページ制限はありますか？", "acceptedAnswer": {"@type": "Answer", "text": "ウォーターマークはありませんし、登録も不要です。実用的な制限はデバイスのメモリ容量であり、大きなスキャン画像を含むファイルほど多くのメモリを使用します。"}}]}</script>
+<link rel="stylesheet" href="/assets/css/claude-design.css">
 <style>
     /* ============================================================
        PDF300 — Dark premium theme (overrides claude-design.css vars)
@@ -721,10 +722,12 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions. PDF300 v2026.05 · 14 browser + 10 server tools</span>
+            <span class="footer-links"><a href="/guides/">Guides</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></span>
             <span><a href="https://ledeuxions.com/web-projects/">← その他のツール</a></span>
         </div>
     </div>
 </footer>
+<script src="/assets/js/common.js"></script>
 <script src="/count.js" defer></script>
 </body>
 </html>

@@ -21,6 +21,7 @@
 <meta property="og:description" content="Cut a PDF by page range, or pull single pages out. Runs in your browser, so the file is never uploaded.">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "Does splitting change the original file?", "acceptedAnswer": {"@type": "Answer", "text": "No. A new file is built and downloaded; the file on your device is left as it was."}},{"@type": "Question", "name": "Can I pull one page out?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — name a single page instead of a range."}}]}</script>
+<link rel="stylesheet" href="/assets/css/claude-design.css">
 <style>
     /* ============================================================
        PDF300 — Dark premium theme (overrides claude-design.css vars)
@@ -682,6 +683,21 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
 .lp .qa p{margin:0;line-height:1.7;color:var(--text-secondary,#B7B0A4)}
 .lp .back{display:block;margin-top:40px;color:var(--text-muted,#837C70)}
 </style>
+<style id="guide-css">
+.lp .guide{margin-top:44px;padding-top:8px;border-top:1px solid var(--border,#2C2722)}
+.lp p,.lp ul li{line-height:1.75;color:var(--text-secondary,#B7B0A4)}
+.lp ul{padding-left:20px;margin:0 0 16px}
+.lp ul li{margin-bottom:8px}
+.lp p b,.lp li b{color:var(--text-primary,#F6F2EA)}
+.lp a{color:var(--accent-deep,#F3AE8E)}
+.lp .go{color:#14110F}
+.lp .note{font-size:.9rem;color:var(--text-muted,#837C70)}
+.lp .related{margin-top:28px;padding:16px 18px;border:1px solid var(--border,#2C2722);border-radius:10px}
+.lp .related h2{margin-top:0}
+.lp .meta{font-size:.85rem;color:var(--text-muted,#837C70);margin:-8px 0 26px}
+.footer-links a{margin-right:12px}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 </head>
 <body>
 <nav class="nav">
@@ -695,9 +711,10 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
         </button>
         <div class="nav-links" data-nav-menu>
             <a href="/" class="nav-link" data-nav-link>Home</a>
+            <a href="/guides/" class="nav-link" data-nav-link>Guides</a>
             <a href="https://ledeuxions.com/web-projects/" class="nav-link active" data-nav-link>Web Tools</a>
             <a href="https://ledeuxions.com/work/" class="nav-link" data-nav-link>Work</a>
-            <a href="https://ledeuxions.com/contact/" class="nav-link" data-nav-link>Contact</a>
+            <a href="/contact" class="nav-link" data-nav-link>Contact</a>
             <a href="https://ledeuxions.com/web-projects/pdf300/" class="nav-link" hreflang="ko" data-nav-link>한국어</a>
         </div>
     </div>
@@ -714,6 +731,40 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
   <h2>Questions</h2>
   <div class="qa"><b>Does splitting change the original file?</b><p>No. A new file is built and downloaded; the file on your device is left as it was.</p></div><div class="qa"><b>Can I pull one page out?</b><p>Yes — name a single page instead of a range.</p></div>
 
+  <section class="guide">
+<h2 style="font-size:1.4rem">Guide: doing it well</h2>
+<h2>When to split a PDF</h2>
+<p>Splitting is the other half of merging. Someone sends you a 60-page bundle and you only need the contract pages. A portal wants the passport scan and the bank statement uploaded in separate slots, but they arrived in one file. A scan is too big to upload, and cutting it into two parts gets each part under the limit. Or you simply want to send one page without sending the rest.</p>
+
+<h2>The three split modes</h2>
+<p><b>By page range.</b> Type ranges separated by commas, such as <i>1-3, 5, 7-10</i>. Each range becomes its own file, so that example gives you three PDFs: pages 1–3, page 5, and pages 7–10.</p>
+<p><b>Every single page.</b> One file per page. Useful for scanned forms where each page is a separate document.</p>
+<p><b>Every N pages.</b> Fixed-size groups. A 20-page file split every 5 pages gives four files. This is the quickest way to cut an oversized file into uploadable parts.</p>
+<p>The results come back together in one ZIP file, named after the original with the page numbers added.</p>
+
+<h2>Step by step</h2>
+<ol>
+<li><b>Open the <a href="/#split">Split</a> tool and choose one PDF.</b>The page count appears once it loads.</li>
+<li><b>Pick a mode and type the range.</b>Page numbers are the physical page positions (1 is the first page of the file), not the numbers printed on the pages.</li>
+<li><b>Download the ZIP and extract it.</b>On most computers double-clicking the ZIP opens it.</li>
+</ol>
+
+<h2>Tips</h2>
+<p>Printed page numbers and file page numbers often differ. A report with a cover and a contents page might print "1" on the third page of the file. Look at the page counter in your PDF reader, not at the footer. If you only want to drop a few pages rather than extract some, <a href="/rotate-pdf">Rotate &amp; reorder</a> lets you remove pages visually and save one file.</p>
+<p>Splitting copies pages without re-encoding, so each part has the same quality as the original. If a single page is still large, it is because of what is on that page — usually a high-resolution scan — and <a href="/compress-pdf">compression</a> is the fix.</p>
+
+<h2>Privacy</h2>
+<p>Split runs in your browser. The PDF is not uploaded; the ZIP is built in this tab with JSZip and saved directly to your device.</p>
+
+<h2>Common problems</h2>
+<p><b>"No valid page range."</b> Check for page numbers higher than the page count, or for letters and spaces in odd places. <i>2-4,6</i> and <i>2-4, 6</i> both work.</p>
+<p><b>The file will not open.</b> Password-protected files have to be unlocked first. Damaged files can sometimes be recovered with <a href="/repair-pdf">Repair PDF</a>.</p>
+
+<h2>More questions</h2>
+<div class="qa"><b>Can I get the selected pages as one file instead of several?</b><p>Yes: type them as one range if they are consecutive, or remove the unwanted pages with Rotate & reorder and save.</p></div><div class="qa"><b>Does splitting change the original?</b><p>No. New files are created; the original on your device is untouched.</p></div><div class="qa"><b>Is quality reduced?</b><p>No. Pages are copied as they are.</p></div><div class="qa"><b>Is there a page limit?</b><p>No fixed limit. Very large scans depend on your device's memory.</p></div><div class="qa"><b>Do I need an account?</b><p>No account, no watermark, no daily limit for browser tools.</p></div>
+<div class="related"><h2>Related guides</h2><ul><li><a href="/guides/merging-documents-for-applications">Merging documents for visa and job applications: order, size and naming</a></li><li><a href="/guides/reduce-pdf-under-300kb">How to reduce a PDF to under 300 KB without making it unreadable</a></li></ul></div>
+</section>
+
   <nav class="more-tools" style="margin:28px 0 8px;font-size:.92rem;line-height:1.9"><h2>More PDF tools</h2><p><a href="add-page-numbers-server">Add Page Numbers on the Server</a> · <a href="add-page-numbers-to-pdf">Add Page Numbers to PDF</a> · <a href="add-watermark-to-pdf">Add Watermark to PDF</a> · <a href="compress-pdf">Compress PDF</a> · <a href="compress-pdf-high-quality">High-Quality PDF Compression</a> · <a href="crop-pdf">Crop PDF</a> · <a href="edit-pdf-metadata">Edit PDF Metadata</a> · <a href="image-to-pdf">Image to PDF</a> · <a href="merge-pdf">Merge PDF</a> · <a href="office-to-pdf">Word, Excel, PowerPoint to PDF</a> · <a href="password-protect-pdf">Password Protect a PDF</a> · <a href="pdf-multiple-pages-per-sheet">PDF 2 or 4 Pages Per Sheet</a> · <a href="pdf-n-up-server">N-up PDF on the Server</a> · <a href="pdf-ocr">PDF OCR</a> · <a href="pdf-to-image">PDF to Image</a> · <a href="pdf-to-text">PDF to Text</a> · <a href="redact-pdf">Redact PDF</a> · <a href="remove-pdf-metadata">Remove PDF Metadata</a> · <a href="remove-pdf-password">Remove a PDF Password</a> · <a href="repair-pdf">Repair a Broken PDF</a> · <a href="rotate-pdf">Rotate PDF</a> · <a href="sign-pdf">Sign a PDF</a> · <a href="target-size">Compress PDF to Target Size (Exact MB/KB)</a> · <a href="watermark-pdf-server">Watermark a PDF on the Server</a></p></nav>
   <a class="back" href="./">← All 24 PDF tools</a>
 </main>
@@ -721,10 +772,12 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions. PDF300 v2026.05 · 14 browser + 10 server tools</span>
+            <span class="footer-links"><a href="/guides/">Guides</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></span>
             <span><a href="https://ledeuxions.com/web-projects/">← More tools</a></span>
         </div>
     </div>
 </footer>
+<script src="/assets/js/common.js"></script>
 <script src="/count.js" defer></script>
 </body>
 </html>

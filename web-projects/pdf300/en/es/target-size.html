@@ -14,8 +14,6 @@
 <link rel="canonical" href="https://pdf300.com/es/target-size">
 <meta name="description" content="Comprime un PDF hasta un tamaño objetivo exacto (ej. 5MB, 300KB). Ideal para correos electrónicos, portales y límites de carga de ofertas. Gratis, sin registro, se elimina inmediatamente después.">
 <meta name="keywords" content="comprimir pdf al tamaño, comprimir pdf a 5mb, reducir pdf a tamaño específico, pdf a 300kb, compresor pdf tamaño objetivo">
-<!-- Google AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <style>
   :root{--primary:#0078d7;--accent:#ff8c00;--bg:#f5f6f8;--card:#fff;--line:#e3e6ea;--mut:#667;}
   *{box-sizing:border-box}
@@ -43,15 +41,12 @@
   .hide{display:none}
   .bar{height:8px;background:#e3e6ea;border-radius:6px;overflow:hidden;margin-top:10px}
   .bar>i{display:block;height:100%;width:0;background:var(--primary);transition:width .3s}
-  .adslot{margin:16px 0;min-height:90px;text-align:center}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>📄 Comprimir PDF al tamaño objetivo</h1>
   <div class="sub">Encoger cualquier PDF hasta el <b>tamaño exacto que necesites</b> (ej. 5MB, 300KB). Perfecto para adjuntos de correo y límites de carga. <span class="badge">Sin registro</span><span class="badge">Eliminado inmediatamente después</span></div>
-
-  <div class="adslot"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2824624880449066" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
 
   <div class="card" id="toolCard">
     <label>1) Archivo PDF</label>
@@ -76,8 +71,6 @@
     <div class="status" id="runStatus"></div>
   </div>
 
-  <div class="adslot"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2824624880449066" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
-
   <div class="muted">⚠️ La salida es un PDF basado en imágenes (el texto no es seleccionable) — diseñado para cumplir con un límite de tamaño. © 2017–2026 LeDeuxions</div>
 </div>
 
@@ -99,7 +92,6 @@ async function ensureKey(){
   }catch(e){}
 }
 ensureKey();
-try{ (adsbygoogle=window.adsbygoogle||[]).push({}); (adsbygoogle=window.adsbygoogle||[]).push({}); }catch(e){}
 
 $('drop').onclick = ()=> $('file').click();
 $('drop').ondragover = e=>{e.preventDefault();$('drop').classList.add('over');};

@@ -14,8 +14,6 @@
 <link rel="canonical" href="https://pdf300.com/target-size">
 <meta name="description" content="Compress a PDF to an exact target size (e.g. 5MB, 300KB). Perfect for email, portal and bid-submission upload limits. Free, no sign-up, deleted right after.">
 <meta name="keywords" content="compress pdf to size, compress pdf to 5mb, reduce pdf to specific size, pdf to 300kb, target size pdf compressor">
-<!-- Google AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <style>
   :root{--primary:#0078d7;--accent:#ff8c00;--bg:#f5f6f8;--card:#fff;--line:#e3e6ea;--mut:#667;}
   *{box-sizing:border-box}
@@ -43,15 +41,26 @@
   .hide{display:none}
   .bar{height:8px;background:#e3e6ea;border-radius:6px;overflow:hidden;margin-top:10px}
   .bar>i{display:block;height:100%;width:0;background:var(--primary);transition:width .3s}
-  .adslot{margin:16px 0;min-height:90px;text-align:center}
 </style>
+<style id="guide-css">
+.tg .guide{margin-top:44px;padding-top:8px;border-top:1px solid #e3e6ea}
+.tg p,.tg ul li{line-height:1.75;color:#333}
+.tg ul{padding-left:20px;margin:0 0 16px}
+.tg ul li{margin-bottom:8px}
+.tg p b,.tg li b{color:#1a1d21}
+.tg a{color:#0060b0}
+.tg .go{color:#14110F}
+.tg .note{font-size:.9rem;color:#667}
+.tg .related{margin-top:28px;padding:16px 18px;border:1px solid #e3e6ea;border-radius:10px}
+.tg .related h2{margin-top:0}
+.tg .meta{font-size:.85rem;color:#667;margin:-8px 0 26px}
+.footer-links a{margin-right:12px}
+.tg h2{font-size:1.15rem;margin:30px 0 10px}.tg ol{padding-left:20px;line-height:1.75}.tg ol li{margin-bottom:10px}.tg ol b{display:block}.tg .qa{border-top:1px solid #e3e6ea;padding:14px 0}.tg .qa b{display:block;margin-bottom:4px}.tg .qa p{margin:0}</style>
 </head>
 <body>
 <div class="wrap">
   <h1>📄 Compress PDF to Target Size</h1>
   <div class="sub">Shrink any PDF to the <b>exact size you need</b> (e.g. 5MB, 300KB). Great for email attachments and upload limits. <span class="badge">No sign-up</span><span class="badge">Deleted right after</span></div>
-
-  <div class="adslot"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2824624880449066" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
 
   <div class="card" id="toolCard">
     <label>1) PDF file</label>
@@ -76,9 +85,40 @@
     <div class="status" id="runStatus"></div>
   </div>
 
-  <div class="adslot"><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2824624880449066" data-ad-format="auto" data-full-width-responsive="true"></ins></div>
-
   <div class="muted">⚠️ Output is an image-based PDF (text is not selectable) — built for hitting a size limit. © 2017–2026 LeDeuxions</div>
+<section class="guide tg">
+<h2 style="font-size:1.4rem">Guide: compressing to an exact size</h2>
+<h2>Why a target size</h2>
+<p>Upload forms rarely ask for "a smaller file". They ask for a number: 300 KB for many public-sector and visa portals, 1 MB or 2 MB for job applications, 5 MB or 10 MB for tender submissions, 20–25 MB for most email services. Guessing a compression level, checking the size, and trying again wastes time. This tool takes the number and does the searching for you.</p>
+
+<h2>How it works</h2>
+<p>The file is sent to our server. Each page is redrawn as a JPG image at a chosen resolution, and the pages are assembled into a new PDF with the same page size as the original. The server starts with a JPG quality of 75 and searches resolutions between 30 and 200 dpi, keeping the highest resolution whose result still fits under your target. If even 30 dpi is too large, it lowers the JPG quality in steps (65, 55, 45, 35) until it fits.</p>
+<p>If the file still cannot reach the target at the lowest settings, you get the smallest version it could make, and the result message says it is slightly over. That usually means the document has too many pages for the limit — see the tips below.</p>
+
+<h2>Step by step</h2>
+<ol>
+<li><b>Choose the PDF.</b>Only PDF files are accepted. Convert photos first with <a href="/image-to-pdf">Image to PDF</a>.</li>
+<li><b>Type the limit, a little under the real one.</b>If the portal says 300 KB, enter 290. Some sites count 1 KB as 1,000 bytes and others as 1,024.</li>
+<li><b>Compress and check.</b>Open the downloaded file and zoom in on the smallest text before you upload it anywhere.</li>
+</ol>
+
+<h2>Quality versus size</h2>
+<p>A rough rule for A4 pages: at 300 KB you have about 60–100 KB per page for a three-page document, which is readable at around 100 dpi. At ten pages the budget drops to 30 KB per page and small print starts to smear. If the limit is tight, reduce the page count first: remove blank pages and cover sheets with <a href="/rotate-pdf">Rotate &amp; reorder</a>, or submit only the pages the form actually asks for with <a href="/split-pdf">Split</a>.</p>
+<p>The output is always image-based, so text in it cannot be selected. That is normally fine for scans of IDs, certificates and signed forms. For a text-heavy document where you only need a modest reduction, <a href="/compress-pdf-high-quality">high-quality compression</a> keeps the text layer.</p>
+
+<h2>Privacy</h2>
+<p>This tool runs on our server, not in your browser. The file is processed in memory and returned in the same request; it is not written to a folder or kept. Free use is limited to 10 files per day, counted by an anonymous key stored in your browser.</p>
+
+<h2>Common problems</h2>
+<p><b>"Slightly over" message.</b> The document has too many pages, or very large pages, for the limit. Cut pages, or split the upload if the portal allows several files.</p>
+<p><b>The portal still rejects it.</b> Check that it is really a size problem. Some portals also reject files with passwords, unusual characters in the file name, or PDF versions they do not expect. A plain name like <i>passport_scan.pdf</i> avoids the second problem.</p>
+<p><b>Daily limit reached.</b> Try again the next day, or use the <a href="/compress-pdf">browser compressor</a>, which has no limit.</p>
+
+<h2>More questions</h2>
+<div class="qa"><b>Is the result exactly the size I typed?</b><p>It is the sharpest version at or under your target. It is usually a little under, because resolution is searched in steps.</p></div><div class="qa"><b>What is the largest file I can send?</b><p>100 MB per file.</p></div><div class="qa"><b>Why is the text no longer selectable?</b><p>Every page is redrawn as an image to control the size precisely. That is the trade-off for hitting a number.</p></div><div class="qa"><b>Should I type MB or KB?</b><p>Whichever the form uses. 1 MB is treated as 1,024 KB here.</p></div><div class="qa"><b>Is anything saved on your server?</b><p>No. The file is processed in memory and discarded after the response is sent.</p></div>
+<div class="related"><h2>Related guides</h2><ul><li><a href="/guides/reduce-pdf-under-300kb">How to reduce a PDF to under 300 KB without making it unreadable</a></li><li><a href="/guides/pdf-vs-image-for-online-forms">PDF vs image: which should you upload to an online form?</a></li></ul></div>
+</section>
+<p class="muted"><a href="/">All PDF tools</a> · <a href="/guides/">Guides</a> · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/privacy">Privacy</a></p>
 </div>
 
 <script>
@@ -99,7 +139,6 @@ async function ensureKey(){
   }catch(e){}
 }
 ensureKey();
-try{ (adsbygoogle=window.adsbygoogle||[]).push({}); (adsbygoogle=window.adsbygoogle||[]).push({}); }catch(e){}
 
 $('drop').onclick = ()=> $('file').click();
 $('drop').ondragover = e=>{e.preventDefault();$('drop').classList.add('over');};

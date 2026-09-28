@@ -21,6 +21,7 @@
 <meta property="og:description" content="Put JPG or PNG files into a single PDF, in the order you choose. Runs in your browser.">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type": "Question", "name": "Do my files get uploaded?", "acceptedAnswer": {"@type": "Answer", "text": "No. This tool runs in your browser with JavaScript, so the file never leaves your device. Once the page has loaded you can even go offline and it still works."}},{"@type": "Question", "name": "Is there a watermark or a sign-up?", "acceptedAnswer": {"@type": "Answer", "text": "Neither. No account, no watermark on the output. The practical limit is your device memory — large scanned files use more of it."}}]}</script>
+<link rel="stylesheet" href="/assets/css/claude-design.css">
 <style>
     /* ============================================================
        PDF300 — Dark premium theme (overrides claude-design.css vars)
@@ -681,6 +682,21 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
 .lp .qa p{margin:0;line-height:1.7;color:var(--text-secondary,#B7B0A4)}
 .lp .back{display:block;margin-top:40px;color:var(--text-muted,#837C70)}
 </style>
+<style id="guide-css">
+.lp .guide{margin-top:44px;padding-top:8px;border-top:1px solid var(--border,#2C2722)}
+.lp p,.lp ul li{line-height:1.75;color:var(--text-secondary,#B7B0A4)}
+.lp ul{padding-left:20px;margin:0 0 16px}
+.lp ul li{margin-bottom:8px}
+.lp p b,.lp li b{color:var(--text-primary,#F6F2EA)}
+.lp a{color:var(--accent-deep,#F3AE8E)}
+.lp .go{color:#14110F}
+.lp .note{font-size:.9rem;color:var(--text-muted,#837C70)}
+.lp .related{margin-top:28px;padding:16px 18px;border:1px solid var(--border,#2C2722);border-radius:10px}
+.lp .related h2{margin-top:0}
+.lp .meta{font-size:.85rem;color:var(--text-muted,#837C70);margin:-8px 0 26px}
+.footer-links a{margin-right:12px}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 </head>
 <body>
 <nav class="nav">
@@ -694,9 +710,10 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
         </button>
         <div class="nav-links" data-nav-menu>
             <a href="/" class="nav-link" data-nav-link>Home</a>
+            <a href="/guides/" class="nav-link" data-nav-link>Guides</a>
             <a href="https://ledeuxions.com/web-projects/" class="nav-link active" data-nav-link>Web Tools</a>
             <a href="https://ledeuxions.com/work/" class="nav-link" data-nav-link>Work</a>
-            <a href="https://ledeuxions.com/contact/" class="nav-link" data-nav-link>Contact</a>
+            <a href="/contact" class="nav-link" data-nav-link>Contact</a>
             <a href="https://ledeuxions.com/web-projects/pdf300/" class="nav-link" hreflang="ko" data-nav-link>한국어</a>
         </div>
     </div>
@@ -714,6 +731,37 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
   <h2>Questions</h2>
   <div class="qa"><b>Do my files get uploaded?</b><p>No. This tool runs in your browser with JavaScript, so the file never leaves your device. Once the page has loaded you can even go offline and it still works.</p></div><div class="qa"><b>Is there a watermark or a sign-up?</b><p>Neither. No account, no watermark on the output. The practical limit is your device memory — large scanned files use more of it.</p></div>
 
+  <section class="guide">
+<h2 style="font-size:1.4rem">Guide: doing it well</h2>
+<h2>When to turn images into a PDF</h2>
+<p>Phones have replaced scanners for most people, so documents now start life as photos: a lease photographed page by page, receipts for an expense claim, both sides of an ID card. Many forms accept only PDF, and even when they accept images, one PDF with pages in the right order is easier for the reader than a folder of JPGs. Our guide <a href="/guides/pdf-vs-image-for-online-forms">PDF vs image</a> covers when each format makes sense.</p>
+
+<h2>Step by step</h2>
+<ol>
+<li><b>Take better photos first.</b>Shoot straight down, in daylight, with the page filling the frame. This matters more than any setting.</li>
+<li><b>Add the images to <a href="/#img2pdf">Image to PDF</a>.</b>JPG and PNG are supported. iPhone photos in HEIC format need converting to JPG first (on iPhone, Settings → Camera → Formats → Most Compatible makes new photos JPG).</li>
+<li><b>Set the order.</b>The list order is the page order.</li>
+<li><b>Choose page size.</b>"Fit to image" makes each page exactly the size of its photo. A4 or Letter puts every image on a standard sheet, which prints properly and looks consistent.</li>
+<li><b>Set orientation and margin, then create the PDF.</b>Auto orientation picks portrait or landscape per image.</li>
+</ol>
+
+<h2>Size and quality</h2>
+<p>Images are placed into the PDF as they are, without being recompressed, so the PDF is about as large as the photos combined. A modern phone photo is 2–5 MB, so ten pages can easily reach 30 MB. If the file has to go through an upload form, run it through <a href="/target-size">Compress to target size</a> afterwards, or resize the photos before adding them. For text documents, around 1500–2000 px on the long side is plenty to read.</p>
+<p>Choose A4 or Letter when the document will be printed; choose Fit to image when you want no white borders, for example with receipts of different lengths.</p>
+
+<h2>Privacy</h2>
+<p>Everything happens in your browser. The photos are read locally and the PDF is written by pdf-lib in this tab. Nothing is uploaded, which matters when the photos show ID cards or bank details.</p>
+
+<h2>Common problems</h2>
+<p><b>A photo appears sideways.</b> Rotate it before adding, or fix the page afterwards with <a href="/rotate-pdf">Rotate &amp; reorder</a>.</p>
+<p><b>The file cannot be selected.</b> It is probably HEIC, WebP or another format. Convert it to JPG first.</p>
+<p><b>The PDF is huge.</b> See the size section above: the fix is compression after conversion.</p>
+
+<h2>More questions</h2>
+<div class="qa"><b>Can I put two photos on one page?</b><p>Not in this tool. Create the PDF, then use the N-up tool to place 2 or 4 pages per sheet.</p></div><div class="qa"><b>Will the text in my photos be searchable?</b><p>No — a photo is a picture. Run the PDF through OCR to make the text searchable.</p></div><div class="qa"><b>Is there a limit on the number of images?</b><p>No fixed limit; it depends on your device's memory.</p></div><div class="qa"><b>Does it support PNG with transparency?</b><p>Yes. Transparent areas appear white on the page.</p></div><div class="qa"><b>Is there a watermark?</b><p>No watermark and no sign-up.</p></div>
+<div class="related"><h2>Related guides</h2><ul><li><a href="/guides/pdf-vs-image-for-online-forms">PDF vs image: which should you upload to an online form?</a></li><li><a href="/guides/why-scanned-pdfs-are-large">Why scanned PDFs are so large, and how to fix it</a></li></ul></div>
+</section>
+
   <nav class="more-tools" style="margin:28px 0 8px;font-size:.92rem;line-height:1.9"><h2>More PDF tools</h2><p><a href="add-page-numbers-server">Add Page Numbers on the Server</a> · <a href="add-page-numbers-to-pdf">Add Page Numbers to PDF</a> · <a href="add-watermark-to-pdf">Add Watermark to PDF</a> · <a href="compress-pdf">Compress PDF</a> · <a href="compress-pdf-high-quality">High-Quality PDF Compression</a> · <a href="crop-pdf">Crop PDF</a> · <a href="edit-pdf-metadata">Edit PDF Metadata</a> · <a href="merge-pdf">Merge PDF</a> · <a href="office-to-pdf">Word, Excel, PowerPoint to PDF</a> · <a href="password-protect-pdf">Password Protect a PDF</a> · <a href="pdf-multiple-pages-per-sheet">PDF 2 or 4 Pages Per Sheet</a> · <a href="pdf-n-up-server">N-up PDF on the Server</a> · <a href="pdf-ocr">PDF OCR</a> · <a href="pdf-to-image">PDF to Image</a> · <a href="pdf-to-text">PDF to Text</a> · <a href="redact-pdf">Redact PDF</a> · <a href="remove-pdf-metadata">Remove PDF Metadata</a> · <a href="remove-pdf-password">Remove a PDF Password</a> · <a href="repair-pdf">Repair a Broken PDF</a> · <a href="rotate-pdf">Rotate PDF</a> · <a href="sign-pdf">Sign a PDF</a> · <a href="split-pdf">Split PDF</a> · <a href="target-size">Compress PDF to Target Size (Exact MB/KB)</a> · <a href="watermark-pdf-server">Watermark a PDF on the Server</a></p></nav>
   <a class="back" href="./">← All 24 PDF tools</a>
 </main>
@@ -721,10 +769,12 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
     <div class="site-footer-inner">
         <div class="site-footer-bottom">
             <span>© 2017–2026 LeDeuxions. PDF300 v2026.05 · 14 browser + 10 server tools</span>
+            <span class="footer-links"><a href="/guides/">Guides</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></span>
             <span><a href="https://ledeuxions.com/web-projects/">← More tools</a></span>
         </div>
     </div>
 </footer>
+<script src="/assets/js/common.js"></script>
 <script src="/count.js" defer></script>
 </body>
 </html>
