@@ -9,9 +9,18 @@
 <meta name="description" content="가전 렌탈 총비용 계산기. 정수기·공기청정기·안마의자 렌탈 vs 구매, 제휴카드 할인의 진짜 값, 카드 할부 수수료와 사은품, 매장 견적 vs 인터넷 최저가+설치비를 비교해 「괜찮아요 / 애매해요 / 호구 주의」로 알려드립니다.">
 <meta name="keywords" content="렌탈 호구 계산기, 정수기 렌탈 vs 구매 계산, 가전 렌탈 총비용 계산기, 렌탈 구매 비교, 무이자 할부 계산기, 할부 수수료 계산, 가전 견적 비교">
 <meta property="og:title" content="가전 호구판별기 — 이 조건, 호구일까?">
-<meta property="og:description" content="가격이 아니라 계약 구조를 봅니다. 렌탈 vs 구매 · 할부·무이자 · 매장 견적 비교.">
+<meta property="og:description" content="렌탈할까 살까? 3초 판정. 가격이 아니라 계약 구조를 봅니다 — 렌탈 vs 구매 · 할부·무이자 · 매장 견적 비교.">
 <meta property="og:url" content="https://ledeuxions.com/tools/hogu/">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://ledeuxions.com/tools/hogu/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="LeDeuxions">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="가전 호구판별기 — 이 조건, 호구일까?">
+<meta name="twitter:description" content="렌탈할까 살까? 3초 판정. 렌탈 vs 구매 · 할부·무이자 · 매장 견적 비교.">
+<meta name="twitter:image" content="https://ledeuxions.com/tools/hogu/og.png">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="../../assets/css/claude-design.css">
 <style>
@@ -76,6 +85,24 @@
     .ask li { font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 4px; }
     .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
     .three .in-line .input { font-size: 1rem; padding-left: 8px; padding-right: 8px; }
+    .sharebox { margin: 0 0 var(--space-4); }
+    .rcard { background: linear-gradient(160deg, #FFFDF8 0%, #F5E6DE 100%); border: 2px solid var(--accent); border-radius: var(--radius-lg); padding: 20px 18px 16px; box-shadow: var(--shadow-sm); }
+    .rcard-top { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
+    .rcard-top b { font-size: 1rem; color: var(--accent-deep); word-break: keep-all; }
+    .rcard-top span { font-size: 0.8rem; color: var(--text-muted); }
+    .rcard-top span:empty { display: none; }
+    .rcard .badge { font-size: 1.5rem; }
+    .rcard-line { font-size: 0.98rem; font-weight: 600; line-height: 1.55; margin: 0 0 12px; color: var(--text-primary); word-break: keep-all; }
+    .rcard-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .rcard-nums div { background: rgba(255,255,255,.75); border-radius: var(--radius-md); padding: 9px 3px; text-align: center; }
+    .rcard-nums span { display: block; font-size: 0.74rem; color: var(--text-secondary); line-height: 1.3; }
+    .rcard-nums b { display: block; font-size: clamp(0.8rem, 3.5vw, 1rem); font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 3px; word-break: keep-all; overflow-wrap: anywhere; letter-spacing: -0.01em; }
+    .rcard-nums div.hl b { color: var(--accent-deep); }
+    .rcard-foot { margin: 12px 0 0; font-size: 0.78rem; color: var(--text-muted); text-align: right; }
+    .share-row { display: flex; flex-direction: column; align-items: stretch; gap: 6px; margin-top: 10px; }
+    .share-row .btn { width: 100%; }
+    .share-note { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0; text-align: center; }
+    .share-done { font-size: 0.85rem; color: var(--accent-deep); font-weight: 700; text-align: center; min-height: 1.2em; margin: 0; }
 </style>
 </head>
 <body>
@@ -201,6 +228,14 @@
     </div>
 
     <div class="result" id="r-out"></div>
+    <div class="sharebox" id="s-rent" hidden>
+        <div class="rcard" id="c-rent"></div>
+        <div class="share-row">
+            <button type="button" class="btn btn-primary" data-share="rent">결과 공유</button>
+            <p class="share-note">공유하면 입력값이 링크에 담깁니다 (서버로는 안 보내져요)</p>
+            <p class="share-done" aria-live="polite"></p>
+        </div>
+    </div>
 
     <div class="panel">
         <h2>렌탈 계약 전 알아둘 것</h2>
@@ -262,6 +297,14 @@
     </div>
 
     <div class="result" id="i-out"></div>
+    <div class="sharebox" id="s-inst" hidden>
+        <div class="rcard" id="c-inst"></div>
+        <div class="share-row">
+            <button type="button" class="btn btn-primary" data-share="inst">결과 공유</button>
+            <p class="share-note">공유하면 입력값이 링크에 담깁니다 (서버로는 안 보내져요)</p>
+            <p class="share-done" aria-live="polite"></p>
+        </div>
+    </div>
 
     <div class="panel">
         <h2>할부 계약 전 알아둘 것</h2>
@@ -320,6 +363,14 @@
     </div>
 
     <div class="result" id="q-out"></div>
+    <div class="sharebox" id="s-quote" hidden>
+        <div class="rcard" id="c-quote"></div>
+        <div class="share-row">
+            <button type="button" class="btn btn-primary" data-share="quote">결과 공유</button>
+            <p class="share-note">공유하면 입력값이 링크에 담깁니다 (서버로는 안 보내져요)</p>
+            <p class="share-done" aria-live="polite"></p>
+        </div>
+    </div>
 
     <div class="panel">
         <h2>견적 받을 때 알아둘 것</h2>
@@ -333,7 +384,7 @@
     </div>
 </section>
 
-<p class="disclaimer">참고용 계산입니다. 실제 금액·위약금·소유권·할부 조건은 반드시 계약서와 카드사 안내를 확인하세요.<br>법률·금융 자문이 아니며, 입력한 값은 이 페이지 안에서만 계산되고 어디에도 저장·전송되지 않습니다.</p>
+<p class="disclaimer">참고용 계산입니다. 실제 금액·위약금·소유권·할부 조건은 반드시 계약서와 카드사 안내를 확인하세요.<br>법률·금융 자문이 아니며, 입력한 값은 이 페이지 안에서만 계산되고 어디에도 저장·전송되지 않습니다. 「결과 공유」를 누를 때만 입력값이 링크 주소(# 뒤)에 담깁니다.</p>
 
 </main>
 
@@ -368,6 +419,22 @@
     }
     function empty(msg) { return '<span class="badge v-none">' + msg + '</span>'; }
     function badge(k) { return '<span class="badge ' + BADGE[k][0] + '" data-verdict="' + k + '">' + BADGE[k][1] + '</span>'; }
+    var MODE_NAME = { rent: '렌탈 vs 구매', inst: '할부·무이자', quote: '매장 견적 비교' };
+    var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    var last = {};
+    // 결과 카드 (스크린샷용 요약) — 판정 계산과 무관, 결과만 옮겨 적음
+    function card(mode, k, why, nums, model) {
+        var box = document.getElementById('s-' + mode);
+        if (!k) { box.hidden = true; last[mode] = null; return; }
+        var line = why.replace(/<[^>]+>/g, '');
+        last[mode] = { k: k, line: line };
+        document.getElementById('c-' + mode).innerHTML =
+            '<div class="rcard-top"><b>가전 호구판별기 · ' + MODE_NAME[mode] + '</b><span>' + (model ? esc(model.trim()).slice(0, 24) : '') + '</span></div>'
+            + badge(k) + '<p class="rcard-line">' + line + '</p>'
+            + '<div class="rcard-nums">' + nums.map(function (n, i) { return '<div' + (i === 2 ? ' class="hl"' : '') + '><span>' + n[0] + '</span><b>' + n[1] + '</b></div>'; }).join('') + '</div>'
+            + '<p class="rcard-foot">ledeuxions.com/tools/hogu</p>';
+        box.hidden = false;
+    }
     var pct = function (x) { return (x * 100).toFixed(1).replace(/\.0$/, '') + '%'; };
 
     /* ---------- 1. 렌탈 vs 구매 ---------- */
@@ -381,7 +448,7 @@
         var care = careOn ? num('r-care-price') * num('r-care-count') : 0;
         var cardMonth = num('r-card'), cardNeed = num('r-card-need'), cardReal = $('r-card-real').checked;
         var out = $('r-out');
-        if (!fee || !total || !buy) { out.innerHTML = empty('월 렌탈료 · 렌탈기간 · 인터넷 최저가를 넣으면 판정합니다'); return; }
+        if (!fee || !total || !buy) { out.innerHTML = empty('월 렌탈료 · 렌탈기간 · 인터넷 최저가를 넣으면 판정합니다'); card('rent'); return; }
 
         var rentTotal = fee * total;
         var cardTotal = cardMonth * total;
@@ -416,6 +483,7 @@
         h += '<div class="note">' + notes.join('<br><br>') + '</div>';
         h += '<p class="rule">판정 기준: 렌탈이 구매+관리보다 10% 이하로 비싸면 「괜찮아요」(관리·AS 편의값으로 볼 만함), 10~30%면 「애매해요」, 30% 넘으면 「호구 주의」.</p>';
         out.innerHTML = h;
+        card('rent', k, why, [['총 렌탈비' + (cardReal && cardTotal ? '(카드할인 뺌)' : ''), won(rentPay)], ['구매+직접관리', won(buyTotal)], ['차액', won(diff)]], $('r-model').value);
     }
 
     /* ---------- 2. 할부·무이자 ---------- */
@@ -425,7 +493,7 @@
         var rate = free ? 0 : num('i-rate') / 100;
         var gift = num('i-gift'), cond = num('i-cond'), net = num('i-net');
         var out = $('i-out');
-        if (!price || !net) { out.innerHTML = empty('매장 판매가와 인터넷 최저가를 넣으면 판정합니다'); return; }
+        if (!price || !net) { out.innerHTML = empty('매장 판매가와 인터넷 최저가를 넣으면 판정합니다'); card('inst'); return; }
 
         // 원금 균등 상환, 매달 남은 원금 × 연이율/12 → 합계 = P × r/12 × (n+1)/2
         var interest = n > 1 ? price * rate / 12 * (n + 1) / 2 : 0;
@@ -450,6 +518,7 @@
         if (free && price > net) h += '<div class="note"><b>무이자인데 가격이 ' + won(price - net) + ' 높습니다.</b> 이자가 판매가에 들어가 있을 수 있어요. 인터넷에서도 카드 무이자가 되는지 확인해 보세요.</div>';
         h += '<p class="rule">판정 기준: 매장 총지출이 인터넷보다 3% 이하로 비싸면 「괜찮아요」(매장 편의값), 3~10%면 「애매해요」, 10% 넘으면 「호구 주의」.</p>';
         out.innerHTML = h;
+        card('inst', k, why, [['매장 총지출', won(storeTotal)], ['인터넷 일시불', won(net)], ['차액', won(diff)]], $('i-model').value);
     }
 
     /* ---------- 3. 매장 견적 비교 ---------- */
@@ -458,7 +527,7 @@
         var netBase = num('q-net'), extra = num('q-install') + num('q-ship') + num('q-pickup');
         var net = netBase + extra;
         var out = $('q-out');
-        if (!num('q-store') || !netBase) { out.innerHTML = empty('매장가와 인터넷 최저가를 넣으면 판정합니다'); return; }
+        if (!num('q-store') || !netBase) { out.innerHTML = empty('매장가와 인터넷 최저가를 넣으면 판정합니다'); card('quote'); return; }
         var diff = store - net, ratio = diff / net;
         var k = diff <= 0 || ratio <= 0.03 ? 'ok' : ratio <= 0.10 ? 'mid' : 'bad';
         var why = diff <= 0
@@ -472,6 +541,7 @@
         if (diff > 0) h += '<div class="note">매장에 인터넷 총액 <b>' + won(net) + '</b>을 보여주고 맞춰 달라고 해 보세요. 차이가 ' + won(diff) + '입니다.</div>';
         h += '<p class="rule">판정 기준: 매장이 3% 이하로 비싸면 「괜찮아요」(당일 설치·AS 창구 값), 3~10%면 「애매해요」, 10% 넘으면 「호구 주의」.</p>';
         out.innerHTML = h;
+        card('quote', k, why, [['매장 총액', won(store)], ['인터넷 총액', won(net)], ['차액', won(diff)]], $('q-model').value);
     }
 
 
@@ -562,8 +632,82 @@
             try { history.replaceState(null, '', '#' + t.dataset.tab); } catch (e) {}
         });
     });
-    var start = (location.hash || '').slice(1);
+
+    /* ---------- 공유 링크: 입력값을 # 뒤에 짧은 키로 (서버로 안 감) ---------- */
+    var KEYS = {
+        rent: { k: '#preset', m: 'r-model', f: 'r-fee', o: 'r-obl', t: 'r-total', c: 'r-care-on', p: 'r-care-price', y: 'r-care-cycle', n: 'r-care-count', b: 'r-buy', d: 'r-card', e: 'r-card-need', x: 'r-card-real' },
+        inst: { m: 'i-model', p: 'i-price', n: 'i-months', z: 'i-free', r: 'i-rate', g: 'i-gift', c: 'i-cond', t: 'i-net' },
+        quote: { m: 'q-model', s: 'q-store', x: 'q-store-extra', t: 'q-net', i: 'q-install', h: 'q-ship', u: 'q-pickup' }
+    };
+    function encodeState(mode) {
+        var parts = [mode], map = KEYS[mode];
+        Object.keys(map).forEach(function (key) {
+            var id = map[key], v;
+            if (id === '#preset') { var on = document.querySelector('.chip[aria-pressed="true"]'); v = on ? on.dataset.preset : ''; }
+            else if ($(id).type === 'checkbox') v = $(id).checked ? '1' : '0';
+            else if (id === 'r-care-count' && !countManual && num('r-care-cycle') > 0) v = '';
+            else v = $(id).hasAttribute('data-won') ? String($(id).value).replace(/[^0-9]/g, '') : String($(id).value).trim();
+            if (v !== '' && !(v === '0' && $(id) && $(id).type === 'checkbox' && id !== 'r-care-on')) parts.push(key + '=' + encodeURIComponent(v));
+        });
+        return parts.join('&');
+    }
+    function setField(id, v) {
+        var el = $(id);
+        if (el.type === 'checkbox') { el.checked = v === '1'; return; }
+        if (el.hasAttribute('data-won')) {
+            var d = String(v).replace(/[^0-9]/g, '');
+            el.value = d ? Number(d).toLocaleString('ko-KR') : '';
+            var e = document.querySelector('[data-echo="' + id + '"]');
+            if (e) e.textContent = korean(Number(d));
+        } else el.value = v;
+    }
+    function restoreState(hash) {
+        var parts = hash.split('&'), mode = parts[0];
+        if (!calcs[mode] || parts.length < 2) return null;
+        var q = {};
+        parts.slice(1).forEach(function (kv) { var i = kv.indexOf('='); if (i > 0) { try { q[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1)); } catch (e) {} } });
+        var map = KEYS[mode];
+        if (mode === 'rent' && q.k && PRESETS[q.k]) applyPreset(q.k);
+        Object.keys(map).forEach(function (key) {
+            var id = map[key];
+            if (id === '#preset') return;
+            if ($(id).type === 'checkbox') setField(id, q[key] === '1' ? '1' : (key === 'c' && q[key] === undefined ? ($(id).checked ? '1' : '0') : '0'));
+            else setField(id, q[key] !== undefined ? q[key] : '');
+        });
+        if (mode === 'rent') countManual = q.n !== undefined && (num('r-care-cycle') > 0 ? true : countManual);
+        return mode;
+    }
+    function shareUrl(mode) { return location.origin + location.pathname + '#' + encodeState(mode); }
+    function copyText(t) {
+        if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+        return new Promise(function (res, rej) {
+            var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy') ? res() : rej(); } catch (e) { rej(e); } finally { ta.remove(); }
+        });
+    }
+    document.querySelectorAll('[data-share]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var mode = b.dataset.share, url = shareUrl(mode), L = last[mode];
+            var done = b.parentNode.querySelector('.share-done');
+            try { history.replaceState(null, '', '#' + encodeState(mode)); } catch (e) {}
+            var text = '가전 호구판별기 (' + MODE_NAME[mode] + ') 판정: ' + (L ? BADGE[L.k][1] + ' — ' + L.line : '');
+            var copy = function () {
+                copyText(url).then(function () { done.textContent = '링크를 복사했어요. 붙여넣어 보내세요.'; },
+                    function () { done.textContent = ''; window.prompt('이 링크를 복사하세요', url); });
+            };
+            if (navigator.share) {
+                navigator.share({ title: '가전 호구판별기', text: text, url: url })
+                    .then(function () { done.textContent = '공유했어요.'; })
+                    .catch(function (e) { if (!e || e.name !== 'AbortError') copy(); });
+            } else copy();
+        });
+    });
+
+    var start = (location.hash || '').slice(1), restored = null;
+    if (start.indexOf('&') > 0) { try { restored = restoreState(start); } catch (e) { restored = null; } start = start.split('&')[0]; }
     if (calcs[start]) document.querySelector('.tab[data-tab="' + start + '"]').click();
+    if (restored) { try { history.replaceState(null, '', location.hash ? '#' + (location.hash.slice(1).indexOf('&') > 0 ? location.hash.slice(1) : encodeState(restored)) : ''); } catch (e) {} }
 
     // 최저가 검색
     document.querySelectorAll('[data-search]').forEach(function (b) {
@@ -578,6 +722,10 @@
     });
 
     calcAll();
+    if (restored) {
+        var tgt = document.getElementById(restored.charAt(0) + '-out');
+        setTimeout(function () { window.scrollTo({ top: tgt.getBoundingClientRect().top + window.scrollY - 140, behavior: 'smooth' }); }, 80);
+    }
 })();
 </script>
 </body>
