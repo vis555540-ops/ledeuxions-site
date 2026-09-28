@@ -59,6 +59,23 @@
     .tips li { font-size: 0.92rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 8px; }
     .tips b { color: var(--text-primary); }
     .disclaimer { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; text-align: center; margin: var(--space-5) 0; }
+    .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+    .chip { border: 1.5px solid var(--border-strong); background: var(--bg-canvas-soft); color: var(--text-primary); border-radius: var(--radius-md); padding: 12px 6px; font: inherit; font-size: 0.93rem; font-weight: 600; line-height: 1.3; cursor: pointer; min-height: 52px; word-break: keep-all; }
+    .chip small { display: block; font-size: 0.74rem; font-weight: 500; color: var(--text-muted); }
+    .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--bg-card); color: var(--accent-deep); box-shadow: 0 0 0 2px var(--accent) inset; }
+    .pinfo { margin-top: var(--space-4); display: none; }
+    .pinfo.on { display: block; }
+    .pinfo dl { margin: 0; display: grid; grid-template-columns: 5.5em 1fr; gap: 6px 10px; font-size: 0.9rem; line-height: 1.55; }
+    .pinfo dt { color: var(--text-muted); }
+    .pinfo dd { margin: 0; color: var(--text-primary); }
+    .keep { margin: 12px 0 0; font-size: 0.9rem; font-weight: 700; color: var(--accent-deep); }
+    .basis { font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin: 8px 0 0; }
+    .ask { margin-top: var(--space-3); border: 1.5px dashed var(--border-strong); border-radius: var(--radius-md); padding: 12px 14px; }
+    .ask > b { display: block; font-size: 0.95rem; margin-bottom: 6px; }
+    .ask ul { margin: 0; padding-left: 1.1em; }
+    .ask li { font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 4px; }
+    .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .three .in-line .input { font-size: 1rem; padding-left: 8px; padding-right: 8px; }
 </style>
 </head>
 <body>
@@ -97,6 +114,21 @@
 <!-- ========== 1. 렌탈 vs 구매 ========== -->
 <section class="mode on" id="m-rent">
     <div class="panel">
+        <h2>어떤 제품이에요? <span class="hint" style="font-weight:400">(누르면 관리비를 대신 채워 드려요)</span></h2>
+        <div class="chips" id="presets">
+            <button type="button" class="chip" data-preset="wdirect" aria-pressed="false">정수기<small>직수형</small></button>
+            <button type="button" class="chip" data-preset="wtank" aria-pressed="false">정수기<small>저수조형</small></button>
+            <button type="button" class="chip" data-preset="air" aria-pressed="false">공기청정기</button>
+            <button type="button" class="chip" data-preset="bidet" aria-pressed="false">비데</button>
+            <button type="button" class="chip" data-preset="massage" aria-pressed="false">안마의자</button>
+            <button type="button" class="chip" data-preset="food" aria-pressed="false">음식물<br>처리기</button>
+            <button type="button" class="chip" data-preset="soft" aria-pressed="false">연수기<small>샤워필터</small></button>
+            <button type="button" class="chip" data-preset="dehum" aria-pressed="false">제습기<small>보통 구매</small></button>
+        </div>
+        <div class="pinfo" id="pinfo"></div>
+    </div>
+
+    <div class="panel">
         <h2>렌탈 조건</h2>
         <div class="row">
             <label for="r-model">모델명 (검색용, 선택)</label>
@@ -121,17 +153,21 @@
         <div class="row">
             <label class="check"><input type="checkbox" id="r-care-on" checked> 렌탈에 관리(필터 교체·방문 점검 등)가 포함돼 있어요</label>
             <div class="sub" id="r-care-box">
-                <div class="two">
+                <div class="three">
                     <div class="row">
-                        <label for="r-care-price">직접 하면 1회 비용</label>
-                        <div class="in-line"><input class="input" id="r-care-price" data-won inputmode="numeric" placeholder="30,000"><span class="unit">원</span></div>
+                        <label for="r-care-price">1회 비용</label>
+                        <div class="in-line"><input class="input" id="r-care-price" data-won inputmode="numeric" placeholder="50,000"><span class="unit">원</span></div>
                     </div>
                     <div class="row">
-                        <label for="r-care-count">기간 중 횟수</label>
-                        <div class="in-line"><input class="input" id="r-care-count" data-won inputmode="numeric" placeholder="15"><span class="unit">회</span></div>
+                        <label for="r-care-cycle">교체 주기</label>
+                        <div class="in-line"><input class="input" id="r-care-cycle" data-won inputmode="numeric" placeholder="5"><span class="unit">개월</span></div>
+                    </div>
+                    <div class="row">
+                        <label for="r-care-count">횟수</label>
+                        <div class="in-line"><input class="input" id="r-care-count" data-won inputmode="numeric" placeholder="12"><span class="unit">회</span></div>
                     </div>
                 </div>
-                <p class="hint">예: 4개월마다 필터 교체, 5년이면 15회. 필터 세트값은 같은 모델 호환 필터 가격을 검색해 넣으세요.</p>
+                <p class="hint">「직접 하면」 드는 돈입니다. 주기를 넣으면 횟수는 렌탈기간으로 자동 계산돼요. 잘 모르면 위에서 제품을 고르세요.</p>
             </div>
         </div>
     </div>
@@ -338,6 +374,8 @@
     function calcRent() {
         var fee = num('r-fee'), obl = num('r-obl'), total = num('r-total'), buy = num('r-buy');
         if (!total && obl) total = obl;
+        var cyc = num('r-care-cycle');
+        if (cyc > 0 && total > 0 && !countManual) $('r-care-count').value = Math.floor(total / cyc);
         var careOn = $('r-care-on').checked;
         $('r-care-box').style.display = careOn ? '' : 'none';
         var care = careOn ? num('r-care-price') * num('r-care-count') : 0;
@@ -435,6 +473,71 @@
         h += '<p class="rule">판정 기준: 매장이 3% 이하로 비싸면 「괜찮아요」(당일 설치·AS 창구 값), 3~10%면 「애매해요」, 10% 넘으면 「호구 주의」.</p>';
         out.innerHTML = h;
     }
+
+
+    /* ---------- 제품 프리셋 (값은 범위, 기본은 가운데) ---------- */
+    var countManual = false;
+    var ASK_COMMON = [
+        '<b>위약금</b> — 의무기간 전에 해지하면 얼마인가요? (남은 렌탈료의 몇 %, 등록비·설치비·사은품 반환이 따로 붙나요?)',
+        '<b>소유권 이전</b> — 몇 개월째에 제 것이 되나요? 의무기간 끝인가요, 총 렌탈기간 끝인가요?',
+        '<b>방문 주기</b> — 몇 개월마다 오나요? 자가관리형이면 필터 배송 주기는요?',
+        '<b>해지 시 철거비</b> — 중간에 해지하면 철거·수거비가 따로 있나요?',
+        '<b>이사 시 이전설치비</b> — 이사하면 이전설치비가 얼마인가요? 몇 번까지 무료인가요?'
+    ];
+    var PRESETS = {
+        wdirect: { name: '정수기 (직수형)', what: '필터 세트 (카본·멤브레인 등 2~4개)', cyc: [4, 6, 5], price: [30000, 70000, 50000], self: '대부분 가능 — 필터를 돌려 빼고 끼우는 방식. 제조사 자가관리 세트나 호환 필터를 택배로 받음', obl: 36, total: 60, care: true,
+            basis: '필터 세트 보통 3~7만원(호환품은 더 쌈, 제조사 정품 세트는 10만원 넘기도), 4~6개월 주기. 2026년 인터넷 판매가 기준 대략.',
+            more: '<b>자가관리형 vs 방문관리형</b> — 같은 모델도 방문관리가 월 2천원 안팎 더 비싼 경우가 많아요. 어느 쪽 가격인가요?' },
+        wtank: { name: '정수기 (저수조형)', what: '필터 세트 + 물탱크(저수조) 살균', cyc: [4, 6, 5], price: [40000, 80000, 60000], self: '필터는 가능. 물탱크 청소·살균은 번거로워서 방문관리 값어치가 직수형보다 큼', obl: 36, total: 60, care: true,
+            basis: '필터 세트 3~7만원 + 살균 소모품 정도로 4~8만원, 4~6개월 주기로 잡았습니다. 2026년 인터넷 판매가 기준 대략.',
+            more: '<b>탱크 살균</b> — 방문 때 물탱크 살균·세척까지 해 주나요, 필터만 바꾸나요?' },
+        air: { name: '공기청정기', what: '헤파·탈취 복합 필터', cyc: [6, 12, 9], price: [30000, 90000, 60000], self: '쉬움 — 뒷판 열고 필터만 갈면 됨. 호환 필터는 정품의 절반 안팎', obl: 36, total: 60, care: true,
+            basis: '필터 1회분 호환 3만원대~정품 9만원대(평형이 클수록 비쌈), 6~12개월 주기. 2026년 인터넷 판매가 기준 대략.',
+            more: '<b>필터 몇 개</b> — 한 번 교체할 때 필터가 몇 장 들어가나요? (양면형은 2장)' },
+        bidet: { name: '비데', what: '정수 필터 (+ 노즐 청소)', cyc: [4, 6, 5], price: [5000, 20000, 12000], self: '아주 쉬움 — 급수 밸브 잠그고 필터 돌려 교체. 노즐은 자동세척·직접 청소', obl: 36, total: 60, care: true,
+            basis: '비데 필터 호환 몇 천원~정품 2만원 안팎, 4~6개월 주기. 2026년 인터넷 판매가 기준 대략. 관리비가 작아서 렌탈이 불리해지기 쉬운 품목이에요.',
+            more: '<b>노즐 교체</b> — 방문 때 노즐까지 새것으로 바꿔 주나요, 청소만 하나요?' },
+        massage: { name: '안마의자', what: '정기 점검 정도 (갈아 끼울 필터 없음)', cyc: [0, 0, 0], price: [0, 0, 0], self: '교체할 소모품이 거의 없어요. 렌탈의 「관리」는 점검·무상 AS 쪽', obl: 48, total: 48, care: false,
+            basis: '갈 필터가 없어서 관리비는 0으로 뒀습니다. 렌탈 기간은 보통 36~60개월(가운데 48). 구매 시 무상 AS 기간(보통 1~2년)이 렌탈 AS와의 차이예요.',
+            more: '<b>무상 AS 범위</b> — 가죽·커버 찢어짐, 모터 고장이 렌탈 기간 내내 무상인가요? 대형이라 철거·이전비가 특히 큽니다.' },
+        food: { name: '음식물처리기', what: '탈취 필터 (건조분쇄형) · 미생물제 (미생물형)', cyc: [2, 6, 4], price: [10000, 30000, 20000], self: '가능 — 필터 카트리지만 교체. 여름엔 냄새 때문에 주기가 짧아짐', obl: 36, total: 60, care: true,
+            basis: '건조분쇄형 탈취 필터 1~3만원, 2~6개월 주기(여름 짧게). 2026년 인터넷 판매가 기준 대략. 미생물형은 필터 대신 미생물제 보충비가 들어요.',
+            more: '<b>방식</b> — 건조분쇄형인가요 미생물형인가요? 소모품이 무엇이고 한 번에 얼마인가요?' },
+        soft: { name: '연수기·샤워필터', what: '연수 카트리지 / 샤워 필터', cyc: [2, 6, 4], price: [10000, 50000, 30000], self: '가능 — 샤워 필터는 돌려 끼우기. 연수 카트리지도 대부분 직접 교체', obl: 36, total: 60, care: true,
+            basis: '샤워 필터는 몇 천원~1만원대에 2~3개월, 연수기 카트리지는 2~5만원에 6개월 안팎. 섞어서 1~5만원·2~6개월로 잡았습니다. 2026년 인터넷 판매가 기준 대략.',
+            more: '<b>카트리지 종류</b> — 교체하는 게 샤워 필터인가요, 연수 카트리지(수지)인가요? 각각 주기는요?' },
+        dehum: { name: '제습기', what: '먼지(프리) 필터 — 물세척해서 다시 씀', cyc: [0, 0, 0], price: [0, 0, 0], self: '직접 함 — 물통 비우고 필터 물세척. 갈 소모품이 거의 없어 보통 구매가 낫습니다', obl: 36, total: 60, care: false,
+            basis: '교체 필터가 거의 없어 관리비 0으로 뒀습니다. 여름 몇 달만 쓰는 제품이라, 1년 내내 렌탈료를 내면 불리해지기 쉬워요.',
+            more: '<b>계절 사용</b> — 안 쓰는 계절에도 렌탈료를 내야 하나요? 일시정지가 되나요?' }
+    };
+    var manW = function (n) { return n >= 10000 ? (n / 10000).toLocaleString('ko-KR') + '만원' : n.toLocaleString('ko-KR') + '원'; };
+    function setVal(id, v) { $(id).value = v ? Number(v).toLocaleString('ko-KR') : ''; }
+    function applyPreset(key) {
+        var P = PRESETS[key];
+        document.querySelectorAll('.chip').forEach(function (c) { c.setAttribute('aria-pressed', c.dataset.preset === key ? 'true' : 'false'); });
+        setVal('r-obl', P.obl); setVal('r-total', P.total);
+        $('r-care-on').checked = P.care;
+        setVal('r-care-price', P.price[2]); setVal('r-care-cycle', P.cyc[2]);
+        countManual = false;
+        if (!P.cyc[2]) $('r-care-count').value = '';
+        var h = '<dl>'
+            + '<dt>관리 항목</dt><dd>' + P.what + '</dd>'
+            + (P.cyc[2] ? '<dt>교체 주기</dt><dd>' + P.cyc[0] + '~' + P.cyc[1] + '개월 → <b>' + P.cyc[2] + '개월</b>로 넣음</dd>'
+                + '<dt>1회 가격</dt><dd>' + manW(P.price[0]) + '~' + manW(P.price[1]) + ' → <b>' + manW(P.price[2]) + '</b>으로 넣음</dd>' : '')
+            + '<dt>셀프 교체</dt><dd>' + P.self + '</dd>'
+            + '<dt>흔한 기간</dt><dd>의무 ' + P.obl + '개월 · 총 ' + P.total + '개월</dd>'
+            + '</dl>'
+            + '<p class="keep">모르면 이 값 그대로 두세요. 월 렌탈료와 인터넷 최저가만 넣으면 됩니다.</p>'
+            + '<p class="basis">이 값 근거: ' + P.basis + ' 정확한 값이 아니라 흔한 범위의 가운데입니다. 계약서·견적서에 적힌 숫자가 있으면 그걸로 바꾸세요.</p>'
+            + '<div class="ask"><b>계약 전 꼭 물어볼 것</b><ul><li>' + ASK_COMMON.concat(P.more).join('</li><li>') + '</li></ul></div>';
+        var box = $('pinfo'); box.innerHTML = h; box.classList.add('on');
+        calcAll();
+    }
+    document.querySelectorAll('.chip').forEach(function (c) {
+        c.addEventListener('click', function () { applyPreset(c.dataset.preset); });
+    });
+    $('r-care-count').addEventListener('input', function () { countManual = true; });
+    ['r-care-cycle', 'r-total', 'r-obl'].forEach(function (id) { $(id).addEventListener('input', function () { countManual = false; }); });
 
     var calcs = { rent: calcRent, inst: calcInst, quote: calcQuote };
     function calcAll() { calcRent(); calcInst(); calcQuote(); }
