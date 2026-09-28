@@ -264,5 +264,62 @@ const 그림 = {
     const 크기 = 그림.자람크기(개), f = Math.floor(t*6)%4, w = Math.round(32*크기), c = 그림.c;
     c.save(); c.imageSmoothingEnabled = false;
     c.drawImage(쓸, f*32, 0, 32, 32, Math.round(x)-Math.round(w/2), Math.round(y)-w, w, w); c.restore(); return true; },
+  // ★ 2026-09-28 형 「쓰다듬는 부위는 털이 움직이게」 — 개 그림 한 칸의 픽셀을 읽어 손끝 둘레만 살짝 비틀어 다시 찍는다.
+  //   시트 선택은 시트그리기와 똑같이(_새 → _아기 → 기본, 털색 치환). 시트가 없으면(임시치비) null → 털 부스러기만 날린다
+  _픽셀: new WeakMap(), _틀: new Map(),
+  픽셀자료(im) { let d = 그림._픽셀.get(im); if (d !== undefined) return d;
+    try { const cv=document.createElement("canvas"); cv.width=im.width; cv.height=im.height; const cx=cv.getContext("2d"); cx.drawImage(im,0,0); d=cx.getImageData(0,0,im.width,im.height); }
+    catch(e) { d = null; }
+    그림._픽셀.set(im, d); return d; },
+  개틀(개, 동작, t, x, y, 왼쪽) {
+    const 키="개_"+개.견종; let 크기=그림.자람크기(개), 쓸키=키;
+    if (그림.시트[키+"_새"]) 쓸키=키+"_새"; else if (크기<1 && 그림.시트[키+"_아기"]) { 쓸키=키+"_아기"; 크기=1; }
+    const 원본=그림.시트[쓸키]; if (!원본) return null; const im = 개.털색 ? (그림.색치환(쓸키, 개.털색)||원본) : 원본;
+    const 규격=그림.시트규격.개, 줄이름=그림.동작대응[동작]||동작; if (!규격.줄[줄이름]) return null;
+    const d=그림.픽셀자료(im); if (!d) return null;
+    const [줄,수]=규격.줄[줄이름], f=Math.floor(t*6)%수, w=Math.round(32*크기);
+    const 틀 = { d, 폭:im.width, ox:f*32, oy:줄*32, k:w/32, w, x:Math.round(x), y:Math.round(y), 왼쪽:!!왼쪽, 머리오른쪽: 쓸키.endsWith("_새") };
+    // 이 칸의 몸 테두리 상자와 눈(머리 안쪽의 까만 점) — 칸마다 한 번만 센다
+    const 캐시키 = 쓸키+"#"+줄+"#"+f; let 정보 = 그림._틀.get(캐시키);
+    if (!정보) { const d=그림.픽셀자료(원본)||틀.d; let x0=32,x1=-1,y0=32,y1=-1; const a=(sx,sy)=>(sx<0||sy<0||sx>31||sy>31)?0:d.data[((틀.oy+sy)*틀.폭+틀.ox+sx)*4+3];
+      for (let sy=0;sy<32;sy++) for (let sx=0;sx<32;sx++) if (a(sx,sy)>100) { x0=Math.min(x0,sx); x1=Math.max(x1,sx); y0=Math.min(y0,sy); y1=Math.max(y1,sy); }
+      // 눈 = 머리 쪽 윗몸의 까만 점 덩어리 중 투명한 곳에 안 닿는 것(코·입은 테두리와 이어져 빠진다)
+      const 윗선 = y0 + (y1-y0)*0.45, 가운데=(x0+x1)/2, 본=new Set(), 눈=[];
+      const 까만=(sx,sy)=>{ if (a(sx,sy)<=100) return false; const i=((틀.oy+sy)*틀.폭+틀.ox+sx)*4, p=d.data; return (p[i]+p[i+1]+p[i+2])/3 < 60; };
+      for (let sy=y0;sy<윗선;sy++) for (let sx=x0;sx<=x1;sx++) { if (본.has(sx*32+sy) || !까만(sx,sy)) continue;
+        const 덩=[], 줄=[[sx,sy]]; 본.add(sx*32+sy); let 닿음=false;
+        while (줄.length) { const [qx,qy]=줄.pop(); 덩.push([qx,qy]);
+          for (const [ex,ey] of [[1,0],[-1,0],[0,1],[0,-1]]) { const nx=qx+ex, ny=qy+ey;
+            if (a(nx,ny)<=100) { 닿음=true; continue; }
+            if (까만(nx,ny) && !본.has(nx*32+ny)) { 본.add(nx*32+ny); 줄.push([nx,ny]); } } }
+        if (!닿음 && 덩.length<=4 && (sx-가운데)*(틀.머리오른쪽?1:-1) > -2) 눈.push({덩, 위:sy}); }
+      // 제일 위 줄 점(두 개까지)만 눈 — 아래 점은 코·입. 점이 너무 많으면(까만 개) 눈 감기를 안 한다
+      const 맨위 = Math.min(...눈.map(e=>e.위)), 고른 = 눈.length>10 ? [] : 눈.filter(e=>e.위<=맨위+1).slice(0,2);
+      정보 = { x0,x1,y0,y1, 눈: 고른.flatMap(e=>e.덩) };
+      그림._틀.set(캐시키, 정보); }
+    return Object.assign(틀, 정보); },
+  // 화면 좌표 ↔ 칸 좌표
+  틀칸(틀, px, py) { const lx=(px-틀.x)*(틀.왼쪽?-1:1); return [Math.floor((lx+틀.w/2)/틀.k), Math.floor((py-틀.y+틀.w)/틀.k)]; },
+  틀화면(틀, sx, sy) { const lx=-틀.w/2+sx*틀.k; return [틀.왼쪽 ? 틀.x-lx-틀.k : 틀.x+lx, 틀.y-틀.w+sy*틀.k]; },
+  틀색(틀, sx, sy) { if (sx<0||sy<0||sx>31||sy>31) return null; const i=((틀.oy+sy)*틀.폭+틀.ox+sx)*4, p=틀.d.data; return p[i+3]>100 ? [p[i],p[i+1],p[i+2]] : null; },
+  // 손끝 둘레 털 비틀기. 방향(ux,uy)=문지른 쪽(화면), 세기 0~1, 물결 위상
+  털비틀기(틀, px, py, ux, uy, 세기, 위상) {
+    if (세기 < 0.05) return; const c=그림.c, [cx,cy]=그림.틀칸(틀,px,py), R=5, 뒤집=틀.왼쪽?-1:1;
+    const 밀기 = 2.2*세기;
+    for (let sy=cy-R; sy<=cy+R; sy++) for (let sx=cx-R; sx<=cx+R; sx++) {
+      const 거=Math.hypot(sx-cx, sy-cy); if (거>R) continue; const 원래=그림.틀색(틀,sx,sy); if (!원래) continue;   // 몸 밖은 안 그림
+      const 약=1-거/R, 물결=Math.sin(위상+(sx+sy)*0.9);
+      const dx=(ux*뒤집*밀기 - uy*뒤집*0.7*밀기*물결)*약, dy=(uy*밀기 + ux*0.7*밀기*물결)*약;  // 칸 좌표 기준(좌우 뒤집힘 반영)
+      const 가져=그림.틀색(틀, Math.round(sx-dx), Math.round(sy-dy)) || 원래;
+      const 결 = Math.min(1, Math.hypot(dx,dy)/1.6) * (물결>0.3 ? 0.22 : 0.08);         // 털 결이 빛을 받는다
+      const 칠 = 가져.map(v=>Math.round(v+(255-v)*결));
+      if (칠[0]===원래[0] && 칠[1]===원래[1] && 칠[2]===원래[2]) continue;
+      const [qx,qy]=그림.틀화면(틀,sx,sy); c.fillStyle=`rgb(${칠[0]},${칠[1]},${칠[2]})`; c.fillRect(qx,qy,틀.k,틀.k); } },
+  // 눈 감기 — 눈 점을 옆 털색으로 덮고 아래에 ‿ 한 줄
+  눈감기(틀) { if (!틀.눈.length) return; const c=그림.c;
+    for (const [sx,sy] of 틀.눈) { const 옆 = 그림.틀색(틀,sx,sy-1)||그림.틀색(틀,sx+1,sy)||[200,160,100];
+      let [qx,qy]=그림.틀화면(틀,sx,sy); c.fillStyle=`rgb(${옆[0]},${옆[1]},${옆[2]})`; c.fillRect(qx,qy,틀.k,틀.k); }
+    const 아래 = Math.max(...틀.눈.map(e=>e[1])); c.fillStyle="#2a1a10";
+    for (const [sx,sy] of 틀.눈) { const [qx,qy]=그림.틀화면(틀,sx,아래); c.fillRect(qx-틀.k*0.5, qy, 틀.k*2, 틀.k); } },
   hex(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; },
 };

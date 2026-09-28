@@ -42,5 +42,5 @@ const 소리 = {
   배경음_끔() { if (소리.배경) { 소리.배경.pause(); 소리.배경=null; } 소리.배경이름=""; },
   배경음_멈춤() { if (소리.배경) 소리.배경.pause(); },
   배경음_재개() { if (소리.배경 && 저장.자료.설정.배경음) 소리.배경.play().catch(()=>{}); },
-  진동(ms) { if (저장.자료 && 저장.자료.설정.진동 && navigator.vibrate) navigator.vibrate(ms); },
+  진동(ms) { try { if (저장.자료 && 저장.자료.설정.진동 && typeof navigator.vibrate === "function") navigator.vibrate(ms); } catch(e) {} },
 };

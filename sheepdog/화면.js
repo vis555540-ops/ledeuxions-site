@@ -272,6 +272,30 @@ S3: { 개들:[], 공:null, 밥그릇:null, 쓰담:null, 탭들:[], 버튼:[], �
       p.할일 = [{가기:{x:40+Math.random()*90, y:170+Math.random()*50}}, {동작:"하품", 초:1.2}, {동작:"앉기", 초:2}];
       this.개들.push(p); });
     저장.하기(); },
+  // ★ 2026-09-28 쓰다듬는 곳 털·몸짓. p.털 = 손끝(개 기준 상대 좌표)·방향·세기·털 부스러기
+  쓰담받기(p, x, y) { const s=this.쓰담; const 털 = p.털 || (p.털 = {세기:0, 위상:0, 조각:[], 색:null});
+    털.dx=x-p.x; 털.dy=y-p.y; 털.ux=s.ux||1; 털.uy=s.uy||0; 털.목표 = Math.min(1, (s.속도||0)/160);
+    p.쓰담t=0.45; p.동작="앉기"; p.목표=null; p.쉼=Math.max(p.쉼||0, 1.5);
+    if (털.조각.length<14 && Math.random() < Math.min(0.5, (s.속도||0)/600))
+      털.조각.push({x:털.dx+(Math.random()-0.5)*4, y:털.dy+(Math.random()-0.5)*4, vx:털.ux*25+(Math.random()-0.5)*30, vy:-15-Math.random()*25, t:0, 수명:0.5+Math.random()*0.3}); },
+  단부위(p, x, y) {                                                          // 머리·턱·등 = 윗몸 60%
+    const 틀 = 그림.개틀(p.개, p.동작, p.t, p.x, p.y, p.왼쪽); if (!틀) return y < p.y-14;
+    return 그림.틀칸(틀, x, y)[1] < 틀.y0 + (틀.y1-틀.y0)*0.6; },
+  털그리기(p, gx, gy, ft) { const 털=p.털; if (!털) return;
+    const 틀 = 그림.개틀(p.개, p.동작, ft, gx, gy, p.왼쪽), c=그림.c;
+    const px=gx+털.dx, py=gy+털.dy;
+    if (틀) { const [sx,sy]=그림.틀칸(틀,px,py); 털.색 = 그림.틀색(틀,sx,sy) || 털.색;
+      그림.털비틀기(틀, px, py, 털.ux, 털.uy, 털.세기, 털.위상);
+      if (p.쓰담t>0 || 털.세기>0.15) 그림.눈감기(틀);
+      // 손끝 둘레 털 가닥 셋 — 문지른 쪽으로 누웠다가 흔들리며 돌아온다
+      if (털.색 && 털.세기>0.08) { const 밝=털.색.map(v=>Math.round(v+(255-v)*0.3)); c.fillStyle=`rgb(${밝[0]},${밝[1]},${밝[2]})`;
+        [[-3,-1],[2,-3],[1,3]].forEach(([ox,oy],i)=>{ const bx=Math.round(px+ox), by=Math.round(py+oy); const [qx,qy]=그림.틀칸(틀,bx,by); if (!그림.틀색(틀,qx,qy)) return;
+          const 흔=Math.sin(털.위상*1.3+i*2); const L=1+털.세기*2;
+          for (let j=1;j<=L;j++) c.fillRect(Math.round(bx+(털.ux+(-털.uy)*흔*0.6)*j), Math.round(by+(털.uy+털.ux*흔*0.6)*j*0.8), 1, 1); }); } }
+    const 부색 = 털.색 || 그림.hex(그림.임시개색[p.개.견종]||"#888888");
+    c.fillStyle=`rgb(${부색[0]},${부색[1]},${부색[2]})`;
+    for (const k of 털.조각) { c.globalAlpha=Math.max(0,1-k.t/k.수명); c.fillRect(Math.round(gx+k.x), Math.round(gy+k.y), 1, 1); }
+    c.globalAlpha=1; },
   집보내기(p) { this.놀이메뉴 = null; this.쓰담 = null; this.누름개 = null; 소리.재생("누름");
     p.집으로 = true; p.목표 = null; p.할일 = []; p.쉼 = 0; p.기다림 = false; p.하트 = 0.8;
     const 처음 = 저장.자료.처음 || (저장.자료.처음 = {}); if (!처음.집들임) { 처음.집들임 = true; 저장.하기(); } },
@@ -336,6 +360,11 @@ S3: { 개들:[], 공:null, 밥그릇:null, 쓰담:null, 탭들:[], 버튼:[], �
     if (this.던지기모드>0 && !this.충전) { this.던지기모드-=dt; if (this.던지기모드<0) this.던지기모드=0; }
     if (this.부른곳) { this.부른곳.t += dt; if (this.부른곳.t > 1.1) this.부른곳 = null; }
     // ★ 2026-09-25 형 「터그 놀이는 강아지 꾹 누르면 거기 있어야겠다」 — 가만히 0.6초 꾹 → 말풍선 놀이 메뉴. 문지르면(12 넘게 움직이면) 누름개가 풀려 그냥 쓰다듬기
+    // ★ 2026-09-28 쓰다듬는 동안 톡톡 — 빨리 문지를수록 자주(초당 12번까지), 머리·턱·등은 조금 세게
+    if (this.쓰담 && this.쓰담.개 && this.쓰담.때 && performance.now()-this.쓰담.때 < 120 && (this.쓰담.속도||0) > 25) {
+      this.쓰담.진동t = (this.쓰담.진동t||0) - dt;
+      if (this.쓰담.진동t <= 0) { 소리.진동(this.단부위(this.쓰담.개, this.쓰담.x, this.쓰담.y) ? 14 : 8);
+        this.쓰담.진동t = Math.min(0.25, Math.max(1/12, 18/this.쓰담.속도)); } }
     if (this.누름개) { this.누름개.t += dt;
       if (this.누름개.t > 0.6 && this.쓰담 && this.쓰담.총거리 < 12) { const p = this.누름개.p; this.누름개 = null;
         this.놀이메뉴 = { p, 시작:{x:this.쓰담.x, y:this.쓰담.y}, 버튼:null }; 소리.재생("누름"); 소리.진동(15); this.안내t = 0;
@@ -359,6 +388,11 @@ S3: { 개들:[], 공:null, 밥그릇:null, 쓰담:null, 탭들:[], 버튼:[], �
     this.잠갱신();
     for (const p of this.잠든) p.t += dt;
     for (const p of this.개들) { p.t+=dt; if (p.하트>0) p.하트-=dt; if (p.간식t>0) p.간식t-=dt;
+      if (p.쓰담t>0) p.쓰담t-=dt;                                              // ★ 2026-09-28 쓰다듬는 털·기댐이 천천히 돌아온다
+      if (p.털) { const 털=p.털, 목표=p.쓰담t>0.3 ? 털.목표 : 0; 털.세기 += (목표-털.세기)*Math.min(1, dt*(목표>털.세기?14:4)); 털.위상 += dt*(8+18*털.세기);
+        for (const k of 털.조각) { k.t+=dt; k.x+=k.vx*dt; k.y+=k.vy*dt; k.vy+=70*dt; } 털.조각 = 털.조각.filter(k=>k.t<k.수명);
+        if (털.세기<0.02 && !털.조각.length && p.쓰담t<=0) p.털=null; }
+      p.기댐 = (p.기댐||0) + (((p.쓰담t>0 && p.털) ? Math.sign(p.털.dx)*1.5 : 0) - (p.기댐||0))*Math.min(1, dt*8);
       if (p.못줍t>0) p.못줍t-=dt;                                            // ★ 공을 놓친 개의 재시도 대기
       if (p.놀란t>0) { p.놀란t-=dt; if (p.놀란t<=0) { p.놀란t=0; p.말=null; } }   // ★ 공이 없어져도 놀람이 풀리게
       if (p.개.아픔 && !p.밥먹으러 && !p.공역할) { p.목표=null; p.동작="앉기"; continue; }
@@ -544,9 +578,11 @@ S3: { 개들:[], 공:null, 밥그릇:null, 쓰담:null, 탭들:[], 버튼:[], �
       const 숨 = 쉬는중 ? (Math.floor(p.t*1.5)%2 ? 0 : 1) : 0;
       const 갸웃 = (쉬는중 && Math.floor(p.t*0.34)%7===0) ? 1 : 0;
       const 뒤뚱 = (아기냐(p.개) && (p.동작==="걷기"||p.동작==="달리기")) ? (Math.floor(p.t*6)%2?1:-1) : 0;   // ★ 아기는 뒤띆뒤띆
-      const gx = 정수(p.떨기 ? p.x+(Math.floor(p.t*12)%2?1:-1) : p.x)+갸웃+뒤뚱, gy = 정수(p.y)+숨;   // ★ 0.7 → 1 (정수). 픽셀이 안 떤다
+      const gx = 정수(p.떨기 ? p.x+(Math.floor(p.t*12)%2?1:-1) : p.x)+갸웃+뒤뚱+정수(p.기댐||0), gy = 정수(p.y)+숨;   // ★ 0.7 → 1 (정수). 픽셀이 안 떤다 · 쓰다듬으면 손 쪽으로 기댐
       그림자(p.x, p.y+1, p.동작==="달리기" ? 7 : 9);                        // ★ 발밑 그림자
-      그림.개그리기(p.개, p.동작, p.하트>0 ? p.t*3 : p.t, gx, gy, p.왼쪽);    // ★ 기쁘면 꼬리를 빠르게
+      const ft = (p.하트>0 || p.쓰담t>0) ? p.t*3 : p.t;
+      그림.개그리기(p.개, p.동작, ft, gx, gy, p.왼쪽);    // ★ 기쁘면·쓰다듬으면 꼬리를 빠르게
+      if (p.털) this.털그리기(p, gx, gy, ft);                                 // ★ 2026-09-28 손끝 털 비틀기·눈 감기·털 부스러기
       if (this.눈 && 쉬는중) 그림.네모(gx-4, gy-31, 8, 1, "#ffffff");         // ★ 머리에 눈이 쌓인다
       if (this.공 && this.공.임자===p && (this.공.상태==="가져온다")) {                   // ★ 공을 물고 있는 그림 — 새 그림 없이 원 두 개
         const fx = gx + (p.왼쪽 ? -9 : 9);
@@ -767,14 +803,23 @@ S3: { 개들:[], 공:null, 밥그릇:null, 쓰담:null, 탭들:[], 버튼:[], �
     if (종류==="올림" && this.놀이메뉴) this.놀이메뉴.시작 = null;
     if (종류==="올림") this.누름개 = null;
     if (종류==="이동" && this.쓰담) { const 이동=Math.hypot(x-this.쓰담.x,y-this.쓰담.y);
+      // ★ 2026-09-28 형 「쓰다듬는 부위는 진짜처럼 진동, 손대는 곳은 털이 움직이게」 — 문지르는 빠르기·방향을 잰다
+      const 지금=performance.now(), 간격=Math.max(8, 지금-(this.쓰담.때||(지금-16)));
+      this.쓰담.속도 = (this.쓰담.속도||0)*0.6 + (이동/(간격/1000))*0.4; this.쓰담.때 = 지금;
+      if (이동>0.3) { this.쓰담.ux=(x-this.쓰담.x)/이동; this.쓰담.uy=(y-this.쓰담.y)/이동; }
       this.쓰담.거리+=이동; this.쓰담.총거리+=이동; this.쓰담.x=x; this.쓰담.y=y;
+      { const 밑 = this.쓰담.총거리>12 ? this.개들.find(p=>Math.hypot(p.x-x,p.y-10-y)<18 && !p.집으로) : null;   // ★ 가만히 꾹(12 안)=놀이 메뉴는 그대로
+        this.쓰담.개 = 밑||null; if (밑) this.쓰담받기(밑, x, y); }
       if (this.쓰담.거리>40) { this.쓰담.거리=0; const p=this.개들.find(p=>Math.hypot(p.x-x,p.y-10-y)<18);
         if (p) { const n=p.개.놀이;
           if (!저장.자료.쓰담해봄) { 저장.자료.쓰담해봄 = true; 저장.하기(); }
           저장.기록더("쓰담");
-          if ((n.쓰다듬기||0) < 5) { n.쓰다듬기=(n.쓰다듬기||0)+1; p.개.기분=Math.min(100,p.개.기분+5); 저장.자료.코인+=1; 저장.미션진행(1); 마음주기(p.개, 2); 저장.하기(); }
+          let 늘었다=false;
+          if ((n.쓰다듬기||0) < 5) { n.쓰다듬기=(n.쓰다듬기||0)+1; p.개.기분=Math.min(100,p.개.기분+5); 저장.자료.코인+=1; 저장.미션진행(1); 마음주기(p.개, 2); 저장.하기(); 늘었다=true; }
           else if (p.하트<=0) 알림(글("오늘_다함"));
-          교감소리(); 소리.진동(12); p.하트=1; p.동작="앉기"; p.목표=null; p.쉼=2; this.효과("하트", p.x+(Math.random()-0.5)*14, p.y-24); } } }
+          교감소리(); if (늘었다) { 소리.진동(30); this.쓰담.진동t=0.12; }   // ★ 마음이 늘 때만 길게 한 번 — 아니면 톡톡만 p.하트=1; p.동작="앉기"; p.목표=null; p.쉼=2; this.효과("하트", p.x+(Math.random()-0.5)*14, p.y-24);
+          this.쓰담.횟수=(this.쓰담.횟수||0)+1;                                   // ★ 세 번마다 하트 셋이 퐁퐁
+          if (this.쓰담.횟수%3===0) { for (let i=0;i<3;i++) this.효과("하트", p.x-10+i*10, p.y-28-(i%2)*4); if (늘었다) 소리.진동([30,40,30]); } } } }
     if (종류==="올림") {
       // ★ 총거리로 판정. 전에는 40마다 거리가 0으로 리셋돼서, 한참 쓰다듬고 떼면 부르기가 발동했다
       if (this.쓰담 && this.쓰담.총거리 < 8 && this.던지기모드<=0 &&
