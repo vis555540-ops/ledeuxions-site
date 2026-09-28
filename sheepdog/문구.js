@@ -70,7 +70,7 @@ const 문구 = {
   소개_저먼셰퍼드:{ko:"늑대가 못 오게 지켜요",en:"Wolves keep away"},
   털색_기본:{ko:"기본",en:"Classic"}, 털색_어둠:{ko:"진한 털",en:"Dark coat"}, 털색_밝음:{ko:"밝은 털",en:"Light coat"},
   대형_흩어짐:{ko:"흩어짐",en:"Loose"}, 대형_삼각:{ko:"삼각",en:"Wedge"}, 대형_사각:{ko:"사각",en:"Box"}, 대형_한줄:{ko:"한줄",en:"Line"},
-  대회:{ko:"대회",en:"Trial"}, 대회_설명:{ko:"양을 자리에 맞춰 세우세요",en:"Line the sheep up on the marks"},
+  대회:{ko:"대회",en:"Trial"}, 대회_설명:{ko:"양을 자리에 맞춰 세우세요",en:"Line the sheep up on the marks"}, 대회_요령:{ko:"천천히 다가가면 양이 따라 움직여요|멈추면 양도 멈춰요",en:"Walk in slowly and the sheep move ahead|Stop and they stop too"},
   대회_성공:{ko:"모양 완성!",en:"Shape complete!"}, 대회_점수:{ko:"점수",en:"Score"}, 대회_상대:{ko:"목장주 기록",en:"Rancher's record"},
   대회_이김:{ko:"이겼어요!",en:"You win!"}, 대회_짐:{ko:"아깝다",en:"So close"}, 대회_최고:{ko:"내 최고",en:"Best"},
   대회_잠김:{ko:"30탄을 깨면 열려요",en:"Clear stage 30 to unlock"},
