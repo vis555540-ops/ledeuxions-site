@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<link rel="canonical" href="https://ledeuxions.com/tools/hogu/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<title>가전 호구판별기 — 렌탈 호구 계산기 · 정수기 렌탈 vs 구매 · 무이자 할부 계산 | LeDeuxions</title>
+<meta name="description" content="가전 렌탈 총비용 계산기. 정수기·공기청정기·안마의자 렌탈 vs 구매, 제휴카드 할인의 진짜 값, 카드 할부 수수료와 사은품, 매장 견적 vs 인터넷 최저가+설치비를 비교해 「괜찮아요 / 애매해요 / 호구 주의」로 알려드립니다.">
+<meta name="keywords" content="렌탈 호구 계산기, 정수기 렌탈 vs 구매 계산, 가전 렌탈 총비용 계산기, 렌탈 구매 비교, 무이자 할부 계산기, 할부 수수료 계산, 가전 견적 비교">
+<meta property="og:title" content="가전 호구판별기 — 이 조건, 호구일까?">
+<meta property="og:description" content="가격이 아니라 계약 구조를 봅니다. 렌탈 vs 구매 · 할부·무이자 · 매장 견적 비교.">
+<meta property="og:url" content="https://ledeuxions.com/tools/hogu/">
+<meta property="og:type" content="website">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="../../assets/css/claude-design.css">
+<style>
+    .app-hero { padding: var(--space-6) 0 var(--space-4); text-align: center; }
+    .app-hero .hero-title { font-size: clamp(1.9rem, 7vw, 2.8rem); }
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: var(--bg-sunken); padding: 5px; border-radius: var(--radius-md); margin-bottom: var(--space-4); position: sticky; top: 64px; z-index: 5; }
+    .tab { border: 0; background: transparent; padding: 11px 4px; border-radius: 8px; font: inherit; font-size: 0.92rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; line-height: 1.3; }
+    .tab[aria-selected="true"] { background: var(--bg-card); color: var(--accent-deep); box-shadow: var(--shadow-xs); }
+    .mode { display: none; }
+    .mode.on { display: block; }
+    .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-4); margin-bottom: var(--space-4); }
+    .panel h2 { font-family: var(--font-sans); font-size: 1.02rem; font-weight: 700; margin: 0 0 var(--space-4); }
+    .row { display: flex; flex-direction: column; gap: 5px; margin-bottom: var(--space-4); }
+    .row:last-child { margin-bottom: 0; }
+    .row > label, .lab { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+    .hint { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; }
+    .in-line { display: flex; align-items: center; gap: 8px; }
+    .in-line .input { flex: 1; min-width: 0; font-size: 1.1rem; }
+    .unit { font-size: 0.95rem; color: var(--text-secondary); white-space: nowrap; }
+    .echo { font-size: 0.82rem; color: var(--accent); font-weight: 600; min-height: 1.1em; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .check { display: flex; gap: 10px; align-items: flex-start; font-size: 0.93rem; color: var(--text-primary); cursor: pointer; line-height: 1.5; }
+    .check input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--accent); flex: none; }
+    .search-btns { display: flex; gap: 8px; margin-top: 6px; }
+    .search-btns button { flex: 1; padding: 9px 6px; border: 1px solid var(--border-strong); background: var(--bg-canvas-soft); border-radius: var(--radius-sm); font: inherit; font-size: 0.86rem; cursor: pointer; color: var(--text-primary); }
+    .sub { border-left: 3px solid var(--border); padding-left: 12px; margin-top: 8px; }
+    .result { background: var(--bg-card); border: 2px solid var(--border-strong); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-4); margin-bottom: var(--space-4); }
+    .badge { display: inline-block; font-size: 1.35rem; font-weight: 800; padding: 10px 18px; border-radius: var(--radius-pill); margin-bottom: 10px; }
+    .v-ok { background: #E3EFE3; color: #2F5E2F; }
+    .v-mid { background: #F7EBD2; color: #7A5410; }
+    .v-bad { background: #F8DCD6; color: #9B2A12; }
+    .v-none { background: var(--bg-sunken); color: var(--text-muted); font-size: 1rem; }
+    .why { font-size: 0.95rem; color: var(--text-primary); line-height: 1.65; margin: 0 0 var(--space-4); }
+    .nums { display: grid; gap: 10px; }
+    .num { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+    .num:last-child { border-bottom: 0; }
+    .num span { font-size: 0.9rem; color: var(--text-secondary); }
+    .num b { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; text-align: right; }
+    .num.big b { font-size: 1.7rem; color: var(--accent-deep); }
+    .num small { display: block; font-size: 0.78rem; color: var(--text-muted); font-weight: 400; text-align: right; }
+    .note { font-size: 0.88rem; line-height: 1.65; background: var(--bg-sunken); border-radius: var(--radius-md); padding: 12px 14px; margin-top: var(--space-3); color: var(--text-primary); }
+    .note b { color: var(--accent-deep); }
+    .rule { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; margin-top: var(--space-3); }
+    .tips { margin: 0; padding-left: 1.1em; }
+    .tips li { font-size: 0.92rem; line-height: 1.7; color: var(--text-secondary); margin-bottom: 8px; }
+    .tips b { color: var(--text-primary); }
+    .disclaimer { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; text-align: center; margin: var(--space-5) 0; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">
+            <span class="nav-brand-mark">L</span>
+            <span>LeDeuxions</span>
+        </a>
+        <button class="nav-toggle" data-nav-toggle aria-label="메뉴">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="nav-links" data-nav-menu>
+            <a href="/" class="nav-link" data-nav-link>홈</a>
+            <a href="/web-projects/" class="nav-link active" data-nav-link>웹 도구</a>
+            <a href="/contact/" class="nav-link" data-nav-link>연락</a>
+        </div>
+    </div>
+</nav>
+
+<header class="app-hero container-narrow">
+    <p class="eyebrow">가전 호구판별기</p>
+    <h1 class="hero-title">이 조건, 호구일까?</h1>
+    <p class="hero-lead">가격 비교가 아닙니다. 매장·상담원이 내민 <b>계약 구조</b>를 계산해 봅니다.</p>
+</header>
+
+<main class="container-narrow">
+
+<div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="rent" aria-selected="true">렌탈<br>vs 구매</button>
+    <button class="tab" role="tab" data-tab="inst" aria-selected="false">할부<br>무이자</button>
+    <button class="tab" role="tab" data-tab="quote" aria-selected="false">매장 견적<br>비교</button>
+</div>
+
+<!-- ========== 1. 렌탈 vs 구매 ========== -->
+<section class="mode on" id="m-rent">
+    <div class="panel">
+        <h2>렌탈 조건</h2>
+        <div class="row">
+            <label for="r-model">모델명 (검색용, 선택)</label>
+            <input class="input" id="r-model" type="text" placeholder="예: 코웨이 CHP-7211N">
+            <div class="search-btns"><button type="button" data-search="naver" data-for="r-model">네이버쇼핑에서 찾기</button><button type="button" data-search="danawa" data-for="r-model">다나와에서 찾기</button></div>
+        </div>
+        <div class="row">
+            <label for="r-fee">월 렌탈료</label>
+            <div class="in-line"><input class="input" id="r-fee" data-won inputmode="numeric" placeholder="29,900"><span class="unit">원</span></div>
+            <div class="echo" data-echo="r-fee"></div>
+        </div>
+        <div class="two">
+            <div class="row">
+                <label for="r-obl">의무사용기간</label>
+                <div class="in-line"><input class="input" id="r-obl" data-won inputmode="numeric" placeholder="36"><span class="unit">개월</span></div>
+            </div>
+            <div class="row">
+                <label for="r-total">총 렌탈기간</label>
+                <div class="in-line"><input class="input" id="r-total" data-won inputmode="numeric" placeholder="60"><span class="unit">개월</span></div>
+            </div>
+        </div>
+        <div class="row">
+            <label class="check"><input type="checkbox" id="r-care-on" checked> 렌탈에 관리(필터 교체·방문 점검 등)가 포함돼 있어요</label>
+            <div class="sub" id="r-care-box">
+                <div class="two">
+                    <div class="row">
+                        <label for="r-care-price">직접 하면 1회 비용</label>
+                        <div class="in-line"><input class="input" id="r-care-price" data-won inputmode="numeric" placeholder="30,000"><span class="unit">원</span></div>
+                    </div>
+                    <div class="row">
+                        <label for="r-care-count">기간 중 횟수</label>
+                        <div class="in-line"><input class="input" id="r-care-count" data-won inputmode="numeric" placeholder="15"><span class="unit">회</span></div>
+                    </div>
+                </div>
+                <p class="hint">예: 4개월마다 필터 교체, 5년이면 15회. 필터 세트값은 같은 모델 호환 필터 가격을 검색해 넣으세요.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>같은 모델을 그냥 산다면</h2>
+        <div class="row">
+            <label for="r-buy">일시불 인터넷 최저가</label>
+            <div class="in-line"><input class="input" id="r-buy" data-won inputmode="numeric" placeholder="400,000"><span class="unit">원</span></div>
+            <div class="echo" data-echo="r-buy"></div>
+            <p class="hint">위 검색 버튼으로 같은 모델명을 찾아 넣으세요. 렌탈 전용 모델이면 가장 비슷한 판매 모델로.</p>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>제휴카드 할인 (없으면 비워 두세요)</h2>
+        <div class="two">
+            <div class="row">
+                <label for="r-card">월 할인액</label>
+                <div class="in-line"><input class="input" id="r-card" data-won inputmode="numeric" placeholder="10,000"><span class="unit">원</span></div>
+            </div>
+            <div class="row">
+                <label for="r-card-need">필요 실적</label>
+                <div class="in-line"><input class="input" id="r-card-need" data-won inputmode="numeric" placeholder="300,000"><span class="unit">원/월</span></div>
+            </div>
+        </div>
+        <div class="row">
+            <label class="check"><input type="checkbox" id="r-card-real"> 그 실적은 <b>원래 쓰던 돈</b>을 이 카드로 옮겨서 채울 수 있어요</label>
+            <p class="hint">체크하지 않으면 카드 할인은 판정에 넣지 않습니다. 할인받으려고 안 쓰던 돈을 쓰면 그건 절약이 아니기 때문입니다.</p>
+        </div>
+    </div>
+
+    <div class="result" id="r-out"></div>
+
+    <div class="panel">
+        <h2>렌탈 계약 전 알아둘 것</h2>
+        <ul class="tips">
+            <li><b>의무사용기간 전에 해지하면 위약금</b>이 붙습니다. 보통 남은 기간 렌탈료의 일정 비율 + 등록비·설치비 반환 등이 합쳐집니다. 계약서의 「중도해지」 조항에서 비율을 꼭 확인하세요.</li>
+            <li><b>소유권이 언제 넘어오는지</b>는 계약마다 다릅니다. 총 렌탈기간이 끝나야 넘어오는 경우가 많고, 의무기간 뒤 소유권 이전이 되는 상품도 있습니다. 넘어오기 전엔 회사 물건입니다.</li>
+            <li><b>관리 방문 주기</b>(예: 2·4·6개월)와 자가관리형(필터만 택배) 여부를 확인하세요. 자가관리형이면 「관리 포함」 값어치가 작아집니다.</li>
+            <li><b>제휴카드는 실적이 모자란 달엔 할인이 없고</b>, 연회비가 있을 수 있습니다. 전월 실적에서 렌탈료 자체가 빠지는 카드도 있습니다.</li>
+            <li>이사·해외 이주 가능성이 있으면 이전설치비와 해지 조건도 같이 보세요.</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ========== 2. 할부·무이자 ========== -->
+<section class="mode" id="m-inst">
+    <div class="panel">
+        <h2>매장·상담 조건</h2>
+        <div class="row">
+            <label for="i-model">모델명 (검색용, 선택)</label>
+            <input class="input" id="i-model" type="text" placeholder="예: 삼성 비스포크 RF85C">
+            <div class="search-btns"><button type="button" data-search="naver" data-for="i-model">네이버쇼핑에서 찾기</button><button type="button" data-search="danawa" data-for="i-model">다나와에서 찾기</button></div>
+        </div>
+        <div class="row">
+            <label for="i-price">매장 판매가</label>
+            <div class="in-line"><input class="input" id="i-price" data-won inputmode="numeric" placeholder="1,500,000"><span class="unit">원</span></div>
+            <div class="echo" data-echo="i-price"></div>
+        </div>
+        <div class="row">
+            <label for="i-months">할부 개월</label>
+            <div class="in-line"><input class="input" id="i-months" data-won inputmode="numeric" placeholder="12"><span class="unit">개월</span></div>
+        </div>
+        <div class="row">
+            <label class="check"><input type="checkbox" id="i-free"> 무이자 할부예요</label>
+            <div class="sub" id="i-rate-box">
+                <label class="lab" for="i-rate">카드 할부 수수료율 (연)</label>
+                <div class="in-line"><input class="input" id="i-rate" inputmode="decimal" placeholder="15"><span class="unit">%</span></div>
+                <p class="hint">카드사 앱·홈페이지의 「할부 수수료율」. 보통 연 10~20%대입니다. 모르면 15로 두고 보세요.</p>
+            </div>
+        </div>
+        <div class="row">
+            <label for="i-gift">사은품·캐시백 (내가 실제로 쓸 값어치)</label>
+            <div class="in-line"><input class="input" id="i-gift" data-won inputmode="numeric" placeholder="100,000"><span class="unit">원</span></div>
+            <p class="hint">정가가 아니라 <b>내가 따로 샀을 때 낼 돈</b>으로. 안 쓸 물건이면 0원.</p>
+        </div>
+        <div class="row">
+            <label for="i-cond">사은품 받으려고 더 드는 돈</label>
+            <div class="in-line"><input class="input" id="i-cond" data-won inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+            <p class="hint">예: 인터넷·렌탈 동시 가입의 추가 요금, 필수 부가상품, 카드 신규발급 연회비.</p>
+        </div>
+    </div>
+    <div class="panel">
+        <h2>인터넷에서 산다면</h2>
+        <div class="row">
+            <label for="i-net">같은 모델 일시불 인터넷 최저가</label>
+            <div class="in-line"><input class="input" id="i-net" data-won inputmode="numeric" placeholder="1,350,000"><span class="unit">원</span></div>
+            <div class="echo" data-echo="i-net"></div>
+            <p class="hint">배송·설치비가 따로 붙으면 더해서 넣으세요 (자세한 비교는 「매장 견적 비교」 탭).</p>
+        </div>
+    </div>
+
+    <div class="result" id="i-out"></div>
+
+    <div class="panel">
+        <h2>할부 계약 전 알아둘 것</h2>
+        <ul class="tips">
+            <li><b>「무이자」가 카드사 무이자인지, 매장이 수수료를 가격에 얹은 것인지</b> 물어보세요. 무이자라면서 판매가가 인터넷보다 높으면 이자가 가격에 들어간 겁니다.</li>
+            <li>카드 <b>무이자 할부는 행사 카드·기간·최소 금액</b> 조건이 있습니다. 결제 전에 카드사 앱에서 해당 가맹점 무이자 여부를 확인하세요.</li>
+            <li>할부 수수료는 보통 <b>남은 원금에 매달</b> 붙습니다. 이 계산기도 그 방식(원금 균등)으로 근사합니다.</li>
+            <li><b>캐시백은 언제, 어떻게</b> 들어오는지 (현금·포인트·다음 달 청구 할인) 적어 두세요. 조건 미충족 시 회수되는 경우도 있습니다.</li>
+            <li>사은품 때문에 <b>인터넷·통신·렌탈 결합</b>을 새로 약정하는 거라면 그 약정의 총비용도 따로 계산해 보세요.</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ========== 3. 매장 견적 비교 ========== -->
+<section class="mode" id="m-quote">
+    <div class="panel">
+        <h2>매장 견적</h2>
+        <div class="row">
+            <label for="q-model">모델명 (검색용, 선택)</label>
+            <input class="input" id="q-model" type="text" placeholder="예: LG 트롬 FX24">
+            <div class="search-btns"><button type="button" data-search="naver" data-for="q-model">네이버쇼핑에서 찾기</button><button type="button" data-search="danawa" data-for="q-model">다나와에서 찾기</button></div>
+        </div>
+        <div class="row">
+            <label for="q-store">매장가</label>
+            <div class="in-line"><input class="input" id="q-store" data-won inputmode="numeric" placeholder="2,100,000"><span class="unit">원</span></div>
+            <div class="echo" data-echo="q-store"></div>
+        </div>
+        <div class="row">
+            <label for="q-store-extra">매장에서 따로 받는 설치·배송·수거비</label>
+            <div class="in-line"><input class="input" id="q-store-extra" data-won inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+            <p class="hint">매장가에 다 포함이면 0.</p>
+        </div>
+    </div>
+    <div class="panel">
+        <h2>인터넷 최저가로 산다면</h2>
+        <div class="row">
+            <label for="q-net">인터넷 최저가</label>
+            <div class="in-line"><input class="input" id="q-net" data-won inputmode="numeric" placeholder="1,950,000"><span class="unit">원</span></div>
+            <div class="echo" data-echo="q-net"></div>
+        </div>
+        <div class="two">
+            <div class="row">
+                <label for="q-install">설치비</label>
+                <div class="in-line"><input class="input" id="q-install" data-won inputmode="numeric" placeholder="50,000"><span class="unit">원</span></div>
+            </div>
+            <div class="row">
+                <label for="q-ship">배송비</label>
+                <div class="in-line"><input class="input" id="q-ship" data-won inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+            </div>
+        </div>
+        <div class="row">
+            <label for="q-pickup">폐가전 수거비</label>
+            <div class="in-line"><input class="input" id="q-pickup" data-won inputmode="numeric" placeholder="0"><span class="unit">원</span></div>
+            <p class="hint">대형 폐가전은 정부 「폐가전 무상방문수거」 서비스로 무료 수거가 됩니다 (지역·품목 조건 확인).</p>
+        </div>
+    </div>
+
+    <div class="result" id="q-out"></div>
+
+    <div class="panel">
+        <h2>견적 받을 때 알아둘 것</h2>
+        <ul class="tips">
+            <li><b>모델명을 끝까지</b> 받아 적으세요. 매장 전용 모델은 뒷자리만 다르고 사양이 조금 다를 수 있어 인터넷과 1:1 비교가 안 됩니다.</li>
+            <li>인터넷 최저가는 <b>설치 포함인지, 벽걸이·사다리차·타공 같은 추가비</b>가 있는지 상세페이지에서 확인하세요. 에어컨은 배관 연장비가 크게 붙기도 합니다.</li>
+            <li>매장의 장점(당일 설치, 교환·AS 창구, 가격 협상)도 돈입니다. 차이가 작으면 매장이 나을 수 있어요.</li>
+            <li>인터넷 판매자가 <b>정식 유통(국내 정품)</b>인지 보세요. 병행수입은 AS가 제한될 수 있습니다.</li>
+            <li>매장에 인터넷 가격을 보여주면 <b>맞춰 주는 경우</b>도 많습니다. 이 결과를 협상 근거로 쓰세요.</li>
+        </ul>
+    </div>
+</section>
+
+<p class="disclaimer">참고용 계산입니다. 실제 금액·위약금·소유권·할부 조건은 반드시 계약서와 카드사 안내를 확인하세요.<br>법률·금융 자문이 아니며, 입력한 값은 이 페이지 안에서만 계산되고 어디에도 저장·전송되지 않습니다.</p>
+
+</main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <p style="margin:0 0 10px;color:inherit;opacity:.75;font-size:.92em">쓰다가 아쉬운 점 있으면 <a href="mailto:vis555540@gmail.com">메일</a>로 알려주세요.</p>
+        <div class="site-footer-bottom">
+            <span>© 2017–2026 LeDeuxions. 가전 호구판별기 v2026.09</span>
+            <span><a href="/web-projects/">← 다른 도구</a></span>
+        </div>
+    </div>
+</footer>
+
+<script src="../../assets/js/common.js"></script>
+<script>
+(function () {
+    'use strict';
+    var $ = function (id) { return document.getElementById(id); };
+    var num = function (id) { var v = parseFloat(String($(id).value).replace(/[^0-9.]/g, '')); return isFinite(v) ? v : 0; };
+    var won = function (n) { return (n < 0 ? '−' : '') + Math.round(Math.abs(n)).toLocaleString('ko-KR') + '원'; };
+    function korean(n) {
+        if (!(n > 0)) return '';
+        var eok = Math.floor(n / 1e8), man = Math.floor((n % 1e8) / 1e4), rest = Math.round(n % 1e4), s = [];
+        if (eok) s.push(eok + '억');
+        if (man) s.push(man.toLocaleString('ko-KR') + '만');
+        if (rest) s.push(rest.toLocaleString('ko-KR'));
+        return s.join(' ') + '원';
+    }
+    var BADGE = { ok: ['v-ok', '괜찮아요'], mid: ['v-mid', '애매해요'], bad: ['v-bad', '호구 주의 🚨'] };
+    function row(label, value, sub, big) {
+        return '<div class="num' + (big ? ' big' : '') + '"><span>' + label + '</span><b>' + value + (sub ? '<small>' + sub + '</small>' : '') + '</b></div>';
+    }
+    function empty(msg) { return '<span class="badge v-none">' + msg + '</span>'; }
+    function badge(k) { return '<span class="badge ' + BADGE[k][0] + '" data-verdict="' + k + '">' + BADGE[k][1] + '</span>'; }
+    var pct = function (x) { return (x * 100).toFixed(1).replace(/\.0$/, '') + '%'; };
+
+    /* ---------- 1. 렌탈 vs 구매 ---------- */
+    function calcRent() {
+        var fee = num('r-fee'), obl = num('r-obl'), total = num('r-total'), buy = num('r-buy');
+        if (!total && obl) total = obl;
+        var careOn = $('r-care-on').checked;
+        $('r-care-box').style.display = careOn ? '' : 'none';
+        var care = careOn ? num('r-care-price') * num('r-care-count') : 0;
+        var cardMonth = num('r-card'), cardNeed = num('r-card-need'), cardReal = $('r-card-real').checked;
+        var out = $('r-out');
+        if (!fee || !total || !buy) { out.innerHTML = empty('월 렌탈료 · 렌탈기간 · 인터넷 최저가를 넣으면 판정합니다'); return; }
+
+        var rentTotal = fee * total;
+        var cardTotal = cardMonth * total;
+        var rentPay = rentTotal - (cardReal ? cardTotal : 0);
+        var buyTotal = buy + care;
+        var diff = rentPay - buyTotal;
+        var ratio = diff / buyTotal;
+        var k = diff <= 0 || ratio <= 0.10 ? 'ok' : ratio <= 0.30 ? 'mid' : 'bad';
+
+        var why = diff <= 0
+            ? '렌탈이 직접 사서 관리하는 것보다 <b>' + won(-diff) + ' 싸거나 같습니다.</b>'
+            : '렌탈이 직접 사서 관리하는 것보다 <b>' + won(diff) + ' (' + pct(ratio) + ') 더 비쌉니다.</b> 한 달에 ' + won(diff / total) + '씩 편의값을 내는 셈입니다.';
+
+        var h = badge(k) + '<p class="why">' + why + '</p><div class="nums">';
+        h += row('총 렌탈비', won(rentTotal), won(fee) + ' × ' + total + '개월');
+        if (cardTotal) h += row('제휴카드 할인 합계', (cardReal ? '−' : '') + won(cardTotal), cardReal ? '판정에 반영' : '실적을 새로 써야 하면 판정에서 뺌');
+        h += row('구매 + 직접 관리', won(buyTotal), won(buy) + (care ? ' + 관리 ' + won(care) : ''));
+        h += row('차액 (렌탈 − 구매)', won(diff), null, true);
+        h += row('월 환산 차액', won(diff / total), total + '개월로 나눔');
+        h += '</div>';
+
+        var notes = [];
+        notes.push('<b>소유권:</b> ' + (obl && total > obl
+            ? '총 ' + total + '개월 중 의무기간은 ' + obl + '개월입니다. 보통 총 렌탈기간이 끝나야 소유권이 넘어오니, 계약서의 「소유권 이전」 시점을 꼭 보세요. 그 전 해지는 반납·위약금 대상입니다.'
+            : '렌탈기간이 끝나면 소유권이 넘어오는지 계약서의 「소유권 이전」 조항을 확인하세요. 안 넘어오면 위 비교보다 더 불리합니다.'));
+        if (cardMonth && cardNeed) {
+            var need = cardNeed * total;
+            notes.push('<b>카드 할인의 진짜 값:</b> 월 ' + won(cardMonth) + ' 할인을 받으려면 매달 ' + won(cardNeed) + '을 이 카드로 써야 합니다. ' + total + '개월이면 총 ' + won(need) + '. '
+                + (cardReal ? '원래 쓰던 돈으로 채운다면 실제 절약은 ' + won(cardTotal) + '입니다.' : '할인받으려고 새로 쓰는 돈이라면 이득이 아니라 지출입니다. 그래서 판정에 넣지 않았습니다.')
+                + ' 할인율로 보면 실적의 ' + pct(cardMonth / cardNeed) + '입니다.');
+        }
+        h += '<div class="note">' + notes.join('<br><br>') + '</div>';
+        h += '<p class="rule">판정 기준: 렌탈이 구매+관리보다 10% 이하로 비싸면 「괜찮아요」(관리·AS 편의값으로 볼 만함), 10~30%면 「애매해요」, 30% 넘으면 「호구 주의」.</p>';
+        out.innerHTML = h;
+    }
+
+    /* ---------- 2. 할부·무이자 ---------- */
+    function calcInst() {
+        var price = num('i-price'), n = Math.max(1, num('i-months')), free = $('i-free').checked;
+        $('i-rate-box').style.display = free ? 'none' : '';
+        var rate = free ? 0 : num('i-rate') / 100;
+        var gift = num('i-gift'), cond = num('i-cond'), net = num('i-net');
+        var out = $('i-out');
+        if (!price || !net) { out.innerHTML = empty('매장 판매가와 인터넷 최저가를 넣으면 판정합니다'); return; }
+
+        // 원금 균등 상환, 매달 남은 원금 × 연이율/12 → 합계 = P × r/12 × (n+1)/2
+        var interest = n > 1 ? price * rate / 12 * (n + 1) / 2 : 0;
+        var storeTotal = price + interest + cond - gift;
+        var diff = storeTotal - net;
+        var ratio = diff / net;
+        var k = diff <= 0 || ratio <= 0.03 ? 'ok' : ratio <= 0.10 ? 'mid' : 'bad';
+        var why = diff <= 0
+            ? '사은품·수수료까지 다 따지면 매장 조건이 인터넷보다 <b>' + won(-diff) + ' 싸거나 같습니다.</b>'
+            : '사은품·수수료까지 다 따지면 매장 조건이 <b>' + won(diff) + ' (' + pct(ratio) + ') 더 듭니다.</b>';
+
+        var h = badge(k) + '<p class="why">' + why + '</p><div class="nums">';
+        h += row('매장 판매가', won(price));
+        h += row(free ? '할부 수수료 (무이자)' : '할부 수수료 합계', won(interest), free ? '' : n + '개월 · 연 ' + (rate * 100) + '%');
+        h += row('월 납부액', won((price + interest) / n), n + '개월');
+        if (cond) h += row('사은품 조건 추가비용', '+' + won(cond));
+        if (gift) h += row('사은품·캐시백 값어치', '−' + won(gift));
+        h += row('매장 실제 총지출', won(storeTotal));
+        h += row('인터넷 일시불', won(net));
+        h += row('차액 (매장 − 인터넷)', won(diff), null, true);
+        h += '</div>';
+        if (free && price > net) h += '<div class="note"><b>무이자인데 가격이 ' + won(price - net) + ' 높습니다.</b> 이자가 판매가에 들어가 있을 수 있어요. 인터넷에서도 카드 무이자가 되는지 확인해 보세요.</div>';
+        h += '<p class="rule">판정 기준: 매장 총지출이 인터넷보다 3% 이하로 비싸면 「괜찮아요」(매장 편의값), 3~10%면 「애매해요」, 10% 넘으면 「호구 주의」.</p>';
+        out.innerHTML = h;
+    }
+
+    /* ---------- 3. 매장 견적 비교 ---------- */
+    function calcQuote() {
+        var store = num('q-store') + num('q-store-extra');
+        var netBase = num('q-net'), extra = num('q-install') + num('q-ship') + num('q-pickup');
+        var net = netBase + extra;
+        var out = $('q-out');
+        if (!num('q-store') || !netBase) { out.innerHTML = empty('매장가와 인터넷 최저가를 넣으면 판정합니다'); return; }
+        var diff = store - net, ratio = diff / net;
+        var k = diff <= 0 || ratio <= 0.03 ? 'ok' : ratio <= 0.10 ? 'mid' : 'bad';
+        var why = diff <= 0
+            ? '설치·배송·수거까지 합치면 매장이 <b>' + won(-diff) + ' 싸거나 같습니다.</b>'
+            : '설치·배송·수거까지 합치면 매장이 <b>' + won(diff) + ' (' + pct(ratio) + ') 비쌉니다.</b>';
+        var h = badge(k) + '<p class="why">' + why + '</p><div class="nums">';
+        h += row('매장 총액', won(store), num('q-store-extra') ? '매장가 + 별도 비용 ' + won(num('q-store-extra')) : '매장가 (설치 등 포함)');
+        h += row('인터넷 총액', won(net), won(netBase) + (extra ? ' + 설치·배송·수거 ' + won(extra) : ''));
+        h += row('차액 (매장 − 인터넷)', won(diff), null, true);
+        h += '</div>';
+        if (diff > 0) h += '<div class="note">매장에 인터넷 총액 <b>' + won(net) + '</b>을 보여주고 맞춰 달라고 해 보세요. 차이가 ' + won(diff) + '입니다.</div>';
+        h += '<p class="rule">판정 기준: 매장이 3% 이하로 비싸면 「괜찮아요」(당일 설치·AS 창구 값), 3~10%면 「애매해요」, 10% 넘으면 「호구 주의」.</p>';
+        out.innerHTML = h;
+    }
+
+    var calcs = { rent: calcRent, inst: calcInst, quote: calcQuote };
+    function calcAll() { calcRent(); calcInst(); calcQuote(); }
+
+    // 입력: 숫자 콤마 + 한글 금액
+    document.querySelectorAll('input[data-won]').forEach(function (el) {
+        el.addEventListener('input', function () {
+            var digits = el.value.replace(/[^0-9]/g, '');
+            el.value = digits ? Number(digits).toLocaleString('ko-KR') : '';
+            var e = document.querySelector('[data-echo="' + el.id + '"]');
+            if (e) e.textContent = korean(Number(digits));
+        });
+    });
+    document.addEventListener('input', calcAll);
+    document.addEventListener('change', calcAll);
+
+    // 탭
+    document.querySelectorAll('.tab').forEach(function (t) {
+        t.addEventListener('click', function () {
+            document.querySelectorAll('.tab').forEach(function (x) { x.setAttribute('aria-selected', x === t ? 'true' : 'false'); });
+            document.querySelectorAll('.mode').forEach(function (m) { m.classList.toggle('on', m.id === 'm-' + t.dataset.tab); });
+            try { history.replaceState(null, '', '#' + t.dataset.tab); } catch (e) {}
+        });
+    });
+    var start = (location.hash || '').slice(1);
+    if (calcs[start]) document.querySelector('.tab[data-tab="' + start + '"]').click();
+
+    // 최저가 검색
+    document.querySelectorAll('[data-search]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var q = $(b.dataset.for).value.trim();
+            if (!q) { $(b.dataset.for).focus(); return; }
+            var url = b.dataset.search === 'naver'
+                ? 'https://search.shopping.naver.com/search/all?query=' + encodeURIComponent(q)
+                : 'https://search.danawa.com/dsearch.php?query=' + encodeURIComponent(q);
+            window.open(url, '_blank', 'noopener');
+        });
+    });
+
+    calcAll();
+})();
+</script>
+</body>
+</html>
