@@ -103,9 +103,14 @@
     .share-row .btn { width: 100%; }
     .share-note { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0; text-align: center; }
     .share-done { font-size: 0.85rem; color: var(--accent-deep); font-weight: 700; text-align: center; min-height: 1.2em; margin: 0; }
+    .cp-disc { background: var(--bg-sunken); color: var(--text-primary); border-bottom: 1px solid var(--border-strong); font-size: 0.92rem; font-weight: 600; line-height: 1.55; padding: 10px 16px; text-align: center; word-break: keep-all; }
+    .cp { margin-top: var(--space-4); padding-top: var(--space-3); border-top: 1px dashed var(--border); }
+    .cp-btn { display: block; width: 100%; text-align: center; box-sizing: border-box; }
+    .cp-note { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin: 6px 0 0; text-align: center; word-break: keep-all; }
 </style>
 </head>
 <body>
+<div class="cp-disc" id="cp-disc" hidden>이 페이지에는 쿠팡 파트너스 링크가 있으며, 이를 통해 구매 시 일정액의 수수료를 제공받습니다. 판정 결과에는 영향을 주지 않습니다.</div>
 
 <nav class="nav">
     <div class="nav-inner">
@@ -435,6 +440,22 @@
             + '<p class="rcard-foot">ledeuxions.com/tools/hogu</p>';
         box.hidden = false;
     }
+    // 쿠팡 파트너스 (AF1924801) 링크 — 판정이 「구매/인터넷이 낫다」(mid·bad)일 때만 버튼. 판정 계산과 무관.
+    // 빈 값이면 그 품목은 any(일반) 링크로, any 도 비면 버튼·고지 모두 안 보임
+    var CP = { water: '', air: '', bidet: '', massage: '', food: '', soft: '', dehum: '', any: '' };
+    var CP_NAME = { water: '정수기', air: '공기청정기', bidet: '비데', massage: '안마의자', food: '음식물처리기', soft: '연수기·샤워필터', dehum: '제습기' };
+    var CP_WORD = [[/정수기/, 'water'], [/공기\s*청정기|공청기/, 'air'], [/비데/, 'bidet'], [/안마\s*의자/, 'massage'], [/음식물/, 'food'], [/연수기|샤워\s*필터/, 'soft'], [/제습기/, 'dehum']];
+    function coupang(mode, k, model) {
+        if (k !== 'mid' && k !== 'bad') return '';
+        var key = '';
+        if (mode === 'rent') { var on = document.querySelector('.chip[aria-pressed="true"]'); if (on) key = /^w/.test(on.dataset.preset) ? 'water' : on.dataset.preset; }
+        if (!key) CP_WORD.some(function (w) { return w[0].test(model || '') && (key = w[1]); });
+        var url = CP[key] || CP.any;
+        if (!url) return '';
+        return '<div class="cp"><a class="btn btn-secondary cp-btn" href="' + url + '" target="_blank" rel="sponsored noopener">쿠팡에서 ' + (CP[key] ? CP_NAME[key] : '가전') + ' 가격 보기</a>'
+            + '<p class="cp-note">쿠팡 파트너스 링크 — 이 링크로 구매하면 수수료를 받습니다. 판정에는 영향 없어요.</p></div>';
+    }
+    if (Object.keys(CP).some(function (x) { return CP[x]; })) $('cp-disc').hidden = false;
     var pct = function (x) { return (x * 100).toFixed(1).replace(/\.0$/, '') + '%'; };
 
     /* ---------- 1. 렌탈 vs 구매 ---------- */
@@ -482,7 +503,7 @@
         }
         h += '<div class="note">' + notes.join('<br><br>') + '</div>';
         h += '<p class="rule">판정 기준: 렌탈이 구매+관리보다 10% 이하로 비싸면 「괜찮아요」(관리·AS 편의값으로 볼 만함), 10~30%면 「애매해요」, 30% 넘으면 「호구 주의」.</p>';
-        out.innerHTML = h;
+        out.innerHTML = h + coupang('rent', k, $('r-model').value);
         card('rent', k, why, [['총 렌탈비' + (cardReal && cardTotal ? '(카드할인 뺌)' : ''), won(rentPay)], ['구매+직접관리', won(buyTotal)], ['차액', won(diff)]], $('r-model').value);
     }
 
@@ -517,7 +538,7 @@
         h += '</div>';
         if (free && price > net) h += '<div class="note"><b>무이자인데 가격이 ' + won(price - net) + ' 높습니다.</b> 이자가 판매가에 들어가 있을 수 있어요. 인터넷에서도 카드 무이자가 되는지 확인해 보세요.</div>';
         h += '<p class="rule">판정 기준: 매장 총지출이 인터넷보다 3% 이하로 비싸면 「괜찮아요」(매장 편의값), 3~10%면 「애매해요」, 10% 넘으면 「호구 주의」.</p>';
-        out.innerHTML = h;
+        out.innerHTML = h + coupang('inst', k, $('i-model').value);
         card('inst', k, why, [['매장 총지출', won(storeTotal)], ['인터넷 일시불', won(net)], ['차액', won(diff)]], $('i-model').value);
     }
 
@@ -540,7 +561,7 @@
         h += '</div>';
         if (diff > 0) h += '<div class="note">매장에 인터넷 총액 <b>' + won(net) + '</b>을 보여주고 맞춰 달라고 해 보세요. 차이가 ' + won(diff) + '입니다.</div>';
         h += '<p class="rule">판정 기준: 매장이 3% 이하로 비싸면 「괜찮아요」(당일 설치·AS 창구 값), 3~10%면 「애매해요」, 10% 넘으면 「호구 주의」.</p>';
-        out.innerHTML = h;
+        out.innerHTML = h + coupang('quote', k, $('q-model').value);
         card('quote', k, why, [['매장 총액', won(store)], ['인터넷 총액', won(net)], ['차액', won(diff)]], $('q-model').value);
     }
 
