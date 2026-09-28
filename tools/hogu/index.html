@@ -442,7 +442,7 @@
     }
     // 쿠팡 파트너스 (AF1924801) 링크 — 판정이 「구매/인터넷이 낫다」(mid·bad)일 때만 버튼. 판정 계산과 무관.
     // 빈 값이면 그 품목은 any(일반) 링크로, any 도 비면 버튼·고지 모두 안 보임
-    var CP = { water: 'https://link.coupang.com/a/hpAgpuiCmi', air: '', bidet: '', massage: '', food: '', soft: '', dehum: '', any: '' };
+    var CP = { water: 'https://link.coupang.com/a/hpAgpuiCmi', air: 'https://link.coupang.com/a/hpAvGdoHNk', bidet: 'https://link.coupang.com/a/hpAwZSOdQO', massage: 'https://link.coupang.com/a/hpAxZpH69k', food: 'https://link.coupang.com/a/hpAyY0a5LM', soft: 'https://link.coupang.com/a/hpAzYINuhw', dehum: 'https://link.coupang.com/a/hpAAXXQLrU', any: 'https://link.coupang.com/a/hpABXi4urY' };
     var CP_NAME = { water: '정수기', air: '공기청정기', bidet: '비데', massage: '안마의자', food: '음식물처리기', soft: '연수기·샤워필터', dehum: '제습기' };
     var CP_WORD = [[/정수기/, 'water'], [/공기\s*청정기|공청기/, 'air'], [/비데/, 'bidet'], [/안마\s*의자/, 'massage'], [/음식물/, 'food'], [/연수기|샤워\s*필터/, 'soft'], [/제습기/, 'dehum']];
     function coupang(mode, k, model) {
