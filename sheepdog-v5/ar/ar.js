@@ -126,7 +126,8 @@ const 줄 = { 손: new THREE.Vector3(), 목: new THREE.Vector3(), 가운데: new
 
 function 준비() {
   if (renderer) return;
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: true });
+  renderer.setClearColor(0x000000, 0);   // 빈 곳만 알파 0 → 카메라. (2026-09-29 「하얀색 다 투명해」)
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.xr.enabled = true;
@@ -137,17 +138,19 @@ function 준비() {
   camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 30);
 
   reticle = new THREE.Mesh(new THREE.RingGeometry(0.05, 0.065, 32).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.9 }));
+    new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.9, premultipliedAlpha: true }));
   reticle.matrixAutoUpdate = false; reticle.visible = false; scene.add(reticle);
 
   const ld = new THREE.TextureLoader();
   for (const n of 그림들) { const t = ld.load("ar/" + n + ".png"); t.colorSpace = THREE.SRGBColorSpace; tex[n] = t; }
-  dogMat = new THREE.MeshBasicMaterial({ map: tex.back_1, transparent: true, alphaTest: 0.15, side: THREE.DoubleSide });
+  // ★ 그림은 오려낸 불투명(transparent:false + alphaTest) — 남은 픽셀은 알파가 꼭 1.0 으로 써진다(three 의 OPAQUE).
+  //   transparent:true 면 반투명 섞기 길로 가서 AR 합성기에서 밝은 색일수록 카메라가 비쳐 보였다(형 「하얀색 다 투명해」)
+  dogMat = new THREE.MeshBasicMaterial({ map: tex.back_1, transparent: false, alphaTest: 0.5, side: THREE.DoubleSide });
   dog = new THREE.Mesh(new THREE.PlaneGeometry(키, 키).translate(0, 키 / 2, 0), dogMat);   // 발이 바닥에 닿게
   dog.visible = false; scene.add(dog);
   // 그림자 한 점 (떠 보이지 않게)
   const sh = new THREE.Mesh(new THREE.CircleGeometry(0.07, 24).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false }));
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false, premultipliedAlpha: true }));
   sh.position.y = 0.002; sh.scale.set(1, 1, 0.55); dog.add(sh);
 
   const cv = document.createElement("canvas"); cv.width = cv.height = 64;
@@ -158,7 +161,7 @@ function 준비() {
   const hd = 읽기(저장키), ht = new THREE.TextureLoader().load("house/" + (집그림[hd && hd.집] || "box") + ".png");
   ht.colorSpace = THREE.SRGBColorSpace; ht.magFilter = THREE.NearestFilter; ht.minFilter = THREE.NearestFilter;
   house = new THREE.Mesh(new THREE.PlaneGeometry(집크기, 집크기).translate(0, 집크기 / 2, 0),
-    new THREE.MeshBasicMaterial({ map: ht, transparent: true, alphaTest: 0.2, side: THREE.DoubleSide }));
+    new THREE.MeshBasicMaterial({ map: ht, transparent: false, alphaTest: 0.5, side: THREE.DoubleSide }));
   house.visible = false; scene.add(house);
 
   leashMat = new THREE.MeshBasicMaterial({ color: 0xd62828 });
@@ -238,7 +241,7 @@ function 집으로(왜) {
 function 발자국(pos, dir) {
   상태.발 ^= 1;
   const side = new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(상태.발 ? 0.022 : -0.022);
-  const m = new THREE.Mesh(pawGeo, new THREE.MeshBasicMaterial({ map: pawTex, transparent: true, opacity: 0.85, depthWrite: false }));
+  const m = new THREE.Mesh(pawGeo, new THREE.MeshBasicMaterial({ map: pawTex, transparent: true, opacity: 0.85, depthWrite: false, premultipliedAlpha: true }));
   m.position.copy(pos).add(side); m.position.y += 0.003;
   m.rotation.y = Math.atan2(-dir.x, -dir.z);
   m.userData.t = 0; scene.add(m); paws.push(m);
