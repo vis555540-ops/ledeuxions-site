@@ -85,15 +85,6 @@
       case 'lose':
         [392, 349, 311, 262].forEach((f, i) => tone(f, 0.3, 'triangle', 0.14, i * 0.18));
         break;
-      case 'flip': tone(330, 0.22, 'triangle', 0.13, 0, 990); tone(660, 0.18, 'sine', 0.06, 0.08, 1320); noise(0.2, 0.06, 1200, 4000, 0, 1); break;
-      case 'land': tone(180, 0.08, 'sine', 0.12, 0, 120); break;
-      case 'hide': tone(740, 0.12, 'sine', 0.06, 0, 370); noise(0.18, 0.04, 800, 300, 0, 1, 'lowpass'); break;
-      case 'exposed': tone(988, 0.08, 'square', 0.05); tone(740, 0.12, 'square', 0.05, 0.09); break;
-      case 'spot': tone(1175, 0.07, 'square', 0.06); tone(1568, 0.1, 'square', 0.06, 0.07); break;
-      case 'lost': tone(660, 0.1, 'triangle', 0.07, 0, 880); tone(880, 0.12, 'triangle', 0.06, 0.1, 660); break;
-      case 'sneak': [784, 988, 1175].forEach((f, i) => tone(f, 0.08, 'sine', 0.08, i * 0.05)); break;
-      case 'ouch': tone(300, 0.18, 'sawtooth', 0.05, 0, 200); tone(300, 0.18, 'sawtooth', 0.05, 0.22, 200); break;
-      case 'drill': tone(1600, 1.1, 'sawtooth', 0.05, 0, 1900); noise(1.1, 0.08, 3000, 3500, 0, 6); break;
       case 'bubble': tone(500 + Math.random() * 400, 0.08, 'sine', 0.05, 0, 1200); break;
     }
   };
