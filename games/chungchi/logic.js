@@ -1,36 +1,51 @@
-// logic.js — 충치의 역습 v2: 그림 없이 규칙만. 브라우저와 node(시험용) 양쪽에서 돈다.
-// v2: 위에서 비스듬히 본 입 속(윗니·아랫니 두 줄), 그림자에 숨기, 위아래 뒤집기, 테크(3가지)·통증 지수.
+// logic.js — 충치의 역습 v3: 그림 없이 규칙만. 브라우저와 node(시험용) 양쪽에서 돈다.
+// v3 (형 9/30 「병균 세계 퍼트리는 게임처럼」): 입 = 세계지도, 이빨 = 나라.
+//  충치는 저절로 옆 이·맞닿은 위아래 이로 번진다. 플레이어는 방울 톡(사탕 = DNA)·진화 나무·특수기(숨기/대피).
+//  주인 쪽 「치과 예약」 막대(= 치료제)가 다 차기 전에 모든 이를 먹으면 승리.
 (function (root) {
   'use strict';
   const W = 390;
   const NT = 10;          // 한 턱에 이 10개 (젖니)
   const SQ = 0.8;         // 비스듬히 봐서 위아래가 눌려 보이는 정도
 
-  // 단계별 세기. 9/30 형 「치솔 너무 쎄 1탄부터」 → 칫솔 느리게·늦게·덜 쫓게 낮춤.
+  // 단계별 세기. 1단계는 처음 하는 사람도 이기게 (형 「1탄부터 너무 쎄」).
   const STAGES = [
-    { id: 1, brushEvery: [4.0, 5.4], warn: 1.9, brushSpeed: 210, clean: 0.5, sight: 95, steer: 115, offMax: 60,
-      chaseP: 0.45, scrubP: 0.35, doubleP: 0, floss: false, candyEvery: 8, grow: 0.004, spread: 0.012,
-      sway: 0.5, swaySpd: 0.32, painEat: 1.5, painDecay: 0.8 },
-    { id: 2, brushEvery: [3.4, 4.7], warn: 1.6, brushSpeed: 270, clean: 0.5, sight: 115, steer: 150, offMax: 70,
-      chaseP: 0.6, scrubP: 0.5, doubleP: 0.15, floss: true, flossEvery: [6.5, 9.0], flossWarn: 1.1, flossClean: 0.7,
-      candyEvery: 8, grow: 0.004, spread: 0.012, sway: 0.7, swaySpd: 0.5, painEat: 1.7, painDecay: 0.8 },
+    { id: 1, grow: 0.042, spread: 0.08, face: 0.04, doneSpread: 0.8,
+      brushEvery: [11, 14], brushFirst: 14, brushWarn: 2.8, brushZone: 3, brushSpeed: 110, brushTarget: 0.3, clean: 0.3, brushBack: false,
+      floss: false, gargle: false,
+      research: 0.2, discover: 16, bubbleEvery: 4.6, bubbleLife: 8,
+      hideMax: 3, hideRe: 7, evacCd: 12, eventEvery: [13, 18],
+      events: { candy: 4, juice: 3, sleep: 3, mom: 1, ad: 1, water: 1 } },
+    { id: 2, grow: 0.038, spread: 0.072, face: 0.036, doneSpread: 0.75,
+      brushEvery: [8.5, 11], brushFirst: 11, brushWarn: 2.4, brushZone: 4, brushSpeed: 130, brushTarget: 0.5, clean: 0.36, brushBack: true,
+      floss: true, flossEvery: [9, 12], flossWarn: 1.8, flossClean: 0.45, gargle: false,
+      research: 0.32, discover: 12, bubbleEvery: 4.6, bubbleLife: 7,
+      hideMax: 3, hideRe: 7, evacCd: 12, eventEvery: [12, 17],
+      events: { candy: 3, juice: 2, sleep: 2, mom: 2, ad: 2, water: 1 } },
+    { id: 3, grow: 0.036, spread: 0.068, face: 0.032, doneSpread: 0.7,
+      brushEvery: [7.5, 10], brushFirst: 10, brushWarn: 2.2, brushZone: 4, brushSpeed: 140, brushTarget: 0.65, clean: 0.4, brushBack: true,
+      floss: true, flossEvery: [8, 11], flossWarn: 1.6, flossClean: 0.5,
+      gargle: true, gargleEvery: [22, 28], gargleFirst: 30, gargleWarn: 3.0, gargleClean: 0.3,
+      research: 0.78, discover: 10, bubbleEvery: 4.6, bubbleLife: 6.5,
+      hideMax: 3, hideRe: 7, evacCd: 12, eventEvery: [11, 16],
+      events: { candy: 3, juice: 2, sleep: 1, mom: 3, ad: 2, water: 2, call: 1 } },
   ];
 
-  // 테크 (Plague Inc 의 진화 나무). 세 가지: 번짐 / 숨기 / 진정.
-  // pain: 사면 통증이 이만큼 오른다(음수면 내려간다).
+  // 진화 나무 (Plague Inc 의 전염성·은밀성·치명성 대신: 번짐 / 숨기 / 진정)
+  // pain: 사면 아야 지수가 이만큼 늘 붙는다(음수면 내려간다).
   const TECH = [
-    { k: 'eat1', br: 0, tier: 0, cost: 3, pain: 8 },
-    { k: 'spread1', br: 0, tier: 1, cost: 5, pain: 10 },
-    { k: 'eat2', br: 0, tier: 2, cost: 8, pain: 12 },
-    { k: 'spread2', br: 0, tier: 3, cost: 11, pain: 15 },
-    { k: 'shade1', br: 1, tier: 0, cost: 3, pain: 6 },
-    { k: 'blur', br: 1, tier: 1, cost: 5, pain: 8 },
-    { k: 'sticky', br: 1, tier: 2, cost: 7, pain: 10 },
-    { k: 'ghost', br: 1, tier: 3, cost: 10, pain: 12 },
-    { k: 'quiet', br: 2, tier: 0, cost: 3, pain: -8 },
-    { k: 'speed', br: 2, tier: 1, cost: 4, pain: 0 },
-    { k: 'numb', br: 2, tier: 2, cost: 6, pain: -35 },
-    { k: 'calm', br: 2, tier: 3, cost: 8, pain: -12 },
+    { k: 'eat1', br: 0, tier: 0, cost: 4, pain: 5 },
+    { k: 'spread1', br: 0, tier: 1, cost: 7, pain: 6 },
+    { k: 'jump', br: 0, tier: 2, cost: 10, pain: 8 },
+    { k: 'spread2', br: 0, tier: 3, cost: 14, pain: 10 },
+    { k: 'shade1', br: 1, tier: 0, cost: 4, pain: 2 },
+    { k: 'sticky', br: 1, tier: 1, cost: 7, pain: 3 },
+    { k: 'blur', br: 1, tier: 2, cost: 9, pain: 0 },
+    { k: 'ghost', br: 1, tier: 3, cost: 12, pain: 3 },
+    { k: 'quiet', br: 2, tier: 0, cost: 4, pain: -8 },
+    { k: 'numb', br: 2, tier: 1, cost: 7, pain: -15 },
+    { k: 'calm', br: 2, tier: 2, cost: 10, pain: -6 },
+    { k: 'sleep', br: 2, tier: 3, cost: 13, pain: -6 },
   ];
 
   // 이 모양: 왼쪽 끝 어금니 → 가운데 앞니 → 오른쪽 끝 어금니
@@ -39,8 +54,8 @@
 
   function layout(H) {
     const L = { W, H, SQ };
-    L.hudH = 66;
-    L.mT = 76; L.mB = H - 118; L.mL = 8; L.mR = W - 8;
+    L.hudH = 96;
+    L.mT = 102; L.mB = H - 118; L.mL = 8; L.mR = W - 8;
     L.barY = H - 104;
     const midY = L.midY = Math.round((L.mT + L.mB) / 2);
     // 아랫니 치열궁 (U). 윗니는 가운데 줄을 기준으로 거울.
@@ -131,49 +146,49 @@
     const u = dx * c - dy * s, v = dx * s + dy * c;
     return [u / (t.w / 2 + (grow || 0)), v / (t.d / 2 + (grow || 0))];
   }
-  function segDist(px, py, ax, ay, bx, by) {
-    const vx = bx - ax, vy = by - ay, l2 = vx * vx + vy * vy;
-    let f = l2 ? ((px - ax) * vx + (py - ay) * vy) / l2 : 0; f = Math.max(0, Math.min(1, f));
-    return Math.hypot(px - ax - vx * f, py - ay - vy * f);
-  }
 
   function Game(H, stageNo, rnd) {
     this.rnd = rnd || Math.random;
     this.L = layout(H);
     this.cfg = STAGES[stageNo - 1];
     this.stage = stageNo;
-    this.teeth = this.L.teeth.map(t => Object.assign({}, t, { inf: 0, done: false, hurt: 0, eaten: 0 }));
+    this.teeth = this.L.teeth.map(t => Object.assign({}, t, { inf: 0, done: false, hurt: 0, shield: 0, half: false }));
     const start = this.teeth[NT + 4];
-    start.inf = 0.12;
-    this.p = { x: start.cx, y: start.cy - 2, r: 15, vx: 0, vy: 0, inv: 0, eating: -1, nibble: false, face: 1, jaw: 1,
-      hide: 0, hidden: false, shade: false, exposed: false, flip: null, flipCd: 0 };
-    this.hearts = 3; this.maxHearts = 3;
-    this.sugar = 0; this.sugarAcc = 0;
-    this.pain = 0; this.painWarn = false;
+    start.inf = 0.3;
+    this.zero = start.i;
+    this.sugar = 2;
+    this.pain = 0; this.techPain = 0; this.painWarn = false;
+    this.found = false; this.cure = 0; this.cureMarks = {};
     this.tech = {};
-    this.p.hide = this.hideMax();
-    this.hz = []; this.candies = [];
+    this.hideN = this.hideMax(); this.hideT = 0;
+    this.evacT = 0;
+    this.hz = []; this.bubbles = []; this.bid = 0; this.hid = 0;
     this.t = 0; this.status = 'play'; this.reason = ''; this.ev = [];
-    this.nextBrush = 4; this.nextFloss = 6; this.nextCandy = 5;
-    this.pending = { x: 0, y: 0 };
-    this.hits = 0; this.flips = 0; this.sneaks = 0;
+    this.nextBrush = this.cfg.brushFirst; this.nextFloss = 16; this.nextGargle = this.cfg.gargleFirst || 99;
+    this.nextBubble = 2; this.nextEvent = 9;
+    this.fx = {}; // 뉴스 효과: 이름 → 남은 시간
+    this.news = null; this.newsQ = [];
+    this.popped = 0; this.sneaks = 0; this.evacs = 0; this.hides = 0;
     this.lightA = -Math.PI / 2;
+    this.say('start');
   }
   const G = Game.prototype;
   G.emit = function (type, o) { this.ev.push(Object.assign({ type }, o || {})); };
   G.range = function (a) { return a[0] + this.rnd() * (a[1] - a[0]); };
   G.doneCount = function () { let n = 0; for (const t of this.teeth) if (t.done) n++; return n; };
+  G.infCount = function () { let n = 0; for (const t of this.teeth) if (t.inf > 0) n++; return n; };
   G.has = function (k) { return !!this.tech[k]; };
-  G.eatRate = function () { return 0.2 * (this.has('eat1') ? 1.35 : 1) * (this.has('eat2') ? 1.35 : 1); };
-  G.spreadMul = function () { return (this.has('spread1') ? 1.5 : 1) * (this.has('spread2') ? 1.5 : 1); };
-  G.cleanMul = function () { return this.has('sticky') ? 0.6 : 1; };
-  G.speed = function () { return 175 * (this.has('speed') ? 1.2 : 1); };
-  G.hideMax = function () { return 2.2 * (this.has('shade1') ? 1.5 : 1); };
-  G.sightMul = function () { return (this.has('blur') ? 0.72 : 1) * (this.has('ghost') ? 0.8 : 1); };
-  G.flipCdMax = function () { return this.has('speed') ? 1.3 : 1.9; };
-  G.painEatMul = function () { return this.has('quiet') ? 0.55 : 1; };
-  G.painDecay = function () { return this.cfg.painDecay + (this.has('numb') ? 0.8 : 0) + (this.has('calm') ? 0.6 : 0); };
-  G.conquerPain = function (byPlayer) { return (byPlayer ? 4 : 2.5) * (this.has('calm') ? 0.4 : 1); };
+  // --- 세기 (진화·뉴스가 곱해진다)
+  G.growMul = function () { return (this.has('eat1') ? 1.25 : 1) * (this.has('spread2') ? 1.2 : 1) * (this.fx.sweet > 0 ? 1.5 : 1); };
+  G.spreadMul = function () { return (this.has('spread1') ? 1.35 : 1) * (this.has('spread2') ? 1.35 : 1) * (this.fx.sweet > 0 ? 1.5 : 1); };
+  G.faceMul = function () { return this.has('jump') ? 2 : 1; };
+  G.cleanMul = function () { return (this.has('sticky') ? 0.7 : 1) * (this.has('ghost') ? 0.65 : 1); };
+  G.resMul = function () { return (this.has('blur') ? 0.8 : 1) * (this.has('calm') ? 0.75 : 1) * (this.has('sleep') ? 0.8 : 1) * (this.fx.sleep > 0 ? 0 : 1); };
+  G.brushGap = function () { return (this.has('sleep') ? 1.25 : 1) * (this.fx.mom > 0 ? 0.55 : 1); };
+  G.hideMax = function () { return this.cfg.hideMax + (this.has('shade1') ? 2 : 0); };
+  G.hideRe = function () { return this.cfg.hideRe * (this.has('shade1') ? 0.6 : 1); };
+  G.evacCdMax = function () { return this.cfg.evacCd * (this.has('ghost') ? 0.6 : 1); };
+  G.discoverAt = function () { return this.cfg.discover + (this.has('blur') ? 10 : 0); };
 
   G.techState = function (k) {
     const n = TECH.find(x => x.k === k);
@@ -186,246 +201,283 @@
     const n = TECH.find(x => x.k === k);
     if (!n || this.status !== 'play' || this.techState(k) !== 'buy') return false;
     this.sugar -= n.cost; this.tech[k] = 1;
-    this.addPain(n.pain);
-    if (k === 'shade1') this.p.hide = this.hideMax();
+    this.techPain += n.pain;
+    if (k === 'shade1') this.hideN = Math.min(this.hideMax(), this.hideN + 2);
+    this.calcPain();
     this.emit('upgrade', { k, pain: n.pain });
     return true;
   };
   G.addSugar = function (n, x, y) { this.sugar += n; this.emit('sugar', { n, x, y }); };
-  G.addPain = function (n) {
-    this.pain = Math.max(0, Math.min(100, this.pain + n));
-    if (this.pain >= 100 && this.status === 'play') { this.status = 'lose'; this.reason = 'dentist'; this.emit('dentist'); this.emit('lose'); }
-  };
 
+  // 이웃 나라: 같은 턱 양옆 + 맞닿은 반대 턱 이
   G.neighbors = function (i) {
     const t = this.teeth[i], out = [], base = t.jaw * NT;
     if (t.idx > 0) out.push(base + t.idx - 1);
     if (t.idx < NT - 1) out.push(base + t.idx + 1);
     return out;
   };
+  G.facing = function (i) { const t = this.teeth[i]; return (1 - t.jaw) * NT + t.idx; };
 
-  // 빛: 입 앞쪽(화면 위·아래 가장자리)에서 들어와 가운데로 그림자를 드리운다. 천천히 흔들린다.
+  // 빛·그림자 (그림: 이 그림자 속에 충치가 숨는다)
   G.shadowVec = function (t) {
     const a = this.lightA, l = t.h * 2.9;
     return [Math.cos(a) * l, Math.sin(a) * l * t.dir];
   };
-  G.onTooth = function (x, y, grow) {
-    for (const t of this.teeth) { const [u, v] = toLocal(t, x, y, grow || 0); if (u * u + v * v <= 1) return t.i; }
-    return -1;
-  };
-  G.inShadow = function (x, y) {
-    if (this.onTooth(x, y, 2) >= 0) return false;
-    for (const t of this.teeth) {
-      if (Math.abs(x - t.cx) > 90 || Math.abs(y - t.cy) > 90) continue;
-      const [u, v] = toLocal(t, x, y);
-      const [sx, sy] = this.shadowVec(t);
-      const [a, b] = toLocal(t, t.cx + sx, t.cy + sy);
-      if (segDist(u, v, 0, 0, a, b) <= 1) return true;
-    }
-    return false;
+
+  // --- 뉴스 한 줄
+  G.say = function (key, o) {
+    const n = Object.assign({ key, t: 0 }, o || {});
+    if (!this.news || this.news.t > 2.2) { this.news = n; this.emit('news', n); }
+    else if (this.newsQ.length < 3) this.newsQ.push(n);
   };
 
-  G.infect = function (t, amt, byPlayer) {
-    if (t.done || amt <= 0) return;
-    const before = t.inf;
-    t.inf = Math.min(1, t.inf + amt);
-    if (byPlayer) {
-      this.sugarAcc += t.inf - before;
-      while (this.sugarAcc >= 0.34) { this.sugarAcc -= 0.34; this.addSugar(1, t.cx, t.cy); }
-    }
-    if (t.inf >= 1) {
-      t.done = true; t.inf = 1;
-      this.addSugar(byPlayer ? 2 : 1, t.cx, t.cy);
-      this.emit('conquer', { i: t.i, x: t.cx, y: t.cy, byPlayer: !!byPlayer });
-      this.addPain(this.conquerPain(byPlayer));
-    }
+  // --- 방울 (Plague Inc 의 DNA 방울)
+  G.spawnBubble = function (i, kind) {
+    const t = this.teeth[i];
+    if (this.bubbles.length >= 7) return null;
+    const n = kind === 'gold' ? 3 : kind === 'red' ? 2 : 1; // 주황 1 · 빨강 2 · 금 3
+    const b = { id: ++this.bid, i, kind, n, x: t.cx + (this.rnd() - 0.5) * 16, y: t.cy - (t.d * 0.5 + 18) * t.dir * SQ, age: 0, life: this.cfg.bubbleLife };
+    // 겹치면 조금 비킨다
+    for (const q of this.bubbles) if (Math.hypot(q.x - b.x, q.y - b.y) < 30) { b.x += (b.x < W / 2 ? 1 : -1) * 26; b.y -= 10 * t.dir; }
+    b.x = Math.max(24, Math.min(W - 24, b.x));
+    this.bubbles.push(b);
+    this.emit('bubble', { id: b.id, x: b.x, y: b.y, kind });
+    return b;
   };
-
-  // 위아래 뒤집기 (중력 반전)
-  G.canFlip = function () { return this.status === 'play' && !this.p.flip && this.p.flipCd <= 0; };
-  G.doFlip = function () {
-    if (!this.canFlip()) return false;
-    const p = this.p, L = this.L;
-    const tj = 1 - p.jaw;
-    let ty = 2 * L.midY - p.y;
-    ty = Math.max(L.jawY[tj][0], Math.min(L.jawY[tj][1], ty));
-    p.flip = { t: 0, dur: 0.42, x0: p.x, y0: p.y, x1: p.x, y1: ty, to: tj };
-    p.flipCd = this.flipCdMax();
-    this.pending.x = 0; this.pending.y = 0;
-    this.flips++;
-    this.emit('flip', { to: tj });
+  G.pop = function (id) {
+    const k = this.bubbles.findIndex(b => b.id === id);
+    if (k < 0 || this.status !== 'play') return false;
+    const b = this.bubbles[k];
+    this.bubbles.splice(k, 1);
+    this.popped++;
+    this.addSugar(b.n, b.x, b.y);
+    this.emit('pop', { x: b.x, y: b.y, kind: b.kind });
     return true;
   };
 
-  G.update = function (dt, input) {
+  G.infect = function (t, amt) {
+    if (t.done || amt <= 0) return;
+    const was = t.inf;
+    t.inf = Math.min(1, t.inf + amt);
+    if (was === 0) { this.emit('spread', { i: t.i, x: t.cx, y: t.cy }); if (this.rnd() < 0.6) this.spawnBubble(t.i, 'orange'); }
+    if (!t.half && t.inf >= 0.5) { t.half = true; t.root = true; this.emit('half', { i: t.i, x: t.cx, y: t.cy }); }
+    if (t.inf >= 1) {
+      t.done = true; t.inf = 1;
+      this.emit('conquer', { i: t.i, x: t.cx, y: t.cy });
+      const n = this.doneCount();
+      if (n === 1 || n === 10 || n === 17) this.spawnBubble(t.i, 'gold'); else if (this.rnd() < 0.5) this.spawnBubble(t.i, 'red');
+      if (n === 1) this.say('firstDone');
+      else if (n === 10) this.say('halfDone');
+      else if (n === 17) this.say('almost');
+    }
+  };
+
+  G.calcPain = function () {
+    let s = 0;
+    for (const t of this.teeth) s += t.done ? 3.2 : t.inf * 2;
+    this.pain = Math.max(0, Math.min(100, s + this.techPain));
+  };
+
+  // --- 특수기 1: 숨기 (칫솔이 오는 이의 충치를 톡 → 이 그림자에 숨는다)
+  G.threatOf = function (i) {
+    const t = this.teeth[i];
+    for (const h of this.hz) {
+      if (h.st === 'done') continue;
+      if (h.kind === 'brush') { if (h.jaw === t.jaw && !h.cleaned[i] && t.s > h.s0 - 20 && t.s < h.s1 + 20) return h; }
+      else if (h.kind === 'floss') { if ((h.a === i || h.b === i) && h.st === 'warn') return h; }
+      else if (h.kind === 'gargle') { if (!h.cleaned[i]) return h; }
+    }
+    return null;
+  };
+  G.canHide = function (i) {
+    const t = this.teeth[i];
+    return this.status === 'play' && t && !t.done && t.inf > 0 && t.shield <= 0 && this.hideN >= 1 && !!this.threatOf(i);
+  };
+  G.hide = function (i) {
+    if (!this.canHide(i)) return false;
+    const h = this.threatOf(i), t = this.teeth[i];
+    t.shield = h.kind === 'gargle' ? 6 : h.kind === 'floss' ? 3.5 : 7;
+    t.shieldBy = h.id;
+    this.hideN -= 1; this.hides++;
+    this.emit('hide', { i, x: t.cx, y: t.cy });
+    return true;
+  };
+
+  // --- 특수기 2: 대피 (위아래 뒤집기). 닦일 턱의 충치가 맞은편 턱으로 휙 뛰어 옮는다.
+  G.evacTarget = function () {
+    let best = null;
+    for (const h of this.hz) if (h.kind === 'brush' && h.st !== 'done' && (!best || h.t < best.t)) best = h;
+    return best;
+  };
+  G.canEvac = function () {
+    if (this.status !== 'play' || this.evacT > 0) return false;
+    const h = this.evacTarget(); if (!h) return false;
+    for (let k = 0; k < NT; k++) { const t = this.teeth[h.jaw * NT + k]; if (!t.done && t.inf > 0 && !h.cleaned[t.i] && t.s > h.s0 - 20 && t.s < h.s1 + 20) return true; }
+    return false;
+  };
+  G.evac = function () {
+    if (!this.canEvac()) return false;
+    const h = this.evacTarget(), jumps = [];
+    for (let k = 0; k < NT; k++) {
+      const t = this.teeth[h.jaw * NT + k];
+      if (t.done || t.inf <= 0 || h.cleaned[t.i] || t.s < h.s0 - 20 || t.s > h.s1 + 20) continue;
+      const o = this.teeth[this.facing(t.i)];
+      jumps.push({ from: t.i, to: o.i });
+      this.infect(o, 0.12 + t.inf * 0.35);
+    }
+    this.evacT = this.evacCdMax(); this.evacs++;
+    this.emit('flip', { jumps, to: 1 - h.jaw });
+    return true;
+  };
+
+  // --- 뉴스 사건
+  G.doEvent = function () {
+    const ws = this.cfg.events, keys = Object.keys(ws);
+    let sum = 0; for (const k of keys) sum += ws[k];
+    let r = this.rnd() * sum, key = keys[0];
+    for (const k of keys) { r -= ws[k]; if (r <= 0) { key = k; break; } }
+    if (key === 'candy') {
+      this.fx.sweet = 12;
+      const inf = this.teeth.filter(t => t.inf > 0);
+      for (let k = 0; k < 2 && inf.length; k++) this.spawnBubble(inf[Math.floor(this.rnd() * inf.length)].i, 'orange');
+    } else if (key === 'juice') {
+      this.fx.sweet = 8;
+    } else if (key === 'sleep') {
+      this.fx.sleep = 12; this.nextBrush = Math.max(this.nextBrush, 12);
+    } else if (key === 'mom') {
+      this.fx.mom = 14; this.nextBrush = Math.min(this.nextBrush, 1.2);
+    } else if (key === 'ad') {
+      if (!this.found) this.discover(); else this.cure = Math.min(99, this.cure + 6);
+    } else if (key === 'water') {
+      for (const t of this.teeth) if (!t.done && t.inf > 0 && t.shield <= 0) t.inf = Math.max(0.02, t.inf - 0.05);
+    } else if (key === 'call') {
+      if (!this.found) this.discover(); else this.cure = Math.min(99, this.cure + 8);
+    }
+    this.say('ev_' + key, { good: key === 'candy' || key === 'juice' || key === 'sleep' });
+    this.emit('event', { key });
+  };
+  G.discover = function () {
+    if (this.found) return;
+    this.found = true;
+    this.say('found');
+    this.emit('found');
+  };
+
+  G.update = function (dt) {
     if (this.status !== 'play') return;
     dt = Math.min(dt, 0.05);
     this.t += dt;
-    const p = this.p, L = this.L, cfg = this.cfg;
-    this.lightA = -Math.PI / 2 + cfg.sway * Math.sin(this.t * cfg.swaySpd);
+    const L = this.L, cfg = this.cfg;
+    this.lightA = -Math.PI / 2 + 0.5 * Math.sin(this.t * 0.3);
+    for (const k in this.fx) if (this.fx[k] > 0) this.fx[k] -= dt;
+    if (this.evacT > 0) this.evacT -= dt;
+    if (this.hideN < this.hideMax()) { this.hideT += dt; if (this.hideT >= this.hideRe()) { this.hideT = 0; this.hideN++; } } else this.hideT = 0;
 
-    if (p.flipCd > 0) p.flipCd -= dt;
-    if (p.inv > 0) p.inv -= dt;
+    // --- 뉴스 줄
+    if (this.news) { this.news.t += dt; if (this.news.t > 5.5) { this.news = null; } }
+    if ((!this.news || this.news.t > 2.2) && this.newsQ.length) { this.news = this.newsQ.shift(); this.emit('news', this.news); }
 
-    if (p.flip) {
-      const f = p.flip; f.t += dt;
-      const k = Math.min(1, f.t / f.dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-      p.x = f.x0 + (f.x1 - f.x0) * e; p.y = f.y0 + (f.y1 - f.y0) * e;
-      if (k >= 1) { p.flip = null; p.jaw = f.to; this.emit('land', { x: p.x, y: p.y }); }
-      p.vx = 0; p.vy = 0; p.eating = -1; p.hidden = false; p.shade = false;
-      if (input) { input.dx = 0; input.dy = 0; }
-    } else {
-      // --- 움직임: 손가락이 끈 만큼(상대 이동) 따라간다. 최고 속도는 제한. 자기 턱 안에서만.
-      if (input) { this.pending.x += input.dx || 0; this.pending.y += input.dy || 0; }
-      const pm = Math.hypot(this.pending.x, this.pending.y);
-      if (pm > 70) { this.pending.x *= 70 / pm; this.pending.y *= 70 / pm; }
-      const maxStep = this.speed() * dt;
-      let mx = this.pending.x, my = this.pending.y;
-      const m = Math.hypot(mx, my);
-      if (m > maxStep) { mx *= maxStep / m; my *= maxStep / m; }
-      this.pending.x -= mx; this.pending.y -= my;
-      const ox = p.x, oy = p.y, jy = L.jawY[p.jaw];
-      p.x = Math.max(L.pMinX, Math.min(L.pMaxX, p.x + mx));
-      p.y = Math.max(jy[0], Math.min(jy[1], p.y + my));
-      p.vx = (p.x - ox) / dt; p.vy = (p.y - oy) / dt;
-      if (Math.abs(mx) > 0.3) p.face = mx > 0 ? 1 : -1;
-
-      // --- 그림자에 숨기 (숨는 시간은 짧다)
-      const sh = this.inShadow(p.x, p.y);
-      const wasHidden = p.hidden;
-      p.shade = sh;
-      if (sh && !p.exposed) {
-        p.hide -= dt * (this.has('ghost') ? 0.6 : 1);
-        if (p.hide <= 0) { p.hide = 0; p.exposed = true; this.emit('exposed', { x: p.x, y: p.y }); }
-      } else if (!sh) p.hide = Math.min(this.hideMax(), p.hide + dt * 0.55);
-      if (p.exposed && !sh && p.hide >= this.hideMax() * 0.45) p.exposed = false;
-      p.hidden = sh && !p.exposed;
-      if (p.hidden && !wasHidden) this.emit('hide', { x: p.x, y: p.y });
-
-      // --- 먹기: 이 위면 냠냠 빨리, 옆(그림자)이면 조금씩
-      let best = -1, bd = 1e9, top = false;
-      for (const t of this.teeth) {
-        if (t.done || t.jaw !== p.jaw) continue;
-        const [u, v] = toLocal(t, p.x, p.y, 4);
-        const d0 = u * u + v * v;
-        if (d0 <= 1) { if (!top || d0 < bd) { top = true; bd = d0; best = t.i; } }
-        else if (!top) {
-          const [u2, v2] = toLocal(t, p.x, p.y, p.r + 4);
-          const d2 = u2 * u2 + v2 * v2;
-          if (d2 <= 1 && d2 < bd) { bd = d2; best = t.i; }
-        }
-      }
-      const wasEating = p.eating;
-      p.eating = (p.inv > 1.0) ? -1 : best;
-      p.nibble = p.eating >= 0 && !top;
-      if (p.eating >= 0) {
-        const t = this.teeth[p.eating];
-        const mul = p.nibble ? 0.38 : 1;
-        this.infect(t, this.eatRate() * mul * dt, true);
-        this.addPain(cfg.painEat * this.painEatMul() * (p.nibble ? 0.35 : 1) * dt);
-        t.eaten += dt * mul;
-        if (p.eating !== wasEating || Math.floor(t.eaten / 0.28) !== Math.floor((t.eaten - dt * mul) / 0.28))
-          this.emit('chomp', { x: t.cx, y: t.cy, i: t.i, nibble: p.nibble });
-      } else this.addPain(-this.painDecay() * dt);
-      if (p.eating >= 0) this.addPain(-this.painDecay() * 0.35 * dt);
-    }
-    if (this.status !== 'play') return;
-    if (this.pain >= 75 && !this.painWarn) { this.painWarn = true; this.emit('painWarn'); }
-    if (this.pain < 60) this.painWarn = false;
-
-    // --- 번짐 (저절로 자라고, 옆으로 옮는다)
-    const sm = this.spreadMul();
+    // --- 번짐 (저절로 자라고, 옆 나라로 옮는다)
+    const gm = this.growMul(), sm = this.spreadMul(), fm = this.faceMul();
     const add = new Array(this.teeth.length).fill(0);
     for (const t of this.teeth) {
       if (t.inf <= 0) continue;
-      if (!t.done) add[t.i] += cfg.grow * sm * dt * (0.4 + t.inf);
-      if (t.inf >= 0.5) for (const j of this.neighbors(t.i)) if (!this.teeth[j].done) add[j] += cfg.spread * sm * dt * t.inf;
+      if (!t.done) add[t.i] += cfg.grow * gm * dt * (0.35 + t.inf);
+      if (t.inf < 0.3) continue;
+      const pw = t.done ? cfg.doneSpread * (this.has('jump') ? 1.3 : 1) : t.inf;
+      // 옆 이: 확률로 새로 옮고, 이미 옮은 이는 더 빨리 자란다
+      for (const j of this.neighbors(t.i)) {
+        const o = this.teeth[j]; if (o.done) continue;
+        if (o.inf <= 0) { if (this.rnd() < cfg.spread * sm * pw * dt) add[j] += 0.06; }
+        else add[j] += cfg.grow * 0.25 * sm * pw * dt;
+      }
+      const o = this.teeth[this.facing(t.i)];
+      if (!o.done) {
+        if (o.inf <= 0) { if (this.rnd() < cfg.face * sm * fm * pw * dt) add[o.i] += 0.06; }
+        else add[o.i] += cfg.grow * 0.15 * fm * pw * dt;
+      }
     }
-    for (const t of this.teeth) if (add[t.i] > 0) {
-      const was = t.inf;
-      this.infect(t, add[t.i], false);
-      if (was === 0 && t.inf > 0) this.emit('spread', { i: t.i, x: t.cx, y: t.cy });
-    }
-    if (this.status !== 'play') return;
+    for (const t of this.teeth) if (add[t.i] > 0) this.infect(t, add[t.i]);
 
-    // --- 칫솔·치실
-    this.nextBrush -= dt;
-    if (this.nextBrush <= 0) {
-      if (this.rnd() < cfg.doubleP) { this.spawnBrush(0, 'sweep'); this.spawnBrush(1, 'sweep'); }
-      else this.spawnBrush();
-      this.nextBrush = this.range(cfg.brushEvery);
+    // --- 아야 지수 → 주인이 알아채고 → 치과 예약 막대
+    this.calcPain();
+    if (!this.found && this.pain >= this.discoverAt()) this.discover();
+    if (this.pain >= 75 && !this.painWarn) { this.painWarn = true; this.say('pain'); this.emit('painWarn'); }
+    if (this.pain < 60) this.painWarn = false;
+    if (this.found) {
+      this.cure += cfg.research * (0.5 + 1.2 * this.pain / 100) * this.resMul() * dt;
+      for (const m of [50, 80]) if (this.cure >= m && !this.cureMarks[m]) { this.cureMarks[m] = 1; this.say('cure' + m); }
+      if (this.cure >= 100) { this.cure = 100; this.status = 'lose'; this.reason = 'dentist'; this.emit('dentist'); this.emit('lose'); return; }
     }
-    if (cfg.floss) {
-      this.nextFloss -= dt;
-      if (this.nextFloss <= 0) { this.spawnFloss(); this.nextFloss = this.range(cfg.flossEvery); }
+
+    // --- 방울
+    this.nextBubble -= dt;
+    if (this.nextBubble <= 0) {
+      this.nextBubble = cfg.bubbleEvery * (0.7 + this.rnd() * 0.6);
+      const inf = this.teeth.filter(t => t.inf > 0);
+      if (inf.length) this.spawnBubble(inf[Math.floor(this.rnd() * inf.length)].i, 'orange');
+    }
+    for (const b of this.bubbles) { b.age += dt; b.life -= dt; }
+    this.bubbles = this.bubbles.filter(b => b.life > 0);
+
+    // --- 뉴스 사건
+    this.nextEvent -= dt;
+    if (this.nextEvent <= 0) { this.nextEvent = this.range(cfg.eventEvery); this.doEvent(); }
+
+    // --- 방역: 칫솔·치실·가글
+    if (!(this.fx.sleep > 0)) {
+      this.nextBrush -= dt;
+      if (this.nextBrush <= 0) { this.spawnBrush(); this.nextBrush = this.range(cfg.brushEvery) * this.brushGap(); }
+      if (cfg.floss) { this.nextFloss -= dt; if (this.nextFloss <= 0) { this.spawnFloss(); this.nextFloss = this.range(cfg.flossEvery); } }
+      if (cfg.gargle) { this.nextGargle -= dt; if (this.nextGargle <= 0) { this.spawnGargle(); this.nextGargle = this.range(cfg.gargleEvery); } }
     }
     for (const h of this.hz) this.updHazard(h, dt);
     this.hz = this.hz.filter(h => !h.gone);
+    for (const t of this.teeth) { if (t.hurt > 0) t.hurt -= dt; if (t.shield > 0) { t.shield -= dt; if (t.shield <= 0 || (t.shieldBy && !this.hz.some(h => h.id === t.shieldBy))) t.shield = 0; } }
 
-    // --- 사탕
-    this.nextCandy -= dt;
-    if (this.nextCandy <= 0) {
-      this.nextCandy = cfg.candyEvery + this.rnd() * 3;
-      if (this.candies.length < 2) {
-        const jaw = this.rnd() < 0.5 ? 0 : 1, jy = L.jawY[jaw];
-        let x = 0, y = 0;
-        for (let k = 0; k < 12; k++) {
-          x = L.pMinX + 20 + this.rnd() * (L.pMaxX - L.pMinX - 40);
-          y = jy[0] + 16 + this.rnd() * (jy[1] - jy[0] - 32);
-          if (this.onTooth(x, y, 10) < 0) break;
-        }
-        this.candies.push({ kind: (this.hearts < this.maxHearts && this.rnd() < 0.35) ? 'heart' : 'candy', x, y, jaw, life: 8, age: 0 });
-      }
-    }
-    for (const c of this.candies) {
-      c.age += dt; c.life -= dt;
-      if (!p.flip && Math.hypot(c.x - p.x, c.y - p.y) < p.r + 14) {
-        c.life = -1;
-        if (c.kind === 'heart' && this.hearts < this.maxHearts) { this.hearts++; this.emit('heal', { x: c.x, y: c.y }); }
-        else { this.addSugar(3, c.x, c.y); this.emit('candy', { x: c.x, y: c.y }); }
-      }
-    }
-    this.candies = this.candies.filter(c => c.life > 0);
-
-    for (const t of this.teeth) if (t.hurt > 0) t.hurt -= dt;
-
-    if (this.doneCount() === this.teeth.length && this.status === 'play') { this.status = 'win'; this.emit('win'); }
+    if (this.doneCount() === this.teeth.length) { this.status = 'win'; this.emit('win'); return; }
+    if (this.infCount() === 0) { this.status = 'lose'; this.reason = 'clean'; this.emit('lose'); }
   };
 
-  G.spawnBrush = function (forceJaw, forceMode) {
-    const L = this.L, p = this.p, cfg = this.cfg;
-    const jaw = forceJaw != null ? forceJaw : (this.rnd() < cfg.chaseP ? p.jaw : (this.rnd() < 0.5 ? 0 : 1));
-    const mode = forceMode || (this.rnd() < cfg.scrubP && jaw === p.jaw ? 'scrub' : 'sweep');
-    const len = L.archLen;
-    const h = { kind: 'brush', jaw, mode, off: 0, st: 'warn', tw: cfg.warn, t: 0, cleaned: {}, spot: false, sneak: false, gone: false };
-    if (mode === 'sweep') {
-      h.dir = this.rnd() < 0.5 ? 1 : -1;
-      h.s = h.dir > 0 ? -45 : len + 45;
-    } else {
-      h.s0 = Math.max(70, Math.min(len - 70, nearestS(L, jaw, p.x, p.y) + (this.rnd() - 0.5) * 60));
-      h.s = h.s0; h.ph = 0; h.life = 2.3; h.dir = 1;
-    }
+  // 칫솔: 한 구역(이 몇 개)을 쓱쓱. 단계가 오를수록 넓고, 충치 있는 곳을 잘 찾는다.
+  G.spawnBrush = function () {
+    const cfg = this.cfg, L = this.L;
+    let jaw, ci;
+    const live = this.teeth.filter(t => t.inf > 0 && !t.done);
+    if (live.length && this.rnd() < cfg.brushTarget) { const t = live[Math.floor(this.rnd() * live.length)]; jaw = t.jaw; ci = t.idx; }
+    else { jaw = this.rnd() < 0.5 ? 0 : 1; ci = Math.floor(this.rnd() * NT); }
+    const z = cfg.brushZone;
+    let a = Math.max(0, Math.min(NT - z, ci - Math.floor((z - 1) / 2) - (this.rnd() < 0.5 ? 0 : 1)));
+    const ta = this.teeth[jaw * NT + a], tb = this.teeth[jaw * NT + a + z - 1];
+    const s0 = ta.s - ta.w / ta.pf / 2 - 8, s1 = tb.s + tb.w / tb.pf / 2 + 8;
+    const dir = this.rnd() < 0.5 ? 1 : -1;
+    const h = { id: ++this.hid, kind: 'brush', jaw, s0, s1, a, z, dir, s: dir > 0 ? s0 - 30 : s1 + 30, off: 0, st: 'warn', tw: cfg.brushWarn, t: 0,
+      cleaned: {}, back: cfg.brushBack, pass: 0, gone: false };
     this.headPos(h);
     this.hz.push(h);
-    this.emit('warn', { kind: 'brush' });
+    this.emit('warn', { kind: 'brush', jaw });
+    if (!this._brushSaid) { this._brushSaid = true; this.say('brush'); }
   };
   G.headPos = function (h) {
     const P = archAt(this.L, h.jaw, h.s);
     h.x = P.x + P.nx * h.off; h.y = P.y + P.ny * h.off; h.tx = P.tx; h.ty = P.ty; h.nx = P.nx; h.ny = P.ny;
     h.ax = P.x; h.ay = P.y;
   };
-
   G.spawnFloss = function () {
-    const L = this.L, p = this.p;
-    const jaw = this.rnd() < 0.7 ? p.jaw : 1 - p.jaw;
-    const gs = L.gaps.filter(g => g.jaw === jaw);
-    let g;
-    if (this.rnd() < 0.65) { let bd = 1e9; for (const q of gs) { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < bd) { bd = d; g = q; } } }
-    else g = gs[Math.floor(this.rnd() * gs.length)];
-    this.hz.push({ kind: 'floss', g, jaw, st: 'warn', tw: this.cfg.flossWarn, t: 0, sweep: 0, cleaned: {}, gone: false });
+    const L = this.L;
+    // 충치 있는 이 옆 틈을 노린다
+    let gs = L.gaps.filter(g => { const A = this.teeth[g.a], B = this.teeth[g.b]; return (A.inf > 0 && !A.done) || (B.inf > 0 && !B.done); });
+    if (!gs.length || this.rnd() < 0.3) gs = L.gaps;
+    const g = gs[Math.floor(this.rnd() * gs.length)];
+    this.hz.push({ id: ++this.hid, kind: 'floss', g, jaw: g.jaw, a: g.a, b: g.b, st: 'warn', tw: this.cfg.flossWarn, t: 0, sweep: 0, cleaned: {}, gone: false });
     this.emit('warn', { kind: 'floss' });
+    if (!this._flossSaid) { this._flossSaid = true; this.say('floss'); }
   };
-  // 치실이 닿는 곳: 이 사이 틈을 가로지르는 줄 + 틈 그림자 쪽으로 훑는 자리
+  G.spawnGargle = function () {
+    this.hz.push({ id: ++this.hid, kind: 'gargle', st: 'warn', tw: this.cfg.gargleWarn, t: 0, y: this.L.mT - 40, cleaned: {}, gone: false });
+    this.emit('warn', { kind: 'gargle' });
+    this.say('gargle');
+  };
   G.flossZone = function (h) {
     const g = h.g, a = this.lightA, l = 58;
     const sx = Math.cos(a) * l, sy = Math.sin(a) * l * (g.jaw === 1 ? 1 : -1);
@@ -433,88 +485,51 @@
     return { ax: g.x - g.nx * e, ay: g.y - g.ny * e, bx: g.x + g.nx * e, by: g.y + g.ny * e, r1: 13,
       cx: g.x, cy: g.y, dx: g.x + sx, dy: g.y + sy, r2: 22 };
   };
-  G.inFloss = function (h, x, y) {
-    const z = this.flossZone(h);
-    return segDist(x, y, z.ax, z.ay, z.bx, z.by) < z.r1 + this.p.r * 0.5 || segDist(x, y, z.cx, z.cy, z.dx, z.dy) < z.r2 + this.p.r * 0.4;
-  };
 
-  G.hitPlayer = function (h) {
-    const p = this.p;
-    if (p.inv > 0 || p.flip || this.status !== 'play') return;
-    this.hearts--; this.hits++;
-    p.inv = 1.8;
-    const dx = p.x - (h.x || p.x), dy = p.y - (h.y || p.y), d = Math.hypot(dx, dy) || 1;
-    this.pending.x = dx / d * 50; this.pending.y = dy / d * 50;
-    this.emit('hit', { x: p.x, y: p.y, kind: h.kind });
-    if (this.hearts <= 0) { this.status = 'lose'; this.reason = 'clean'; this.emit('lose'); }
-  };
-
-  G.cleanTooth = function (i, amt) {
+  G.cleanTooth = function (i, amt, h) {
     const t = this.teeth[i];
     if (t.done || t.inf <= 0) return;
-    t.inf = Math.max(0, t.inf - amt * this.cleanMul());
+    if (t.shield > 0) { this.sneaks++; this.addSugar(1, t.cx, t.cy - 24 * t.dir); this.emit('sneak', { i, x: t.cx, y: t.cy }); return; }
+    // 반쯤 먹은 적 있는 이는 뿌리가 남는다(0.1) — 처음 옮은 이만 싹 지워진다
+    t.inf = Math.max(t.root ? 0.1 : 0, t.inf - amt * this.cleanMul());
+    if (t.inf < 0.5) t.half = false;
+    if (t.inf <= 0.015) { t.inf = 0; this.emit('wiped', { i, x: t.cx, y: t.cy }); }
     t.hurt = 0.5;
     this.emit('clean', { i, x: t.cx, y: t.cy });
   };
 
-  G.brushSight = function () { return this.cfg.sight * this.sightMul(); };
-
   G.updHazard = function (h, dt) {
-    const p = this.p, cfg = this.cfg, L = this.L;
+    const cfg = this.cfg, L = this.L;
     h.t += dt;
     if (h.st === 'warn') {
-      if (h.t >= h.tw) { h.st = 'go'; h.t = 0; this.emit(h.kind === 'brush' ? 'swish' : 'floss', { jaw: h.jaw }); }
+      if (h.t >= h.tw) { h.st = 'go'; h.t = 0; this.emit(h.kind === 'brush' ? 'swish' : h.kind === 'floss' ? 'floss' : 'gargle', { jaw: h.jaw }); }
       return;
     }
     if (h.kind === 'brush') {
-      // 칫솔의 눈: 보이면(그림자 밖) 쫓아오고, 숨으면 놓친다
-      const sameJaw = !p.flip && p.jaw === h.jaw;
-      const d = Math.hypot(p.x - h.x, p.y - h.y);
-      const seeing = sameJaw && !p.hidden && d < this.brushSight();
-      if (seeing) {
-        if (!h.spot) { h.spot = true; this.emit('spot', { x: h.x, y: h.y }); }
-        const want = Math.max(-cfg.offMax, Math.min(cfg.offMax, (p.x - h.ax) * h.nx + (p.y - h.ay) * h.ny));
-        const st = cfg.steer * dt;
-        h.off += Math.max(-st, Math.min(st, want - h.off));
-        if (h.mode === 'scrub') {
-          const ps = nearestS(L, h.jaw, p.x, p.y);
-          h.s0 += Math.max(-70 * dt, Math.min(70 * dt, ps - h.s0));
-        }
-      } else {
-        if (h.spot) { h.spot = false; h.lostAt = this.t; this.emit('lost', { x: h.x, y: h.y, hidden: p.hidden && sameJaw }); }
-        const st = cfg.steer * 0.5 * dt;
-        h.off += Math.max(-st, Math.min(st, -h.off));
-      }
-      if (h.mode === 'sweep') {
-        h.s += h.dir * cfg.brushSpeed * (seeing ? 0.6 : 1) * dt;
-        if (h.s < -55 || h.s > L.archLen + 55) h.gone = true;
-      } else {
-        h.ph += dt * 5.5; h.life -= dt;
-        h.s = h.s0 + 62 * Math.sin(h.ph);
-        if (h.life <= 0) h.gone = true;
-      }
+      h.s += h.dir * cfg.brushSpeed * dt;
+      h.off = 6 * Math.sin(h.t * 16);
       this.headPos(h);
-      // 닦기
-      if (Math.abs(h.off) < 45) for (let k = 0; k < NT; k++) {
+      for (let k = h.a; k < h.a + h.z; k++) {
         const t = this.teeth[h.jaw * NT + k];
-        if (Math.abs(t.s - h.s) < t.w / 2 + 18) {
-          const last = h.cleaned[t.i];
-          if (last == null || (h.mode === 'scrub' && this.t - last > 0.6)) { h.cleaned[t.i] = this.t; this.cleanTooth(t.i, cfg.clean * (h.mode === 'scrub' ? 0.55 : 1)); }
-        }
+        const key = t.i + ':' + h.pass;
+        if (!h.cleaned[key] && Math.abs(t.s - h.s) < 8) { h.cleaned[key] = 1; if (h.pass === 0) h.cleaned[t.i] = 1; this.cleanTooth(t.i, cfg.clean * (h.pass ? 0.5 : 1), h); }
       }
-      if (sameJaw && d < 26 + p.r * 0.6) {
-        if (!p.hidden) this.hitPlayer(h);
-        else if (!h.sneak) { h.sneak = true; this.sneaks++; this.addSugar(1, p.x, p.y - 20); this.emit('sneak', { x: p.x, y: p.y }); }
+      const out = h.dir > 0 ? h.s > h.s1 + 30 : h.s < h.s0 - 30;
+      if (out) {
+        if (h.back && h.pass === 0) { h.pass = 1; h.dir = -h.dir; }
+        else { h.st = 'done'; h.gone = true; }
       }
-    } else {
+    } else if (h.kind === 'floss') {
       if (h.st === 'go') {
         h.sweep = Math.min(1, h.t / 0.45);
-        for (const i of [h.g.a, h.g.b]) if (!h.cleaned[i]) { h.cleaned[i] = 1; this.cleanTooth(i, cfg.flossClean); }
-        if (!p.flip && p.jaw === h.jaw && this.inFloss(h, p.x, p.y)) this.hitPlayer({ kind: 'floss', x: h.g.x, y: h.g.y });
+        for (const i of [h.a, h.b]) if (!h.cleaned[i]) { h.cleaned[i] = 1; this.cleanTooth(i, cfg.flossClean, h); }
         if (h.t > 0.6) { h.st = 'up'; h.t = 0; }
-      } else if (h.st === 'up') {
-        if (h.t > 0.3) h.gone = true;
-      }
+      } else if (h.st === 'up') { if (h.t > 0.3) { h.st = 'done'; h.gone = true; } }
+    } else {
+      // 가글: 물결이 위에서 아래로 쏴아
+      h.y = L.mT - 40 + (L.mB - L.mT + 80) * Math.min(1, h.t / 1.8);
+      for (const t of this.teeth) if (!h.cleaned[t.i] && h.y >= t.cy) { h.cleaned[t.i] = 1; this.cleanTooth(t.i, cfg.gargleClean, h); }
+      if (h.t > 2.2) { h.st = 'done'; h.gone = true; }
     }
   };
 

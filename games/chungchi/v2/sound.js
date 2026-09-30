@@ -95,11 +95,6 @@
       case 'ouch': tone(300, 0.18, 'sawtooth', 0.05, 0, 200); tone(300, 0.18, 'sawtooth', 0.05, 0.22, 200); break;
       case 'drill': tone(1600, 1.1, 'sawtooth', 0.05, 0, 1900); noise(1.1, 0.08, 3000, 3500, 0, 6); break;
       case 'bubble': tone(500 + Math.random() * 400, 0.08, 'sine', 0.05, 0, 1200); break;
-      // v3
-      case 'pop': tone(880 + Math.random() * 200, 0.06, 'sine', 0.16, 0, 1760); tone(1320, 0.08, 'triangle', 0.08, 0.04); break;
-      case 'news': tone(784, 0.09, 'triangle', 0.08); tone(1047, 0.14, 'triangle', 0.08, 0.1); break;
-      case 'newsBad': tone(523, 0.1, 'square', 0.05); tone(392, 0.16, 'square', 0.05, 0.11); break;
-      case 'gargle': noise(1.4, 0.2, 300, 1400, 0, 0.7, 'lowpass'); for (let k = 0; k < 6; k++) tone(300 + Math.random() * 500, 0.07, 'sine', 0.05, 0.1 + k * 0.18, 900); break;
     }
   };
 

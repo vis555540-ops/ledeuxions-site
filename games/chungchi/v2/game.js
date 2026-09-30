@@ -1,8 +1,8 @@
-// game.js — 충치의 역습 v3: 화면·손·소리·저장. 규칙은 logic.js.
-// v3: 입 = 세계지도, 이빨 = 나라. 충치가 저절로 번지고, 플레이어는 방울 톡·진화·숨기/대피.
+// game.js — 충치의 역습 v2: 화면·손·소리·저장. 규칙은 logic.js.
+// v2: 비스듬히 내려다본 입 속, 그림자 숨기, 위아래 뒤집기, 테크 나무·통증 지수.
 (function () {
   'use strict';
-  const { W, NT, SQ, TECH, Game, layout, archAt, toLocal: tLocal } = window.ChungLogic;
+  const { W, NT, SQ, TECH, Game, layout, archAt } = window.ChungLogic;
   const S = window.Sound;
   const cv = document.getElementById('cv');
   const c = cv.getContext('2d');
@@ -12,119 +12,85 @@
   // ---------------- 글 ----------------
   const T = {
     ko: {
-      title: '충치의 역습', sub: '충치를 퍼뜨려 입 속을 정복해요!',
-      st1: '1단계', st2: '2단계', st3: '3단계', stn1: '칫솔이 방역해요', stn2: '치실도 와요!', stn3: '가글이 쏴아!',
-      locked1: '1단계를 깨면 열려요', locked2: '2단계를 깨면 열려요', best: '최고 기록', play: '시작',
-      tipSpread: '충치는 저절로 옆 이, 맞닿은 위아래 이로 번져요',
-      tipBubble: '톡 튀어나온 방울을 눌러 사탕을 모아요',
-      tipDent: '주인이 알아채면 치과 예약 막대가 차요. 다 차기 전에 이를 다 먹어요!',
-      tipHide: '칫솔이 오면(노란 곳) 충치를 톡! 그림자에 숨어요',
-      tipFlip: '⇅ 대피: 닦일 턱의 충치가 반대 턱으로 휙 뛰어요',
-      tipTech: '사탕으로 진화! 세질수록 아야가 올라 치과가 빨라져요',
-      tipFloss: '치실은 이 사이를 쓱! 두 이를 한 번에 닦아요',
-      tipGargle: '가글은 입 전체를 한 번에 씻어요. 숨기로 버텨요!',
+      title: '충치의 역습', sub: '칫솔 눈을 피해 그림자에 숨어 냠냠!',
+      st1: '1단계', st2: '2단계', stn1: '칫솔이 온다!', stn2: '치실도 온다!',
+      locked: '1단계를 깨면 열려요', best: '최고 기록', play: '시작',
+      tipDrag: '화면 아무 데나 끌어서 움직여요', tipEat: '이 위에 올라가면 빨리, 옆에 붙으면 조금씩 먹어요',
+      tipShade: '그림자에 숨으면 칫솔이 못 찾아요. 오래는 못 숨어요!',
+      tipFlip: '두 번 톡톡(또는 ⇅ 단추) 하면 위아래 턱으로 휙 뒤집어요',
+      tipBrush: '칫솔은 눈이 있어요. 보이면 쫓아와요!',
+      tipFloss: '치실은 이 틈 그림자까지 훑어요. 초록 자리는 피해요!',
+      tipTech: '사탕으로 진화! 세질수록 아야 지수가 올라요. 100이면 치과행',
       tapStart: '눌러서 시작!',
       paused: '잠깐 쉬어요', resume: '계속하기', home: '처음으로', retry: '다시 하기', next: '다음 단계',
       winTitle: '이빨을 다 먹었다!', winAll: '모든 단계를 깼어요!',
-      loseTitle: '뽀득뽀득! 다 닦였다', loseSub: '충치가 하나도 안 남았어요',
-      dentTitle: '치과에 갔다!', dentSub: '치과 예약 막대가 다 찼어요. 위잉~',
-      dentTip: '진정 가지로 아야를 낮추면 치과가 느려져요',
+      loseTitle: '뽀득뽀득! 다 닦였다', loseSub: '이번엔 칫솔이 이겼어요',
+      dentTitle: '치과에 갔다!', dentSub: '너무 아파서 주인이 치과에 갔어요. 위잉~',
+      dentTip: '진정 가지(살금살금·마취)로 아야 지수를 낮춰요',
       time: '걸린 시간', record: '새 기록!',
       moralHead: '게임은 게임!', moral: '진짜 이는 하루 세 번, 3분씩 닦아요',
       moralLose: '진짜 입 속에서도 칫솔이 이겨야 해요',
+      soon: '다음엔 가글이 와요... 기대해요!',
       sound: '소리', on: '켬', off: '끔', lang: 'English',
-      tech: '진화', pain: '아야', dent: '치과 예약', dentUnknown: '아직 몰라요', hide: '숨기', evac: '대피',
+      hint: '끌어서 움직이기', flip: '뒤집기', tech: '진화', canBuy: '살 수 있어요!', pain: '아야 지수',
+      painHigh: '너무 아파! 진정시켜요', hidden: '쉿!', found: '들켰다!', phew: '휴~',
       techTitle: '진화 나무', close: '돌아가기', buy: '사기', own: '가짐', lockedNode: '위 칸 먼저',
-      needSugar: '사탕이 모자라요',
-      br0: '번짐', br1: '숨기', br2: '진정',
-      n_eat1: '냠냠', n_spread1: '번짐', n_jump: '폴짝', n_spread2: '대번짐',
-      n_shade1: '그늘', n_sticky: '끈적', n_blur: '흐릿', n_ghost: '투명',
-      n_quiet: '살금살금', n_numb: '마취', n_calm: '느긋', n_sleep: '쿨쿨',
-      d_eat1: '이를 더 빨리 먹어요', d_spread1: '옆 이로 더 잘 번져요', d_jump: '위아래 맞닿은 이로 폴짝 잘 옮아요',
-      d_spread2: '번짐도 먹기도 아주 빨라져요',
-      d_shade1: '숨기를 2번 더 쓰고, 더 빨리 채워요', d_sticky: '칫솔에 덜 닦여요',
-      d_blur: '주인이 늦게 알아채고 치과 예약이 느려져요', d_ghost: '훨씬 덜 닦이고 대피를 더 자주 해요',
-      d_quiet: '아야 지수가 내려가요', d_numb: '아야 지수가 확 내려가요',
-      d_calm: '치과 예약이 느려져요', d_sleep: '치과 예약이 더 느려지고 칫솔이 드물게 와요',
-      tapNode: '동그라미를 눌러 골라요', tapHide: '톡!', shh: '쉿!', gone: '싹~', phew: '휴~',
-      nw_start: '충치 한 마리가 이에 자리 잡았다!',
-      nw_brush: '칫솔이 방역하러 온다! 노란 곳 충치를 톡!',
-      nw_floss: '치실 등장! 이 사이를 쓱쓱',
-      nw_gargle: '가글 경보! 입 전체가 쏴아~ 숨어요!',
-      nw_found: '주인: 「이가 시큰해!」 치과 예약 시작',
-      nw_firstDone: '첫 이빨을 다 먹었다!', nw_halfDone: '이빨 절반 정복!', nw_almost: '거의 다 왔어요!',
-      nw_pain: '주인이 볼을 감싸 쥐었다! 아야~',
-      nw_cure50: '치과 예약 막대 절반!', nw_cure80: '치과가 코앞! 서둘러요!',
-      nw_ev_candy: '주인이 사탕을 먹었다! 번짐 쑥쑥',
-      nw_ev_juice: '주인이 달콤한 주스를 마셨다! 번짐 쑥쑥',
-      nw_ev_sleep: '주인이 쿨쿨 잠들었다… 칫솔도 쉬어요',
-      nw_ev_mom: '엄마가 양치 검사! 칫솔이 자주 와요',
-      nw_ev_ad: '주인이 치과 광고를 봤다! 예약 쑥',
-      nw_ev_water: '주인이 물을 꿀꺽! 충치가 살짝 씻겼다',
-      nw_ev_call: '치과에서 전화가 왔다! 예약 쑥',
+      needSugar: '사탕이 모자라요', painUp: '아야', painDown: '아야',
+      br0: '퍼뜨리기', br1: '숨기', br2: '진정',
+      n_eat1: '냠냠', n_spread1: '번짐', n_eat2: '와작', n_spread2: '대번짐',
+      n_shade1: '그늘', n_blur: '흐릿', n_sticky: '끈적', n_ghost: '투명',
+      n_quiet: '살금살금', n_speed: '날쌘', n_numb: '마취', n_calm: '진정',
+      d_eat1: '이를 더 빨리 먹어요', d_spread1: '옆 이로 더 빨리 번져요', d_eat2: '이를 훨씬 더 빨리 먹어요', d_spread2: '번짐이 아주 빨라져요',
+      d_shade1: '그림자에 더 오래 숨어요', d_blur: '칫솔 눈이 흐려져서 잘 못 봐요', d_sticky: '칫솔에 덜 닦여요',
+      d_ghost: '반투명! 숨는 시간이 천천히 줄고 칫솔 눈이 더 나빠져요',
+      d_quiet: '먹을 때 덜 아파요 (아야 조금 내려감)', d_speed: '더 빨리 움직이고 자주 뒤집어요',
+      d_numb: '아야 지수가 확 내려가고 빨리 가라앉아요', d_calm: '이를 다 먹어도 덜 아파요',
+      tapNode: '동그라미를 눌러 골라요',
     },
     en: {
-      title: 'Revenge of the Cavity', sub: 'Spread the cavities, conquer the mouth!',
-      st1: 'Stage 1', st2: 'Stage 2', st3: 'Stage 3', stn1: 'The brush fights back', stn2: 'Floss joins in!', stn3: 'Mouthwash rush!',
-      locked1: 'Clear Stage 1 to unlock', locked2: 'Clear Stage 2 to unlock', best: 'Best', play: 'Play',
-      tipSpread: 'Cavities spread by themselves to the next tooth and the one above/below',
-      tipBubble: 'Tap the popping bubbles to collect candy',
-      tipDent: 'Once noticed, the Dentist bar fills. Eat every tooth before it\'s full!',
-      tipHide: 'Brush coming (yellow zone)? Tap the cavity to hide in the shadow',
-      tipFlip: '⇅ Escape: cavities on the brushed jaw jump to the other jaw',
-      tipTech: 'Evolve with candy! Power raises Ouch, which speeds up the dentist',
-      tipFloss: 'Floss slides between teeth and cleans two at once',
-      tipGargle: 'Mouthwash rinses the whole mouth. Hide to survive!',
+      title: 'Revenge of the Cavity', sub: 'Hide in the shadows, munch the teeth!',
+      st1: 'Stage 1', st2: 'Stage 2', stn1: 'Here comes the brush!', stn2: 'Floss joins in!',
+      locked: 'Clear Stage 1 to unlock', best: 'Best', play: 'Play',
+      tipDrag: 'Drag anywhere on the screen to move', tipEat: 'On top of a tooth = fast munch, beside it = slow nibble',
+      tipShade: 'Hide in a shadow and the brush can\'t find you. Not for long!',
+      tipFlip: 'Double-tap (or the ⇅ button) to flip to the other jaw',
+      tipBrush: 'The brush has eyes. If it sees you, it chases!',
+      tipFloss: 'Floss sweeps the gap shadows too. Avoid the green zone!',
+      tipTech: 'Evolve with candy! Power raises the Ouch meter. 100 = dentist',
       tapStart: 'Tap to start!',
       paused: 'Paused', resume: 'Resume', home: 'Home', retry: 'Retry', next: 'Next stage',
       winTitle: 'All teeth munched!', winAll: 'You cleared every stage!',
-      loseTitle: 'Squeaky clean!', loseSub: 'Not a single cavity left',
-      dentTitle: 'Off to the dentist!', dentSub: 'The Dentist bar filled up. Bzzzz!',
-      dentTip: 'Soothe branch lowers Ouch and slows the dentist',
+      loseTitle: 'Squeaky clean!', loseSub: 'The toothbrush won this time',
+      dentTitle: 'Off to the dentist!', dentSub: 'It hurt too much. Bzzzz goes the drill!',
+      dentTip: 'Use the Soothe branch (Tiptoe, Numb) to lower Ouch',
       time: 'Time', record: 'New best!',
       moralHead: 'A game is just a game!', moral: 'For real teeth: brush 3 times a day, 3 minutes',
       moralLose: 'In your real mouth, the brush should always win',
+      soon: 'Next time: mouthwash is coming...',
       sound: 'Sound', on: 'On', off: 'Off', lang: '한국어',
-      tech: 'Evolve', pain: 'Ouch', dent: 'Dentist', dentUnknown: 'Not yet', hide: 'Hide', evac: 'Escape',
+      hint: 'Drag to move', flip: 'Flip', tech: 'Evolve', canBuy: 'Ready!', pain: 'Ouch meter',
+      painHigh: 'Too painful! Soothe it', hidden: 'Shh!', found: 'Spotted!', phew: 'Phew~',
       techTitle: 'Evolution tree', close: 'Back', buy: 'Buy', own: 'Owned', lockedNode: 'Get the one above first',
-      needSugar: 'Need more candy',
+      needSugar: 'Need more candy', painUp: 'Ouch', painDown: 'Ouch',
       br0: 'Spread', br1: 'Stealth', br2: 'Soothe',
-      n_eat1: 'Munch', n_spread1: 'Spread', n_jump: 'Hop', n_spread2: 'Outbreak',
-      n_shade1: 'Shade', n_sticky: 'Sticky', n_blur: 'Blur', n_ghost: 'Ghost',
-      n_quiet: 'Tiptoe', n_numb: 'Numb', n_calm: 'Chill', n_sleep: 'Snooze',
-      d_eat1: 'Eat teeth faster', d_spread1: 'Spread to neighbors more', d_jump: 'Hop to the tooth above/below more',
-      d_spread2: 'Spread and eat much faster',
-      d_shade1: '2 more hides, and they refill faster', d_sticky: 'Brushes clean you less',
-      d_blur: 'Noticed later, dentist bar fills slower', d_ghost: 'Cleaned much less, Escape more often',
-      d_quiet: 'Lowers Ouch', d_numb: 'Lowers Ouch a lot',
-      d_calm: 'Dentist bar fills slower', d_sleep: 'Dentist even slower, brushes come less',
-      tapNode: 'Tap a circle to choose', tapHide: 'Tap!', shh: 'Shh!', gone: 'Gone~', phew: 'Phew~',
-      nw_start: 'A cavity moved into a tooth!',
-      nw_brush: 'The brush is coming! Tap cavities in the yellow zone!',
-      nw_floss: 'Floss appears! Slide, slide',
-      nw_gargle: 'Mouthwash alert! Whole mouth rinse — hide!',
-      nw_found: 'Owner: "My tooth tingles!" Dentist bar starts',
-      nw_firstDone: 'First tooth fully munched!', nw_halfDone: 'Half the teeth conquered!', nw_almost: 'Almost there!',
-      nw_pain: 'The owner is holding a cheek! Ouch~',
-      nw_cure50: 'Dentist bar is half full!', nw_cure80: 'Dentist is close! Hurry!',
-      nw_ev_candy: 'The owner ate candy! Spreading up',
-      nw_ev_juice: 'The owner drank sweet juice! Spreading up',
-      nw_ev_sleep: 'The owner fell asleep… brushes rest too',
-      nw_ev_mom: 'Mom\'s brushing check! More brushes',
-      nw_ev_ad: 'The owner saw a dentist ad! Dentist up',
-      nw_ev_water: 'The owner gulped water! A little rinse',
-      nw_ev_call: 'The dentist called! Dentist up',
+      n_eat1: 'Munch', n_spread1: 'Spread', n_eat2: 'Crunch', n_spread2: 'Outbreak',
+      n_shade1: 'Shade', n_blur: 'Blur', n_sticky: 'Sticky', n_ghost: 'Ghost',
+      n_quiet: 'Tiptoe', n_speed: 'Zoom', n_numb: 'Numb', n_calm: 'Soothe',
+      d_eat1: 'Eat teeth faster', d_spread1: 'Spread to neighbors faster', d_eat2: 'Eat teeth much faster', d_spread2: 'Spreading gets very fast',
+      d_shade1: 'Hide in shadows longer', d_blur: 'The brush\'s eyes get blurry', d_sticky: 'Brushes clean you less',
+      d_ghost: 'See-through! Hiding lasts longer, brush sees even less',
+      d_quiet: 'Eating hurts less (Ouch goes down a bit)', d_speed: 'Move faster, flip more often',
+      d_numb: 'Ouch drops a lot and calms faster', d_calm: 'Finished teeth hurt less',
+      tapNode: 'Tap a circle to choose',
     },
   };
 
   // ---------------- 저장 ----------------
-  const KEY = 'chungchi.v3';
+  const KEY = 'chungchi.v2';
   let save = { lang: null, sound: true, music: true, unlocked: 1, best: {} };
   try {
-    for (const k of ['chungchi.v1', 'chungchi.v2']) {
-      const old = JSON.parse(localStorage.getItem(k) || 'null');
-      if (old) { if (old.lang) save.lang = old.lang; if (old.sound != null) save.sound = old.sound; }
-    }
+    const old = JSON.parse(localStorage.getItem('chungchi.v1') || 'null');
+    if (old) { save.lang = old.lang; save.sound = old.sound; }
     const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) save = Object.assign(save, s);
   } catch (e) { }
   const qs = new URLSearchParams(location.search);
@@ -137,14 +103,13 @@
 
   // ---------------- 화면 크기 ----------------
   const app = { H: 760, scale: 1, dpr: 1, screen: 'title', game: null, time: 0, shake: 0, flash: 0,
-    parts: [], btns: [], press: null, keys: {}, endTimer: 0, jumps: [], newsY: 0,
-    newRecord: false, hintT: 0, toothShake: new Array(20).fill(0), sndGate: {}, techSel: null, geo: null };
+    parts: [], btns: [], press: null, drag: null, acc: { x: 0, y: 0 }, keys: {}, endTimer: 0,
+    newRecord: false, hintT: 0, toothShake: new Array(20).fill(0), sndGate: {}, lastTap: 0, techSel: null, painShake: 0, geo: null };
   window.__cc = app; // 시험용
 
-  function gameH() { return Math.round(Math.max(640, Math.min(860, window.innerHeight / window.innerWidth * W))); }
   function resize() {
     const iw = window.innerWidth, ih = window.innerHeight;
-    const H = app.game && app.screen !== 'title' ? app.game.L.H : gameH();
+    const H = app.game && app.screen !== 'title' ? app.game.L.H : Math.round(Math.max(640, Math.min(860, ih / iw * W)));
     app.H = H;
     const s = Math.min(iw / W, ih / H);
     app.scale = s; app.dpr = Math.min(window.devicePixelRatio || 1, 3);
@@ -561,100 +526,41 @@
     // 뒤(가운데 쪽)부터 앞(바깥쪽)으로
     const lower = g.teeth.slice(NT).sort((a, b) => a.cy - b.cy);
     const upper = g.teeth.slice(0, NT).sort((a, b) => b.cy - a.cy);
-    for (const tt of upper) drawTooth(g, tt, false);
-    for (const tt of lower) drawTooth(g, tt, false);
+    for (const tt of upper) drawTooth(g, tt, g.p.eating === tt.i);
+    for (const tt of lower) drawTooth(g, tt, g.p.eating === tt.i);
   }
 
-  // ---------------- 이 위에 사는 충치들 ----------------
-  function germSpot(g, tt) {
-    if (tt.shield > 0) { const [sx, sy] = g.shadowVec(tt); return [tt.cx + sx * 0.85, tt.cy + sy * 0.85]; }
-    return [tt.cx, tt.cy - 3 * tt.dir];
-  }
-  function drawGerms(g) {
-    for (const tt of g.teeth) {
-      if (tt.inf <= 0) continue;
-      const i = tt.i, done = tt.done;
-      const r = (done ? 9 : 5.5 + 6.5 * tt.inf) * tt.pf;
-      let [x, y] = germSpot(g, tt);
-      const bob = Math.sin(app.time * 5 + i * 1.7) * 1.3;
-      const hid = tt.shield > 0;
-      if (g.canHide(i)) {
-        const k = 0.5 + 0.5 * Math.sin(app.time * 9);
-        c.beginPath(); c.arc(x, y, r + 9 + k * 3, 0, TAU); c.fillStyle = 'rgba(255,230,90,' + (0.25 + 0.25 * k) + ')'; c.fill();
-        c.lineWidth = 2.5; c.strokeStyle = 'rgba(255,245,170,.95)'; c.stroke();
-      }
-      drawGerm(x, y + bob * tt.dir, r, {
-        rot: tt.jaw === 0 ? Math.PI : 0, alpha: hid ? 0.5 : 1, seed: i,
-        eat: !done && !hid && (i % 2 === 0 || tt.inf > 0.5), lookX: Math.sin(app.time * 0.7 + i), lookY: 0,
-        hurt: tt.hurt > 0, dizzy: tt.hurt > 0.2,
-      });
-      if (hid) txt(t('shh'), x, y - (r + 12) * tt.dir, 11, '#fff', 'center', 900, 'rgba(40,20,80,.75)', 4);
-    }
-  }
-  // 톡 누르라는 손가락
-  function drawHand(x, y, label) {
-    const k = Math.sin(app.time * 6);
-    c.save(); c.translate(x + 10, y + 16 + k * 4);
-    c.beginPath(); c.arc(0, 0, 13, 0, TAU); c.fillStyle = 'rgba(255,255,255,.85)'; c.fill();
-    c.beginPath(); c.arc(0, 0, 6.5, 0, TAU); c.fillStyle = '#ff6f91'; c.fill();
-    c.restore();
-    if (label) txt(label, x, y - 30, 14, '#fff', 'center', 900, '#b0406a', 5);
-  }
-  function drawJumps(g) {
-    for (const j of app.jumps) {
-      const k = Math.min(1, j.t / j.dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-      const x = j.x0 + (j.x1 - j.x0) * e, y = j.y0 + (j.y1 - j.y0) * e - Math.sin(k * Math.PI) * 26;
-      c.save(); c.setLineDash([5, 7]); c.lineWidth = 2.5; c.strokeStyle = 'rgba(215,180,255,' + (0.8 * (1 - k)) + ')';
-      c.beginPath(); c.moveTo(j.x0, j.y0); c.quadraticCurveTo((j.x0 + j.x1) / 2, (j.y0 + j.y1) / 2 - 30, j.x1, j.y1); c.stroke(); c.restore();
-      drawGerm(x, y, 9 * (1 + 0.3 * Math.sin(k * Math.PI)), { rot: (j.up ? Math.PI : 0) + (j.up ? -1 : 1) * Math.PI * k, seed: j.x0 });
-    }
-  }
-
-  // ---------------- 방울 (톡 → 사탕) ----------------
-  const BUB = { orange: ['#ffd08a', '#ff8a1f', '#d9620a'], red: ['#ff9aae', '#ff3d63', '#c2183f'], gold: ['#fff3a6', '#ffcf2e', '#d49a00'] };
-  function drawBubbles(g) {
-    for (const b of g.bubbles) {
-      if (b.life < 1.6 && Math.floor(app.time * 8) % 2) continue;
-      const a = Math.min(1, b.age * 5), sc = a < 1 ? a * 1.15 : 1 + 0.06 * Math.sin(app.time * 5 + b.id);
-      const col = BUB[b.kind] || BUB.orange;
-      c.save(); c.translate(b.x, b.y + Math.sin(app.time * 3 + b.id) * 2.5); c.scale(sc, sc);
-      c.beginPath(); c.moveTo(-5, 14); c.lineTo(0, 22); c.lineTo(5, 14); c.fillStyle = col[2]; c.fill();
-      c.beginPath(); c.arc(0, 2, 19, 0, TAU); c.fillStyle = 'rgba(60,0,30,.25)'; c.fill();
-      const gg = c.createRadialGradient(-6, -7, 2, 0, 0, 20);
-      gg.addColorStop(0, col[0]); gg.addColorStop(0.6, col[1]); gg.addColorStop(1, col[2]);
-      c.beginPath(); c.arc(0, 0, 19, 0, TAU); c.fillStyle = gg; c.fill();
-      c.lineWidth = 3; c.strokeStyle = '#fff'; c.stroke();
-      candyIcon(0, 0, 21, Math.sin(app.time * 2 + b.id) * 0.25);
-      c.beginPath(); c.ellipse(-8, -9, 4.5, 2.6, -0.7, 0, TAU); c.fillStyle = 'rgba(255,255,255,.8)'; c.fill();
-      if (b.n > 1) { c.beginPath(); c.arc(14, -14, 9, 0, TAU); c.fillStyle = '#fff'; c.fill(); txt('+' + b.n, 14, -13.5, 11, col[2], 'center', 900); }
-      c.restore();
-    }
-  }
-
-  // ---------------- 칫솔·치실·가글 ----------------
-  function signBall(x, y, s, bg, fg, k) {
-    c.save(); c.translate(x, y); c.scale(k || 1, k || 1);
-    c.beginPath(); c.arc(0, 0, 18, 0, TAU); c.fillStyle = bg; c.fill(); c.lineWidth = 3; c.strokeStyle = '#fff'; c.stroke();
-    txt(s, 0, 1, 23, fg, 'center', 900);
+  // ---------------- 칫솔·치실 ----------------
+  function bubbleSign(x, y, s, bg, fg) {
+    c.save(); c.translate(x, y);
+    c.beginPath(); c.arc(0, 0, 13, 0, TAU); c.fillStyle = bg; c.fill(); c.lineWidth = 2.5; c.strokeStyle = '#fff'; c.stroke();
+    c.beginPath(); c.moveTo(-4, 11); c.lineTo(0, 18); c.lineTo(4, 11); c.fillStyle = bg; c.fill();
+    txt(s, 0, 1, 17, fg, 'center', 900);
     c.restore();
   }
-  function drawBrushZone(g, h, L) {
-    const warn = h.st === 'warn';
-    const a = warn ? 0.16 + 0.12 * Math.sin(app.time * 18) : 0.1;
+  function drawBrushWarn(g, h, L) {
+    const a = 0.14 + 0.12 * Math.sin(app.time * 18);
     c.save(); mouthClip(L); c.clip();
     c.lineCap = 'round'; c.lineJoin = 'round';
-    archPath(L, h.jaw, h.s0, h.s1, 0); c.lineWidth = 88; c.strokeStyle = 'rgba(255,225,80,' + a + ')'; c.stroke();
-    c.setLineDash([10, 8]); c.lineDashOffset = -app.time * 40; c.lineWidth = 3; c.strokeStyle = 'rgba(255,236,120,' + (warn ? 0.9 : 0.4) + ')';
-    archPath(L, h.jaw, h.s0, h.s1, 44); c.stroke(); archPath(L, h.jaw, h.s0, h.s1, -44); c.stroke();
+    if (h.mode === 'sweep') { archPath(L, h.jaw, 0, L.archLen, 0); c.lineWidth = 86; }
+    else { archPath(L, h.jaw, h.s0 - 70, h.s0 + 70, 0); c.lineWidth = 96; }
+    c.strokeStyle = 'rgba(255,225,80,' + a + ')'; c.stroke();
+    c.setLineDash([10, 8]); c.lineDashOffset = -app.time * 40; c.lineWidth = 3; c.strokeStyle = 'rgba(255,236,120,.9)';
+    if (h.mode === 'sweep') { archPath(L, h.jaw, 0, L.archLen, 43); c.stroke(); archPath(L, h.jaw, 0, L.archLen, -43); c.stroke(); }
+    else { archPath(L, h.jaw, h.s0 - 70, h.s0 + 70, 48); c.stroke(); archPath(L, h.jaw, h.s0 - 70, h.s0 + 70, -48); c.stroke(); }
     c.setLineDash([]);
     c.restore();
-    if (warn) {
-      const P = archAt(L, h.jaw, (h.s0 + h.s1) / 2);
-      signBall(P.x + P.nx * 56, P.y + P.ny * 56, '!', '#ffd84d', '#b34700', 1 + 0.12 * Math.sin(app.time * 20));
-    }
+    const P = h.mode === 'sweep' ? archAt(L, h.jaw, h.dir > 0 ? 18 : L.archLen - 18) : archAt(L, h.jaw, h.s0);
+    const k = 1 + 0.12 * Math.sin(app.time * 20);
+    c.save(); c.translate(P.x + P.nx * 50, P.y + P.ny * 50); c.scale(k, k);
+    c.beginPath(); c.arc(0, 0, 18, 0, TAU); c.fillStyle = '#ffd84d'; c.fill(); c.lineWidth = 3; c.strokeStyle = '#fff'; c.stroke();
+    txt('!', 0, 1, 23, '#b34700', 'center', 900);
+    c.restore();
   }
   function brushShape(h, L, shadow) {
+    const hd = h.jaw ? 1 : -1;
     const ang = Math.atan2(h.ty, h.tx);
+    // 손잡이는 입 밖(앞쪽)으로
     const ex = W / 2 + (h.x - W / 2) * 0.35, ey = h.jaw ? L.H + 220 : -220;
     c.save();
     c.lineCap = 'round';
@@ -665,6 +571,7 @@
     rr(-44, -17, 88, 34, 16); c.fillStyle = shadow ? 'rgba(40,0,30,.3)' : '#4fbef5'; c.fill();
     if (!shadow) {
       c.lineWidth = 2; c.strokeStyle = '#2a8fcc'; c.stroke();
+      // 솔 (위에서 본 털 뭉치)
       for (let r = -1; r <= 1; r++) for (let q = 0; q < 7; q++) {
         const bx = -33 + q * 11 + Math.sin(app.time * 30 + q + r) * 1.2, by = r * 9;
         c.beginPath(); c.arc(bx, by, 4.2, 0, TAU); c.fillStyle = (q + r) % 3 === 0 ? '#9ff3dc' : '#ffffff'; c.fill();
@@ -673,18 +580,34 @@
     c.restore();
   }
   function drawBrush(g, h, L) {
+    const sight = g.brushSight();
+    const p = g.p;
+    // 칫솔의 눈이 보는 범위
+    const over = Math.max(-h.s, h.s - L.archLen, 0), fade = Math.max(0, Math.min(1, 1 - over / 50));
+    c.save(); c.globalAlpha = fade; mouthClip(L); c.clip();
+    c.beginPath(); c.rect(0, h.jaw ? L.midY : 0, W, h.jaw ? L.H : L.midY); c.clip();
+    c.beginPath(); c.arc(h.x, h.y, sight, 0, TAU);
+    c.fillStyle = h.spot ? 'rgba(255,90,110,.13)' : 'rgba(255,250,200,.09)'; c.fill();
+    c.setLineDash([7, 7]); c.lineDashOffset = app.time * 20; c.lineWidth = 2; c.strokeStyle = h.spot ? 'rgba(255,110,130,.8)' : 'rgba(255,245,170,.55)'; c.stroke(); c.setLineDash([]);
+    c.restore();
+    // 떠 있는 칫솔 그림자
+    c.save(); c.globalAlpha = fade;
     const [lx, ly] = [Math.cos(g.lightA) * 20, Math.sin(g.lightA) * 20 * (h.jaw ? 1 : -1)];
     c.save(); c.translate(lx, ly); brushShape(h, L, true); c.restore();
     brushShape(h, L, false);
+    // 눈 두 개
     const ang = Math.atan2(h.ty, h.tx);
-    const lookX = Math.cos(ang) * h.dir, lookY = Math.sin(ang) * h.dir;
+    let lookX = Math.cos(app.time * 2.3) * 0.8, lookY = Math.sin(app.time * 3.1) * 0.6;
+    if (h.spot) { const d = Math.hypot(p.x - h.x, p.y - h.y) || 1; lookX = (p.x - h.x) / d; lookY = (p.y - h.y) / d; }
     for (const s of [-1, 1]) {
-      const ex = h.x + Math.cos(ang) * s * 13, ey = h.y + Math.sin(ang) * s * 13 - 16;
+      const ex = h.x + Math.cos(ang) * s * 13 + h.nx * 0, ey = h.y + Math.sin(ang) * s * 13 - 16;
       c.beginPath(); c.ellipse(ex, ey, 8, 9, 0, 0, TAU); c.fillStyle = '#fff'; c.fill(); c.lineWidth = 2; c.strokeStyle = '#2a8fcc'; c.stroke();
       c.beginPath(); c.arc(ex + lookX * 3.2, ey + lookY * 3.2, 3.6, 0, TAU); c.fillStyle = '#12334d'; c.fill();
-      c.lineWidth = 2.4; c.strokeStyle = '#12334d'; c.beginPath(); c.moveTo(ex - 7, ey - 12 + s * 2); c.lineTo(ex + 7, ey - 12 - s * 2); c.stroke();
+      if (h.spot) { c.lineWidth = 2.4; c.strokeStyle = '#12334d'; c.beginPath(); c.moveTo(ex - 7, ey - 12 + s * 2); c.lineTo(ex + 7, ey - 12 - s * 2); c.stroke(); }
     }
-    if (Math.random() < 0.5) app.parts.push({ x: h.x + (Math.random() - 0.5) * 70, y: h.y + (Math.random() - 0.5) * 30, vx: (Math.random() - 0.5) * 40, vy: -10, life: 0, max: 0.8, kind: 'bubble', size: 2 + Math.random() * 3, rot: 0 });
+    if (h.spot) bubbleSign(h.x, h.y - 48, '!', '#ff4d6d', '#fff');
+    else if (h.lostAt != null && g.t - h.lostAt < 1.0) bubbleSign(h.x, h.y - 48, '?', '#7fd8ff', '#12334d');
+    c.restore();
   }
   function drawFloss(g, h, L) {
     const z = g.flossZone(h);
@@ -692,64 +615,41 @@
       const a = 0.5 + 0.5 * Math.sin(app.time * 18);
       c.save(); c.lineCap = 'round';
       c.beginPath(); c.moveTo(z.ax, z.ay); c.lineTo(z.bx, z.by); c.lineWidth = z.r1 * 2; c.strokeStyle = 'rgba(110,255,190,' + (0.15 + a * 0.15) + ')'; c.stroke();
+      c.beginPath(); c.moveTo(z.cx, z.cy); c.lineTo(z.dx, z.dy); c.lineWidth = z.r2 * 2; c.stroke();
       c.setLineDash([7, 7]); c.lineDashOffset = -app.time * 50; c.lineWidth = 3; c.strokeStyle = 'rgba(140,255,210,' + (0.5 + a * 0.5) + ')';
       c.beginPath(); c.moveTo(z.ax, z.ay); c.lineTo(z.bx, z.by); c.stroke(); c.setLineDash([]);
       c.restore();
-      signBall(z.ax - h.g.nx * 22, z.ay - h.g.ny * 22, '!', '#6fe3b8', '#0b6b4c', 0.9 + 0.1 * Math.sin(app.time * 20));
+      const k = 1 + 0.12 * Math.sin(app.time * 20);
+      c.save(); c.translate(z.ax - h.g.nx * 20, z.ay - h.g.ny * 20); c.scale(k, k);
+      c.beginPath(); c.arc(0, 0, 16, 0, TAU); c.fillStyle = '#6fe3b8'; c.fill(); c.lineWidth = 3; c.strokeStyle = '#fff'; c.stroke();
+      txt('!', 0, 1, 21, '#0b6b4c', 'center', 900); c.restore();
       return;
     }
     const f = h.st === 'go' ? h.sweep : 1;
     const al = h.st === 'up' ? Math.max(0, 1 - h.t / 0.3) : 1;
-    const ox = (z.dx - z.cx) * f * 0.4, oy = (z.dy - z.cy) * f * 0.4;
+    const ox = (z.dx - z.cx) * f, oy = (z.dy - z.cy) * f;
     c.save(); c.globalAlpha = al; c.lineCap = 'round';
+    // 치실 줄
     c.lineWidth = 5; c.strokeStyle = 'rgba(20,90,70,.3)'; c.beginPath(); c.moveTo(z.ax + ox + 3, z.ay + oy + 3); c.lineTo(z.bx + ox + 3, z.by + oy + 3); c.stroke();
     c.lineWidth = 3.4; c.strokeStyle = '#7dffd2'; c.beginPath(); c.moveTo(z.ax + ox, z.ay + oy); c.lineTo(z.bx + ox, z.by + oy); c.stroke();
     c.lineWidth = 1.2; c.strokeStyle = '#fff'; c.beginPath(); c.moveTo(z.ax + ox, z.ay + oy - 1); c.lineTo(z.bx + ox, z.by + oy - 1); c.stroke();
+    // 치실 손잡이 (Y 자): 줄 양끝에서 바깥(볼 쪽)으로
     const nx = -h.g.nx, ny = -h.g.ny, A = [z.ax + ox, z.ay + oy], B = [z.bx + ox, z.by + oy];
     const out = A[0] * nx + A[1] * ny > B[0] * nx + B[1] * ny ? A : B, inn = out === A ? B : A;
     c.lineWidth = 6; c.strokeStyle = '#35c48f'; c.lineJoin = 'round';
     c.beginPath(); c.moveTo(inn[0], inn[1]); c.quadraticCurveTo(inn[0] + h.g.tx * 26, inn[1] + h.g.ty * 26, out[0] + h.g.tx * 16, out[1] + h.g.ty * 16); c.lineTo(out[0], out[1]); c.stroke();
     c.lineWidth = 8; c.beginPath(); c.moveTo(out[0] + h.g.tx * 16, out[1] + h.g.ty * 16); c.lineTo(out[0] + h.g.tx * 16 + nx * 44, out[1] + h.g.ty * 16 + ny * 44); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.6)'; c.beginPath(); c.arc(out[0] + h.g.tx * 16 + nx * 20, out[1] + h.g.ty * 16 + ny * 20, 2, 0, TAU); c.fill();
     c.restore();
-  }
-  function drawGargle(g, h, L) {
-    c.save(); mouthClip(L); c.clip();
-    if (h.st === 'warn') {
-      const a = 0.12 + 0.1 * Math.sin(app.time * 14);
-      c.fillStyle = 'rgba(120,210,255,' + a + ')'; c.fillRect(0, L.mT, W, L.mB - L.mT);
-      c.restore();
-      const k = 1 + 0.1 * Math.sin(app.time * 16);
-      c.save(); c.translate(W / 2, L.midY); c.scale(k, k);
-      c.beginPath(); c.moveTo(0, -30); c.bezierCurveTo(22, -4, 24, 10, 0, 24); c.bezierCurveTo(-24, 10, -22, -4, 0, -30);
-      c.fillStyle = '#7fd3ff'; c.fill(); c.lineWidth = 3.5; c.strokeStyle = '#fff'; c.stroke();
-      txt('!', 0, 4, 26, '#0d5a8a', 'center', 900);
-      c.restore();
-      return;
-    }
-    const y = h.y, fade = h.t > 1.8 ? Math.max(0, 1 - (h.t - 1.8) / 0.4) : 1;
-    c.globalAlpha = fade;
-    const wg = c.createLinearGradient(0, L.mT, 0, y);
-    wg.addColorStop(0, 'rgba(150,225,255,.25)'); wg.addColorStop(1, 'rgba(90,190,255,.55)');
-    c.beginPath(); c.moveTo(0, L.mT - 10);
-    c.lineTo(W, L.mT - 10);
-    for (let x = W; x >= 0; x -= 10) c.lineTo(x, y + Math.sin(x * 0.05 + app.time * 9) * 7);
-    c.closePath(); c.fillStyle = wg; c.fill();
-    c.beginPath(); for (let x = 0; x <= W; x += 10) { const yy = y + Math.sin(x * 0.05 + app.time * 9) * 7; x ? c.lineTo(x, yy) : c.moveTo(x, yy); }
-    c.lineWidth = 4; c.strokeStyle = 'rgba(255,255,255,.85)'; c.stroke();
-    c.restore();
-    if (Math.random() < 0.8) app.parts.push({ x: Math.random() * W, y: y - Math.random() * 30, vx: (Math.random() - 0.5) * 30, vy: -20, life: 0, max: 0.9, kind: 'bubble', size: 2 + Math.random() * 4, rot: 0 });
   }
 
-  // ---------------- 진화 아이콘 ----------------
+  // ---------------- 테크 아이콘 ----------------
   function techIcon(k, x, y, s, col) {
-    if (['eat1', 'spread1', 'sticky'].includes(k)) return upIcon(k === 'eat1' ? 'eat' : k === 'spread1' ? 'spread' : k, x, y, s);
+    if (['eat1', 'spread1', 'sticky', 'speed'].includes(k)) return upIcon(k === 'eat1' ? 'eat' : k === 'spread1' ? 'spread' : k, x, y, s);
     c.save(); c.translate(x, y); c.scale(s / 24, s / 24); c.lineCap = 'round'; c.lineJoin = 'round';
+    if (k === 'eat2') { c.restore(); upIcon('eat', x - s * 0.12, y, s); star(x + s * 0.34, y - s * 0.3, s * 0.2); c.fillStyle = '#ffcf3f'; c.fill(); return; }
     if (k === 'spread2') { c.restore(); upIcon('spread', x, y, s * 1.1); star(x + s * 0.36, y - s * 0.32, s * 0.2); c.fillStyle = '#ffcf3f'; c.fill(); return; }
-    if (k === 'jump') {
-      c.strokeStyle = '#a46cff'; c.lineWidth = 3;
-      c.beginPath(); c.moveTo(-6, 9); c.lineTo(-6, -8); c.moveTo(-11, -3); c.lineTo(-6, -9); c.lineTo(-1, -3); c.stroke();
-      c.beginPath(); c.moveTo(6, -9); c.lineTo(6, 8); c.moveTo(1, 3); c.lineTo(6, 9); c.lineTo(11, 3); c.stroke();
-    } else if (k === 'shade1') {
+    if (k === 'shade1') {
       c.beginPath(); c.arc(0, 0, 11, 0, TAU); c.fillStyle = '#3d3b8e'; c.fill();
       c.beginPath(); c.arc(5, -3, 9, 0, TAU); c.fillStyle = col || '#fff'; c.fill();
       star(-4, 3, 2.5); c.fillStyle = '#ffe98a'; c.fill();
@@ -774,107 +674,54 @@
     } else if (k === 'calm') {
       c.beginPath(); c.moveTo(-10, 9); c.quadraticCurveTo(-10, -10, 10, -10); c.quadraticCurveTo(10, 9, -10, 9); c.fillStyle = '#6fd18f'; c.fill(); c.lineWidth = 1.8; c.strokeStyle = '#2f9a45'; c.stroke();
       c.beginPath(); c.moveTo(-8, 7); c.quadraticCurveTo(0, 0, 7, -7); c.stroke();
-    } else if (k === 'sleep') {
-      c.beginPath(); c.arc(-2, 2, 9, 0, TAU); c.fillStyle = '#ffd24d'; c.fill();
-      c.beginPath(); c.arc(2, -1, 8, 0, TAU); c.fillStyle = col || '#fff'; c.fill();
-      c.restore(); txt('z', x + s * 0.3, y - s * 0.25, s * 0.42, '#2f9a45', 'center', 900); return;
     }
     c.restore();
   }
 
-  // ---------------- 위 (뉴스·진행·사탕·아야·치과) ----------------
-  const BAD = { brush: 1, floss: 1, gargle: 1, found: 1, pain: 1, cure50: 1, cure80: 1, ev_mom: 1, ev_ad: 1, ev_water: 1, ev_call: 1 };
-  function drawNews(g) {
-    const x = 8, y = 6, w = W - 16, h = 28;
-    rr(x, y, w, h, 14); c.fillStyle = 'rgba(70,20,90,.82)'; c.fill();
-    const n = g.news;
-    // 확성기
-    c.save(); c.translate(x + 18, y + h / 2);
-    c.beginPath(); c.moveTo(-7, -3); c.lineTo(-2, -3); c.lineTo(6, -8); c.lineTo(6, 8); c.lineTo(-2, 3); c.lineTo(-7, 3); c.closePath();
-    c.fillStyle = n ? (n.good ? '#7fe8a4' : BAD[n.key] ? '#ff8aa0' : '#ffd84d') : '#c9a8e8'; c.fill();
-    if (n && Math.floor(app.time * 6) % 2) { c.lineWidth = 1.6; c.strokeStyle = '#fff'; c.beginPath(); c.arc(7, 0, 5, -0.8, 0.8); c.stroke(); }
-    c.restore();
-    c.save(); rr(x + 30, y, w - 34, h, 12); c.clip();
-    if (n) {
-      const s = t('nw_' + n.key), a = Math.min(1, n.t * 4), fo = n.t > 4.8 ? Math.max(0, 1 - (n.t - 4.8) / 0.7) : 1;
-      c.globalAlpha = a * fo;
-      let fs = 14; c.font = '900 ' + fs + 'px ' + FONT;
-      while (fs > 10 && c.measureText(s).width > w - 44) { fs -= 0.5; c.font = '900 ' + fs + 'px ' + FONT; }
-      txt(s, x + 36 + (1 - a) * 30, y + h / 2 + 0.5, fs, n.good ? '#c9ffd9' : BAD[n.key] ? '#ffd3dc' : '#fff4c2', 'left', 900);
-    } else {
-      c.globalAlpha = 0.6;
-      txt((save.lang === 'ko' ? '충치 뉴스' : 'Cavity News') + ' · ' + t('st' + g.stage), x + 36, y + h / 2 + 0.5, 12, '#e8d4ff', 'left', 800);
+  // ---------------- 위 (하트·진행·사탕·아야 지수) ----------------
+  function drawHUD(g, L) {
+    for (let i = 0; i < g.maxHearts; i++) {
+      const on = i < g.hearts;
+      const bob = on ? Math.sin(app.time * 3 + i) * 1.2 : 0;
+      heart(24 + i * 27, 22 + bob, 23, on ? '#ff4d7a' : 'rgba(255,255,255,.7)', on ? '#c2185b' : '#f2a5bb');
     }
-    c.restore();
+    const n = g.doneCount(), N = g.teeth.length;
+    const bx = 116, bw = 138, by = 13;
+    rr(bx, by, bw, 18, 9); c.fillStyle = 'rgba(255,255,255,.85)'; c.fill();
+    const f = n / N;
+    if (f > 0) { rr(bx + 2, by + 2, Math.max(14, (bw - 4) * f), 14, 7); const pg = c.createLinearGradient(bx, 0, bx + bw, 0); pg.addColorStop(0, '#b98bff'); pg.addColorStop(1, '#7440e0'); c.fillStyle = pg; c.fill(); }
+    txt(n + ' / ' + N + '  ·  ' + fmtTime(g.t), bx + bw / 2, by + 9.5, 11, '#6a3fd0', 'center', 900, '#fff', 3);
+    candyIcon(282, 22, 20, Math.sin(app.time * 2) * 0.15);
+    txt(String(g.sugar), 298, 23, 19, '#d63e6c', 'left', 900, '#fff', 5);
+    const px = W - 30, py = 22;
+    app.btns.push({ id: 'pause', x: px - 22, y: py - 20, w: 44, h: 44, action: () => { app.screen = 'pause'; S.play('tap'); } });
+    c.beginPath(); c.arc(px, py + 2, 16, 0, TAU); c.fillStyle = '#e8a6bd'; c.fill();
+    c.beginPath(); c.arc(px, py, 16, 0, TAU); c.fillStyle = '#fff'; c.fill();
+    c.fillStyle = '#d6507e'; rr(px - 6, py - 7, 4.5, 14, 2); c.fill(); rr(px + 1.5, py - 7, 4.5, 14, 2); c.fill();
+    drawPain(g, 50, 44, W - 64, 16);
   }
   function drawPain(g, x, y, w, h) {
     const pv = g.pain / 100, hot = g.pain >= 75;
-    const sh = hot ? Math.sin(app.time * 40) * 1.2 : 0;
+    const sh = hot ? Math.sin(app.time * 40) * 1.5 : 0;
     c.save(); c.translate(sh, 0);
-    c.save(); c.translate(x - 13, y + h / 2); c.scale(0.8, 0.8);
+    // 아픈 이 아이콘
+    c.save(); c.translate(x - 22, y + h / 2);
     c.beginPath(); c.moveTo(-9, -8); c.quadraticCurveTo(-4, -11, 0, -8); c.quadraticCurveTo(4, -11, 9, -8); c.quadraticCurveTo(10, 0, 6, 9); c.lineTo(3, 3); c.lineTo(-3, 3); c.lineTo(-6, 9); c.quadraticCurveTo(-10, 0, -9, -8); c.closePath();
-    c.fillStyle = hot ? '#ffd6de' : '#fff'; c.fill(); c.lineWidth = 2; c.strokeStyle = hot ? '#e0294f' : '#e07a98'; c.stroke();
-    c.strokeStyle = '#e0294f'; c.lineWidth = 1.8;
+    c.fillStyle = hot ? '#ffd6de' : '#fff'; c.fill(); c.lineWidth = 1.8; c.strokeStyle = hot ? '#e0294f' : '#e07a98'; c.stroke();
+    c.strokeStyle = '#e0294f'; c.lineWidth = 1.6;
     const k = 1 + (hot ? Math.sin(app.time * 14) * 0.2 : 0);
-    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 11 * k, -9); c.lineTo(s * 15 * k, -13); c.stroke(); }
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(s * 11 * k, -9); c.lineTo(s * 15 * k, -13); c.moveTo(s * 12 * k, -3); c.lineTo(s * 17 * k, -3); c.stroke(); }
     c.restore();
-    rr(x, y, w, h, h / 2); c.fillStyle = 'rgba(255,255,255,.92)'; c.fill();
+    rr(x, y, w, h, h / 2); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill();
     if (pv > 0) {
       rr(x + 2, y + 2, Math.max(h - 4, (w - 4) * pv), h - 4, (h - 4) / 2);
       const gg = c.createLinearGradient(x, 0, x + w, 0);
       gg.addColorStop(0, '#7fdc8a'); gg.addColorStop(0.5, '#ffd24d'); gg.addColorStop(0.8, '#ff8a3d'); gg.addColorStop(1, '#ff2d55');
       c.fillStyle = gg; c.fill();
     }
+    for (const m of [0.25, 0.5, 0.75]) { c.fillStyle = 'rgba(160,100,120,.35)'; c.fillRect(x + w * m - 0.5, y + 3, 1, h - 6); }
     txt(t('pain') + ' ' + Math.round(g.pain), x + w / 2, y + h / 2 + 0.5, 11, pv > 0.45 ? '#fff' : '#b0406a', 'center', 900, pv > 0.45 ? 'rgba(160,30,60,.7)' : null, 3);
     c.restore();
-  }
-  function calIcon(x, y, s, on) {
-    c.save(); c.translate(x, y); c.scale(s / 20, s / 20);
-    rr(-9, -8, 18, 17, 3); c.fillStyle = '#fff'; c.fill(); c.lineWidth = 1.8; c.strokeStyle = on ? '#2f7fb8' : '#b5a0c0'; c.stroke();
-    c.fillStyle = on ? '#ff4d6d' : '#d9c7d0'; rr(-9, -8, 18, 6, 3); c.fill();
-    c.fillStyle = on ? '#2f7fb8' : '#c9b7d0';
-    c.beginPath(); c.moveTo(-4, 0); c.quadraticCurveTo(0, -2, 4, 0); c.quadraticCurveTo(4.5, 4, 2.5, 6.5); c.lineTo(0, 3.5); c.lineTo(-2.5, 6.5); c.quadraticCurveTo(-4.5, 4, -4, 0); c.fill();
-    c.restore();
-  }
-  function drawCure(g, x, y, w, h) {
-    const f = g.cure / 100, hot = g.cure >= 80;
-    calIcon(x - 14, y + h / 2, 20, g.found);
-    rr(x, y, w, h, h / 2); c.fillStyle = g.found ? 'rgba(255,255,255,.92)' : 'rgba(255,255,255,.55)'; c.fill();
-    if (g.found && f > 0) {
-      rr(x + 2, y + 2, Math.max(h - 4, (w - 4) * f), h - 4, (h - 4) / 2);
-      const gg = c.createLinearGradient(x, 0, x + w, 0);
-      gg.addColorStop(0, '#8fd3ff'); gg.addColorStop(0.6, '#4a9be0'); gg.addColorStop(1, '#2a5bd0');
-      c.fillStyle = gg; c.fill();
-      if (hot && Math.floor(app.time * 4) % 2) { rr(x, y, w, h, h / 2); c.lineWidth = 2; c.strokeStyle = '#ff4d6d'; c.stroke(); }
-    }
-    const label = g.found ? t('dent') + ' ' + Math.floor(g.cure) + '%' : t('dent') + ' · ' + t('dentUnknown');
-    txt(label, x + w / 2, y + h / 2 + 0.5, 11, g.found && f > 0.5 ? '#fff' : '#3a6a9a', 'center', 900, g.found && f > 0.5 ? 'rgba(20,50,120,.7)' : null, 3);
-  }
-  function drawHUD(g, L) {
-    drawNews(g);
-    // 진행 (이빨 지도)
-    const n = g.doneCount(), N = g.teeth.length;
-    const bx = 12, bw = 166, by = 42;
-    rr(bx, by, bw, 20, 10); c.fillStyle = 'rgba(255,255,255,.88)'; c.fill();
-    // 칸 20개
-    for (let i = 0; i < N; i++) {
-      const tt = g.teeth[i];
-      const cx = bx + 6 + i * ((bw - 12) / N);
-      const cw = (bw - 12) / N - 1.5;
-      rr(cx, by + 4, cw, 12, 3);
-      c.fillStyle = tt.done ? '#7440e0' : tt.inf >= 0.5 ? '#b98bff' : tt.inf > 0 ? '#e4d2ff' : 'rgba(200,180,210,.35)'; c.fill();
-    }
-    txt(n + '/' + N, bx + bw + 8, by + 10.5, 14, '#6a3fd0', 'left', 900, '#fff', 4);
-    txt(fmtTime(g.t), bx + bw + 56, by + 10.5, 12, '#b0406a', 'left', 800, '#fff', 3);
-    candyIcon(W - 100, by + 10, 20, Math.sin(app.time * 2) * 0.15);
-    txt(String(g.sugar), W - 86, by + 11, 18, '#d63e6c', 'left', 900, '#fff', 5);
-    const px = W - 26, py = by + 10;
-    app.btns.push({ id: 'pause', x: px - 22, y: py - 22, w: 44, h: 44, action: () => { app.screen = 'pause'; S.play('tap'); } });
-    c.beginPath(); c.arc(px, py + 2, 15, 0, TAU); c.fillStyle = '#e8a6bd'; c.fill();
-    c.beginPath(); c.arc(px, py, 15, 0, TAU); c.fillStyle = '#fff'; c.fill();
-    c.fillStyle = '#d6507e'; rr(px - 6, py - 6.5, 4.5, 13, 2); c.fill(); rr(px + 1.5, py - 6.5, 4.5, 13, 2); c.fill();
-    drawPain(g, 32, 72, 150, 17);
-    drawCure(g, 222, 72, 156, 17);
   }
   function fmtTime(s) { s = Math.floor(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 
@@ -883,58 +730,83 @@
     const y = L.barY + 8;
     // 진화 단추
     const nb = buyableCount(g);
-    const bw = 176;
+    const bw = W - 128;
     const pressed = app.press && app.press.id === 'techBtn';
     c.save(); c.translate(12 + bw / 2, y + 40); if (pressed) c.scale(0.96, 0.96);
     if (nb) { const gl = 0.5 + 0.5 * Math.sin(app.time * 5); rr(-bw / 2 - 3, -43, bw + 6, 86, 22); c.fillStyle = 'rgba(255,215,90,' + (0.4 + gl * 0.5) + ')'; c.fill(); }
     rr(-bw / 2, -36, bw, 76, 20); c.fillStyle = '#e9b9cc'; c.fill();
     rr(-bw / 2, -40, bw, 76, 20); c.fillStyle = '#fff'; c.fill();
+    // 작은 나무 그림
     c.lineWidth = 2.5; c.strokeStyle = '#d7c3ea';
-    c.beginPath(); c.moveTo(-bw / 2 + 32, 14); c.lineTo(-bw / 2 + 32, -4); c.moveTo(-bw / 2 + 18, -16); c.lineTo(-bw / 2 + 32, -4); c.lineTo(-bw / 2 + 46, -16); c.stroke();
+    c.beginPath(); c.moveTo(-bw / 2 + 36, 14); c.lineTo(-bw / 2 + 36, -4); c.moveTo(-bw / 2 + 22, -16); c.lineTo(-bw / 2 + 36, -4); c.lineTo(-bw / 2 + 50, -16); c.stroke();
     const cols = ['#a46cff', '#3d3b8e', '#2fb36a'];
-    [[-bw / 2 + 18, -18], [-bw / 2 + 46, -18], [-bw / 2 + 32, 16]].forEach(([a, b], i) => { c.beginPath(); c.arc(a, b, 7, 0, TAU); c.fillStyle = cols[i]; c.fill(); c.lineWidth = 2; c.strokeStyle = '#fff'; c.stroke(); });
-    txt(t('tech'), -bw / 2 + 64, -12, 21, '#5b2a86', 'left', 900);
-    candyIcon(-bw / 2 + 74, 14, 16);
-    txt(String(g.sugar), -bw / 2 + 87, 15, 15, '#d63e6c', 'left', 900);
-    if (nb) { c.beginPath(); c.arc(bw / 2 - 14, -24, 11, 0, TAU); c.fillStyle = '#ff4d7a'; c.fill(); txt(String(nb), bw / 2 - 14, -23.5, 13, '#fff', 'center', 900); }
+    [[-bw / 2 + 22, -18], [-bw / 2 + 50, -18], [-bw / 2 + 36, 16]].forEach(([a, b], i) => { c.beginPath(); c.arc(a, b, 7, 0, TAU); c.fillStyle = cols[i]; c.fill(); c.lineWidth = 2; c.strokeStyle = '#fff'; c.stroke(); });
+    txt(t('tech'), -bw / 2 + 70, -12, 21, '#5b2a86', 'left', 900);
+    candyIcon(-bw / 2 + 80, 14, 16);
+    txt(String(g.sugar), -bw / 2 + 93, 15, 15, '#d63e6c', 'left', 900);
+    if (nb) { txt(t('canBuy'), bw / 2 - 12, 15, 12, '#e07a00', 'right', 900); c.beginPath(); c.arc(bw / 2 - 14, -22, 11, 0, TAU); c.fillStyle = '#ff4d7a'; c.fill(); txt(String(nb), bw / 2 - 14, -21.5, 13, '#fff', 'center', 900); }
     c.restore();
     app.btns.push({ id: 'techBtn', x: 12, y, w: bw, h: 80, action: openTech });
-    // 숨기 남은 수
-    const hx = 196, hw = 96;
-    rr(hx, y + 4, hw, 72, 18); c.fillStyle = 'rgba(46,30,100,.78)'; c.fill();
-    c.save(); c.translate(hx + 20, y + 24);
-    c.beginPath(); c.arc(0, 0, 10, 0, TAU); c.fillStyle = '#b9b5ff'; c.fill();
-    c.beginPath(); c.arc(5, -3, 8.5, 0, TAU); c.fillStyle = 'rgba(46,30,100,1)'; c.fill();
-    c.restore();
-    txt(t('hide'), hx + 36, y + 24, 15, '#fff', 'left', 900);
-    const mx = g.hideMax();
-    for (let k = 0; k < mx; k++) {
-      const dx = hx + 14 + k * ((hw - 28) / Math.max(1, mx - 1)), dy = y + 54;
-      c.beginPath(); c.arc(dx, dy, 7, 0, TAU); c.fillStyle = 'rgba(255,255,255,.18)'; c.fill();
-      if (k < g.hideN) { c.beginPath(); c.arc(dx, dy, 6, 0, TAU); c.fillStyle = '#d7b4ff'; c.fill(); }
-      else if (k === g.hideN) { c.beginPath(); c.moveTo(dx, dy); c.arc(dx, dy, 6, -Math.PI / 2, -Math.PI / 2 + TAU * g.hideT / g.hideRe()); c.closePath(); c.fillStyle = 'rgba(215,180,255,.55)'; c.fill(); }
-    }
-    // 대피(위아래 뒤집기) 단추
-    const fx = W - 50, fy = y + 38, R = 36;
-    const ready = g.canEvac(), cd = Math.max(0, g.evacT) / g.evacCdMax();
+    // 뒤집기 단추
+    const fx = W - 58, fy = y + 38, R = 38;
+    const ready = g.canFlip(), cd = g.p.flipCd / g.flipCdMax();
     const fp = app.press && app.press.id === 'flipBtn';
     c.save(); c.translate(fx, fy); if (fp) c.scale(0.94, 0.94);
-    if (ready) { c.beginPath(); c.arc(0, 0, R + 5 + 2 * Math.sin(app.time * 8), 0, TAU); c.fillStyle = 'rgba(255,215,90,.6)'; c.fill(); }
     c.beginPath(); c.arc(0, 4, R, 0, TAU); c.fillStyle = '#5b34c9'; c.fill();
     c.beginPath(); c.arc(0, 0, R, 0, TAU); c.fillStyle = ready ? '#8a5cf6' : '#b7a6dc'; c.fill();
-    if (cd > 0) { c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, -Math.PI / 2, -Math.PI / 2 + TAU * cd); c.closePath(); c.fillStyle = 'rgba(70,40,140,.35)'; c.fill(); }
+    if (!ready && cd > 0) { c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, -Math.PI / 2, -Math.PI / 2 + TAU * cd); c.closePath(); c.fillStyle = 'rgba(70,40,140,.35)'; c.fill(); }
+    c.fillStyle = '#fff';
     const bob = ready ? Math.sin(app.time * 4) * 2 : 0;
-    c.lineWidth = 4.5; c.strokeStyle = '#fff'; c.lineCap = 'round'; c.lineJoin = 'round';
-    c.beginPath(); c.moveTo(-9, 2 - bob); c.lineTo(-9, -18 - bob); c.moveTo(-17, -10 - bob); c.lineTo(-9, -18 - bob); c.lineTo(-1, -10 - bob); c.stroke();
-    c.beginPath(); c.moveTo(9, -14 + bob); c.lineTo(9, 6 + bob); c.moveTo(1, -2 + bob); c.lineTo(9, 6 + bob); c.lineTo(17, -2 + bob); c.stroke();
-    txt(t('evac'), 0, 22, 12, '#fff', 'center', 900);
+    c.beginPath(); c.moveTo(-9, -6 - bob); c.lineTo(-9, -24 - bob + 6); c.lineTo(-17, -12 - bob); c.moveTo(-9, -24 - bob + 6); c.lineTo(-1, -12 - bob); c.lineWidth = 4.5; c.strokeStyle = '#fff'; c.lineCap = 'round'; c.lineJoin = 'round'; c.stroke();
+    c.beginPath(); c.moveTo(9, 6 + bob - 12); c.lineTo(9, 18 + bob - 6); c.moveTo(1, 6 + bob); c.lineTo(9, 18 + bob - 6); c.lineTo(17, 6 + bob); c.stroke();
+    txt(t('flip'), 0, 26, 12, '#fff', 'center', 900);
     c.restore();
-    app.btns.push({ id: 'flipBtn', x: fx - R - 6, y: fy - R - 6, w: R * 2 + 12, h: R * 2 + 12, action: () => tryEvac() });
+    app.btns.push({ id: 'flipBtn', x: fx - R - 6, y: fy - R - 6, w: R * 2 + 12, h: R * 2 + 12, action: () => tryFlip() });
   }
-  function tryEvac() { const g = app.game; if (g && app.screen === 'play') { if (!g.evac()) S.play('deny'); } }
+  function tryFlip() { const g = app.game; if (g && app.screen === 'play') { if (!g.doFlip()) S.play('deny'); } }
   function openTech() { if (app.screen !== 'play') return; app.screen = 'tech'; app.techSel = null; S.play('tap'); }
 
   // ---------------- 게임 화면 ----------------
+  function drawGermP(g) {
+    const p = g.p;
+    const sp = Math.hypot(p.vx, p.vy);
+    const hurt = p.inv > 0;
+    if (hurt && Math.floor(app.time * 14) % 2 && p.inv < 1.2) return;
+    let rot = p.jaw === 0 ? Math.PI : 0, x = p.x, y = p.y, r = p.r, lift = 0;
+    if (p.flip) {
+      const k = Math.min(1, p.flip.t / p.flip.dur);
+      c.save(); c.setLineDash([6, 8]); c.lineDashOffset = -app.time * 60; c.lineWidth = 3; c.strokeStyle = 'rgba(215,180,255,.8)';
+      c.beginPath(); c.moveTo(p.flip.x0, p.flip.y0); c.lineTo(p.flip.x1, p.flip.y1); c.stroke(); c.setLineDash([]);
+      c.beginPath(); c.ellipse(p.flip.x1, p.flip.y1, 20 + 4 * Math.sin(app.time * 12), 9, 0, 0, TAU); c.lineWidth = 3; c.strokeStyle = 'rgba(215,180,255,.9)'; c.stroke();
+      c.restore();
+      rot = (p.flip.to === 0 ? 0 : Math.PI) + (p.flip.to === 0 ? 1 : -1) * Math.PI * k;
+      lift = Math.sin(k * Math.PI);
+      r = p.r * (1 + 0.35 * lift);
+      // 날아가는 꼬리
+      for (let q = 1; q <= 4; q++) { c.beginPath(); c.arc(x, y - (p.flip.y1 - p.flip.y0) * 0.03 * q, r * (1 - q * 0.18), 0, TAU); c.fillStyle = 'rgba(190,150,255,' + (0.18 - q * 0.035) + ')'; c.fill(); }
+    }
+    const ghost = g.has('ghost');
+    const alpha = p.hidden ? (ghost ? 0.32 : 0.45) : 1;
+    const bobY = p.flip ? 0 : Math.sin(app.time * 5) * 1.5 * (p.jaw ? 1 : -1);
+    drawGerm(x, y + bobY, r, {
+      rot, alpha,
+      squash: p.flip ? 0 : Math.min(0.12, sp / 1800) * (Math.abs(p.vx) > Math.abs(p.vy) ? 1 : -1) + (p.eating >= 0 ? Math.sin(app.time * (p.nibble ? 12 : 22)) * 0.05 : 0),
+      lookX: Math.max(-1, Math.min(1, p.vx / 150)) * (p.jaw ? 1 : -1), lookY: Math.max(-1, Math.min(1, p.vy / 150)) * (p.jaw ? 1 : -1),
+      eat: p.eating >= 0, hurt: hurt && p.inv > 1.0, dizzy: hurt && p.inv > 1.0,
+    });
+    if (hurt && p.inv > 1.0) for (let k = 0; k < 3; k++) { const a = app.time * 6 + k * TAU / 3; star(x + Math.cos(a) * 20, y - 22 * (p.jaw ? 1 : -1) + Math.sin(a) * 5, 5); c.fillStyle = '#ffe066'; c.fill(); }
+    // 숨기 표시: 그림자 속이면 달 모양 게이지
+    if (!p.flip && (p.shade || p.hide < g.hideMax() - 0.01)) {
+      const f = p.hide / g.hideMax();
+      const gx = x + 20, gy = y - 20 * (p.jaw ? 1 : -1);
+      c.beginPath(); c.arc(gx, gy, 9, 0, TAU); c.fillStyle = 'rgba(30,20,70,.55)'; c.fill();
+      c.beginPath(); c.moveTo(gx, gy); c.arc(gx, gy, 7.5, -Math.PI / 2, -Math.PI / 2 + TAU * f); c.closePath();
+      c.fillStyle = p.exposed ? '#ff6b81' : '#b9b5ff'; c.fill();
+      if (p.hidden) txt(t('hidden'), x, y + 30 * (p.jaw ? 1 : -1), 12, '#fff', 'center', 900, 'rgba(40,20,80,.7)', 4);
+    }
+    if (p.exposed && p.shade && Math.floor(app.time * 6) % 2) bubbleSign(x, y - 34 * (p.jaw ? 1 : -1), '!', '#ff4d6d', '#fff');
+  }
+
   function drawPlay(dt) {
     const g = app.game, L = g.L;
     if (!app.geo || app.geoG !== g) { app.geo = buildGeo(g.L); app.geoG = g; }
@@ -943,34 +815,46 @@
     if (app.shake > 0) c.translate((Math.random() - 0.5) * app.shake, (Math.random() - 0.5) * app.shake);
     drawMouth(L, g);
     c.save(); mouthClip(L); c.clip();
-    for (const h of g.hz) if (h.kind === 'brush') drawBrushZone(g, h, L);
-    drawTeeth(g);
-    for (const h of g.hz) if (h.kind === 'brush') {
-      c.save(); c.lineCap = 'round';
-      archPath(L, h.jaw, h.s0, h.s1, 0); c.lineWidth = 80;
-      c.strokeStyle = 'rgba(255,220,60,' + (h.st === 'warn' ? 0.2 + 0.1 * Math.sin(app.time * 18) : 0.12) + ')'; c.stroke();
+    // 사탕 (바닥에 붙어 있다)
+    for (const cd of g.candies) {
+      if (cd.life < 2 && Math.floor(app.time * 8) % 2) continue;
+      const pop = Math.min(1, cd.age * 4);
+      c.save(); c.translate(cd.x, cd.y + Math.sin(app.time * 3 + cd.x) * 3); c.scale(pop, pop);
+      c.beginPath(); c.arc(0, 0, 20, 0, TAU); c.fillStyle = 'rgba(255,240,150,.25)'; c.fill();
+      if (cd.kind === 'heart') heart(0, 0, 28, '#ff4d7a', '#c2185b');
+      else candyIcon(0, 0, 28, Math.sin(app.time * 2 + cd.y) * 0.3);
       c.restore();
     }
-    for (const h of g.hz) if (h.kind === 'floss') drawFloss(g, h, L);
-    drawGerms(g);
-    drawJumps(g);
-    for (const h of g.hz) if (h.kind === 'brush' && h.st !== 'warn') drawBrush(g, h, L);
-    c.restore();
-    for (const h of g.hz) if (h.kind === 'gargle') drawGargle(g, h, L);
-    drawBubbles(g);
-    drawParts();
-    // 처음 도움말 손가락
-    if (app.screen === 'play') {
-      const tb = g.bubbles.find(b => b.age > 0.3);
-      if (g.popped === 0 && tb && g.t < 60) drawHand(tb.x, tb.y, t('tapHide'));
-      else if (g.hides === 0 && g.t < 150) {
-        const tt = g.teeth.find(q => g.canHide(q.i));
-        if (tt) { const [x, y] = germSpot(g, tt); drawHand(x, y, t('tapHide')); }
-      }
+    drawTeeth(g);
+    for (const h of g.hz) if (h.st === 'warn') (h.kind === 'brush' ? drawBrushWarn : drawFloss)(g, h, L);
+    // 먹는 중 표시 (고리)
+    if (g.p.eating >= 0) {
+      const tt = g.teeth[g.p.eating];
+      const ry = tt.cy - (tt.d * 0.5 + 12) * tt.dir;
+      c.beginPath(); c.arc(tt.cx, ry, 8, 0, TAU); c.fillStyle = 'rgba(40,0,40,.5)'; c.fill();
+      c.beginPath(); c.moveTo(tt.cx, ry); c.arc(tt.cx, ry, 7, -Math.PI / 2, -Math.PI / 2 + TAU * tt.inf); c.closePath(); c.fillStyle = g.p.nibble ? '#9e8cd8' : '#c69cff'; c.fill();
+    }
+    for (const h of g.hz) if (h.st !== 'warn' && h.kind === 'floss') drawFloss(g, h, L);
+    drawGermP(g);
+    // 처음 몇 초 손 안내
+    if (app.hintT > 0 && g.t < 6) {
+      const p = g.p, a = Math.min(1, app.hintT);
+      c.globalAlpha = a;
+      const hx = p.x + 40 + Math.sin(app.time * 3) * 26, hy = p.y - 70;
+      c.beginPath(); c.arc(hx, hy, 14, 0, TAU); c.fillStyle = 'rgba(255,255,255,.75)'; c.fill();
+      c.beginPath(); c.arc(hx, hy, 7, 0, TAU); c.fillStyle = '#ff6f91'; c.fill();
+      txt(t('hint'), p.x, p.y - 100, 15, '#fff', 'center', 900, '#b0406a', 5);
+      c.globalAlpha = 1;
+    }
+    for (const h of g.hz) if (h.st !== 'warn' && h.kind === 'brush') {
+      drawBrush(g, h, L);
+      if (Math.random() < 0.5) app.parts.push({ x: h.x + (Math.random() - 0.5) * 70, y: h.y + (Math.random() - 0.5) * 30, vx: (Math.random() - 0.5) * 40, vy: -10, life: 0, max: 0.8, kind: 'bubble', size: 2 + Math.random() * 3, rot: 0 });
     }
     c.restore();
+    drawParts();
+    c.restore();
     if (app.flash > 0) { c.fillStyle = 'rgba(255,90,140,' + app.flash * 0.35 + ')'; c.fillRect(0, 0, W, L.H); }
-    if (g.cure >= 80) { const a = (g.cure - 80) / 20 * (0.45 + 0.15 * Math.sin(app.time * 8)); const rg = c.createRadialGradient(W / 2, L.H / 2, L.H * 0.3, W / 2, L.H / 2, L.H * 0.7); rg.addColorStop(0, 'rgba(60,120,255,0)'); rg.addColorStop(1, 'rgba(60,120,255,' + a + ')'); c.fillStyle = rg; c.fillRect(0, 0, W, L.H); }
+    if (g.pain >= 70) { const a = (g.pain - 70) / 30 * (0.32 + 0.12 * Math.sin(app.time * 8)); const rg = c.createRadialGradient(W / 2, L.H / 2, L.H * 0.3, W / 2, L.H / 2, L.H * 0.7); rg.addColorStop(0, 'rgba(255,40,80,0)'); rg.addColorStop(1, 'rgba(255,40,80,' + a + ')'); c.fillStyle = rg; c.fillRect(0, 0, W, L.H); }
     drawHUD(g, L);
     drawBar(g, L);
   }
@@ -980,31 +864,33 @@
   function handleEvents(g) {
     for (const e of g.ev) {
       switch (e.type) {
-        case 'spread': if (gate('spread', 0.25)) S.play('spread'); burst(e.x, e.y, 10, 'spark', '#b98bff', 60); app.toothShake[e.i] = 0.25; break;
-        case 'half': burst(e.x, e.y, 6, 'crumb', '#fff', 60); if (gate('chomp', 0.2)) S.play('chomp'); break;
-        case 'conquer': S.play('conquer'); S.vibrate(25); burst(e.x, e.y, 16, 'star', '#c69cff', 140); burst(e.x, e.y, 8, 'spark', '#fff', 100); break;
-        case 'bubble': if (gate('bub', 0.3)) S.play('bubble'); break;
-        case 'pop': S.play('pop'); S.vibrate(10); burst(e.x, e.y, 10, 'star', e.kind === 'gold' ? '#ffd24d' : e.kind === 'red' ? '#ff6b81' : '#ffb347', 110); break;
-        case 'sugar': floatText(e.x, e.y - 14, '+' + e.n, '#d63e6c', true); break;
-        case 'news': if (!e.good && BAD[e.key]) S.play('newsBad'); else S.play('news'); if (e.key === 'cure80') S.vibrate([40, 40, 40]); break;
+        case 'chomp':
+          if (!e.nibble || gate('nib', 0.4)) S.play('chomp');
+          burst(g.p.x + g.p.face * 6, g.p.y + 6 * (g.p.jaw ? 1 : -1), e.nibble ? 1 : 3, 'crumb', '#fff', 70);
+          app.toothShake[e.i] = 0.12;
+          break;
+        case 'conquer':
+          S.play('conquer'); S.vibrate(25);
+          burst(e.x, e.y, 16, 'star', '#c69cff', 140); burst(e.x, e.y, 8, 'spark', '#fff', 100);
+          break;
+        case 'sugar': if (gate('sugar', 0.08)) S.play('sugar'); floatText(e.x, e.y - 10, '+' + e.n, '#d63e6c', true); break;
+        case 'spread': S.play('spread'); burst(e.x, e.y, 10, 'spark', '#b98bff', 60); break;
         case 'warn': S.play('warn'); break;
         case 'swish': S.play('swish'); break;
         case 'floss': S.play('floss'); break;
-        case 'gargle': S.play('gargle'); S.vibrate(30); break;
         case 'clean': if (gate('clean', 0.06)) S.play('clean'); burst(e.x, e.y, 6, 'star', '#ffffff', 90); burst(e.x, e.y, 4, 'star', '#9ff3ff', 70); break;
-        case 'wiped': floatText(e.x, e.y - 20, t('gone'), '#2f7fb8'); break;
-        case 'sneak': if (gate('sneak', 0.2)) S.play('sneak'); floatText(e.x, e.y - 40, t('phew'), '#6a5acd'); break;
-        case 'hide': S.play('hide'); S.vibrate(12); burst(e.x, e.y, 8, 'spark', '#b9b5ff', 60); break;
-        case 'flip':
-          S.play('flip'); S.vibrate(15);
-          for (const j of e.jumps) {
-            const a = g.teeth[j.from], b = g.teeth[j.to];
-            app.jumps.push({ x0: a.cx, y0: a.cy, x1: b.cx, y1: b.cy, t: 0, dur: 0.55, up: a.jaw === 1 });
-          }
-          break;
-        case 'upgrade': S.play('upgrade'); if (e.pain) floatText(W / 2, 110, t('pain') + (e.pain > 0 ? ' +' : ' ') + e.pain, e.pain > 0 ? '#e0294f' : '#2f9a45'); break;
-        case 'event': if (e.key === 'candy' || e.key === 'juice') for (let k = 0; k < 14; k++) app.parts.push({ x: Math.random() * W, y: 100 + Math.random() * 40, vx: (Math.random() - 0.5) * 50, vy: 40 + Math.random() * 60, life: 0, max: 1.6, kind: 'confetti', color: ['#ff6f91', '#ffd24d', '#ffb347'][k % 3], size: 3 + Math.random() * 2, rot: Math.random() * TAU }); break;
-        case 'painWarn': S.play('ouch'); S.vibrate([40, 40, 40]); app.shake = 6; break;
+        case 'hit': S.play('hit'); S.vibrate([90, 50, 90]); app.shake = 12; app.flash = 1; burst(e.x, e.y, 18, 'bubble', '#fff', 120); break;
+        case 'candy': S.play('candy'); burst(e.x, e.y, 12, 'star', '#ff8fb1', 110); break;
+        case 'upgrade': S.play('upgrade'); if (e.pain) floatText(W / 2, 70, t('pain') + (e.pain > 0 ? ' +' : ' ') + e.pain, e.pain > 0 ? '#e0294f' : '#2f9a45'); break;
+        case 'heal': S.play('candy'); burst(e.x, e.y, 14, 'star', '#ff4d7a', 110); floatText(e.x, e.y - 12, '+1 ♥', '#ff4d7a'); break;
+        case 'flip': S.play('flip'); S.vibrate(15); burst(g.p.x, g.p.y, 10, 'spark', '#d7b4ff', 90); break;
+        case 'land': S.play('land'); burst(e.x, e.y, 8, 'star', '#d7b4ff', 80); break;
+        case 'hide': if (gate('hide', 0.5)) S.play('hide'); break;
+        case 'exposed': S.play('exposed'); floatText(e.x, e.y - 30, t('found'), '#e0294f'); break;
+        case 'spot': if (gate('spot', 0.4)) S.play('spot'); break;
+        case 'lost': if (e.hidden) S.play('lost'); break;
+        case 'sneak': S.play('sneak'); floatText(e.x, e.y - 34, t('phew'), '#6a5acd'); break;
+        case 'painWarn': S.play('ouch'); S.vibrate([40, 40, 40]); floatText(W / 2, 90, t('painHigh'), '#e0294f'); break;
         case 'dentist': S.play('drill'); break;
         case 'win': app.endTimer = 1.1; S.play('win'); S.vibrate([30, 40, 30, 40, 80]); finish(true); break;
         case 'lose': app.endTimer = 1.1; if (g.reason !== 'dentist') S.play('lose'); finish(false); break;
@@ -1019,7 +905,7 @@
     if (won) {
       const b = save.best[g.stage];
       if (!b || g.t < b) { save.best[g.stage] = Math.round(g.t * 10) / 10; app.newRecord = true; }
-      if (g.stage < 3 && save.unlocked < g.stage + 1) save.unlocked = g.stage + 1;
+      if (g.stage === 1 && save.unlocked < 2) save.unlocked = 2;
       persist();
       for (let i = 0; i < 70; i++) app.parts.push({ x: Math.random() * W, y: -10 - Math.random() * 200, vx: (Math.random() - 0.5) * 60, vy: 60 + Math.random() * 100, life: 0, max: 3 + Math.random() * 2, kind: 'confetti', color: ['#ff6f91', '#ffd24d', '#a46cff', '#6fe3b8', '#7fd8ff'][i % 5], size: 4 + Math.random() * 3, rot: Math.random() * TAU });
     }
@@ -1028,36 +914,32 @@
   // ---------------- 시작 ----------------
   function startStage(n) {
     S.unlock();
-    app.game = new Game(gameH(), n);
-    app.geo = null; app.jumps = [];
-    app.parts = []; app.screen = 'intro'; app.shake = 0; app.flash = 0;
+    const H = Math.round(Math.max(640, Math.min(860, window.innerHeight / window.innerWidth * W)));
+    app.game = new Game(H, n);
+    app.geo = null;
+    app.parts = []; app.screen = 'intro'; app.hintT = 3; app.shake = 0; app.flash = 0; app.acc = { x: 0, y: 0 };
     resize();
   }
-  function beginPlay() { app.screen = 'play'; S.play('tap'); S.startMusic(app.game.stage >= 2); }
+  function beginPlay() { app.screen = 'play'; S.play('tap'); S.startMusic(app.game.stage === 2); }
 
   // ---------------- 첫 화면 ----------------
   function drawTitle() {
     const L = app.bgL, H = app.H;
     drawBackdrop(L);
-    const cx = W / 2, cy = H * 0.355;
-    c.save(); c.translate(cx, cy + Math.sin(app.time * 1.6) * 4); c.scale(0.95, 0.95);
-    const toothPath = () => {
-      c.beginPath();
-      c.moveTo(-78, -60); c.bezierCurveTo(-80, -110, -20, -112, 0, -88); c.bezierCurveTo(20, -112, 80, -110, 78, -60);
-      c.bezierCurveTo(76, -10, 62, 30, 52, 90); c.quadraticCurveTo(44, 106, 32, 92); c.lineTo(14, 30); c.quadraticCurveTo(0, 20, -14, 30);
-      c.lineTo(-32, 92); c.quadraticCurveTo(-44, 106, -52, 90); c.bezierCurveTo(-62, 30, -76, -10, -78, -60); c.closePath();
-    };
-    c.save(); c.translate(34, -18); c.globalAlpha = 0.22; toothPath(); c.fillStyle = '#5a1333'; c.fill(); c.restore();
-    toothPath();
+    const cx = W / 2, cy = H * 0.38;
+    c.save(); c.translate(cx, cy + Math.sin(app.time * 1.6) * 4);
+    // 그림자 (비스듬한 빛)
+    c.save(); c.translate(34, -18); c.globalAlpha = 0.22;
+    c.beginPath(); c.moveTo(-78, -60); c.bezierCurveTo(-80, -110, -20, -112, 0, -88); c.bezierCurveTo(20, -112, 80, -110, 78, -60);
+    c.bezierCurveTo(76, -10, 62, 30, 52, 90); c.quadraticCurveTo(44, 106, 32, 92); c.lineTo(14, 30); c.quadraticCurveTo(0, 20, -14, 30);
+    c.lineTo(-32, 92); c.quadraticCurveTo(-44, 106, -52, 90); c.bezierCurveTo(-62, 30, -76, -10, -78, -60); c.closePath();
+    c.fillStyle = '#5a1333'; c.fill(); c.restore();
+    c.beginPath();
+    c.moveTo(-78, -60); c.bezierCurveTo(-80, -110, -20, -112, 0, -88); c.bezierCurveTo(20, -112, 80, -110, 78, -60);
+    c.bezierCurveTo(76, -10, 62, 30, 52, 90); c.quadraticCurveTo(44, 106, 32, 92); c.lineTo(14, 30); c.quadraticCurveTo(0, 20, -14, 30);
+    c.lineTo(-32, 92); c.quadraticCurveTo(-44, 106, -52, 90); c.bezierCurveTo(-62, 30, -76, -10, -78, -60); c.closePath();
     const tg = c.createLinearGradient(-80, 0, 80, 0); tg.addColorStop(0, '#fff'); tg.addColorStop(1, '#e4eaf4');
     c.fillStyle = tg; c.fill(); c.lineWidth = 4; c.strokeStyle = '#c9b3e6'; c.stroke();
-    // 번져 가는 보라 얼룩 (세계 지도처럼)
-    c.save(); toothPath(); c.clip();
-    const sp = (Math.sin(app.time * 0.8) + 1) / 2;
-    for (const [x, y, r] of [[40, -40, 22], [20, 20, 16], [-40, 40, 14], [58, 40, 12]]) {
-      c.beginPath(); c.arc(x, y, r * (0.7 + sp * 0.5), 0, TAU); c.fillStyle = 'rgba(164,108,255,.28)'; c.fill();
-    }
-    c.restore();
     c.fillStyle = 'rgba(255,255,255,.95)'; rr(-58, -78, 16, 70, 8); c.fill();
     c.fillStyle = '#6b4128';
     c.beginPath(); c.arc(40, -40, 9, 0, TAU); c.fill(); c.beginPath(); c.arc(28, 12, 6, 0, TAU); c.fill();
@@ -1069,39 +951,34 @@
     c.beginPath(); c.moveTo(-32, -46); c.lineTo(-14, -42); c.moveTo(28, -46); c.lineTo(10, -42); c.stroke();
     c.beginPath(); c.moveTo(58, -64); c.quadraticCurveTo(66, -50, 58, -46); c.quadraticCurveTo(50, -50, 58, -64); c.fillStyle = '#7fd3ff'; c.fill();
     c.restore();
-    // 충치들 + 방울
-    drawGerm(cx + 96, cy - 30 + Math.sin(app.time * 1.6) * 4, 22, { eat: true, lookX: -0.8 });
-    const jy = Math.abs(Math.sin(app.time * 3.2)) * 18;
-    drawGerm(cx - 84, cy + 58 - jy, 20, { rot: Math.PI, lookX: 0.6, squash: jy < 4 ? 0.1 : -0.04 });
-    const bk = 1 + 0.08 * Math.sin(app.time * 5);
-    c.save(); c.translate(cx + 112, cy + 52); c.scale(bk, bk);
-    const gg = c.createRadialGradient(-6, -7, 2, 0, 0, 20); gg.addColorStop(0, '#ffd08a'); gg.addColorStop(0.6, '#ff8a1f'); gg.addColorStop(1, '#d9620a');
-    c.beginPath(); c.arc(0, 0, 19, 0, TAU); c.fillStyle = gg; c.fill(); c.lineWidth = 3; c.strokeStyle = '#fff'; c.stroke();
-    candyIcon(0, 0, 21, 0.2); c.restore();
+    // 그림자 속에 반쯤 숨은 충치콩 + 두리번거리는 칫솔
+    const peek = (Math.sin(app.time * 1.4) + 1) / 2;
+    drawGerm(cx + 100, cy - 18 + Math.sin(app.time * 1.6) * 4, 24, { alpha: 0.4 + 0.6 * peek, eat: peek > 0.7, lookX: -0.8, lookY: 0.2 });
+    const jy = Math.abs(Math.sin(app.time * 3.2)) * 20;
+    drawGerm(cx - 78, cy + 76 - jy, 22, { rot: Math.PI, lookX: 0.6, squash: jy < 4 ? 0.1 : -0.04 });
     // 제목
-    const ty = H * 0.09;
+    const ty = H * 0.1;
     c.save(); c.translate(W / 2, ty); c.rotate(-0.03);
-    txt(t('title'), 0, 4, save.lang === 'ko' ? 52 : 42, '#5b2a86', 'center', 900, '#5b2a86', 14);
-    txt(t('title'), 0, 0, save.lang === 'ko' ? 52 : 42, '#fff', 'center', 900, '#a46cff', 10);
+    txt(t('title'), 0, 4, save.lang === 'ko' ? 52 : 44, '#5b2a86', 'center', 900, '#5b2a86', 14);
+    txt(t('title'), 0, 0, save.lang === 'ko' ? 52 : 44, '#fff', 'center', 900, '#a46cff', 10);
     c.restore();
-    txt(t('sub'), W / 2, ty + 46, 16, '#b0406a', 'center', 800);
-    const by = H * 0.56, gap = 68;
-    const styles = [{ bg: '#ff6f91', dark: '#c73e67', size: 21 }, { bg: '#8a5cf6', dark: '#5b34c9', size: 21 }, { bg: '#2fb3c4', dark: '#1d7d8a', size: 21 }];
-    for (let n = 1; n <= 3; n++) {
-      const locked = save.unlocked < n;
-      const sub = locked ? t('locked' + (n - 1)) : (save.best[n] ? t('best') + ' ' + fmtTime(save.best[n]) : t('stn' + n));
-      button('s' + n, 40, by + (n - 1) * gap, W - 80, 58, t('st' + n) + (locked ? '' : ' · ' + t('play')),
-        locked ? { bg: '#d9c7d0', dark: '#b5a0aa', size: 21, fg: '#fff' } : styles[n - 1],
-        () => { if (locked) { S.unlock(); S.play('deny'); } else startStage(n); }, sub);
-    }
-    const sy = by + 3 * gap + 4;
+    txt(t('sub'), W / 2, ty + 48, 16, '#b0406a', 'center', 800);
+    const by = H * 0.64;
+    const b1 = save.best[1] ? t('best') + ' ' + fmtTime(save.best[1]) : t('stn1');
+    button('s1', 40, by, W - 80, 64, t('st1') + ' · ' + t('play'), { bg: '#ff6f91', dark: '#c73e67', size: 22 }, () => startStage(1), b1);
+    const locked = save.unlocked < 2;
+    const b2 = locked ? t('locked') : (save.best[2] ? t('best') + ' ' + fmtTime(save.best[2]) : t('stn2'));
+    button('s2', 40, by + 80, W - 80, 64, t('st2') + (locked ? '' : ' · ' + t('play')),
+      locked ? { bg: '#d9c7d0', dark: '#b5a0aa', size: 22, fg: '#fff' } : { bg: '#8a5cf6', dark: '#5b34c9', size: 22 },
+      () => { if (locked) { S.unlock(); S.play('deny'); } else startStage(2); }, b2);
+    const sy = by + 166;
     button('lang', 40, sy, (W - 96) / 2, 44, t('lang'), { bg: '#fff', dark: '#e2b6c6', fg: '#b0406a', size: 16 }, () => {
       save.lang = save.lang === 'ko' ? 'en' : 'ko'; document.documentElement.lang = save.lang; persist(); S.unlock(); S.play('tap');
     });
     button('snd', 56 + (W - 96) / 2, sy, (W - 96) / 2, 44, t('sound') + ' ' + (save.sound ? t('on') : t('off')), { bg: '#fff', dark: '#e2b6c6', fg: '#b0406a', size: 16 }, () => {
       save.sound = !save.sound; S.on = save.sound; S.setMusic(save.sound); persist(); S.unlock(); S.play('tap');
     });
-    txt('ledeuxions.com', W / 2, H - 16, 12, 'rgba(176,64,106,.55)', 'center', 700);
+    txt('ledeuxions.com', W / 2, H - 18, 12, 'rgba(176,64,106,.55)', 'center', 700);
   }
 
   // ---------------- 겹쳐 뜨는 카드 ----------------
@@ -1112,30 +989,27 @@
     rr(x, y, w, h, 28); c.fillStyle = '#fff8fb'; c.fill();
     c.lineWidth = 4; c.strokeStyle = '#ffc2d4'; c.stroke();
   }
-  function tipIcon(k, x, y) {
-    c.beginPath(); c.arc(x, y, 22, 0, TAU); c.fillStyle = '#ffe3ec'; c.fill();
-    if (k === 'spread') { drawGerm(x - 9, y + 5, 7, {}); drawGerm(x + 9, y + 5, 7, { eat: true }); drawGerm(x, y - 8, 7, { rot: Math.PI }); }
-    else if (k === 'bubble') { c.beginPath(); c.arc(x, y, 14, 0, TAU); c.fillStyle = '#ff8a1f'; c.fill(); c.lineWidth = 2.5; c.strokeStyle = '#fff'; c.stroke(); candyIcon(x, y, 15); }
-    else if (k === 'dent') calIcon(x, y, 26, true);
-    else if (k === 'hide') { c.beginPath(); c.arc(x, y, 22, 0, TAU); c.fillStyle = 'rgba(48,0,34,.35)'; c.fill(); drawGerm(x, y, 12, { alpha: 0.5 }); }
-    else if (k === 'flip') { drawGerm(x - 8, y - 6, 8, { rot: Math.PI }); drawGerm(x + 8, y + 8, 8, {}); }
-    else if (k === 'floss') { c.lineWidth = 3; c.strokeStyle = '#35c48f'; c.beginPath(); c.moveTo(x - 16, y); c.lineTo(x + 16, y); c.stroke(); c.lineWidth = 5; c.beginPath(); c.moveTo(x - 16, y); c.lineTo(x - 16, y + 14); c.moveTo(x + 16, y); c.lineTo(x + 16, y + 14); c.stroke(); }
-    else if (k === 'gargle') { c.beginPath(); c.moveTo(x, y - 15); c.bezierCurveTo(x + 12, y - 2, x + 13, y + 6, x, y + 13); c.bezierCurveTo(x - 13, y + 6, x - 12, y - 2, x, y - 15); c.fillStyle = '#7fd3ff'; c.fill(); c.lineWidth = 2; c.strokeStyle = '#2f7fb8'; c.stroke(); }
-    else { rr(x - 18, y + 6, 36, 8, 4); c.fillStyle = '#ffd24d'; c.fill(); techIcon('numb', x, y - 6, 18); }
-  }
   function drawIntro() {
     const g = app.game, H = app.H;
     dim();
-    const tips = g.stage === 1 ? ['spread', 'bubble', 'dent', 'hide', 'flip', 'tech'] : g.stage === 2 ? ['floss', 'bubble', 'dent', 'hide', 'flip', 'tech'] : ['gargle', 'dent', 'hide', 'flip', 'tech'];
-    const TK = { spread: 'tipSpread', bubble: 'tipBubble', dent: 'tipDent', hide: 'tipHide', flip: 'tipFlip', tech: 'tipTech', floss: 'tipFloss', gargle: 'tipGargle' };
-    const rowH = 62, ch = 150 + tips.length * rowH, y = Math.max(8, (H - ch) / 2);
+    const tips = [['drag', t('tipDrag')], ['eat', t('tipEat')], ['shade', t('tipShade')], ['flip', t('tipFlip')]];
+    tips.push(g.stage === 2 ? ['floss', t('tipFloss')] : ['brush', t('tipBrush')]);
+    tips.push(['tech', t('tipTech')]);
+    const ch = 150 + tips.length * 60, y = Math.max(8, (H - ch) / 2);
     card(y, ch, 16, W - 32);
-    txt(t('st' + g.stage), W / 2, y + 32, 16, '#b0406a', 'center', 800);
-    txt(t('stn' + g.stage), W / 2, y + 62, 26, '#5b2a86', 'center', 900);
-    tips.forEach((k, i) => {
-      const ty = y + 110 + i * rowH;
-      tipIcon(k, 56, ty);
-      const lines = wrap(t(TK[k]), W - 124, 14, 700);
+    txt(g.stage === 1 ? t('st1') : t('st2'), W / 2, y + 32, 16, '#b0406a', 'center', 800);
+    txt(g.stage === 1 ? t('stn1') : t('stn2'), W / 2, y + 62, 26, '#5b2a86', 'center', 900);
+    tips.forEach(([k, s], i) => {
+      const ty = y + 108 + i * 60;
+      c.beginPath(); c.arc(56, ty, 22, 0, TAU); c.fillStyle = '#ffe3ec'; c.fill();
+      if (k === 'drag') { c.beginPath(); c.arc(56, ty, 9, 0, TAU); c.fillStyle = '#ff6f91'; c.fill(); c.lineWidth = 2; c.strokeStyle = '#ff6f91'; c.beginPath(); c.moveTo(42, ty + 12); c.lineTo(70, ty + 12); c.stroke(); }
+      else if (k === 'eat') drawGerm(56, ty, 14, { eat: true });
+      else if (k === 'shade') { c.beginPath(); c.arc(56, ty, 22, 0, TAU); c.fillStyle = 'rgba(48,0,34,.35)'; c.fill(); drawGerm(56, ty, 13, { alpha: 0.45 }); }
+      else if (k === 'flip') { drawGerm(48, ty - 6, 9, { rot: Math.PI }); drawGerm(64, ty + 8, 9, {}); }
+      else if (k === 'brush') { c.fillStyle = '#4fbef5'; rr(38, ty - 2, 36, 12, 6); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.ellipse(49, ty - 8, 5, 6, 0, 0, TAU); c.ellipse(63, ty - 8, 5, 6, 0, 0, TAU); c.fill(); c.fillStyle = '#12334d'; c.beginPath(); c.arc(50, ty - 7, 2.4, 0, TAU); c.arc(64, ty - 7, 2.4, 0, TAU); c.fill(); }
+      else if (k === 'floss') { c.lineWidth = 3; c.strokeStyle = '#35c48f'; c.beginPath(); c.moveTo(40, ty); c.lineTo(72, ty); c.stroke(); c.lineWidth = 5; c.beginPath(); c.moveTo(40, ty); c.lineTo(40, ty + 14); c.moveTo(72, ty); c.lineTo(72, ty + 14); c.stroke(); }
+      else { c.lineWidth = 2.5; c.strokeStyle = '#ff2d55'; rr(38, ty + 6, 36, 8, 4); c.fillStyle = '#ffd24d'; c.fill(); techIcon('numb', 56, ty - 6, 18); }
+      const lines = wrap(s, W - 124, 14, 700);
       lines.forEach((ln, j) => txt(ln, 88, ty + (j - (lines.length - 1) / 2) * 18, 14, '#4a2a5a', 'left', 700));
     });
     const pulse = 1 + Math.sin(app.time * 5) * 0.04;
@@ -1162,8 +1036,7 @@
     card(y0, ch, 10, W - 20);
     txt(t('techTitle'), W / 2, y0 + 30, 22, '#5b2a86', 'center', 900);
     candyIcon(W - 70, y0 + 30, 20); txt(String(g.sugar), W - 56, y0 + 31, 18, '#d63e6c', 'left', 900);
-    drawPain(g, 50, y0 + 54, 134, 17);
-    drawCure(g, 218, y0 + 54, 140, 17);
+    drawPain(g, 52, y0 + 52, W - 84, 16);
     const colX = [W / 2 - 118, W / 2, W / 2 + 118];
     const top = y0 + 116, gapY = Math.min(104, (ch - 360) / 3.3);
     for (let b = 0; b < 3; b++) {
@@ -1189,10 +1062,13 @@
       if (st === 'own') { c.beginPath(); c.arc(16, -16, 8, 0, TAU); c.fillStyle = '#fff'; c.fill(); c.lineWidth = 2.6; c.strokeStyle = '#2fb36a'; c.beginPath(); c.moveTo(12, -16); c.lineTo(15, -12.5); c.lineTo(20, -19); c.stroke(); }
       c.restore();
       txt(t('n_' + n.k), x, y + 40, 13, st === 'locked' ? '#b9a6b3' : '#4a2a5a', 'center', 900);
-      if (st !== 'own') { candyIcon(x - 22, y + 58, 11); txt(String(n.cost), x - 14, y + 58.5, 11, '#d63e6c', 'left', 900); }
+      if (st !== 'own') {
+        candyIcon(x - 22, y + 58, 11); txt(String(n.cost), x - 14, y + 58.5, 11, '#d63e6c', 'left', 900);
+      }
       if (n.pain) txt((n.pain > 0 ? '+' : '') + n.pain, x + (st === 'own' ? 0 : 20), y + 58.5, 11, n.pain > 0 ? '#e0294f' : '#1d9d57', 'center', 900);
       app.btns.push({ id: 'node_' + n.k, x: x - 40, y: y - 30, w: 80, h: 84, action: () => { app.techSel = n.k; S.play('tap'); } });
     }
+    // 아래 설명
     const dy = top + gapY * 3 + 100;
     rr(26, dy, W - 52, 118, 18); c.fillStyle = '#fff'; c.fill(); c.lineWidth = 2; c.strokeStyle = '#ffd3e0'; c.stroke();
     if (app.techSel) {
@@ -1220,12 +1096,11 @@
   function drawEnd(won) {
     const g = app.game, H = app.H;
     dim();
-    const ch = 496, y = (H - ch) / 2;
+    const ch = 470, y = (H - ch) / 2;
     card(y, ch);
     const dent = !won && g.reason === 'dentist';
     if (won) {
-      // 별: 치과 막대가 덜 찼을수록 많이
-      const stars = g.cure < 40 ? 3 : g.cure < 75 ? 2 : 1;
+      const stars = g.hearts;
       for (let i = 0; i < 3; i++) {
         const sx = W / 2 + (i - 1) * 56, sy = y + 52 - (i === 1 ? 10 : 0);
         const on = i < stars;
@@ -1235,7 +1110,7 @@
         c.restore();
       }
       txt(t('winTitle'), W / 2, y + 110, 26, '#5b2a86', 'center', 900);
-      if (g.stage === 3) txt(t('winAll'), W / 2, y + 140, 15, '#b0406a', 'center', 800);
+      if (g.stage === 2) txt(t('winAll'), W / 2, y + 140, 15, '#b0406a', 'center', 800);
       drawGerm(W / 2, y + 190 + Math.sin(app.time * 6) * 4, 30, { eat: true });
     } else if (dent) {
       txt(t('dentTitle'), W / 2, y + 50, 26, '#e0294f', 'center', 900);
@@ -1251,19 +1126,20 @@
       drawGerm(W / 2, y + 170, 30, { dizzy: true, hurt: true });
       for (let k = 0; k < 6; k++) { const a = app.time * 2 + k; c.beginPath(); c.arc(W / 2 + Math.cos(a) * 46, y + 170 + Math.sin(a * 1.3) * 30, 5 + (k % 3) * 2, 0, TAU); c.fillStyle = 'rgba(160,220,255,.6)'; c.fill(); }
     }
-    txt(t('time') + ' ' + fmtTime(g.t) + '  ·  ' + g.doneCount() + '/20' + (won && app.newRecord ? '  ·  ' + t('record') : ''), W / 2, y + 250, 15, '#8a6a7a', 'center', 800);
+    txt(t('time') + ' ' + fmtTime(g.t) + (won && app.newRecord ? '  ·  ' + t('record') : ''), W / 2, y + 250, 15, '#8a6a7a', 'center', 800);
     rr(44, y + 262, W - 88, 84, 18); c.fillStyle = '#e8f7ff'; c.fill(); c.lineWidth = 2; c.strokeStyle = '#a6dcf5'; c.stroke();
     txt(t('moralHead'), W / 2, y + 284, 15, '#2f7fb8', 'center', 900);
     const ml = wrap(won ? t('moral') : t('moralLose'), W - 120, 14, 700);
     ml.forEach((ln, j) => txt(ln, W / 2, y + 308 + j * 18, 14, '#335a74', 'center', 700));
-    const b1y = y + ch - 122;
-    if (won && g.stage < 3) button('next', 50, b1y, W - 100, 52, t('next'), { bg: '#ff6f91', dark: '#c73e67' }, () => startStage(g.stage + 1));
+    if (won && g.stage === 2) txt(t('soon'), W / 2, y + 358, 13, '#a46cff', 'center', 800);
+    const b1y = y + ch - 104;
+    if (won && g.stage === 1) button('next', 50, b1y, W - 100, 52, t('next'), { bg: '#ff6f91', dark: '#c73e67' }, () => startStage(2));
     else button('retry', 50, b1y, W - 100, 52, t('retry'), { bg: '#ff6f91', dark: '#c73e67' }, () => startStage(g.stage));
     button('home2', 50, b1y + 62, W - 100, 44, t('home'), { bg: '#8a5cf6', dark: '#5b34c9', size: 17 }, () => { app.screen = 'title'; S.play('tap'); resize(); });
   }
 
   // ---------------- 손 ----------------
-  function toPt(e) {
+  function toLocal(e) {
     const r = cv.getBoundingClientRect();
     return { x: (e.clientX - r.left) / app.scale, y: (e.clientY - r.top) / app.scale };
   }
@@ -1274,46 +1150,45 @@
     }
     return null;
   }
-  // 게임판 톡: 방울 먼저, 그다음 숨길 충치
-  function tapBoard(pt) {
-    const g = app.game;
-    let bb = null, bd = 32;
-    for (const b of g.bubbles) { const d = Math.hypot(b.x - pt.x, b.y - pt.y); if (d < bd) { bd = d; bb = b; } }
-    if (bb) { g.pop(bb.id); return; }
-    let ti = -1, td = 40;
-    for (const tt of g.teeth) {
-      if (tt.inf <= 0 || tt.done) continue;
-      const [x, y] = germSpot(g, tt);
-      let d = Math.hypot(x - pt.x, y - pt.y);
-      const [u, v] = tLocal(tt, pt.x, pt.y, 6); if (u * u + v * v <= 1) d = Math.min(d, 10);
-      if (d < td && g.threatOf(tt.i)) { td = d; ti = tt.i; }
-    }
-    if (ti >= 0) { if (!g.hide(ti)) { if (g.teeth[ti].shield <= 0) { S.play('deny'); if (g.hideN < 1) floatText(pt.x, pt.y - 20, '0', '#6a5acd'); } } }
-  }
   cv.addEventListener('pointerdown', e => {
     e.preventDefault();
     S.unlock();
-    const pt = toPt(e);
+    const pt = toLocal(e);
     const b = hitBtn(pt);
     if (b) { app.press = { id: b.id, pid: e.pointerId }; if (app.screen === 'play' && b.id === 'flipBtn') { b.action(); app.pressFired = true; } else app.pressFired = false; return; }
-    if (app.screen === 'play') tapBoard(pt);
+    if (app.screen === 'play') {
+      // 두 번 톡톡 = 뒤집기
+      const now = performance.now();
+      if (now - app.lastTap < 300 && Math.hypot(pt.x - app.lastTapX, pt.y - app.lastTapY) < 40) { tryFlip(); app.lastTap = 0; }
+      else { app.lastTap = now; app.lastTapX = pt.x; app.lastTapY = pt.y; }
+      app.drag = { id: e.pointerId, x: pt.x, y: pt.y }; app.hintT = Math.min(app.hintT, 0.6);
+    }
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!app.drag || app.drag.id !== e.pointerId) return;
+    const pt = toLocal(e);
+    app.acc.x += (pt.x - app.drag.x) * 1.35; app.acc.y += (pt.y - app.drag.y) * 1.35;
+    app.drag.x = pt.x; app.drag.y = pt.y;
   });
   function up(e) {
+    if (app.drag && app.drag.id === e.pointerId) app.drag = null;
     if (app.press && app.press.pid === e.pointerId) {
-      const pt = toPt(e);
+      const pt = toLocal(e);
       const b = hitBtn(pt);
       const id = app.press.id; app.press = null;
       if (b && b.id === id && !app.pressFired) b.action();
     }
   }
   cv.addEventListener('pointerup', up);
-  cv.addEventListener('pointercancel', () => { app.press = null; });
+  cv.addEventListener('pointercancel', e => { app.drag = null; app.press = null; });
   window.addEventListener('keydown', e => {
+    app.keys[e.key] = true;
     if (e.key === 'Escape' || e.key === 'p') { if (app.screen === 'play') app.screen = 'pause'; else if (app.screen === 'pause' || app.screen === 'tech') app.screen = 'play'; }
     if ((e.key === ' ' || e.key === 'Enter') && app.screen === 'intro') beginPlay();
-    else if (e.key === ' ' && app.screen === 'play') { e.preventDefault(); tryEvac(); }
+    else if (e.key === ' ' && app.screen === 'play') { e.preventDefault(); tryFlip(); }
     if (e.key === 't' || e.key === 'e') { if (app.screen === 'play') openTech(); else if (app.screen === 'tech') app.screen = 'play'; }
   });
+  window.addEventListener('keyup', e => { app.keys[e.key] = false; });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { if (app.screen === 'play') app.screen = 'pause'; if (S.ctx) S.ctx.suspend(); }
     else if (S.ctx) S.ctx.resume();
@@ -1334,8 +1209,14 @@
     c.setTransform(app.scale * app.dpr, 0, 0, app.scale * app.dpr, 0, 0);
     const g = app.game;
     if (app.screen === 'play' && g) {
-      g.update(dt);
+      const k = app.keys; let kx = 0, ky = 0;
+      if (k.ArrowLeft || k.a) kx--; if (k.ArrowRight || k.d) kx++; if (k.ArrowUp || k.w) ky--; if (k.ArrowDown || k.s) ky++;
+      const sp = g.speed() * dt;
+      const inp = { dx: app.acc.x + kx * sp, dy: app.acc.y + ky * sp };
+      app.acc.x = 0; app.acc.y = 0;
+      g.update(dt, inp);
       handleEvents(g);
+      if (app.hintT > 0 && g.t > 3) app.hintT -= dt;
     }
     if (g && (app.screen === 'play' || app.screen === 'win' || app.screen === 'lose')) {
       if (g.status !== 'play' && app.screen === 'play') {
@@ -1347,11 +1228,7 @@
     app.shake = Math.max(0, app.shake - dt * 40);
     app.flash = Math.max(0, app.flash - dt * 2.5);
     for (let i = 0; i < 20; i++) if (app.toothShake[i] > 0) app.toothShake[i] -= dt;
-    if (app.screen !== 'pause' && app.screen !== 'intro' && app.screen !== 'tech') {
-      updParts(dt);
-      for (const j of app.jumps) j.t += dt;
-      app.jumps = app.jumps.filter(j => j.t < j.dur);
-    }
+    if (app.screen !== 'pause' && app.screen !== 'intro') updParts(dt);
 
     c.fillStyle = '#ffd2df'; c.fillRect(0, 0, W, app.H);
     if (app.screen === 'title') drawTitle();
