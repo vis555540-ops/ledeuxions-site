@@ -1,4 +1,4 @@
-// game.js — 충치 대작전: 화면·손·소리·저장. 규칙은 logic.js.
+// game.js — 충치의 역습: 화면·손·소리·저장. 규칙은 logic.js.
 (function () {
   'use strict';
   const { W, UPGRADES, Game, layout } = window.ChungLogic;
@@ -11,7 +11,7 @@
   // ---------------- 글 ----------------
   const T = {
     ko: {
-      title: '충치 대작전', sub: '칫솔을 피해서 이빨을 냠냠!',
+      title: '충치의 역습', sub: '칫솔을 피해서 이빨을 냠냠!',
       st1: '1단계', st2: '2단계', stn1: '칫솔이 온다!', stn2: '치실도 온다!',
       locked: '1단계를 깨면 열려요', best: '최고 기록', play: '시작',
       tipDrag: '화면 아무 데나 끌어서 움직여요', tipEat: '이빨에 붙어 있으면 냠냠 먹어요',
@@ -30,7 +30,7 @@
       hint: '끌어서 움직이기',
     },
     en: {
-      title: 'Cavity Quest', sub: 'Dodge the brush, munch the teeth!',
+      title: 'Revenge of the Cavity', sub: 'Dodge the brush, munch the teeth!',
       st1: 'Stage 1', st2: 'Stage 2', stn1: 'Here comes the brush!', stn2: 'Floss joins in!',
       locked: 'Clear Stage 1 to unlock', best: 'Best', play: 'Play',
       tipDrag: 'Drag anywhere on the screen to move', tipEat: 'Stay on a tooth to munch it',

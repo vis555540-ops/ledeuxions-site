@@ -1,4 +1,4 @@
-// logic.js — 충치 대작전: 그림 없이 규칙만. 브라우저와 node(시험용) 양쪽에서 돈다.
+// logic.js — 충치의 역습: 그림 없이 규칙만. 브라우저와 node(시험용) 양쪽에서 돈다.
 (function (root) {
   'use strict';
   const W = 390;
