@@ -6,13 +6,13 @@
   const NT = 10;          // 한 턱에 이 10개 (젖니)
   const SQ = 0.8;         // 비스듬히 봐서 위아래가 눌려 보이는 정도
 
-  // 단계별 세기. 숫자는 node 시험(봇)으로 맞춘 값.
+  // 단계별 세기. 9/30 형 「치솔 너무 쎄 1탄부터」 → 칫솔 느리게·늦게·덜 쫓게 낮춤.
   const STAGES = [
-    { id: 1, brushEvery: [2.6, 3.8], warn: 1.25, brushSpeed: 300, clean: 0.5, sight: 130, steer: 170, offMax: 70,
-      chaseP: 0.75, scrubP: 0.5, doubleP: 0, floss: false, candyEvery: 8, grow: 0.004, spread: 0.012,
+    { id: 1, brushEvery: [4.0, 5.4], warn: 1.9, brushSpeed: 210, clean: 0.5, sight: 95, steer: 115, offMax: 60,
+      chaseP: 0.45, scrubP: 0.35, doubleP: 0, floss: false, candyEvery: 8, grow: 0.004, spread: 0.012,
       sway: 0.5, swaySpd: 0.32, painEat: 1.5, painDecay: 0.8 },
-    { id: 2, brushEvery: [3.0, 4.1], warn: 1.25, brushSpeed: 330, clean: 0.5, sight: 135, steer: 190, offMax: 75,
-      chaseP: 0.7, scrubP: 0.5, doubleP: 0.15, floss: true, flossEvery: [6.5, 9.0], flossWarn: 1.1, flossClean: 0.7,
+    { id: 2, brushEvery: [3.4, 4.7], warn: 1.6, brushSpeed: 270, clean: 0.5, sight: 115, steer: 150, offMax: 70,
+      chaseP: 0.6, scrubP: 0.5, doubleP: 0.15, floss: true, flossEvery: [6.5, 9.0], flossWarn: 1.1, flossClean: 0.7,
       candyEvery: 8, grow: 0.004, spread: 0.012, sway: 0.7, swaySpd: 0.5, painEat: 1.7, painDecay: 0.8 },
   ];
 
