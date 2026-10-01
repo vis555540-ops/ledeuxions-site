@@ -39,19 +39,17 @@
   }
   window.addEventListener("resize",크기); 크기();
 
-  // ---- 방 (자리표시 — 나중에 형 그림으로 바꾼다) ----
+  function 뒤섞기(i){ return ((i*2654435761)>>>0)/4294967296; }
+
+  // ---- 방 ----
   const 방={x:20,y:30,w:280,h:140};
-  const 가구=[
-    {x:방.x+16, y:방.y+18, w:56, h:30, c:"#6b4a34", 이름:"책상"},
-    {x:방.x+230,y:방.y+90, w:34, h:34, c:"#3f6b3f", 이름:"화분"},
-    {x:방.x+90, y:방.y+8,  w:70, h:14, c:"#2d3a5c", 이름:"창"},
-  ];
+  const 벽높이=40;
 
   // ---- 캐릭터 ----
   const 나={x:방.x+방.w/2, y:방.y+방.h-30, tx:null, ty:null, 방향:"down", 걸음:0};
   const 속도=55; // px/초
 
-  function 안(x,y){ return x>=방.x+8 && x<=방.x+방.w-8 && y>=방.y+40 && y<=방.y+방.h-8; }
+  function 안(x,y){ return x>=방.x+8 && x<=방.x+방.w-8 && y>=방.y+벽높이 && y<=방.y+방.h-8; }
 
   function 좌표(e){
     const r=캔버스.getBoundingClientRect();
@@ -78,28 +76,224 @@
 
   function 사각(x,y,w,h,col){ c.fillStyle=col; c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); }
 
-  function 그리기(){
-    // 배경
-    사각(0,0,폭,높이,"#141a30");
-    // 방 바닥
-    사각(방.x,방.y,방.w,방.h,"#caa06a");
-    for (let i=방.y+40;i<방.y+방.h;i+=10) 사각(방.x,i,방.w,1,"#b9905c");
-    // 벽
-    사각(방.x,방.y,방.w,40,"#3a2c22");
-    // 가구
-    가구.forEach(g=>{ 사각(g.x,g.y,g.w,g.h,g.c); });
-    // 캐릭터 그림자
-    사각(나.x-6,나.y+9,12,3,"rgba(0,0,0,.25)");
-    // 캐릭터 (자리표시 — 단순 픽셀 사람)
-    const 흔들=Math.sin(나.걸음)*1.2*(나.tx!=null?1:0);
-    사각(나.x-4,나.y-14+흔들,8,10,"#e0b98a"); // 몸
-    사각(나.x-5,나.y-18+흔들,10,6,"#2b2b2b"); // 머리
-    사각(나.x-4,나.y-4,3,7,"#28324f");  사각(나.x+1,나.y-4,3,7,"#28324f"); // 다리
-    // 목표점 표시
-    if (나.tx!=null){
+  // ---- 바닥: 나무 판자 + 결 ----
+  function 바닥그리기(){
+    const fy=방.y+벽높이, fh=방.h-벽높이;
+    사각(방.x,fy,방.w,fh,"#caa06a");
+    const 칸높이=9;
+    let row=0;
+    for (let y=fy; y<방.y+방.h; y+=칸높이, row++){
+      const h=Math.min(칸높이, 방.y+방.h-y);
+      const 결=뒤섞기(row*7+3);
+      사각(방.x,y,방.w,h, 결>0.5 ? "rgba(255,255,255,"+((결-0.5)*0.08).toFixed(3)+")" : "rgba(0,0,0,"+((0.5-결)*0.10).toFixed(3)+")");
+      사각(방.x,y+h-1,방.w,1,"rgba(90,60,30,.35)");
+    }
+    for (let x=방.x; x<방.x+방.w; x+=46){
+      사각(x,fy,1,fh,"rgba(90,60,30,.22)");
+    }
+    // 벽 밑 그림자(은은한 경계)
+    const sg=c.createLinearGradient(0,fy,0,fy+10);
+    sg.addColorStop(0,"rgba(0,0,0,.28)"); sg.addColorStop(1,"rgba(0,0,0,0)");
+    c.fillStyle=sg; c.fillRect(방.x,fy,방.w,10);
+  }
+
+  function 러그(x,y,w,h){
+    사각(x+2,y+2,w,h,"rgba(0,0,0,.15)");
+    사각(x,y,w,h,"#9a4a3e");
+    사각(x+4,y+3,w-8,h-6,"#b5603f");
+    사각(x+8,y+6,w-16,h-12,"#c97a4e");
+    c.strokeStyle="rgba(0,0,0,.18)"; c.lineWidth=1;
+    c.strokeRect(Math.round(x+4)+.5,Math.round(y+3)+.5,w-9,h-7);
+  }
+
+  // ---- 벽: 몰딩 + 패널 결 ----
+  function 벽그리기(){
+    const g=c.createLinearGradient(0,방.y,0,방.y+벽높이);
+    g.addColorStop(0,"#4a3a2c"); g.addColorStop(1,"#3a2c22");
+    c.fillStyle=g; c.fillRect(방.x,방.y,방.w,벽높이);
+    사각(방.x,방.y+벽높이-3,방.w,2,"#241a12"); // 몰딩
+    for (let i=0;i<9;i++) 사각(방.x+6+i*31,방.y+2,1,벽높이-8,"rgba(0,0,0,.14)");
+  }
+
+  function 창문(x,y,w,h){
+    사각(x-3,y-3,w+6,h+6,"#2a1f15"); // 바깥 테두리
+    const g=c.createLinearGradient(x,y,x,y+h);
+    g.addColorStop(0,"#7fa8d8"); g.addColorStop(1,"#f0c878");
+    c.fillStyle=g; c.fillRect(Math.round(x+2),Math.round(y+2),Math.round(w-4),Math.round(h-4));
+    c.fillStyle="rgba(255,255,255,.35)";
+    c.fillRect(Math.round(x+w*0.15),Math.round(y+h*0.35),Math.round(w*0.3),Math.round(h*0.14));
+    c.fillStyle="rgba(255,255,255,.22)";
+    c.fillRect(Math.round(x+w*0.55),Math.round(y+h*0.18),Math.round(w*0.22),Math.round(h*0.1));
+    사각(x,y,w,2,"#5a3a22"); 사각(x,y+h-2,w,2,"#5a3a22");
+    사각(x,y,2,h,"#5a3a22"); 사각(x+w-2,y,2,h,"#5a3a22");
+    사각(x+w/2-1,y,2,h,"#5a3a22");
+    사각(x,y+h/2-1,w,2,"#5a3a22");
+    사각(x-4,y+h,w+8,4,"#6b4a30"); // 창턱
+    사각(x-4,y+h+3,w+8,1,"#4a3120");
+  }
+
+  function 빛살(창x,창y,창w,창h,아래끝){
+    c.save();
+    c.beginPath();
+    c.moveTo(창x+4,창y+창h+4);
+    c.lineTo(창x+창w-4,창y+창h+4);
+    c.lineTo(창x+창w+30,아래끝);
+    c.lineTo(창x-22,아래끝);
+    c.closePath();
+    c.clip();
+    const g=c.createLinearGradient(0,창y+창h,0,아래끝);
+    g.addColorStop(0,"rgba(255,224,160,.24)");
+    g.addColorStop(1,"rgba(255,224,160,0)");
+    c.fillStyle=g;
+    c.fillRect(방.x,창y,방.w,아래끝-창y);
+    c.restore();
+  }
+
+  function 천장등(x,벽y){
+    사각(x-1,벽y,1,15,"#2a2a2a"); // 줄
+    c.fillStyle="rgba(255,214,130,.20)";
+    c.beginPath(); c.ellipse(x,벽y+58,52,38,0,0,Math.PI*2); c.fill();
+    c.fillStyle="#caa24a";
+    c.beginPath(); c.moveTo(x-10,벽y+15); c.lineTo(x+10,벽y+15); c.lineTo(x+6,벽y+23); c.lineTo(x-6,벽y+23); c.closePath(); c.fill();
+    사각(x-9,벽y+14,18,2,"#dcb868");
+    사각(x-3,벽y+23,6,2,"#fff6d8");
+  }
+
+  // ---- 가구 ----
+  function 책상(x,y){ // x,y = 상판 좌상단
+    const w=66,h=14;
+    사각(x-2,y+32,w+10,4,"rgba(0,0,0,.2)"); // 그림자
+    사각(x+4,y+h,4,26,"#4a3220"); 사각(x+w-8,y+h,4,26,"#4a3220"); // 다리
+    사각(x,y+h,w,24,"#6b4a30"); // 몸통
+    사각(x,y+h,w,3,"#7a5638");
+    사각(x-3,y,w+6,h,"#8a5f3c"); // 상판
+    사각(x-3,y,w+6,3,"#a3764a");
+    for (let i=0;i<4;i++) 사각(x+5+i*14,y+3,10,1,"rgba(0,0,0,.12)");
+    사각(x+8,y-16,20,14,"#2a2a32"); // 모니터
+    사각(x+10,y-14,16,10,"#5a8bc4");
+    사각(x+15,y-2,6,3,"#2a2a32");
+    사각(x+32,y-3,18,5,"#3a3a42"); // 키보드
+    사각(x+32,y-3,18,1,"#55555f");
+    c.strokeStyle="#d8d0b8"; c.lineWidth=2; // 도면 롤
+    c.beginPath(); c.moveTo(x+53,y-1); c.lineTo(x+53,y-13); c.stroke();
+    사각(x+49,y-16,10,4,"#e8e0c8");
+    사각(x+36,y-9,6,7,"#3a2a1a"); // 연필꽂이
+    사각(x+37,y-13,1,5,"#e0b04a"); 사각(x+39,y-14,1,6,"#c94f4f"); 사각(x+41,y-12,1,4,"#4a90c4");
+    c.fillStyle="rgba(255,214,120,.35)"; // 데스크 램프 불빛
+    c.beginPath(); c.ellipse(x+59,y-19,9,7,0,0,Math.PI*2); c.fill();
+    사각(x+60,y-23,3,6,"#3a3a3a");
+    사각(x+54,y-27,12,5,"#caa24a");
+  }
+
+  function 책장(x,y){
+    const w=38,h=74;
+    사각(x-2,y+h,w+6,4,"rgba(0,0,0,.2)");
+    사각(x,y,w,h,"#5a3a22");
+    사각(x+2,y+2,w-4,h-4,"#7a5236");
+    const 칸=4, 칸높이=(h-8)/칸;
+    const 색들=["#c94f4f","#4a90c4","#caa24a","#5a9a5a","#9a6ab0","#d87b3e"];
+    for (let i=0;i<칸;i++){
+      const cy=y+4+i*칸높이;
+      사각(x+2,cy+칸높이-2,w-4,2,"#4a3020");
+      let bx=x+4;
+      for (let k=0;k<5 && bx<x+w-6;k++){
+        const bw=3+Math.floor(뒤섞기(i*37+k+1)*3);
+        const bh=칸높이-5-Math.floor(뒤섞기(i*53+k)*3);
+        사각(bx,cy+칸높이-3-bh,bw,bh,색들[(i*5+k)%색들.length]);
+        bx+=bw+1;
+      }
+    }
+    사각(x,y,w,2,"#8a6038");
+  }
+
+  function 의자(x,y){ // x,y = 바닥 접지점
+    사각(x-7,y+2,14,3,"rgba(0,0,0,.2)");
+    c.strokeStyle="#2a2a2a"; c.lineWidth=1;
+    [[-6,0],[6,0],[0,-5],[0,5]].forEach(function(p){ c.beginPath(); c.moveTo(x,y); c.lineTo(x+p[0],y+p[1]*0.4); c.stroke(); });
+    사각(x-2,y-14,4,10,"#3a3a3a");
+    사각(x-9,y-16,18,4,"#2e3b52");
+    사각(x-9,y-30,18,16,"#34415c");
+    사각(x-9,y-30,18,3,"#425170");
+  }
+
+  function 화분(x,y){
+    사각(x-9,y+2,18,3,"rgba(0,0,0,.2)");
+    c.fillStyle="#b5613a";
+    c.beginPath(); c.moveTo(x-9,y); c.lineTo(x+9,y); c.lineTo(x+6,y-14); c.lineTo(x-6,y-14); c.closePath(); c.fill();
+    사각(x-6,y-16,12,3,"#c97a4e");
+    사각(x-5,y-15,10,2,"#3a2a1a");
+    const 잎=["#3f6b3f","#4f7f45","#355c33"];
+    for (let i=0;i<7;i++){
+      const a=뒤섞기(i*13)*Math.PI*2, r=8+뒤섞기(i*29)*6;
+      const ly=y-16-뒤섞기(i*41)*10;
+      c.fillStyle=잎[i%잎.length];
+      c.beginPath(); c.ellipse(x+Math.cos(a)*5, ly, 4+뒤섞기(i*7)*2, 7+뒤섞기(i*17)*3, a, 0, Math.PI*2); c.fill();
+    }
+  }
+
+  function 사람(나){
+    const 걷는중 = 나.tx!=null;
+    const 흔들 = Math.sin(나.걸음)*1.2*(걷는중?1:0);
+    const 다리흔들 = 걷는중 ? Math.sin(나.걸음)*3 : 0;
+    const x=나.x, y=나.y;
+    c.fillStyle="rgba(0,0,0,.25)";
+    c.beginPath(); c.ellipse(x,y+2,7,2.4,0,0,Math.PI*2); c.fill();
+
+    const 피부="#e0b98a", 셔츠="#3f6b9e", 바지="#28324f", 머리색="#2b2320";
+    const 앞=나.방향==="down", 뒤=나.방향==="up", 좌우=나.방향==="left"||나.방향==="right";
+    const 플립 = 나.방향==="left" ? -1 : 1;
+
+    c.save(); c.translate(Math.round(x), Math.round(y+흔들));
+    if (좌우) c.scale(플립,1);
+
+    // 다리
+    사각(-4, -4+Math.max(0,다리흔들*0.3), 3, 7-Math.max(0,다리흔들*0.3), 바지);
+    사각(1, -4+Math.max(0,-다리흔들*0.3), 3, 7-Math.max(0,-다리흔들*0.3), 바지);
+    사각(-4,2,3,2,"#1c1c1c"); 사각(1,2,3,2,"#1c1c1c");
+
+    // 몸(셔츠)
+    사각(-4,-14,8,10,셔츠);
+    사각(-4,-14,8,2,"#355c85");
+    // 팔
+    사각(-6,-13+다리흔들*0.4,2,7,셔츠);
+    사각(4,-13-다리흔들*0.4,2,7,셔츠);
+    사각(-6,-7+다리흔들*0.4,2,2,피부); 사각(4,-7-다리흔들*0.4,2,2,피부);
+
+    // 머리
+    사각(-5,-18,10,6,피부);
+    if (앞){ 사각(-3,-16,1.5,1.5,"#1a1a1a"); 사각(1.5,-16,1.5,1.5,"#1a1a1a"); }
+    else if (좌우){ 사각(2,-16,1.5,1.5,"#1a1a1a"); }
+    사각(-5,-20,10,4,머리색);
+    if (뒤) 사각(-5,-17,10,3,머리색);
+
+    c.restore();
+
+    if (걷는중){
       c.strokeStyle="rgba(255,255,255,.5)"; c.lineWidth=1;
       c.beginPath(); c.arc(나.tx,나.ty,4,0,Math.PI*2); c.stroke();
     }
+  }
+
+  function 비네트(){
+    const g=c.createRadialGradient(폭/2,높이/2,50,폭/2,높이/2,210);
+    g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,.35)");
+    c.fillStyle=g; c.fillRect(0,0,폭,높이);
+  }
+
+  function 그리기(){
+    사각(0,0,폭,높이,"#141a30");
+    바닥그리기();
+    러그(방.x+94,방.y+76,70,46);
+    벽그리기();
+    창문(방.x+96,방.y+6,88,28);
+    천장등(방.x+200,방.y+2);
+    빛살(방.x+96,방.y+6,88,28,방.y+방.h);
+    책상(방.x+16,방.y+54);
+    책장(방.x+226,방.y+16);
+    화분(방.x+38,방.y+128);
+    의자(방.x+58,방.y+96);
+    사람(나);
+    비네트();
   }
 
   let 이전=performance.now();
