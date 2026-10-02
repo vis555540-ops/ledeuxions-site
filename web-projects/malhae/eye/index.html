@@ -604,5 +604,7 @@ syncCfg();
 buildItems();
 </script>
   <script src="/count.js" defer></script>
+<!-- 10/02 형: 「맨 밑에 너랑 대화 가능하게 창 바로 변경할 수 있게」 → 회의실(맺음·이음) 바로가기. 형 폰(Tailscale)에서만 열림 -->
+<a id="맺음창" href="http://100.76.105.37:8765/" target="_blank" rel="noopener" style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 12px);z-index:9999;background:#2b3a55;color:#fff;font:600 14px/1 system-ui,sans-serif;padding:10px 12px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.35);opacity:.92">💬 맺음</a>
 </body>
 </html>
