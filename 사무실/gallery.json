@@ -25,11 +25,38 @@
       "메모": "https://ledeuxions.com/글/유치원-레지오-에밀리아/",
       "날짜": "2008~2016"
     },
+    "벽5": {
+      "파일": "작품/landscape-model.jpg",
+      "제목": "모형 · 곡면 벽과 계단 길"
+    },
+    "이젤1": {
+      "파일": "작품/charcoal-portrait.jpg",
+      "제목": "기도 · 목탄 초상"
+    },
+    "이젤2": {
+      "파일": "작품/adoration-2015.jpg",
+      "제목": "Adoration et de louange · 2015",
+      "날짜": "2015"
+    },
     "좌대1": {
       "파일": "작품/religious-model.jpg",
       "제목": "종교시설 · 종교의 본질 — 모형 (4학년)",
       "메모": "https://ledeuxions.com/글/종교시설-종교의-본질/",
       "날짜": "2008~2016"
+    },
+    "좌대2": [
+      {
+        "파일": "작품/canopy-model.jpg",
+        "제목": "모형 · 떠 있는 지붕"
+      },
+      {
+        "파일": "작품/canopy-model-2.jpg",
+        "제목": "모형 · 떠 있는 지붕 (안에서)"
+      }
+    ],
+    "스크린": {
+      "파일": "작품/light-sharing-project.jpg",
+      "제목": "Broken Walls · Light Sharing Project"
     }
   }
 }
