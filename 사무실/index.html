@@ -68,11 +68,28 @@ textarea{font-family:var(--코드);font-size:11px;min-height:200px;resize:vertic
 .설명 .메모{display:block;color:var(--잉크);opacity:.85;white-space:pre-wrap}
 #창-화면>.상자{width:min(100%,1100px);padding:8px}
 #큰화면{width:100%;max-height:78vh;display:block;background:#000;border-radius:4px}
-#채팅{position:fixed;left:12px;bottom:calc(62px + env(safe-area-inset-bottom,0px));width:min(320px,calc(100% - 24px));display:grid;gap:6px;z-index:10}
-#채팅기록{max-height:120px;overflow:auto;font-size:11px;background:rgba(10,14,26,.72);border:1px solid var(--선);border-radius:4px;padding:6px 8px;display:grid;gap:2px;-webkit-user-select:text;user-select:text}
-#채팅기록:empty{display:none}
-#채팅기록 b{color:var(--강조);font-weight:normal}
+/* 채팅: 서버(Worker)에 남는 모두의 채팅. 넓은 화면=오른쪽 아래, 폰=아래 전체 폭 */
+#채팅{position:fixed;right:12px;bottom:calc(80px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100% - 24px));display:grid;gap:4px;z-index:10;background:rgba(10,14,26,.84);border:1px solid var(--선);border-radius:6px;padding:6px;box-sizing:border-box}
+@media (max-width:640px){#채팅{left:12px;right:12px;width:auto} #채팅기록{max-height:15vh}}
+#채팅머리{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--흐림);padding:0 2px}
+#채팅머리 b{color:var(--강조);font-weight:normal;flex:1}
+#채팅머리 button{min-height:24px;padding:2px 8px;font-size:11px}
+#채팅기록{max-height:min(170px,26vh);min-height:40px;overflow:auto;font-size:11px;line-height:1.45;padding:4px 4px;display:grid;gap:3px;align-content:start;-webkit-user-select:text;user-select:text;word-break:break-word}
+#채팅기록 b{color:var(--강조);font-weight:normal;margin-right:4px}
+#채팅기록 .주인 b{color:#f3d27a}
+#채팅기록 .비서 b{color:#8fd4c4}
+#채팅기록 .손님표{font-size:9px;color:var(--흐림);border:1px solid var(--선);border-radius:3px;padding:0 3px;margin-right:4px;vertical-align:1px}
 #채팅기록 .알림{color:var(--흐림)}
+#채팅기록 .인사{color:#bfe6dc}
+#채팅줄{display:flex;gap:4px}
+#채팅줄 input{padding:7px 8px;font-size:13px;min-width:0}
+#채팅이름{flex:0 0 74px}
+#채팅입력{flex:1}
+#채팅보내기{min-height:34px;padding:6px 10px;flex:0 0 auto}
+.말풍선.비서풍선{background:#dff3ee}
+.말풍선.비서풍선::after{border-top-color:#dff3ee}
+.이름표.비서표{color:#8fd4c4}
+.배지{display:inline-block;min-width:14px;margin-left:5px;padding:0 4px;border-radius:7px;background:var(--위험);color:#fff;font-size:10px;line-height:14px;text-align:center}
 #미리보기{max-width:100%;max-height:140px;display:block;margin:0 auto;border-radius:4px;background:#0b0f1c}
 #숨김{position:fixed;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -87,14 +104,15 @@ textarea{font-family:var(--코드);font-size:11px;min-height:200px;resize:vertic
   <button id="버튼-입장" class="주요">입장</button>
   <button id="버튼-마이크" hidden>마이크 켜기</button>
   <button id="버튼-화면" hidden>화면 공유</button>
-  <button id="버튼-채팅" hidden>채팅</button>
+  <button id="버튼-채팅">채팅</button>
   <button id="버튼-나가기" hidden>나가기</button>
   <button id="버튼-편집" hidden>작품 편집</button>
   <button id="버튼-JSON" hidden>JSON 보기</button>
 </div>
 <div id="채팅" hidden>
-  <div id="채팅기록"></div>
-  <input id="채팅입력" placeholder="메시지 · Enter 보내기 · Esc 닫기" maxlength="200" autocomplete="off">
+  <div id="채팅머리"><b>채팅 · 모두에게 보여요</b><button id="채팅접기" aria-label="채팅 접기">접기</button></div>
+  <div id="채팅기록" aria-live="polite"></div>
+  <div id="채팅줄"><input id="채팅이름" maxlength="16" placeholder="닉네임" autocomplete="nickname" aria-label="닉네임"><input id="채팅입력" placeholder="메시지 입력" maxlength="500" autocomplete="off" enterkeyhint="send" aria-label="메시지"><button id="채팅보내기" class="주요">보내기</button></div>
 </div>
 
 <div id="창-입장" class="창" hidden>
@@ -162,7 +180,8 @@ const 설정={
   ICE:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}], // TURN이 필요하면 {urls:"turn:...",username,credential} 추가
   갤러리파일:"gallery.json",
   모형뷰어:"https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js", // .glb 열 때만 불러옴
-  걷기속도:62                        // px/초 (논리 해상도 기준)
+  걷기속도:62,                       // px/초 (논리 해상도 기준)
+  API:"https://ledeuxions-office.vis555540.workers.dev"   // 팻말·채팅 서버 (~/office-worker)
 };
 if(window.사무실설정&&typeof window.사무실설정==="object") Object.assign(설정,window.사무실설정); // 테스트·배포 시 외부에서 덮어쓰기 가능
 
@@ -195,7 +214,11 @@ const 좌석=[
   {이름:"주인",     종류:"의자",주인:true, 자리:{x:76,y:234}, 방향:"up",  서는곳:{x:76,y:248}, 영역:{x:66,y:200,w:20,h:38}}
 ];
 const 주인석=좌석.find(s=>s.주인);
-const 상호작용들=자리순서.map(k=>자리[k]).concat([스크린]).concat(좌석);
+// 안내 데스크(입구 오른쪽) — 비서 둘: 맺음(왼쪽) · 이음(오른쪽). 누르면 채팅이 열린다.
+const 데스크={x:276,y:226,w:58};
+const 비서들=[{이름:"맺음",x:293,y:229},{이름:"이음",x:317,y:229}];
+const 안내석={이름:"안내 데스크",종류:"비서",영역:{x:276,y:204,w:58,h:42},서는곳:{x:305,y:252}};
+const 상호작용들=자리순서.map(k=>자리[k]).concat([스크린]).concat(좌석).concat([안내석]);
 
 /* ===================== 2. 캔버스 ===================== */
 const 보기=document.getElementById("캔버스"), vc=보기.getContext("2d");
@@ -518,6 +541,48 @@ function 사람그리기(p){
   사각(-5,-20,10,4,머리색); if(뒤) 사각(-5,-17,10,3,머리색);
   c.restore();
 }
+/* ---------- 안내 데스크 · 비서 ----------
+   비서 그림은 사람마다 함수 하나씩. 각자 자기 함수만 고치면 된다(맺음=맥, 이음=리눅스).
+   (x,y)=앉은 발끝 기준, 앞(아래)을 본다. t=초(눈 깜빡임 등). 아래 몸은 데스크가 가린다. */
+function 비서몸(x,y,셔츠,피부,머리색,깜빡){                // 두 비서가 같이 쓰는 앉은 몸 뼈대
+  c.fillStyle="rgba(0,0,0,.22)"; c.beginPath(); c.ellipse(x,y+1,7,2.2,0,0,Math.PI*2); c.fill();
+  c.save(); c.translate(Math.round(x),Math.round(y));
+  사각(-4,-11,8,9,셔츠); 사각(-4,-11,8,2,"rgba(0,0,0,.18)");
+  사각(-6,-10,2,6,셔츠); 사각(4,-10,2,6,셔츠); 사각(-6,-5,2,2,피부); 사각(4,-5,2,2,피부);
+  사각(-5,-17,10,7,피부);
+  if(!깜빡){ 사각(-3,-14,1.5,1.5,"#1a1a1a"); 사각(1.5,-14,1.5,1.5,"#1a1a1a"); } else { 사각(-3,-13,2,1,"#1a1a1a"); 사각(1.5,-13,2,1,"#1a1a1a"); }
+  사각(-1,-11,2,1,"#c98a6a");                                   // 웃는 입
+  사각(-5,-19,10,4,머리색);
+  c.restore();
+}
+function 비서그리기_맺음(x,y,t){                           // 맺음: 따뜻한 귤색 가디건 · 헤드셋 · 옆 묶음 머리
+  const 깜빡=(t%4.3)<0.14;
+  비서몸(x,y,"#d9894a","#e8c29a","#2b2320",깜빡);
+  const X=Math.round(x), Y=Math.round(y);
+  사각(X-6,Y-18,2,6,"#2b2320"); 사각(X+5,Y-17,2,4,"#2b2320"); 사각(X+6,Y-14,2,3,"#2b2320");   // 옆머리·묶음
+  사각(X-6,Y-21,12,1,"#3a3a44"); 사각(X-7,Y-17,2,4,"#3a3a44");                                 // 헤드셋 띠·귀
+  사각(X-5,Y-13,1,1,"#3a3a44"); 사각(X-4,Y-12,2,1,"#e3b65a");                                   // 마이크
+  사각(X-1,Y-9,2,6,"#f3efe4");                                                                    // 안쪽 흰 셔츠
+}
+function 비서그리기_이음(x,y,t){                           // 이음: 청록 셔츠 · 둥근 안경 · 짧은 갈색 머리
+  const 깜빡=((t+1.9)%5.1)<0.14;
+  비서몸(x,y,"#3f8f8a","#e0b98a","#5a3e2b",깜빡);
+  const X=Math.round(x), Y=Math.round(y);
+  사각(X-5,Y-20,10,2,"#5a3e2b"); 사각(X+3,Y-18,2,2,"#5a3e2b");                                  // 앞머리
+  c.strokeStyle="#1f2a30"; c.lineWidth=1;
+  c.strokeRect(X-4.5,Y-15.5,3,3); c.strokeRect(X+1.5,Y-15.5,3,3); 사각(X-1,Y-14,2,1,"#1f2a30");  // 안경
+  사각(X-1,Y-9,2,5,"#2c5f5c");                                                                    // 넥타이
+}
+function 안내데스크그리기(){
+  const {x,y,w}=데스크;
+  사각(x+2,y+20,w,3,"rgba(0,0,0,.22)");
+  사각(x,y+5,w,15,"#6b4a30"); 사각(x,y+5,w,2,"#7a5638");                   // 앞판
+  for(let i=6;i<w-4;i+=8) 사각(x+i,y+9,1,9,"rgba(0,0,0,.14)");
+  사각(x-2,y,w+4,6,"#a3764a"); 사각(x-2,y,w+4,1,"#c4935e"); 사각(x-2,y+5,w+4,1,"#5a3d27"); // 윗판
+  사각(x+w/2-9,y+10,18,6,"#e8e0c8"); 사각(x+w/2-7,y+12,14,1,"#8a6a4a"); 사각(x+w/2-5,y+14,10,1,"#8a6a4a");   // 이름패
+  사각(x+3,y-3,5,3,"#e3b65a"); 사각(x+5,y-4,1,1,"#f3d27a");               // 종
+  사각(x+w-10,y-2,7,2,"#eee8d8");                                          // 방명록
+}
 function 비네트(){
   const g=c.createRadialGradient(폭/2,높이/2,80,폭/2,높이/2,300);
   g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,.35)"); c.fillStyle=g; c.fillRect(0,0,폭,높이);
@@ -536,7 +601,10 @@ const 가구=[
   {그리기:()=>의자(262,212,"up"), 막음:[254,204,16,12], 바닥y:214},
   {그리기:()=>책상(40,186), 막음:[34,182,76,32], 바닥y:216},
   {그리기:()=>의자(76,234,"up"), 막음:[68,226,16,12], 바닥y:236},
-  {그리기:()=>화분(448,246), 막음:[438,236,20,16], 바닥y:252}
+  {그리기:()=>화분(448,246), 막음:[438,236,20,16], 바닥y:252},
+  {그리기:()=>비서그리기_맺음(비서들[0].x,비서들[0].y,performance.now()/1000), 바닥y:228},
+  {그리기:()=>비서그리기_이음(비서들[1].x,비서들[1].y,performance.now()/1000), 바닥y:228},
+  {그리기:안내데스크그리기, 막음:[274,206,62,40], 바닥y:246}
 ];
 
 /* ===================== 5. 길찾기 ===================== */
@@ -598,6 +666,7 @@ function 가기(x,y,obj){
   const p=좌표(e);
   if(편집중){ const s=자리순서.map(k=>자리[k]).find(o=>안에(p,o.영역)); if(s) 편집열기(s.이름); return; }
   const o=상호작용맞춤(p);
+  if(o===안내석){ 채팅열기(true); 가기(o.서는곳.x,o.서는곳.y,null); return; }
   if(o) 가기(o.서는곳.x,o.서는곳.y,o); else 가기(p.x,p.y,null);
 });
 function 입력중(){ const a=document.activeElement; return a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA"); }
@@ -606,7 +675,7 @@ document.addEventListener("keydown",e=>{
   const k=e.key;
   if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d","W","A","S","D"].includes(k)){ if(창열림()||편집중) return; 키.add(k.toLowerCase()); 나.경로=[]; 나.상호작용=null; 나.앉음=false; 나.앉은자리=null; e.preventDefault(); return; }
   if(k==="Enter"||k===" "){ if(창열림()) return; if(근처){ 열기(근처); e.preventDefault(); } return; }
-  if(k==="t"||k==="T"){ if(통신.peer&&!창열림()){ 채팅열기(); e.preventDefault(); } return; }
+  if(k==="t"||k==="T"){ if(!창열림()){ 채팅열기(); e.preventDefault(); } return; }
   if(k==="e"||k==="E"){ if(편집가능&&!창열림()) 편집토글(); return; }
   if(k==="Escape"){ 창모두닫기(); }
 });
@@ -811,7 +880,7 @@ function 나가기(){
   if(통신.peer){ try{ 통신.peer.destroy(); }catch(_){} }
   통신.peer=null; 통신.내자리=-1; 분석들.clear(); 말하는중.clear(); 화면지우기();
   겹층.querySelectorAll("[data-id],[data-bubble]").forEach(el=>el.remove());
-  채팅닫기(); 채팅기록.textContent=""; 버튼갱신(); 갱신상태();
+  버튼갱신(); 갱신상태();
 }
 window.addEventListener("pagehide",()=>{ if(통신.peer){ 방송({t:"bye"}); try{통신.peer.destroy();}catch(_){} } });
 
@@ -835,13 +904,13 @@ function 갱신상태(){
 }
 function 버튼갱신(){
   const 들어옴=!!통신.peer;
-  버튼.입장.hidden=들어옴; 버튼.마이크.hidden=!들어옴; 버튼.채팅.hidden=!들어옴; 버튼.나가기.hidden=!들어옴;
+  버튼.입장.hidden=들어옴; 버튼.마이크.hidden=!들어옴; 버튼.나가기.hidden=!들어옴;
   버튼.화면.hidden=!들어옴||!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
   버튼.마이크.textContent=마이크켜짐()?"마이크 끄기":"마이크 켜기"; 버튼.마이크.classList.toggle("켜짐",마이크켜짐());
   버튼.화면.textContent=통신.화면?"공유 중지":"화면 공유"; 버튼.화면.classList.toggle("켜짐",!!통신.화면);
   버튼.편집.hidden=!편집가능; 버튼.편집.textContent=편집중?"편집 끝":"작품 편집"; 버튼.편집.classList.toggle("켜짐",편집중);
   버튼.JSON.hidden=!편집중;
-  안내.textContent=편집중?"액자·좌대를 누르면 작품을 넣습니다 · 끝나면 JSON 보기 → 복사해서 gallery.json으로 올립니다":(터치?"바닥을 누르면 걸어갑니다 · 액자·좌대·스크린을 누르면 봅니다":"클릭 또는 방향키로 이동 · 액자·좌대·스크린 클릭 · Enter 보기"+(들어옴?" · T 채팅":""));
+  안내.textContent=편집중?"액자·좌대를 누르면 작품을 넣습니다 · 끝나면 JSON 보기 → 복사해서 gallery.json으로 올립니다":(터치?"바닥을 누르면 걸어갑니다 · 액자·좌대를 누르면 봅니다 · 안내 데스크=채팅":"클릭 또는 방향키로 이동 · 액자·좌대·스크린 클릭 · Enter 보기 · T 채팅");
 }
 function 창열림(){ return !창입장.hidden||!창작품.hidden||!창편집.hidden||!창JSON.hidden||!창화면.hidden; }
 function 창모두닫기(){ 창입장.hidden=true; 창작품.hidden=true; 창편집.hidden=true; 창JSON.hidden=true; if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; } 작품내용비우기(); }
@@ -871,15 +940,96 @@ function 입장실패(){ 버튼.입장.disabled=false; if(통신.peer){ try{통�
 버튼.화면.addEventListener("click",화면토글);
 버튼.나가기.addEventListener("click",나가기);
 
-// --- 채팅
-버튼.채팅.addEventListener("click",()=>{ if(채팅.hidden) 채팅열기(); else 채팅닫기(); });
-function 채팅열기(){ 채팅.hidden=false; 채팅입력.focus(); }
-function 채팅닫기(){ 채팅.hidden=true; 채팅입력.blur(); }
+// --- 채팅 (서버에 남는 모두의 채팅 · 3초마다 새 글 확인)
+let 주인열쇠=null;
+(function(){ let h=location.hash; try{ h=decodeURIComponent(h); }catch(_){}
+  const m=h.match(/주인=([A-Za-z0-9]+)/); if(m){ 저장소쓰기("office_owner",m[1]); history.replaceState(null,"",location.pathname+location.search); }
+  주인열쇠=저장소읽기("office_owner"); })();
+const 채팅이름=document.getElementById("채팅이름"), 채팅보내기=document.getElementById("채팅보내기");
+const 챗={끝:null,본:new Set(),내것:new Set(),미읽음:0,시한:0,보내는중:false,마지막보냄:0};
+if(주인열쇠){ 채팅이름.hidden=true; 채팅입력.placeholder="👑 LeDeuxions 로 말하기"; } else 채팅이름.value=저장소읽기("사무실.이름")||"";
+function 배지(){ 버튼.채팅.textContent="채팅"; if(챗.미읽음&&채팅.hidden){ const b=document.createElement("span"); b.className="배지"; b.textContent=String(Math.min(99,챗.미읽음)); 버튼.채팅.appendChild(b); } }
+버튼.채팅.addEventListener("click",()=>{ if(채팅.hidden) 채팅열기(true); else 채팅닫기(); });
+document.getElementById("채팅접기").addEventListener("click",채팅닫기);
+function 채팅열기(포커스){ 채팅.hidden=false; 챗.미읽음=0; 배지(); 저장소쓰기("사무실.채팅닫힘",null); 채팅기록.scrollTop=채팅기록.scrollHeight; if(포커스&&!터치) 채팅입력.focus(); 채팅예약(200); }
+function 채팅닫기(){ 채팅.hidden=true; 채팅입력.blur(); 저장소쓰기("사무실.채팅닫힘","1"); 배지(); }
 채팅입력.addEventListener("keydown",e=>{
-  if(e.key==="Enter"){ const s=채팅입력.value.trim(); 채팅입력.value=""; if(!s) return; 방송({t:"say",s}); 나.말풍선=s; 나.말풍선끝=performance.now()+7000; 채팅기록추가(나.이름||"나",s); e.preventDefault(); }
+  if(e.key==="Enter"&&!e.isComposing){ e.preventDefault(); 채팅보내기실행(); }
   if(e.key==="Escape"){ 채팅닫기(); }
 });
-function 채팅기록추가(이름,글){ const d=document.createElement("div"); const b=document.createElement("b"); b.textContent=이름+" "; d.appendChild(b); d.appendChild(document.createTextNode(글)); 채팅기록.appendChild(d); while(채팅기록.children.length>60) 채팅기록.firstChild.remove(); 채팅기록.scrollTop=채팅기록.scrollHeight; }
+채팅보내기.addEventListener("click",()=>채팅보내기실행());
+async function 채팅보내기실행(){
+  const s=채팅입력.value.trim(); if(!s||챗.보내는중) return;
+  if(Date.now()-챗.마지막보냄<1000){ 채팅알림("천천히 보내 주세요"); return; }
+  const 이름=(채팅이름.value.trim()||나.이름||"손님").slice(0,16);
+  if(!주인열쇠) 저장소쓰기("사무실.이름",이름);
+  if(!나.이름) 나.이름=주인열쇠?"LeDeuxions":이름;              // 내 머리 위 이름표·말풍선이 보이게
+  챗.보내는중=true; 채팅보내기.disabled=true; 챗.마지막보냄=Date.now();
+  try{
+    const h={"Content-Type":"application/json"}; if(주인열쇠) h["X-Owner-Key"]=주인열쇠;
+    const r=await fetch(설정.API+"/chat",{method:"POST",headers:h,body:JSON.stringify({이름,글:s})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok||!j.됨){ 채팅알림(j.오류||"보내지 못했어요 ("+r.status+")"); return; }
+    채팅입력.value=""; 챗.내것.add(j.id);
+    채팅글추가({id:j.id,이름:j.이름,글:s.replace(/<[^>]*>/g,""),종류:j.종류,때:j.때},true);
+    채팅예약(400);
+  }catch(_){ 채팅알림("인터넷 연결을 확인해 주세요"); }
+  finally{ 챗.보내는중=false; 채팅보내기.disabled=false; }
+}
+function 기록끝정리(){ while(채팅기록.children.length>120) 채팅기록.firstChild.remove(); 채팅기록.scrollTop=채팅기록.scrollHeight; }
+function 채팅글추가(m,새글){
+  if(챗.본.has(m.id)) return; 챗.본.add(m.id);
+  const d=document.createElement("div"), b=document.createElement("b");
+  if(m.종류==="주인"){ d.className="주인"; b.textContent="👑 LeDeuxions"; d.appendChild(b); }
+  else if(m.종류==="비서"){ d.className="비서"; b.textContent=String(m.이름)+" · 비서"; d.appendChild(b); }
+  else { b.textContent=String(m.이름); d.appendChild(b); const t=document.createElement("span"); t.className="손님표"; t.textContent="손님"; d.appendChild(t); }
+  d.appendChild(document.createTextNode(String(m.글)));                 // 글은 늘 textContent — HTML 로 해석하지 않음
+  if(m.때){ try{ d.title=new Date(m.때).toLocaleString("ko-KR"); }catch(_){} }
+  채팅기록.appendChild(d); 기록끝정리();
+  if(!새글) return;
+  풍선띄우기(m);
+  if(채팅.hidden&&!챗.내것.has(m.id)){ 챗.미읽음++; 배지(); }
+}
+// 말한 사람 머리 위에 잠깐 말풍선
+const 고정풍선=new Map();                                     // "비서:맺음" · "주인석" → {글,끝}
+function 풍선띄우기(m){
+  const 글=String(m.글).slice(0,120), 끝=performance.now()+7000;
+  if(챗.내것.has(m.id)){ 나.말풍선=글; 나.말풍선끝=끝; return; }
+  if(m.종류==="비서"){ 비서풍선(m.이름,글,끝); return; }
+  if(m.종류==="주인"){ 고정풍선.set("주인석",{글,끝}); return; }
+  for(const e of 통신.연결.values()){ if(e.사람&&e.사람.이름===m.이름){ e.사람.말풍선=글; e.사람.말풍선끝=끝; return; } }
+}
+async function 채팅불러오기(){
+  try{
+    const r=await fetch(설정.API+"/chat"+(챗.끝!=null?"?since="+챗.끝:""),{cache:"no-store"});
+    if(!r.ok) return; const j=await r.json();
+    const 처음=챗.끝==null;
+    (j.메시지||[]).forEach(m=>채팅글추가(m,!처음));
+    if(typeof j.끝==="number") 챗.끝=j.끝;
+  }catch(_){}
+}
+function 채팅예약(ms){
+  clearTimeout(챗.시한); if(document.hidden) return;
+  챗.시한=setTimeout(async()=>{ await 채팅불러오기(); 채팅예약(채팅.hidden?8000:3000); },ms);
+}
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) 채팅예약(100); else clearTimeout(챗.시한); });
+// 비서 인사 (서버에 남기지 않음 — 이 화면에만). 팻말(있습니다/외출중/부재중)에 맞춰 말이 바뀜
+function 비서말(이름,글,늦게){
+  setTimeout(()=>{ const d=document.createElement("div"); d.className="인사 비서"; const b=document.createElement("b"); b.textContent=이름+" · 비서"; d.appendChild(b); d.appendChild(document.createTextNode(글)); 채팅기록.appendChild(d); 기록끝정리();
+    비서풍선(이름,글,performance.now()+(늦게?9000:5000)); if(채팅.hidden){ 챗.미읽음++; 배지(); } },늦게||0);
+}
+function 비서풍선(이름,글,끝){ 비서들.forEach(v=>고정풍선.delete("비서:"+v.이름)); 고정풍선.set("비서:"+이름,{글,끝}); }   // 둘이 붙어 앉아 있어서 말풍선은 한 번에 하나만
+async function 비서인사(){
+  let 팻말=null;
+  try{ const r=await fetch(설정.API+"/status",{cache:"no-store"}); if(r.ok) 팻말=(await r.json()).팻말; }catch(_){}
+  if(주인열쇠){ 비서말("맺음","형, 어서 와요 🙂 손님 채팅은 여기 다 모여요."); 비서말("이음","저도 있어요! 오늘도 같이 지켜요.",5000); return; }
+  const 말={있습니다:"대표님 지금 계세요. 채팅으로 편하게 말 걸어 보세요 🙂",
+            외출중:"대표님은 잠깐 외출 중이에요. 채팅에 남겨 주시면 전해 드릴게요 🙂",
+            부재중:"지금은 대표님이 안 계세요. 채팅에 남겨 주시면 꼭 전해 드릴게요 🙂"}[팻말]||"채팅에 남겨 주시면 대표님께 전해 드릴게요 🙂";
+  비서말("맺음","어서 오세요! 르듀종 사무실입니다. "+말);
+  비서말("이음","저는 이음이에요. 둘러보시다가 궁금한 건 물어보세요!",5000);
+}
+function 채팅기록추가(이름,글){ const d=document.createElement("div"); const b=document.createElement("b"); b.textContent=이름; d.appendChild(b); d.appendChild(document.createTextNode(글)); 채팅기록.appendChild(d); 기록끝정리(); }  // 옛 P2P "say" 받기용
 function 채팅알림(글){ const d=document.createElement("div"); d.className="알림"; d.textContent=글; 채팅기록.appendChild(d); while(채팅기록.children.length>60) 채팅기록.firstChild.remove(); 채팅기록.scrollTop=채팅기록.scrollHeight; }
 function 알림(글){ 채팅알림(글); 상태(글); }
 
@@ -889,6 +1039,7 @@ function 앉기(좌){                                  // 의자로 걸어온 �
 }
 function 열기(o){
   if(o.종류==="의자"){ 앉기(o); return; }
+  if(o.종류==="비서"){ 채팅열기(true); return; }
   if(o.종류==="스크린"){
     const v=공유중비디오();
     if(!v){ 상태(통신.peer?"지금 공유 중인 화면이 없습니다":"입장하면 화면 공유를 볼 수 있습니다"); return; }
@@ -986,16 +1137,31 @@ function 이름표(id,p,나인가){
   if(p.말풍선&&now<p.말풍선끝){
     if(!풍선){ 풍선=document.createElement("div"); 풍선.className="말풍선"; 풍선.dataset.bubble=id; 겹층.appendChild(풍선); }
     if(풍선.textContent!==p.말풍선) 풍선.textContent=p.말풍선;
-    풍선.style.left=((p.x-카메라.x)*배율)+"px"; 풍선.style.top=((p.y-24-카메라.y)*배율-el.offsetHeight-4)+"px";
+    풍선맞춤(풍선,(p.x-카메라.x)*배율); 풍선.style.top=((p.y-24-카메라.y)*배율-el.offsetHeight-4)+"px";
   } else if(풍선) 풍선.remove();
 }
 const 주인표el=document.createElement("div"); 주인표el.className="이름표 나"; 주인표el.textContent="LeDeuxions"; 겹층.appendChild(주인표el);
 function 주인표위치(){ 주인표el.style.left=((주인석.자리.x-카메라.x)*배율)+"px"; 주인표el.style.top=((주인석.자리.y-30-카메라.y)*배율)+"px"; }
+const 비서표들=비서들.map(v=>{ const el=document.createElement("div"); el.className="이름표 비서표"; el.textContent=v.이름; 겹층.appendChild(el); return el; });
+function 풍선맞춤(풍선,left){                                  // 말풍선이 화면 밖으로 안 나가게
+  const W=틀.clientWidth, w=풍선.offsetWidth||0;
+  풍선.style.left=Math.max(w/2+2,Math.min(W-w/2-2,left))+"px";
+}
+function 고정풍선그리기(키,x,y){
+  let el=겹층.querySelector('[data-bubble="'+키+'"]'); const f=고정풍선.get(키);
+  if(f&&performance.now()<f.끝){
+    if(!el){ el=document.createElement("div"); el.className="말풍선"+(키.startsWith("비서:")?" 비서풍선":""); el.dataset.bubble=키; 겹층.appendChild(el); }
+    if(el.textContent!==f.글) el.textContent=f.글;
+    풍선맞춤(el,(x-카메라.x)*배율); el.style.top=((y-카메라.y)*배율-4)+"px";
+  } else { if(el) el.remove(); if(f) 고정풍선.delete(키); }
+}
 function 겹층갱신(){
   if(통신.peer||나.이름) 이름표("나",{이름:나.이름||"나",x:나.x,y:나.y,mic:마이크켜짐(),scr:!!통신.화면,말풍선:나.말풍선,말풍선끝:나.말풍선끝},true);
   통신.연결.forEach((e,id)=>{ if(e.사람) 이름표(id,e.사람,false); });
   if(편집중) 자리표위치();
   주인표위치();
+  비서들.forEach((v,i)=>{ const el=비서표들[i]; el.style.left=((v.x-카메라.x)*배율)+"px"; el.style.top=((v.y-21-카메라.y)*배율)+"px"; 고정풍선그리기("비서:"+v.이름,v.x,v.y-21-el.offsetHeight/배율); });
+  고정풍선그리기("주인석",주인석.자리.x,주인석.자리.y-30-주인표el.offsetHeight/배율);
 }
 
 /* ===================== 9. 루프 ===================== */
@@ -1036,6 +1202,10 @@ function 루프(now){
   requestAnimationFrame(루프);
 }
 크기(); 버튼갱신(); 갱신상태(); 갤러리불러오기().then(()=>{ 자리표갱신(); });
+{
+  if(innerHeight>=520&&!저장소읽기("사무실.채팅닫힘")) 채팅.hidden=false;
+  채팅불러오기().then(()=>{ 비서인사(); 채팅예약(채팅.hidden?8000:3000); });
+}
 requestAnimationFrame(루프);
 })();
 </script>
