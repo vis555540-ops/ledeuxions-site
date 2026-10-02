@@ -30,12 +30,10 @@
   .phrase:active{transform:scale(.96);background:#24405f}
   .phrase.wide{grid-column:1/-1}
   body.joy-on main{padding-bottom:250px} /* 조이스틱에 마지막 버튼이 가리지 않게 */
-  /* 조이스틱 화면의 큰 네모 — 조이스틱과 같은 순서·개수, 2열 */
+  /* 조이스틱 화면의 큰 네모 — 고른 묶음의 말들, 2열 */
   main.joyv{gap:14px}
-  .jq{min-height:104px;font-size:clamp(28px,8vw,40px);position:relative;border:3px solid transparent}
-  .jq small{position:absolute;left:10px;top:6px;font-size:15px;color:#8ec5ff;font-weight:800}
-  .jq.hot{background:#20406e;border-color:#5b9bff}
-  .jq.arm{background:#5a4300;border-color:#ffd24a}
+  .jq{min-height:96px;font-size:clamp(24px,6.6vw,34px);border:3px solid transparent;transition:none}
+  .jt{grid-column:1/-1;font-size:17px;font-weight:800;color:#8ec5ff;padding:2px 4px}
 </style>
 </head>
 <body>
@@ -50,7 +48,7 @@
 <main id="grid"></main>
 
 <!-- 2026-10-02 형 그림: 아래 왼쪽 조이스틱 + 가운데 큰 네모 4개 + 오른쪽 위 3초 누르기(설정) -->
-<script src="joystick.js?v=7" data-gear="corner"></script>
+<script src="joystick.js?v=8" data-gear="corner"></script>
 
 <script>
 // ── 문구 세트 v0.1 (이음 작성: 위관로·석션·신앙 반영, 8카테고리 89문구. 나중에 서버 동기화='빌드업 통로') ──
@@ -97,10 +95,12 @@ function renderGrid(){
   if(window.malhaeJoy) malhaeJoy.setPage(cur===JOY);
   if(cur===JOY){
     if(!joyOn) return;
-    malhaeJoy.words().forEach((w,i)=>{
-      const b=document.createElement('button'); b.className='phrase jq'; b.dataset.i=i;
-      b.innerHTML='<small>'+(i+1)+'</small>'; b.appendChild(document.createTextNode(w));
-      b.onclick=()=>speak(w);
+    // 조이스틱으로 고른 묶음의 말들. 누르면 바로 말함 (형: 기다리는 거 싫어하심)
+    const g=malhaeJoy.group();
+    const t=document.createElement('div'); t.className='jt'; t.textContent=(g.n+1)+' · '+g.name; grid.appendChild(t);
+    g.words.forEach(w=>{
+      const b=document.createElement('button'); b.className='phrase jq'; b.textContent=w;
+      b.onclick=()=>malhaeJoy.tapWord(b,w);
       grid.appendChild(b);
     });
     return;
@@ -112,14 +112,7 @@ function renderGrid(){
   });
 }
 renderTabs(); renderGrid();
-// 조이스틱으로 방향을 고르면 같은 번호 네모도 밝힌다
-addEventListener('malhaejoy',e=>{
-  grid.querySelectorAll('.jq').forEach(b=>{
-    const on = +b.dataset.i===e.detail.dir;
-    b.classList.toggle('hot', on && !e.detail.armed); b.classList.toggle('arm', on && e.detail.armed);
-  });
-});
-addEventListener('malhaejoy-words',()=>{ if(cur===JOY) renderGrid(); });
+addEventListener('malhaejoy-group',()=>{ if(cur===JOY) renderGrid(); }); // 엄지로 밀면 즉시 네모가 그 묶음으로
 
 // PWA 서비스워커 (오프라인/홈화면)
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
