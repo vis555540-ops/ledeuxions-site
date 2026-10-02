@@ -88,6 +88,24 @@ textarea{font-family:var(--코드);font-size:11px;min-height:200px;resize:vertic
 #채팅보내기{min-height:34px;padding:6px 10px;flex:0 0 auto}
 .말풍선.비서풍선{background:#dff3ee}
 .말풍선.비서풍선::after{border-top-color:#dff3ee}
+/* 상담 예약 창 */
+#창-예약>.상자{width:min(100%,420px)}
+.상자 select{font:inherit;font-size:13px;color:var(--잉크);background:var(--바탕);border:1px solid var(--선);border-radius:4px;padding:8px 10px;width:100%;box-sizing:border-box}
+#예약내용{font-family:var(--글꼴);font-size:13px;min-height:84px;white-space:pre-wrap}
+.칸이름{font-size:11px;color:var(--흐림);display:grid;gap:4px}
+.희망줄{display:flex;gap:6px}
+.희망줄 input{flex:1;min-width:0}
+label.동의{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:var(--잉크);cursor:pointer}
+label.동의 input{width:auto;margin:2px 0 0;flex:0 0 auto}
+.함정{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+#예약오류{color:#f0b0a8;min-height:0}
+#예약완료{display:grid;gap:12px;text-align:center;padding:12px 0}
+#예약완료 b{font-weight:normal;font-size:14px;color:var(--강조)}
+/* 입구 안내 로봇 메뉴 */
+.안내메뉴{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;display:grid;gap:3px;background:#f3efe4;color:#1a1a22;border-radius:6px;padding:5px;width:max-content;max-width:190px;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.안내메뉴::after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-4px;border:4px solid transparent;border-top-color:#f3efe4;border-bottom:0}
+.안내메뉴 button{background:#fffaf0;color:#1a1a22;border-color:#d8d0b8;min-height:30px;font-size:11px;text-align:left;padding:5px 8px}
+.안내메뉴 button:hover{border-color:#a89c80}
 .명패{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:10px;line-height:1;padding:2px 4px;background:#d9b45e;color:#2a1f15;border:1px solid #7a5a22;border-radius:2px;pointer-events:none}
 .퇴근판{position:absolute;transform:translate(-50%,-50%) rotate(-3deg);white-space:nowrap;font-size:15px;line-height:1;color:#c0392b;font-weight:bold;letter-spacing:.02em;text-shadow:1px 1px 0 #fff6d0;pointer-events:none}
 .배지{display:inline-block;min-width:14px;margin-left:5px;padding:0 4px;border-radius:7px;background:var(--위험);color:#fff;font-size:10px;line-height:14px;text-align:center}
@@ -106,6 +124,7 @@ textarea{font-family:var(--코드);font-size:11px;min-height:200px;resize:vertic
   <button id="버튼-마이크" hidden>마이크 켜기</button>
   <button id="버튼-화면" hidden>화면 공유</button>
   <button id="버튼-채팅">채팅</button>
+  <button id="버튼-예약">📅 상담 예약</button>
   <button id="버튼-나가기" hidden>나가기</button>
   <button id="버튼-편집" hidden>작품 편집</button>
   <button id="버튼-JSON" hidden>JSON 보기</button>
@@ -159,6 +178,26 @@ textarea{font-family:var(--코드);font-size:11px;min-height:200px;resize:vertic
   </div>
 </div>
 
+<div id="창-예약" class="창" hidden>
+  <div class="상자" role="dialog" aria-modal="true" aria-labelledby="예약제목">
+    <h2 id="예약제목">📅 상담 예약</h2>
+    <form id="예약폼" novalidate style="display:grid;gap:10px">
+      <p>원하시는 날짜·시간을 남겨 주시면 확인 후 연락드릴게요.</p>
+      <label>이름<input id="예약이름" maxlength="30" autocomplete="name" required></label>
+      <label>연락처 (전화 또는 이메일)<input id="예약연락처" maxlength="100" autocomplete="tel" placeholder="010-1234-5678 또는 메일 주소" required></label>
+      <div class="칸이름">원하는 날짜·시간 ①<div class="희망줄"><input type="date" id="희망날짜1" aria-label="원하는 날짜 1" required><input type="time" id="희망시간1" aria-label="원하는 시간 1" step="600" required></div></div>
+      <div class="칸이름">다른 날도 괜찮으면 ② (선택)<div class="희망줄"><input type="date" id="희망날짜2" aria-label="원하는 날짜 2"><input type="time" id="희망시간2" aria-label="원하는 시간 2" step="600"></div></div>
+      <label>어떤 상담인가요<select id="예약종류" required><option value="">고르기</option><option>신축 설계</option><option>리모델링·인테리어</option><option>법규·인허가</option><option>기타</option></select></label>
+      <label>내용 (선택)<textarea id="예약내용" maxlength="1000" placeholder="대지 위치, 규모, 궁금한 점 등을 적어 주세요"></textarea></label>
+      <div class="함정" aria-hidden="true"><label>홈페이지<input id="예약함정" tabindex="-1" autocomplete="off"></label></div>
+      <label class="동의"><input type="checkbox" id="예약동의" required><span>연락을 위해 이름·연락처를 수집합니다 (상담 후 삭제)</span></label>
+      <p id="예약오류" role="alert"></p>
+      <div class="줄"><button type="submit" id="예약보내기" class="주요">예약 보내기</button><button type="button" id="예약닫기">닫기</button></div>
+    </form>
+    <div id="예약완료" hidden><b>접수됐어요! 확인 후 연락드릴게요 🙂</b><div class="줄"><button type="button" id="예약완료닫기" class="주요">닫기</button></div></div>
+  </div>
+</div>
+
 <div id="창-화면" class="창" hidden>
   <div class="상자">
     <video id="큰화면" autoplay playsinline muted></video>
@@ -192,6 +231,7 @@ const 방={x:16,y:22,w:448,h:236};
 const 벽높이=74, 벽끝=방.y+벽높이;                     // 벽끝 = 96
 const 바닥={x1:방.x+4, y1:벽끝+4, x2:방.x+방.w-4, y2:방.y+방.h-4};
 const 입구={x:240,y:244};
+const 안내봇={x:210,y:246};                             // 입구 옆 안내 로봇 (문 매트 228~252 를 비켜 섬)
 const 창문={x:24,y:32,w:72,h:48};
 const 시계={x:453,y:46};
 /* 작품 자리. gallery.json 의 "작품" 에서 자리 이름 → 작품 하나 {파일,제목,…} 또는 여러 개 [{…},{…}].
@@ -231,7 +271,11 @@ const 작업대들=[
 ];
 const 동료들=작업대들.map(d=>({이름:d.이름,x:d.x+(d.이름==="맺음"?20:18),y:d.y+3,책상:d}));
 const 동료자리=작업대들.map(d=>({이름:d.이름+" 작업대",종류:"동료",영역:{x:d.x-2,y:d.y-22,w:d.w+4,h:44},서는곳:{x:d.x+d.w/2,y:d.y+28}}));
-const 상호작용들=자리순서.map(k=>자리[k]).concat(좌석).concat(동료자리);
+const 특별자리=[
+  {이름:"대표 책상",종류:"예약",영역:{x:34,y:168,w:76,h:30},서는곳:{x:100,y:228}},          // 누르면 상담 예약 (주인 의자 영역과 안 겹치게 윗부분만)
+  {이름:"안내",종류:"안내",영역:{x:200,y:222,w:20,h:28},서는곳:{x:224,y:240}}
+];
+const 상호작용들=자리순서.map(k=>자리[k]).concat(좌석).concat(동료자리).concat(특별자리);
 
 /* ===================== 2. 캔버스 ===================== */
 const 보기=document.getElementById("캔버스"), vc=보기.getContext("2d");
@@ -610,6 +654,23 @@ function 사람그리기_이음(x,y,t){                           // 이음: 청
   c.strokeRect(X-4.5,Y-15.5,3,3); c.strokeRect(X+1.5,Y-15.5,3,3); 사각(X-1,Y-14,2,1,"#1f2a30");  // 안경
   사각(X-1,Y-9,2,5,"#2c5f5c");                                                                    // 넥타이
 }
+/* 입구 안내 로봇 「안내」 — 맺음·이음과 따로, 늘 서 있음. (x,y)=발끝, t=초 */
+function 안내그리기(x,y,t){
+  c.fillStyle="rgba(0,0,0,.25)"; c.beginPath(); c.ellipse(x,y+2,7,2.4,0,0,Math.PI*2); c.fill();
+  c.save(); c.translate(Math.round(x),Math.round(y));
+  사각(-5,-3,10,4,"#3a3a44"); 사각(-4,-1,2,2,"#1c1c22"); 사각(2,-1,2,2,"#1c1c22");      // 바퀴 받침
+  c.translate(0,Math.round(Math.sin(t*2.2)*0.8));                                       // 살짝 둥실
+  사각(-5,-12,10,9,"#e8e0c8"); 사각(-5,-12,10,1,"#f6f0de"); 사각(-5,-4,10,1,"#c8bfa6");  // 몸
+  for(let i=0;i<8;i++) 사각(-5+i,-12+i,2,2,"#e3b65a");                                  // 안내 띠
+  사각(-7,-11,2,5,"#d0c7ae");
+  if((t%5)<1.2) 사각(5,-16+Math.round(Math.sin(t*14)),2,5,"#d0c7ae"); else 사각(5,-11,2,5,"#d0c7ae");   // 가끔 손 흔듦
+  사각(-6,-21,12,9,"#f3efe4"); 사각(-6,-21,12,1,"#fffaf0"); 사각(-6,-13,12,1,"#c8bfa6");  // 머리
+  사각(-5,-19,10,5,"#22303a");                                                          // 얼굴 화면
+  if((t%3.7)<0.15){ 사각(-3,-17,2,1,"#7fe0c8"); 사각(1,-17,2,1,"#7fe0c8"); } else { 사각(-3,-18,2,2,"#7fe0c8"); 사각(1,-18,2,2,"#7fe0c8"); }
+  사각(-1,-15,2,1,"#7fe0c8"); 사각(-5,-16,1,1,"#e88a8a"); 사각(4,-16,1,1,"#e88a8a");      // 입·볼
+  사각(0,-24,1,3,"#8a8a96"); 사각(-1,-26,3,2,(t%1.6)<0.8?"#e3b65a":"#9a7a3a");            // 안테나 불
+  c.restore();
+}
 // 출퇴근 — 서버 /friends (근무중|퇴근). 퇴근이면 사람 대신 빈 의자 + 「퇴근!」 간판
 const 출퇴근={맺음:"근무중",이음:"근무중"};
 function 퇴근함(이름){ return 출퇴근[이름]==="퇴근"; }
@@ -676,6 +737,7 @@ const 가구=[
   {그리기:()=>책상(40,186), 막음:[34,182,76,32], 바닥y:216},
   {그리기:()=>의자(76,234,"up"), 막음:[68,226,16,12], 바닥y:236},
   {그리기:()=>화분(448,246), 막음:[438,236,20,16], 바닥y:252},
+  {그리기:()=>안내그리기(안내봇.x,안내봇.y,performance.now()/1000), 막음:[203,238,14,10], 바닥y:246},
   {그리기:()=>이젤그리기("이젤1"), 막음:[32,150,24,14], 바닥y:164},
   {그리기:()=>이젤그리기("이젤2"), 막음:[72,150,24,14], 바닥y:164},
   // 맺음·이음: 사람(작업대 뒤) → 작업대 → 퇴근이면 간판. 막음은 둘을 한 덩어리로(사이 틈에 끼지 않게)
@@ -744,7 +806,10 @@ function 가기(x,y,obj){
   const p=좌표(e);
   if(편집중){ const s=자리순서.map(k=>자리[k]).find(o=>안에(p,o.영역)); if(s) 편집열기(s.이름); return; }
   const o=상호작용맞춤(p);
+  if(!o||o.종류!=="안내") 안내메뉴닫기();
   if(o&&o.종류==="동료"){ 채팅열기(true); 가기(o.서는곳.x,o.서는곳.y,null); return; }
+  if(o&&o.종류==="예약"){ 예약열기(); 가기(o.서는곳.x,o.서는곳.y,null); return; }
+  if(o&&o.종류==="안내"){ 안내메뉴열기(); 가기(o.서는곳.x,o.서는곳.y,null); return; }
   if(o) 가기(o.서는곳.x,o.서는곳.y,o); else 가기(p.x,p.y,null);
 });
 function 입력중(){ const a=document.activeElement; return a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA"); }
@@ -965,7 +1030,7 @@ window.addEventListener("pagehide",()=>{ if(통신.peer){ 방송({t:"bye"}); try
 /* ===================== 8. 화면 조립·HUD ===================== */
 const 상태el=document.getElementById("상태"), 안내=document.getElementById("안내");
 const 버튼={입장:document.getElementById("버튼-입장"),마이크:document.getElementById("버튼-마이크"),화면:document.getElementById("버튼-화면"),채팅:document.getElementById("버튼-채팅"),나가기:document.getElementById("버튼-나가기"),편집:document.getElementById("버튼-편집"),JSON:document.getElementById("버튼-JSON")};
-const 창입장=document.getElementById("창-입장"), 창작품=document.getElementById("창-작품"), 창편집=document.getElementById("창-편집"), 창JSON=document.getElementById("창-JSON"), 창화면=document.getElementById("창-화면");
+const 창입장=document.getElementById("창-입장"), 창작품=document.getElementById("창-작품"), 창편집=document.getElementById("창-편집"), 창JSON=document.getElementById("창-JSON"), 창화면=document.getElementById("창-화면"), 창예약=document.getElementById("창-예약");
 const 큰화면=document.getElementById("큰화면"), 채팅=document.getElementById("채팅"), 채팅입력=document.getElementById("채팅입력"), 채팅기록=document.getElementById("채팅기록");
 const 터치=matchMedia("(pointer:coarse)").matches;
 let 상태시한=0;
@@ -988,11 +1053,11 @@ function 버튼갱신(){
   버튼.화면.textContent=통신.화면?"공유 중지":"화면 공유"; 버튼.화면.classList.toggle("켜짐",!!통신.화면);
   버튼.편집.hidden=!편집가능; 버튼.편집.textContent=편집중?"편집 끝":"작품 편집"; 버튼.편집.classList.toggle("켜짐",편집중);
   버튼.JSON.hidden=!편집중;
-  안내.textContent=편집중?"액자·이젤·좌대·스크린을 누르면 작품을 넣습니다 · 끝나면 JSON 보기 → 복사해서 gallery.json으로 올립니다":(터치?"바닥을 누르면 걸어갑니다 · 액자·이젤·좌대를 누르면 봅니다 · 맺음·이음 책상=채팅":"클릭 또는 방향키로 이동 · 액자·이젤·좌대·스크린 클릭 · Enter 보기 · T 채팅");
+  안내.textContent=편집중?"액자·이젤·좌대·스크린을 누르면 작품을 넣습니다 · 끝나면 JSON 보기 → 복사해서 gallery.json으로 올립니다":(터치?"바닥을 누르면 걸어갑니다 · 액자·이젤·좌대를 누르면 봅니다 · 맺음·이음 책상=채팅 · 대표 책상=상담 예약":"클릭 또는 방향키로 이동 · 액자·이젤·좌대·스크린 클릭 · Enter 보기 · T 채팅 · 입구 안내 로봇에게 물어보세요");
 }
-function 창열림(){ return !창입장.hidden||!창작품.hidden||!창편집.hidden||!창JSON.hidden||!창화면.hidden; }
-function 창모두닫기(){ 창입장.hidden=true; 창작품.hidden=true; 창편집.hidden=true; 창JSON.hidden=true; if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; } 작품내용비우기(); }
-[창입장,창작품,창편집,창JSON,창화면].forEach(w=>w.addEventListener("pointerdown",e=>{ if(e.target===w) 창모두닫기(); }));
+function 창열림(){ return !창예약.hidden||!창입장.hidden||!창작품.hidden||!창편집.hidden||!창JSON.hidden||!창화면.hidden; }
+function 창모두닫기(){ 창예약.hidden=true; 창입장.hidden=true; 창작품.hidden=true; 창편집.hidden=true; 창JSON.hidden=true; if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; } 작품내용비우기(); }
+[창입장,창작품,창편집,창JSON,창화면,창예약].forEach(w=>w.addEventListener("pointerdown",e=>{ if(e.target===w) 창모두닫기(); }));
 
 // --- 입장 창
 버튼.입장.addEventListener("click",()=>{
@@ -1069,7 +1134,7 @@ function 채팅글추가(m,새글){
   if(채팅.hidden&&!챗.내것.has(m.id)){ 챗.미읽음++; 배지(); }
 }
 // 말한 사람 머리 위에 잠깐 말풍선
-const 고정풍선=new Map();                                     // "동료:맺음" · "주인석" → {글,끝}
+const 고정풍선=new Map();                                     // "동료:맺음" · "주인석" · "안내" → {글,끝}
 function 풍선띄우기(m){
   const 글=String(m.글).slice(0,120), 끝=performance.now()+7000;
   if(챗.내것.has(m.id)){ 나.말풍선=글; 나.말풍선끝=끝; return; }
@@ -1100,9 +1165,10 @@ function 동료풍선(이름,글,끝){ 동료들.forEach(v=>고정풍선.delete(
 async function 출퇴근불러오기(){
   try{ const r=await fetch(설정.API+"/friends",{cache:"no-store"}); if(r.ok){ const j=await r.json(); ["맺음","이음"].forEach(k=>{ if(j[k]==="퇴근"||j[k]==="근무중") 출퇴근[k]=j[k]; }); } }catch(_){}
 }
+let 지금팻말=null;
+async function 팻말불러오기(){ try{ const r=await fetch(설정.API+"/status",{cache:"no-store"}); if(r.ok) 지금팻말=(await r.json()).팻말||지금팻말; }catch(_){} return 지금팻말; }
 async function 동료인사(){
-  let 팻말=null;
-  try{ const r=await fetch(설정.API+"/status",{cache:"no-store"}); if(r.ok) 팻말=(await r.json()).팻말; }catch(_){}
+  const 팻말=await 팻말불러오기();
   const 있는=["맺음","이음"].filter(k=>!퇴근함(k));
   if(!있는.length){ 채팅알림("맺음·이음은 퇴근했어요 🌙 채팅에 남기면 내일 볼게요."); return; }
   if(주인열쇠){
@@ -1120,6 +1186,78 @@ function 채팅기록추가(이름,글){ const d=document.createElement("div"); 
 function 채팅알림(글){ const d=document.createElement("div"); d.className="알림"; d.textContent=글; 채팅기록.appendChild(d); while(채팅기록.children.length>60) 채팅기록.firstChild.remove(); 채팅기록.scrollTop=채팅기록.scrollHeight; }
 function 알림(글){ 채팅알림(글); 상태(글); }
 
+// --- 상담 예약 (서버 /reservations · 형 텔레그램으로 감)
+const 예약폼=document.getElementById("예약폼"), 예약완료=document.getElementById("예약완료"), 예약오류=document.getElementById("예약오류"), 예약보내기=document.getElementById("예약보내기");
+const 예약칸=id=>document.getElementById(id);
+function 오늘(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function 예약열기(){
+  창모두닫기(); 안내메뉴닫기();
+  ["희망날짜1","희망날짜2"].forEach(k=>예약칸(k).min=오늘());
+  예약오류.textContent=""; 예약폼.hidden=false; 예약완료.hidden=true; 창예약.hidden=false;
+  if(!터치) 예약칸("예약이름").focus();
+}
+document.getElementById("버튼-예약").addEventListener("click",예약열기);
+document.getElementById("예약닫기").addEventListener("click",()=>{ 창예약.hidden=true; });
+document.getElementById("예약완료닫기").addEventListener("click",()=>{ 창예약.hidden=true; });
+예약폼.addEventListener("input",()=>{ 예약오류.textContent=""; });
+예약폼.addEventListener("submit",async e=>{
+  e.preventDefault(); if(예약보내기.disabled) return;
+  const v=k=>예약칸(k).value.trim();
+  const 틀림=글=>{ 예약오류.textContent=글; };
+  const 이름=v("예약이름"), 연락처=v("예약연락처"), 종류=v("예약종류"), 내용=v("예약내용");
+  if(!이름) return 틀림("이름을 적어 주세요");
+  const 전화=/^[+0-9][0-9 ()-]{6,19}$/.test(연락처)&&(연락처.match(/\d/g)||[]).length>=8, 메일=/^[^\s@<>]+@[^\s@<>]+\.[A-Za-z]{2,}$/.test(연락처);
+  if(!전화&&!메일) return 틀림("연락처는 전화번호나 이메일로 적어 주세요");
+  const 희망=[];
+  for(const n of [1,2]){
+    const 날=v("희망날짜"+n), 시=v("희망시간"+n);
+    if(!날&&!시){ if(n===1) return 틀림("원하는 날짜·시간을 골라 주세요"); continue; }
+    if(!날||!시) return 틀림("②번 날짜와 시간을 둘 다 골라 주세요".replace("②",n===1?"①":"②"));
+    if(날<오늘()) return 틀림("날짜를 오늘 이후로 골라 주세요");
+    희망.push({날짜:날,시간:시});
+  }
+  if(!종류) return 틀림("어떤 상담인지 골라 주세요");
+  if(!예약칸("예약동의").checked) return 틀림("연락처 수집에 동의해 주셔야 접수돼요");
+  틀림(""); 예약보내기.disabled=true; 예약보내기.textContent="보내는 중…";
+  try{
+    const r=await fetch(설정.API+"/reservations",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({이름,연락처,희망,종류,내용,동의:true,함정칸:예약칸("예약함정").value})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok||!j.됨) return 틀림(j.오류||"보내지 못했어요 ("+r.status+")");
+    예약폼.reset(); 예약폼.hidden=true; 예약완료.hidden=false;
+  }catch(_){ 틀림("인터넷 연결을 확인해 주세요"); }
+  finally{ 예약보내기.disabled=false; 예약보내기.textContent="예약 보내기"; }
+});
+
+// --- 입구 안내 로봇: 가까이 가거나 누르면 말풍선 메뉴
+const 안내봇상태={메뉴:null,열림:false,닫음:false};
+function 안내메뉴만들기(){
+  const m=document.createElement("div"); m.className="안내메뉴"; m.hidden=true; m.setAttribute("role","menu");
+  const 단추=(글,일)=>{ const b=document.createElement("button"); b.type="button"; b.textContent=글; b.setAttribute("role","menuitem");
+    b.addEventListener("pointerdown",e=>e.stopPropagation()); b.addEventListener("click",e=>{ e.stopPropagation(); 일(b); }); m.appendChild(b); return b; };
+  단추("💬 채팅하기",()=>{ 안내메뉴닫기(); 채팅열기(true); });
+  단추("📅 상담 예약",()=>{ 예약열기(); });
+  단추("🖼️ 작품 둘러보기",()=>{ 안내메뉴닫기(); const k=자리순서.find(k=>항목들(k).length); if(k) 작품열기(k,0); else 안내말("아직 걸린 작품이 없어요. 곧 채워 둘게요!"); });
+  안내봇상태.팻말단추=단추("🪧 대표님 지금: …",async b=>{ const 팻=await 팻말불러오기(); b.textContent="🪧 대표님 지금: "+(팻||"알 수 없음");
+    안내말({있습니다:"대표님 지금 계세요! 채팅으로 말 걸어 보세요 🙂",외출중:"대표님은 잠깐 외출 중이에요. 채팅이나 상담 예약을 남겨 주세요 🙂",부재중:"지금은 대표님이 안 계세요. 상담 예약을 남기시면 연락드려요 🙂"}[팻]||"채팅이나 상담 예약을 남겨 주세요 🙂"); });
+  겹층.appendChild(m); 안내봇상태.메뉴=m;
+}
+function 안내말(글){ 안내메뉴닫기(); 고정풍선.set("안내",{글,끝:performance.now()+7000}); }
+function 안내메뉴열기(){
+  if(!안내봇상태.메뉴) 안내메뉴만들기();
+  고정풍선.delete("안내"); 안내봇상태.열림=true; 안내봇상태.메뉴.hidden=false;
+  안내봇상태.팻말단추.textContent="🪧 대표님 지금: "+(지금팻말||"확인 중…");
+  팻말불러오기().then(팻=>{ if(팻) 안내봇상태.팻말단추.textContent="🪧 대표님 지금: "+팻; });
+}
+function 안내메뉴닫기(){ if(안내봇상태.열림){ 안내봇상태.열림=false; 안내봇상태.닫음=true; } if(안내봇상태.메뉴) 안내봇상태.메뉴.hidden=true; }
+function 안내갱신(){
+  const d=Math.hypot(나.x-안내봇.x,나.y-안내봇.y);
+  if(d>34){ if(안내봇상태.열림) 안내메뉴닫기(); 안내봇상태.닫음=false; }
+  else if(d<22&&!안내봇상태.열림&&!안내봇상태.닫음&&!창열림()&&!편집중) 안내메뉴열기();
+  if(안내봇상태.열림&&안내봇상태.메뉴){ 풍선맞춤(안내봇상태.메뉴,(안내봇.x-카메라.x)*배율); 안내봇상태.메뉴.style.top=((안내봇.y-28-카메라.y)*배율)+"px"; }
+  고정풍선그리기("안내",안내봇.x,안내봇.y-28);
+}
+
 // --- 열기(상호작용)
 function 앉기(좌){                                  // 의자로 걸어온 뒤 호출됨 — 앉은 자세로 전환
   나.앉음=true; 나.앉은자리=좌; 나.x=좌.자리.x; 나.y=좌.자리.y; 나.방향=좌.방향; 나.걷는중=false; 나.경로=[];
@@ -1127,6 +1265,8 @@ function 앉기(좌){                                  // 의자로 걸어온 �
 function 열기(o){
   if(o.종류==="의자"){ 앉기(o); return; }
   if(o.종류==="동료"){ 채팅열기(true); return; }
+  if(o.종류==="예약"){ 예약열기(); return; }
+  if(o.종류==="안내"){ 안내메뉴열기(); return; }
   if(o.종류==="스크린"){
     const v=공유중비디오();
     if(!v&&항목들("스크린").length){ 작품열기("스크린"); return; }       // 공유 화면이 없으면 걸어 둔 발표판을 크게
@@ -1267,6 +1407,7 @@ function 겹층갱신(){
     const v=동료들[i]; 고정풍선그리기("동료:"+d.이름,v.x,쉼?d.y-40:v.y-22);
   });
   고정풍선그리기("주인석",주인석.자리.x,주인석.자리.y-30-주인표el.offsetHeight/배율);
+  안내갱신();
 }
 
 /* ===================== 9. 루프 ===================== */
@@ -1311,6 +1452,15 @@ function 루프(now){
   if(innerHeight>=520&&!저장소읽기("사무실.채팅닫힘")) 채팅.hidden=false;
   Promise.all([채팅불러오기(),출퇴근불러오기()]).then(()=>{ 동료인사(); 채팅예약(채팅.hidden?8000:3000); });
   setInterval(()=>{ if(!document.hidden) 출퇴근불러오기(); },60000);
+  if(!주인열쇠){
+    setTimeout(()=>안내말("어서 오세요! 둘러보시고 궁금하면 저한테 오세요 🙂"),900);
+    // 손님 입장 → 형 텔레그램 (서버가 방문자·IP 30분 1번, 전체 2분 1번, 하루 30번으로 거름)
+    if(!navigator.webdriver&&!설정.미리보기){
+      let vid=저장소읽기("사무실.방문자");
+      if(!vid){ vid=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()); 저장소쓰기("사무실.방문자",vid); }
+      fetch(설정.API+"/enter",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({이름:저장소읽기("사무실.이름")||"",방문자:vid}),keepalive:true}).catch(()=>{});
+    }
+  }
 }
 requestAnimationFrame(루프);
 })();
