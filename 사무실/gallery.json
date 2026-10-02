@@ -2,21 +2,28 @@
   "제목": "LeDeuxions 사무실",
   "작품": {
     "벽1": {
-      "파일": "작품/예시-평면.png",
-      "제목": "1층 평면도 (예시)",
-      "메모": "자리 채우기 예시. 작품/ 폴더에 파일을 넣고 이 항목을 바꾸면 됩니다.",
-      "날짜": "2026-10"
+      "파일": "작품/pavilion-axon.jpg",
+      "제목": "Vol.1 파빌리온 · 투시도",
+      "메모": "https://ledeuxions-column.blogspot.com/2025/12/columnvol1-vol1.html",
+      "날짜": "2025-12"
     },
     "벽2": {
-      "파일": "작품/예시-입면.png",
-      "제목": "남측 입면도 (예시)",
-      "날짜": "2026-10"
+      "파일": "작품/pavilion-front.jpg",
+      "제목": "Vol.1 파빌리온 · 정면도",
+      "메모": "https://ledeuxions-column.blogspot.com/2025/12/columnvol1-vol1.html",
+      "날짜": "2025-12"
     },
     "벽3": {
-      "파일": "작품/예시-단면.png",
-      "제목": "A-A' 단면도 (예시)",
-      "메모": "세로·가로 비율은 액자에 맞춰 자동으로 잘라 보여줍니다. 원본은 눌렀을 때 그대로 나옵니다.",
-      "날짜": "2026-10"
+      "파일": "작품/pavilion-side.jpg",
+      "제목": "Vol.1 파빌리온 · 측면도",
+      "메모": "https://ledeuxions-column.blogspot.com/2025/12/columnvol1-vol1.html",
+      "날짜": "2025-12"
+    },
+    "벽4": {
+      "파일": "작품/pavilion-sheet.jpg",
+      "제목": "Vol.1 파빌리온 · 포트폴리오 한 장",
+      "메모": "https://ledeuxions-column.blogspot.com/2025/12/columnvol1-vol1.html",
+      "날짜": "2025-12"
     },
     "좌대1": {
       "파일": "작품/예시-모형.png",
