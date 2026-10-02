@@ -2,34 +2,34 @@
   "제목": "LeDeuxions 사무실",
   "작품": {
     "벽1": {
-      "파일": "작품/pavilion-axon.jpg",
-      "제목": "Vol.1 파빌리온 · 투시도",
+      "파일": "작품/pavilion-sheet.jpg",
+      "제목": "Vol.1 파빌리온 · 「무엇이 옳은 건축인가?」 (1학년)",
       "메모": "https://ledeuxions-column.blogspot.com/2025/12/columnvol1-vol1.html",
-      "날짜": "2025-12"
+      "날짜": "2008~2016"
     },
     "벽2": {
-      "파일": "작품/pavilion-front.jpg",
-      "제목": "Vol.1 파빌리온 · 정면도",
-      "메모": "https://ledeuxions-column.blogspot.com/2025/12/columnvol1-vol1.html",
-      "날짜": "2025-12"
+      "파일": "작품/park-concerthall-elevation.jpg",
+      "제목": "공원 · 맵핑 설계 — 콘서트홀 입면 (5학년)",
+      "메모": "https://ledeuxions.com/글/공원-맵핑/",
+      "날짜": "2008~2016"
     },
     "벽3": {
-      "파일": "작품/pavilion-side.jpg",
-      "제목": "Vol.1 파빌리온 · 측면도",
-      "메모": "https://ledeuxions-column.blogspot.com/2025/12/columnvol1-vol1.html",
-      "날짜": "2025-12"
+      "파일": "작품/museum-pollock-plan.jpg",
+      "제목": "잭슨 폴록 미술관 · La plan (3학년)",
+      "메모": "https://ledeuxions.com/글/미술관-면의-최소단위/",
+      "날짜": "2008~2016"
     },
     "벽4": {
-      "파일": "작품/pavilion-sheet.jpg",
-      "제목": "Vol.1 파빌리온 · 포트폴리오 한 장",
-      "메모": "https://ledeuxions-column.blogspot.com/2025/12/columnvol1-vol1.html",
-      "날짜": "2025-12"
+      "파일": "작품/kindergarten-plan-sketch.jpg",
+      "제목": "유치원 · 레지오 에밀리아 — 평면 스케치 (2학년)",
+      "메모": "https://ledeuxions.com/글/유치원-레지오-에밀리아/",
+      "날짜": "2008~2016"
     },
     "좌대1": {
-      "파일": "작품/예시-모형.png",
-      "제목": "매스 모형 (예시)",
-      "메모": "좌대에는 사진도, .glb 3D 모형도 올릴 수 있습니다. .glb는 \"파일\"에 모형 경로, \"사진\"에 썸네일 경로를 적습니다.",
-      "날짜": "2026-10"
+      "파일": "작품/religious-model.jpg",
+      "제목": "종교시설 · 종교의 본질 — 모형 (4학년)",
+      "메모": "https://ledeuxions.com/글/종교시설-종교의-본질/",
+      "날짜": "2008~2016"
     }
   }
 }
