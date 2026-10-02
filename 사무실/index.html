@@ -108,6 +108,14 @@ label.동의 input{width:auto;margin:2px 0 0;flex:0 0 auto}
 .안내메뉴 button:hover{border-color:#a89c80}
 .명패{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:10px;line-height:1;padding:2px 4px;background:#d9b45e;color:#2a1f15;border:1px solid #7a5a22;border-radius:2px;pointer-events:none}
 .퇴근판{position:absolute;transform:translate(-50%,-50%) rotate(-3deg);white-space:nowrap;font-size:15px;line-height:1;color:#c0392b;font-weight:bold;letter-spacing:.02em;text-shadow:1px 1px 0 #fff6d0;pointer-events:none}
+.대표팻말{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:10px;line-height:1;padding:2px 4px;background:#f3efe4;color:#2a1f15;border:1px solid #7a5a22;border-radius:2px;pointer-events:none}
+.대표팻말.주인{pointer-events:auto;cursor:pointer;box-shadow:0 0 0 1px var(--강조)}
+#창-팻말>.상자{width:min(100%,360px)}
+.팻말묶음{display:grid;gap:6px}
+.팻말묶음>b{font-weight:normal;font-size:12px;color:var(--잉크)}
+.팻말단추들{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px}
+.팻말단추들 button{min-height:48px;font-size:14px;padding:8px 6px}
+#팻말알림{min-height:1.5em}
 .배지{display:inline-block;min-width:14px;margin-left:5px;padding:0 4px;border-radius:7px;background:var(--위험);color:#fff;font-size:10px;line-height:14px;text-align:center}
 #미리보기{max-width:100%;max-height:140px;display:block;margin:0 auto;border-radius:4px;background:#0b0f1c}
 #숨김{position:fixed;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
@@ -125,6 +133,7 @@ label.동의 input{width:auto;margin:2px 0 0;flex:0 0 auto}
   <button id="버튼-화면" hidden>화면 공유</button>
   <button id="버튼-채팅">채팅</button>
   <button id="버튼-예약">📅 상담 예약</button>
+  <button id="버튼-팻말" hidden>👑 내 팻말</button>
   <button id="버튼-나가기" hidden>나가기</button>
   <button id="버튼-편집" hidden>작품 편집</button>
   <button id="버튼-JSON" hidden>JSON 보기</button>
@@ -195,6 +204,17 @@ label.동의 input{width:auto;margin:2px 0 0;flex:0 0 auto}
       <div class="줄"><button type="submit" id="예약보내기" class="주요">예약 보내기</button><button type="button" id="예약닫기">닫기</button></div>
     </form>
     <div id="예약완료" hidden><b>접수됐어요! 확인 후 연락드릴게요 🙂</b><div class="줄"><button type="button" id="예약완료닫기" class="주요">닫기</button></div></div>
+  </div>
+</div>
+
+<div id="창-팻말" class="창" hidden>
+  <div class="상자" role="dialog" aria-modal="true" aria-labelledby="팻말제목">
+    <h2 id="팻말제목">👑 내 팻말</h2>
+    <div class="팻말묶음"><b>대표님 (나)</b><div class="팻말단추들" id="팻말-대표"></div></div>
+    <div class="팻말묶음"><b>맺음</b><div class="팻말단추들" id="팻말-맺음"></div></div>
+    <div class="팻말묶음"><b>이음</b><div class="팻말단추들" id="팻말-이음"></div></div>
+    <p id="팻말알림" aria-live="polite"></p>
+    <div class="줄"><button type="button" id="팻말닫기">닫기</button></div>
   </div>
 </div>
 
@@ -808,6 +828,7 @@ function 가기(x,y,obj){
   const o=상호작용맞춤(p);
   if(!o||o.종류!=="안내") 안내메뉴닫기();
   if(o&&o.종류==="동료"){ 채팅열기(true); 가기(o.서는곳.x,o.서는곳.y,null); return; }
+  if(o&&o.종류==="예약"&&주인열쇠){ 팻말창열기(); return; }        // 주인이 자기 책상을 누르면 → 내 팻말
   if(o&&o.종류==="예약"){ 예약열기(); 가기(o.서는곳.x,o.서는곳.y,null); return; }
   if(o&&o.종류==="안내"){ 안내메뉴열기(); 가기(o.서는곳.x,o.서는곳.y,null); return; }
   if(o) 가기(o.서는곳.x,o.서는곳.y,o); else 가기(p.x,p.y,null);
@@ -1030,7 +1051,7 @@ window.addEventListener("pagehide",()=>{ if(통신.peer){ 방송({t:"bye"}); try
 /* ===================== 8. 화면 조립·HUD ===================== */
 const 상태el=document.getElementById("상태"), 안내=document.getElementById("안내");
 const 버튼={입장:document.getElementById("버튼-입장"),마이크:document.getElementById("버튼-마이크"),화면:document.getElementById("버튼-화면"),채팅:document.getElementById("버튼-채팅"),나가기:document.getElementById("버튼-나가기"),편집:document.getElementById("버튼-편집"),JSON:document.getElementById("버튼-JSON")};
-const 창입장=document.getElementById("창-입장"), 창작품=document.getElementById("창-작품"), 창편집=document.getElementById("창-편집"), 창JSON=document.getElementById("창-JSON"), 창화면=document.getElementById("창-화면"), 창예약=document.getElementById("창-예약");
+const 창입장=document.getElementById("창-입장"), 창작품=document.getElementById("창-작품"), 창편집=document.getElementById("창-편집"), 창JSON=document.getElementById("창-JSON"), 창화면=document.getElementById("창-화면"), 창예약=document.getElementById("창-예약"), 창팻말=document.getElementById("창-팻말");
 const 큰화면=document.getElementById("큰화면"), 채팅=document.getElementById("채팅"), 채팅입력=document.getElementById("채팅입력"), 채팅기록=document.getElementById("채팅기록");
 const 터치=matchMedia("(pointer:coarse)").matches;
 let 상태시한=0;
@@ -1055,9 +1076,9 @@ function 버튼갱신(){
   버튼.JSON.hidden=!편집중;
   안내.textContent=편집중?"액자·이젤·좌대·스크린을 누르면 작품을 넣습니다 · 끝나면 JSON 보기 → 복사해서 gallery.json으로 올립니다":(터치?"바닥을 누르면 걸어갑니다 · 액자·이젤·좌대를 누르면 봅니다 · 맺음·이음 책상=채팅 · 대표 책상=상담 예약":"클릭 또는 방향키로 이동 · 액자·이젤·좌대·스크린 클릭 · Enter 보기 · T 채팅 · 입구 안내 로봇에게 물어보세요");
 }
-function 창열림(){ return !창예약.hidden||!창입장.hidden||!창작품.hidden||!창편집.hidden||!창JSON.hidden||!창화면.hidden; }
-function 창모두닫기(){ 창예약.hidden=true; 창입장.hidden=true; 창작품.hidden=true; 창편집.hidden=true; 창JSON.hidden=true; if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; } 작품내용비우기(); }
-[창입장,창작품,창편집,창JSON,창화면,창예약].forEach(w=>w.addEventListener("pointerdown",e=>{ if(e.target===w) 창모두닫기(); }));
+function 창열림(){ return !창팻말.hidden||!창예약.hidden||!창입장.hidden||!창작품.hidden||!창편집.hidden||!창JSON.hidden||!창화면.hidden; }
+function 창모두닫기(){ 창팻말.hidden=true; 창예약.hidden=true; 창입장.hidden=true; 창작품.hidden=true; 창편집.hidden=true; 창JSON.hidden=true; if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; } 작품내용비우기(); }
+[창입장,창작품,창편집,창JSON,창화면,창예약,창팻말].forEach(w=>w.addEventListener("pointerdown",e=>{ if(e.target===w) 창모두닫기(); }));
 
 // --- 입장 창
 버튼.입장.addEventListener("click",()=>{
@@ -1163,10 +1184,11 @@ function 동료말(이름,글,늦게){
 }
 function 동료풍선(이름,글,끝){ 동료들.forEach(v=>고정풍선.delete("동료:"+v.이름)); 고정풍선.set("동료:"+이름,{글,끝}); }   // 둘이 붙어 앉아 있어서 말풍선은 한 번에 하나만
 async function 출퇴근불러오기(){
+  if(팻말보내는중) return;
   try{ const r=await fetch(설정.API+"/friends",{cache:"no-store"}); if(r.ok){ const j=await r.json(); ["맺음","이음"].forEach(k=>{ if(j[k]==="퇴근"||j[k]==="근무중") 출퇴근[k]=j[k]; }); } }catch(_){}
 }
 let 지금팻말=null;
-async function 팻말불러오기(){ try{ const r=await fetch(설정.API+"/status",{cache:"no-store"}); if(r.ok) 지금팻말=(await r.json()).팻말||지금팻말; }catch(_){} return 지금팻말; }
+async function 팻말불러오기(){ if(팻말보내는중) return 지금팻말; try{ const r=await fetch(설정.API+"/status",{cache:"no-store"}); if(r.ok) 지금팻말=(await r.json()).팻말||지금팻말; }catch(_){} return 지금팻말; }
 async function 동료인사(){
   const 팻말=await 팻말불러오기();
   const 있는=["맺음","이음"].filter(k=>!퇴근함(k));
@@ -1198,6 +1220,43 @@ function 예약열기(){
 }
 document.getElementById("버튼-예약").addEventListener("click",예약열기);
 document.getElementById("예약닫기").addEventListener("click",()=>{ 창예약.hidden=true; });
+
+// --- 👑 내 팻말 (주인 열쇠 있을 때만) — 대표 팻말(/status) + 맺음·이음 출퇴근(/friends). 누르면 바로 바뀌고(먼저 그림) 서버에 보냄
+const 팻말이름={있습니다:"🟢 재실",외출중:"🟡 외출중",부재중:"🔴 부재중"};
+const 대표선택=[["있습니다","🟢 출근"],["외출중","🟡 외출중"],["부재중","🔴 퇴근"]];
+const 팻말알림=document.getElementById("팻말알림"), 버튼팻말=document.getElementById("버튼-팻말");
+let 팻말보내는중=0;
+function 팻말창그리기(){
+  const 줄=(id,목록,지금,일)=>{ const el=document.getElementById(id); el.textContent="";
+    목록.forEach(([값,글])=>{ const b=document.createElement("button"); b.type="button"; b.textContent=글; const 켜=값===지금;
+      b.classList.toggle("켜짐",켜); b.setAttribute("aria-pressed",String(켜)); b.addEventListener("click",()=>일(값)); el.appendChild(b); }); };
+  줄("팻말-대표",대표선택,지금팻말,값=>팻말바꾸기(값));
+  ["맺음","이음"].forEach(k=>줄("팻말-"+k,[["근무중","🟢 출근"],["퇴근","🌙 퇴근"]],출퇴근[k],값=>출퇴근바꾸기(k,값)));
+}
+function 팻말반영(){                                                  // 방 안 팻말·안내 로봇 단추·열린 창을 새 값으로
+  if(안내봇상태.팻말단추) 안내봇상태.팻말단추.textContent="🪧 대표님 지금: "+(지금팻말||"확인 중…");
+  if(!창팻말.hidden) 팻말창그리기();
+}
+function 팻말창열기(){ if(!주인열쇠) return; 창모두닫기(); 안내메뉴닫기(); 팻말알림.textContent=""; 팻말창그리기(); 창팻말.hidden=false;
+  Promise.all([팻말불러오기(),출퇴근불러오기()]).then(()=>{ if(!팻말보내는중) 팻말반영(); }); }
+async function 주인보내기(경로,몸,되돌리기,됨글){
+  팻말보내는중++; 팻말반영(); 팻말알림.textContent="보내는 중…";
+  try{
+    const r=await fetch(설정.API+경로,{method:"POST",headers:{"Content-Type":"application/json","X-Owner-Key":주인열쇠},body:JSON.stringify(몸)});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){ 되돌리기(); 팻말알림.textContent=r.status===403?"열쇠가 맞지 않아요 — 주인 주소로 다시 열어 주세요":(j.오류||"바꾸지 못했어요 ("+r.status+")"); }
+    else 팻말알림.textContent="✓ "+됨글;
+  }catch(_){ 되돌리기(); 팻말알림.textContent="인터넷 연결을 확인해 주세요"; }
+  finally{ 팻말보내는중--; 팻말반영(); }
+}
+function 팻말바꾸기(값){ const 옛=지금팻말; if(옛===값) return; 지금팻말=값;
+  주인보내기("/status",{팻말:값},()=>{ 지금팻말=옛; },"대표님 팻말: "+팻말이름[값]); }
+function 출퇴근바꾸기(이름,값){ const 옛=출퇴근[이름]; if(옛===값) return; 출퇴근[이름]=값;
+  주인보내기("/friends",{이름,상태:값},()=>{ 출퇴근[이름]=옛; },이름+" "+(값==="퇴근"?"퇴근 🌙":"출근 🙂"));
+  if(값==="근무중") 동료풍선(이름,"출근했어요! 🙂",performance.now()+4000); }
+document.getElementById("팻말닫기").addEventListener("click",()=>{ 창팻말.hidden=true; });
+버튼팻말.addEventListener("click",팻말창열기);
+if(주인열쇠) 버튼팻말.hidden=false;
 document.getElementById("예약완료닫기").addEventListener("click",()=>{ 창예약.hidden=true; });
 예약폼.addEventListener("input",()=>{ 예약오류.textContent=""; });
 예약폼.addEventListener("submit",async e=>{
@@ -1382,6 +1441,8 @@ function 이름표(id,p,나인가){
 const 주인표el=document.createElement("div"); 주인표el.className="이름표 나"; 주인표el.textContent="LeDeuxions"; 겹층.appendChild(주인표el);
 function 주인표위치(){ 주인표el.style.left=((주인석.자리.x-카메라.x)*배율)+"px"; 주인표el.style.top=((주인석.자리.y-30-카메라.y)*배율)+"px"; }
 const 명패들=작업대들.map(d=>{ const el=document.createElement("div"); el.className="명패"; el.textContent=d.이름; 겹층.appendChild(el); return el; });
+const 대표팻말el=document.createElement("div"); 대표팻말el.className="대표팻말"+(주인열쇠?" 주인":""); 대표팻말el.hidden=true; 겹층.appendChild(대표팻말el);
+if(주인열쇠){ 대표팻말el.addEventListener("pointerdown",e=>e.stopPropagation()); 대표팻말el.addEventListener("click",e=>{ e.stopPropagation(); 팻말창열기(); }); 대표팻말el.title="눌러서 팻말 바꾸기"; }
 const 퇴근판들=작업대들.map(d=>{ const el=document.createElement("div"); el.className="퇴근판"; el.textContent="퇴근!"; el.hidden=true; 겹층.appendChild(el); return el; });
 function 풍선맞춤(풍선,left){                                  // 말풍선이 화면 밖으로 안 나가게
   const W=틀.clientWidth, w=풍선.offsetWidth||0;
@@ -1400,6 +1461,8 @@ function 겹층갱신(){
   통신.연결.forEach((e,id)=>{ if(e.사람) 이름표(id,e.사람,false); });
   if(편집중) 자리표위치();
   주인표위치();
+  { const 글=팻말이름[지금팻말]; 대표팻말el.hidden=!글; if(글){ if(대표팻말el.textContent!==글) 대표팻말el.textContent=글;
+      대표팻말el.style.left=((94-카메라.x)*배율)+"px"; 대표팻말el.style.top=((175-카메라.y)*배율)+"px"; } }
   작업대들.forEach((d,i)=>{
     const 명=명패들[i]; 명.style.left=((d.x+d.w/2-카메라.x)*배율)+"px"; 명.style.top=((d.y+13-카메라.y)*배율)+"px";
     const 판=퇴근판들[i], 쉼=퇴근함(d.이름); 판.hidden=!쉼;
@@ -1451,7 +1514,7 @@ function 루프(now){
 {
   if(innerHeight>=520&&!저장소읽기("사무실.채팅닫힘")) 채팅.hidden=false;
   Promise.all([채팅불러오기(),출퇴근불러오기()]).then(()=>{ 동료인사(); 채팅예약(채팅.hidden?8000:3000); });
-  setInterval(()=>{ if(!document.hidden) 출퇴근불러오기(); },60000);
+  setInterval(()=>{ if(!document.hidden){ 출퇴근불러오기(); 팻말불러오기().then(()=>팻말반영()); } },60000);
   if(!주인열쇠){
     setTimeout(()=>안내말("어서 오세요! 둘러보시고 궁금하면 저한테 오세요 🙂"),900);
     // 손님 입장 → 형 텔레그램 (서버가 방문자·IP 30분 1번, 전체 2분 1번, 하루 30번으로 거름)
