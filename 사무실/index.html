@@ -3,306 +3,982 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#1c2540">
-<meta name="description" content="LeDeuxions 픽셀 사무실 — 걸어다니며 둘러보는 자리. 아직 1단계(걷기)만 있습니다.">
-<title>사무실 — LeDeuxions</title>
+<meta name="theme-color" content="#1a2238">
+<meta name="description" content="LeDeuxions 픽셀 사무실 — 도면과 모형을 걸어 두고, 얼굴 없이 목소리와 화면으로 만나는 자리.">
+<title>LeDeuxions 사무실</title>
 <link rel="canonical" href="https://ledeuxions.com/사무실/">
 <style>
-  html,body{margin:0;padding:0;background:#1c2540;height:100%;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
-  #판{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
-  canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
-  #안내{position:fixed;left:0;right:0;bottom:14px;text-align:center;color:#cfd6ea;
-        font:13px/1.5 -apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
-        pointer-events:none;opacity:.85;text-shadow:0 1px 3px rgba(0,0,0,.6)}
-  #나가기{position:fixed;top:12px;left:12px;color:#cfd6ea;text-decoration:none;
-          font:13px -apple-system,sans-serif;background:rgba(0,0,0,.25);
-          padding:7px 12px;border-radius:8px;backdrop-filter:blur(4px)}
+/* 배치: 전체 화면 무대(픽셀 캔버스) + 모서리 상태표 + 아래 조작 막대 + 가운데 창(입장·작품·편집·화면). 단일 어두운 테마. */
+@font-face{font-family:'Galmuri11';src:url(./Galmuri11.woff2) format('woff2');font-display:swap}
+:root{
+  color-scheme:dark;
+  --바탕:#1a2238; --잉크:#ece7da; --흐림:#98a0b8; --선:#2e3852; --판:#111827; --판2:#1c2640;
+  --강조:#e3b65a; --위험:#d9655a; --좋음:#7fc47f;
+  --글꼴:'Galmuri11',-apple-system,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
+  --코드:ui-monospace,Menlo,Consolas,monospace;
+}
+html,body{height:100%}
+body{margin:0;background:var(--바탕);color:var(--잉크);font:12px/1.5 var(--글꼴);overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+#무대{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:44px 8px 86px;padding-top:calc(44px + env(safe-area-inset-top,0px));padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+#틀{position:relative;box-shadow:0 0 0 1px #0d1222,0 18px 40px rgba(0,0,0,.45)}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+#겹층{position:absolute;inset:0;pointer-events:none}
+.이름표{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:11px;line-height:1;padding:3px 5px;background:rgba(10,14,26,.74);color:var(--잉크);border-radius:3px}
+.이름표.나{color:var(--강조)}
+.이름표[data-mic="on"]::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--흐림);margin-right:4px;vertical-align:1px}
+.이름표[data-mic="on"].말함::before{background:var(--좋음);box-shadow:0 0 4px var(--좋음)}
+.이름표[data-scr="on"]::after{content:" ▣";color:var(--강조)}
+.말풍선{position:absolute;transform:translate(-50%,-100%);max-width:170px;font-size:11px;line-height:1.35;padding:5px 7px;background:#f3efe4;color:#1a1a22;border-radius:6px;word-break:break-word;white-space:pre-wrap}
+.말풍선::after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-4px;border:4px solid transparent;border-top-color:#f3efe4;border-bottom:0}
+.자리표{position:absolute;transform:translate(-50%,-50%);font-size:10px;line-height:1;padding:3px 5px;background:var(--강조);color:#1a1a22;border-radius:3px;box-shadow:0 1px 0 rgba(0,0,0,.4)}
+.자리표.빈{background:var(--판2);color:var(--강조);border:1px solid var(--강조)}
+#상태{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:12px;max-width:calc(100% - 140px);font-size:11px;line-height:1.3;padding:6px 9px;background:rgba(10,14,26,.7);border:1px solid var(--선);border-radius:4px;color:var(--잉크);word-break:keep-all}
+#상태[data-종류="오류"]{border-color:var(--위험);color:#f0b0a8}
+#집{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:12px;font-size:11px;padding:6px 9px;background:rgba(10,14,26,.7);border:1px solid var(--선);border-radius:4px;color:var(--흐림);text-decoration:none}
+#집:hover{color:var(--잉크)}
+#안내{position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom,0px));margin:0;text-align:center;color:var(--흐림);font-size:11px;pointer-events:none;padding:0 16px;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+#막대{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:8px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,rgba(10,14,26,.85) 40%)}
+button{font:inherit;font-size:12px;color:var(--잉크);background:var(--판2);border:1px solid var(--선);border-radius:4px;padding:8px 12px;cursor:pointer;min-height:36px;line-height:1.2}
+button:hover{border-color:var(--흐림)}
+button:focus-visible{outline:2px solid var(--강조);outline-offset:1px}
+button.켜짐{background:var(--강조);color:#1a1a22;border-color:var(--강조)}
+button.주요{background:var(--잉크);color:#1a1a22;border-color:var(--잉크)}
+button.위험{border-color:var(--위험);color:#f0b0a8}
+button:disabled{opacity:.45;cursor:default}
+.창{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,9,18,.8);padding:16px;z-index:20}
+.창>.상자{background:var(--판);border:1px solid var(--선);border-radius:8px;padding:16px;width:min(100%,380px);max-height:100%;overflow:auto;display:grid;gap:10px;box-sizing:border-box}
+.상자 h2{margin:0;font-size:14px;font-weight:normal;color:var(--강조)}
+.상자 p{margin:0;color:var(--흐림);font-size:11px}
+label{display:grid;gap:4px;font-size:11px;color:var(--흐림)}
+input,textarea{font:inherit;font-size:13px;color:var(--잉크);background:var(--바탕);border:1px solid var(--선);border-radius:4px;padding:8px 10px;width:100%;box-sizing:border-box;-webkit-user-select:text;user-select:text}
+input:focus-visible,textarea:focus-visible{outline:2px solid var(--강조);outline-offset:0;border-color:var(--강조)}
+textarea{font-family:var(--코드);font-size:11px;min-height:200px;resize:vertical;white-space:pre}
+.줄{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.줄>button{flex:1}
+.줄>span{flex:1;min-width:0;font-size:11px;color:var(--흐림)}
+#창-작품>.상자{width:min(100%,760px)}
+#작품내용{min-height:120px;display:flex;align-items:center;justify-content:center;background:#0b0f1c;border-radius:4px;overflow:hidden}
+#작품내용 img{max-width:100%;max-height:62vh;display:block;image-rendering:auto}
+#작품내용 model-viewer{width:100%;height:min(62vh,520px);background:#e9e6de}
+#작품내용 .없음{padding:28px 12px;color:var(--흐림);text-align:center}
+.설명{font-size:12px;line-height:1.5}
+.설명 b{color:var(--강조);font-weight:normal}
+.설명 .날짜{color:var(--흐림);margin-left:6px}
+.설명 .메모{display:block;color:var(--잉크);opacity:.85;white-space:pre-wrap}
+#창-화면>.상자{width:min(100%,1100px);padding:8px}
+#큰화면{width:100%;max-height:78vh;display:block;background:#000;border-radius:4px}
+#채팅{position:fixed;left:12px;bottom:calc(62px + env(safe-area-inset-bottom,0px));width:min(320px,calc(100% - 24px));display:grid;gap:6px;z-index:10}
+#채팅기록{max-height:120px;overflow:auto;font-size:11px;background:rgba(10,14,26,.72);border:1px solid var(--선);border-radius:4px;padding:6px 8px;display:grid;gap:2px;-webkit-user-select:text;user-select:text}
+#채팅기록:empty{display:none}
+#채팅기록 b{color:var(--강조);font-weight:normal}
+#채팅기록 .알림{color:var(--흐림)}
+#미리보기{max-width:100%;max-height:140px;display:block;margin:0 auto;border-radius:4px;background:#0b0f1c}
+#숨김{position:fixed;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<a id="나가기" href="/">← LeDeuxions</a>
-<div id="판"><canvas id="캔버스"></canvas></div>
-<p id="안내">바닥을 누르면 그리로 걸어갑니다</p>
+<div id="무대"><div id="틀"><canvas id="캔버스" width="480" height="270"></canvas><div id="겹층"></div></div></div>
+<div id="상태" aria-live="polite">둘러보는 중</div>
+<a id="집" href="/">← LeDeuxions</a>
+<p id="안내"></p>
+<div id="막대">
+  <button id="버튼-입장" class="주요">입장</button>
+  <button id="버튼-마이크" hidden>마이크 켜기</button>
+  <button id="버튼-화면" hidden>화면 공유</button>
+  <button id="버튼-채팅" hidden>채팅</button>
+  <button id="버튼-나가기" hidden>나가기</button>
+  <button id="버튼-편집" hidden>작품 편집</button>
+  <button id="버튼-JSON" hidden>JSON 보기</button>
+</div>
+<div id="채팅" hidden>
+  <div id="채팅기록"></div>
+  <input id="채팅입력" placeholder="메시지 · Enter 보내기 · Esc 닫기" maxlength="200" autocomplete="off">
+</div>
+
+<div id="창-입장" class="창" hidden>
+  <div class="상자">
+    <h2>사무실 입장</h2>
+    <p>이름만 있으면 됩니다. 카메라는 쓰지 않습니다. 마이크·화면 공유는 입장 후 직접 켭니다.</p>
+    <label>이름<input id="입장이름" maxlength="16" placeholder="손님" autocomplete="nickname"></label>
+    <label>방 코드<input id="입장방" maxlength="32" placeholder="main" autocomplete="off"></label>
+    <p id="입장안내">같은 방 코드를 쓰는 사람끼리 만납니다. 주소에 <span style="font-family:var(--코드)">?방=코드</span>를 붙여 공유하면 됩니다.</p>
+    <div class="줄"><button id="입장확인" class="주요">입장</button><button id="입장취소">둘러보기만</button></div>
+  </div>
+</div>
+
+<div id="창-작품" class="창" hidden>
+  <div class="상자">
+    <div id="작품내용"></div>
+    <div class="설명" id="작품설명"></div>
+    <div class="줄"><button id="작품이전">← 이전</button><button id="작품다음">다음 →</button><button id="작품닫기">닫기</button></div>
+  </div>
+</div>
+
+<div id="창-편집" class="창" hidden>
+  <div class="상자">
+    <h2 id="편집제목">자리</h2>
+    <img id="미리보기" alt="" hidden>
+    <label>파일 경로 또는 URL (이미지 · .glb)<input id="편집파일" placeholder="작품/모형-01.jpg" autocomplete="off"></label>
+    <label>기기에서 파일 고르기 (미리보기용 · 실제 파일은 위 경로에 올려야 합니다)<input id="편집선택" type="file" accept="image/*,.glb,.gltf"></label>
+    <label>썸네일 사진 (.glb 모형일 때만 · 선택)<input id="편집사진" placeholder="작품/모형-01.png" autocomplete="off"></label>
+    <label>제목<input id="편집제목입력" maxlength="60" autocomplete="off"></label>
+    <label>메모<input id="편집메모" maxlength="200" autocomplete="off"></label>
+    <label>날짜<input id="편집날짜" maxlength="20" placeholder="2026-10" autocomplete="off"></label>
+    <div class="줄"><button id="편집저장" class="주요">저장</button><button id="편집비우기" class="위험">비우기</button><button id="편집닫기">닫기</button></div>
+  </div>
+</div>
+
+<div id="창-JSON" class="창" hidden>
+  <div class="상자">
+    <h2>gallery.json</h2>
+    <p>이 내용을 index.html 옆에 <span style="font-family:var(--코드)">gallery.json</span>으로 올리면 모든 방문자에게 보입니다. 초안은 이 브라우저에만 저장됩니다.</p>
+    <textarea id="JSON내용" readonly spellcheck="false"></textarea>
+    <div class="줄"><button id="JSON복사" class="주요">복사</button><button id="JSON내려받기">내려받기</button><button id="JSON초안지우기" class="위험">초안 지우기</button><button id="JSON닫기">닫기</button></div>
+    <p id="JSON알림"></p>
+  </div>
+</div>
+
+<div id="창-화면" class="창" hidden>
+  <div class="상자">
+    <video id="큰화면" autoplay playsinline muted></video>
+    <div class="줄"><span id="큰화면설명"></span><button id="큰화면닫기">닫기</button></div>
+  </div>
+</div>
+
+<div id="숨김" aria-hidden="true"></div>
+<script src="./peerjs.min.js"></script>
 <script>
 (function(){
-  // 1단계: 방 + 걷기만. 채팅·다른 사람 보기는 다음 단계(실시간 서버 필요, 부장 쪽).
-  const 폭=320, 높이=200;
-  const 캔버스=document.getElementById("캔버스");
-  const c=캔버스.getContext("2d");
-  let 배율=1;
-  function 크기(){
-    const dpr=Math.min(3,window.devicePixelRatio||1);
-    배율=Math.min(window.innerWidth/폭, window.innerHeight/높이);
-    캔버스.width=폭*dpr; 캔버스.height=높이*dpr;
-    캔버스.style.width=(폭*배율)+"px"; 캔버스.style.height=(높이*배율)+"px";
-    c.setTransform(dpr,0,0,dpr,0,0); c.imageSmoothingEnabled=false;
+"use strict";
+
+/* ===================== 0. 설정 (여기만 고치면 됩니다) ===================== */
+const 설정={
+  방기본:"main",
+  최대인원:8,                       // 한 방 자리 수 (P2P 메시 구조라 8명 이상은 권장하지 않음)
+  접두:"ldx-office",                 // PeerJS ID 접두어 — 다른 사이트와 겹치지 않게
+  PeerServer:null,                   // null = 공용 PeerServer(0.peerjs.com). 자체 서버: {host:"ledeuxions.com", port:443, path:"/peer", secure:true}
+  ICE:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}], // TURN이 필요하면 {urls:"turn:...",username,credential} 추가
+  갤러리파일:"gallery.json",
+  모형뷰어:"https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js", // .glb 열 때만 불러옴
+  걷기속도:62                        // px/초 (논리 해상도 기준)
+};
+if(window.사무실설정&&typeof window.사무실설정==="object") Object.assign(설정,window.사무실설정); // 테스트·배포 시 외부에서 덮어쓰기 가능
+
+/* ===================== 1. 무대 좌표 ===================== */
+const 폭=480, 높이=270;
+const 방={x:16,y:22,w:448,h:236};
+const 벽높이=74, 벽끝=방.y+벽높이;                     // 벽끝 = 96
+const 바닥={x1:방.x+4, y1:벽끝+4, x2:방.x+방.w-4, y2:방.y+방.h-4};
+const 입구={x:240,y:244};
+const 창문={x:34,y:32,w:72,h:48};
+const 시계={x:326,y:46};
+const 자리={
+  벽1:{이름:"벽1",종류:"벽",영역:{x:124,y:36,w:40,h:32},서는곳:{x:144,y:108}},
+  벽2:{이름:"벽2",종류:"벽",영역:{x:174,y:32,w:36,h:44},서는곳:{x:192,y:108}},
+  벽3:{이름:"벽3",종류:"벽",영역:{x:220,y:36,w:48,h:34},서는곳:{x:244,y:108}},
+  벽4:{이름:"벽4",종류:"벽",영역:{x:278,y:32,w:38,h:40},서는곳:{x:297,y:108}},
+  좌대1:{이름:"좌대1",종류:"좌대",영역:{x:132,y:108,w:30,h:46},서는곳:{x:147,y:168}},
+  좌대2:{이름:"좌대2",종류:"좌대",영역:{x:308,y:108,w:30,h:46},서는곳:{x:323,y:168}}
+};
+const 자리순서=["벽1","벽2","벽3","벽4","좌대1","좌대2"];
+const 스크린={이름:"스크린",종류:"스크린",영역:{x:336,y:28,w:112,h:63},서는곳:{x:392,y:112}};
+const 상호작용들=자리순서.map(k=>자리[k]).concat([스크린]);
+
+/* ===================== 2. 캔버스 ===================== */
+const 보기=document.getElementById("캔버스"), vc=보기.getContext("2d");
+const 판=document.createElement("canvas"); 판.width=폭; 판.height=높이;
+const c=판.getContext("2d");
+const 틀=document.getElementById("틀"), 겹층=document.getElementById("겹층"), 무대=document.getElementById("무대");
+let 배율=1, 보임={w:폭,h:높이};
+const 카메라={x:0,y:0};
+function 크기(){
+  const r=무대.getBoundingClientRect();
+  const cs=getComputedStyle(무대);
+  const w=Math.max(120,r.width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight));
+  const h=Math.max(120,r.height-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom));
+  const 맞춤=Math.min(w/폭,h/높이);
+  if(맞춤>=1){ 배율=맞춤>=2?Math.floor(맞춤*2)/2:맞춤; 보임={w:폭,h:높이}; }
+  else { 배율=Math.min(2,Math.max(w/폭,h/높이,1.6)); 보임={w:Math.min(폭,w/배율),h:Math.min(높이,h/배율)}; }  // 작은 화면: 확대하고 카메라가 따라감
+  const dpr=Math.min(3,window.devicePixelRatio||1);
+  보기.width=Math.round(보임.w*배율*dpr); 보기.height=Math.round(보임.h*배율*dpr);
+  보기.style.width=(보임.w*배율)+"px"; 보기.style.height=(보임.h*배율)+"px";
+  틀.style.width=보기.style.width; 틀.style.height=보기.style.height;
+  카메라갱신(true);
+}
+function 카메라갱신(즉시){
+  const tx=Math.max(0,Math.min(폭-보임.w,나.x-보임.w/2)), ty=Math.max(0,Math.min(높이-보임.h,나.y-보임.h/2));
+  if(즉시){ 카메라.x=tx; 카메라.y=ty; return; }
+  카메라.x+=(tx-카메라.x)*0.12; 카메라.y+=(ty-카메라.y)*0.12;
+  if(Math.abs(tx-카메라.x)<0.05) 카메라.x=tx; if(Math.abs(ty-카메라.y)<0.05) 카메라.y=ty;
+}
+window.addEventListener("resize",크기);
+
+function 뒤섞기(i){ return ((i*2654435761)>>>0)/4294967296; }
+function 사각(x,y,w,h,col){ c.fillStyle=col; c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); }
+function 해시(s){ let h=5381; for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))>>>0; return h; }
+const 셔츠색들=["#3f6b9e","#8a4e9e","#c25a5a","#3f8f6b","#c48a2e","#4a7fcf","#9e6b3f","#5a6a8a"];
+function 색고르기(이름){ return 셔츠색들[해시(이름||"손님")%셔츠색들.length]; }
+
+/* ===================== 3. 작품(갤러리) 자료 ===================== */
+let 작품={};               // 자리이름 → {파일, 사진, 제목, 메모, 날짜}
+let 갤러리제목="LeDeuxions 사무실";
+const 미리보기URL={};      // 편집 중 기기에서 고른 파일의 미리보기(이 브라우저에서만)
+const 그림캐시=new Map();
+function 그림(src){
+  if(!src) return null;
+  let e=그림캐시.get(src);
+  if(!e){ e={img:new Image(),ok:false}; e.img.onload=()=>{e.ok=true;}; e.img.onerror=()=>{e.ok=false;e.실패=true;}; e.img.src=src; 그림캐시.set(src,e); }
+  return e.ok?e.img:null;
+}
+function 모형인가(f){ return /\.(glb|gltf)(\?|#|$)/i.test(f||""); }
+function 썸네일원본(이름,항목){
+  if(미리보기URL[이름]) return 미리보기URL[이름];
+  if(!항목) return null;
+  return 항목.사진 || (모형인가(항목.파일)?null:항목.파일);
+}
+function 썸네일(이름){ return 그림(썸네일원본(이름,작품[이름])); }
+function 저장소읽기(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
+function 저장소쓰기(k,v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,v); }catch(_){} }
+const 매개=new URLSearchParams(location.search);
+const 편집가능=매개.has("편집")||매개.has("edit");
+let 편집중=false;
+function 초안읽기(){ const s=저장소읽기("사무실.갤러리.초안"); if(!s) return null; try{ return JSON.parse(s); }catch(_){ return null; } }
+function 초안쓰기(){ 저장소쓰기("사무실.갤러리.초안",JSON.stringify({제목:갤러리제목,작품})); }
+function 썸네일예열(){ 자리순서.forEach(k=>{ const s=썸네일원본(k,작품[k]); if(s) 그림(s); }); }
+async function 갤러리불러오기(){
+  let 서버=null;
+  try{ const r=await fetch(설정.갤러리파일,{cache:"no-store"}); if(r.ok) 서버=await r.json(); }catch(_){}
+  const 초안=편집가능?초안읽기():null;
+  const 원본=초안||서버;
+  if(원본&&원본.작품&&typeof 원본.작품==="object"){ 작품=원본.작품; if(원본.제목) 갤러리제목=원본.제목; }
+  if(초안&&편집가능) 알림("저장된 초안을 쓰는 중입니다 (JSON 보기 → 초안 지우기로 서버 내용으로 돌아갑니다)");
+  썸네일예열();
+}
+
+/* ===================== 4. 그리기 ===================== */
+function 바닥그리기(){
+  const fy=벽끝, fh=방.y+방.h-벽끝;
+  사각(방.x,fy,방.w,fh,"#c89c66");
+  const 칸높이=9; let row=0;
+  for(let y=fy;y<방.y+방.h;y+=칸높이,row++){
+    const h=Math.min(칸높이,방.y+방.h-y); const 결=뒤섞기(row*7+3);
+    사각(방.x,y,방.w,h,결>0.5?"rgba(255,255,255,"+((결-0.5)*0.08).toFixed(3)+")":"rgba(0,0,0,"+((0.5-결)*0.10).toFixed(3)+")");
+    사각(방.x,y+h-1,방.w,1,"rgba(90,60,30,.35)");
+    for(let x=방.x+((row%3)*17);x<방.x+방.w;x+=46) 사각(x,y,1,h,"rgba(90,60,30,.25)");
   }
-  window.addEventListener("resize",크기); 크기();
-
-  function 뒤섞기(i){ return ((i*2654435761)>>>0)/4294967296; }
-
-  // ---- 방 ----
-  const 방={x:20,y:30,w:280,h:140};
-  const 벽높이=40;
-
-  // ---- 캐릭터 ----
-  const 나={x:방.x+방.w/2, y:방.y+방.h-30, tx:null, ty:null, 방향:"down", 걸음:0};
-  const 속도=55; // px/초
-
-  function 안(x,y){ return x>=방.x+8 && x<=방.x+방.w-8 && y>=방.y+벽높이 && y<=방.y+방.h-8; }
-
-  function 좌표(e){
-    const r=캔버스.getBoundingClientRect();
-    const p=e.touches?e.touches[0]||e.changedTouches[0]:e;
-    return {x:(p.clientX-r.left)/배율, y:(p.clientY-r.top)/배율};
+  const sg=c.createLinearGradient(0,fy,0,fy+12); sg.addColorStop(0,"rgba(0,0,0,.30)"); sg.addColorStop(1,"rgba(0,0,0,0)");
+  c.fillStyle=sg; c.fillRect(방.x,fy,방.w,12);
+  // 출입구 매트
+  사각(228,250,24,8,"#5a4a3a"); for(let i=0;i<24;i+=4) 사각(228+i,251,2,6,"#6e5c48"); 사각(228,250,24,1,"#3e3228");
+}
+function 러그(x,y,w,h){
+  사각(x+2,y+2,w,h,"rgba(0,0,0,.15)");
+  사각(x,y,w,h,"#8a4a3e"); 사각(x+4,y+3,w-8,h-6,"#a85a44"); 사각(x+8,y+6,w-16,h-12,"#c47850");
+  for(let i=0;i<w-16;i+=8) 사각(x+8+i,y+6,4,1,"rgba(0,0,0,.12)");
+  c.strokeStyle="rgba(0,0,0,.18)"; c.lineWidth=1; c.strokeRect(Math.round(x+4)+.5,Math.round(y+3)+.5,w-9,h-7);
+}
+function 벽그리기(){
+  const g=c.createLinearGradient(0,방.y,0,벽끝); g.addColorStop(0,"#7d6b5a"); g.addColorStop(1,"#665649");
+  c.fillStyle=g; c.fillRect(방.x,방.y,방.w,벽높이);
+  for(let i=0;i<방.w;i+=16) 사각(방.x+i,방.y,1,벽높이-15,"rgba(0,0,0,.05)");
+  사각(방.x,벽끝-14,방.w,14,"#4e3b2b");
+  for(let i=7;i<방.w;i+=14) 사각(방.x+i,벽끝-12,1,10,"rgba(0,0,0,.18)");
+  사각(방.x,벽끝-15,방.w,2,"#8d6c4c");
+  사각(방.x,벽끝-2,방.w,2,"#2c2016");
+  사각(방.x-2,방.y-2,방.w+4,2,"#0d1222"); 사각(방.x-2,방.y,2,방.h,"#0d1222"); 사각(방.x+방.w,방.y,2,방.h,"#0d1222"); 사각(방.x-2,방.y+방.h,방.w+4,2,"#0d1222");
+}
+function 창문그리기(){
+  const {x,y,w,h}=창문;
+  사각(x-3,y-3,w+6,h+6,"#2a1f15");
+  const g=c.createLinearGradient(x,y,x,y+h); g.addColorStop(0,"#7fa8d8"); g.addColorStop(1,"#f0c878");
+  c.fillStyle=g; c.fillRect(x+2,y+2,w-4,h-4);
+  // 먼 건물 실루엣
+  c.fillStyle="rgba(60,70,110,.45)";
+  [[6,22,10,22],[18,14,8,30],[28,26,12,18],[42,10,9,34],[53,20,13,24]].forEach(b=>c.fillRect(x+b[0],y+b[1],b[2],b[3]));
+  사각(x+w*0.15,y+h*0.3,w*0.3,h*0.1,"rgba(255,255,255,.3)");
+  사각(x,y,w,2,"#5a3a22"); 사각(x,y+h-2,w,2,"#5a3a22"); 사각(x,y,2,h,"#5a3a22"); 사각(x+w-2,y,2,h,"#5a3a22");
+  사각(x+w/2-1,y,2,h,"#5a3a22"); 사각(x,y+h/2-1,w,2,"#5a3a22");
+  사각(x-4,y+h,w+8,4,"#6b4a30"); 사각(x-4,y+h+3,w+8,1,"#4a3120");
+}
+function 빛살(){
+  const {x,y,w,h}=창문, 아래끝=방.y+방.h;
+  c.save(); c.beginPath(); c.moveTo(x+4,y+h+4); c.lineTo(x+w-4,y+h+4); c.lineTo(x+w+34,아래끝); c.lineTo(x-20,아래끝); c.closePath(); c.clip();
+  const g=c.createLinearGradient(0,y+h,0,아래끝); g.addColorStop(0,"rgba(255,224,160,.22)"); g.addColorStop(1,"rgba(255,224,160,0)");
+  c.fillStyle=g; c.fillRect(방.x,y,방.w,아래끝-y); c.restore();
+}
+function 천장등(x,벽y){
+  const 줄=76;
+  사각(x-1,벽y,1,줄,"#2a2a2a");
+  c.fillStyle="#caa24a"; c.beginPath(); c.moveTo(x-10,벽y+줄); c.lineTo(x+10,벽y+줄); c.lineTo(x+6,벽y+줄+8); c.lineTo(x-6,벽y+줄+8); c.closePath(); c.fill();
+  사각(x-9,벽y+줄-1,18,2,"#dcb868"); 사각(x-3,벽y+줄+8,6,2,"#fff6d8");
+}
+function 등불빛(){
+  c.fillStyle="rgba(255,214,130,.16)"; c.beginPath(); c.ellipse(228,150,84,46,0,0,Math.PI*2); c.fill();
+}
+function 시계그리기(){
+  const {x,y}=시계;
+  c.fillStyle="#2a2420"; c.beginPath(); c.arc(x,y,7,0,Math.PI*2); c.fill();
+  c.fillStyle="#f0ece0"; c.beginPath(); c.arc(x,y,6,0,Math.PI*2); c.fill();
+  const d=new Date(), 시=(d.getHours()%12+d.getMinutes()/60)/12*Math.PI*2, 분=d.getMinutes()/60*Math.PI*2;
+  c.strokeStyle="#2a2420"; c.lineWidth=1;
+  c.beginPath(); c.moveTo(x,y); c.lineTo(x+Math.sin(시)*3,y-Math.cos(시)*3); c.stroke();
+  c.beginPath(); c.moveTo(x,y); c.lineTo(x+Math.sin(분)*4.5,y-Math.cos(분)*4.5); c.stroke();
+  사각(x,y-1,1,1,"#c25a5a");
+}
+function 그림채우기(img,안){
+  const iw=img.naturalWidth, ih=img.naturalHeight; if(!iw||!ih) return;
+  const s=Math.max(안.w/iw,안.h/ih), sw=안.w/s, sh=안.h/s;
+  c.drawImage(img,(iw-sw)/2,(ih-sh)/2,sw,sh,Math.round(안.x),Math.round(안.y),Math.round(안.w),Math.round(안.h));
+}
+function 작은건물(cx,바닥y){
+  사각(cx-8,바닥y-2,16,2,"#9a9488");
+  사각(cx-7,바닥y-10,14,8,"#d6d0c2"); 사각(cx-7,바닥y-10,14,1,"#efe9dc");
+  사각(cx-3,바닥y-16,8,6,"#c2bbab"); 사각(cx-3,바닥y-16,8,1,"#e2dccd");
+  for(let i=0;i<3;i++) 사각(cx-5+i*4,바닥y-8,2,2,"#6e6a62");
+  사각(cx-1,바닥y-14,2,2,"#6e6a62");
+}
+function 액자그리기(s){
+  const r=s.영역, 항목=작품[s.이름], 그림=썸네일(s.이름);
+  사각(r.x+r.w/2-1,r.y-3,2,3,"#2a2a2a");
+  사각(r.x+2,r.y+3,r.w,r.h,"rgba(0,0,0,.25)");
+  사각(r.x,r.y,r.w,r.h,"#3a2a1c"); 사각(r.x+1,r.y+1,r.w-2,1,"#5c4731");
+  사각(r.x+2,r.y+2,r.w-4,r.h-4,"#efe6d2");
+  const 안={x:r.x+4,y:r.y+4,w:r.w-8,h:r.h-8};
+  if(그림) 그림채우기(그림,안);
+  else if(항목&&모형인가(항목.파일)){ 사각(안.x,안.y,안.w,안.h,"#e2ddd0"); 작은건물(안.x+안.w/2,안.y+안.h-3); }
+  else { 사각(안.x,안.y,안.w,안.h,"#ddd4c0"); for(let y=안.y;y<안.y+안.h;y+=3) for(let x=안.x;x<안.x+안.w;x+=3) if(((x-안.x)+(y-안.y))%6===0) 사각(x,y,1,1,"#c9bfa8"); }
+}
+function 공유중비디오(){
+  if(통신.화면&&내화면비디오.readyState>=2&&내화면비디오.videoWidth) return 내화면비디오;
+  if(공유화면&&공유화면.video.readyState>=2&&공유화면.video.videoWidth) return 공유화면.video;
+  return null;
+}
+function 스크린그리기(){
+  const r=스크린.영역;
+  사각(r.x-4,r.y-4,r.w+8,6,"#23232a"); 사각(r.x-4,r.y-4,r.w+8,1,"#3a3a44");
+  사각(r.x+2,r.y+4,r.w,r.h,"rgba(0,0,0,.25)");
+  사각(r.x,r.y+2,r.w,r.h,"#f2f0ea"); 사각(r.x,r.y+2,r.w,1,"#d8d5cc"); 사각(r.x,r.y+2,1,r.h,"#d8d5cc");
+  const 안={x:r.x+3,y:r.y+5,w:r.w-6,h:r.h-6};
+  const v=공유중비디오();
+  if(v){
+    사각(안.x,안.y,안.w,안.h,"#101014");
+    const s=Math.min(안.w/v.videoWidth,안.h/v.videoHeight), dw=v.videoWidth*s, dh=v.videoHeight*s;
+    c.drawImage(v,Math.round(안.x+(안.w-dw)/2),Math.round(안.y+(안.h-dh)/2),Math.round(dw),Math.round(dh));
+    사각(r.x+r.w-6,r.y+r.h-2,3,2,"#7fc47f");
+  } else {
+    사각(안.x,안.y,안.w,안.h,"#e8e6df");
+    const cx=안.x+안.w/2, cy=안.y+안.h/2;
+    c.strokeStyle="#c9c4b4"; c.lineWidth=2;
+    c.strokeRect(cx-13,cy-9,14,14); c.strokeRect(cx-3,cy-5,14,14);
   }
-  function 누름(e){
-    e.preventDefault();
-    const {x,y}=좌표(e);
-    if (안(x,y)){ 나.tx=x; 나.ty=y; }
+  사각(r.x-2,r.y+r.h+2,r.w+4,3,"#23232a");
+}
+function 책상(x,y){
+  const w=66,h=14;
+  사각(x-2,y+32,w+10,4,"rgba(0,0,0,.2)");
+  사각(x+4,y+h,4,26,"#4a3220"); 사각(x+w-8,y+h,4,26,"#4a3220");
+  사각(x,y+h,w,24,"#6b4a30"); 사각(x,y+h,w,3,"#7a5638");
+  사각(x-3,y,w+6,h,"#8a5f3c"); 사각(x-3,y,w+6,3,"#a3764a");
+  for(let i=0;i<4;i++) 사각(x+5+i*14,y+3,10,1,"rgba(0,0,0,.12)");
+  사각(x+8,y-16,20,14,"#2a2a32"); 사각(x+10,y-14,16,10,"#5a8bc4"); 사각(x+15,y-2,6,3,"#2a2a32");
+  사각(x+32,y-3,18,5,"#3a3a42"); 사각(x+32,y-3,18,1,"#55555f");
+  c.strokeStyle="#d8d0b8"; c.lineWidth=2; c.beginPath(); c.moveTo(x+53,y-1); c.lineTo(x+53,y-13); c.stroke();
+  사각(x+49,y-16,10,4,"#e8e0c8");
+  사각(x+36,y-9,6,7,"#3a2a1a"); 사각(x+37,y-13,1,5,"#e0b04a"); 사각(x+39,y-14,1,6,"#c94f4f"); 사각(x+41,y-12,1,4,"#4a90c4");
+  c.fillStyle="rgba(255,214,120,.35)"; c.beginPath(); c.ellipse(x+59,y-19,9,7,0,0,Math.PI*2); c.fill();
+  사각(x+60,y-23,3,6,"#3a3a3a"); 사각(x+54,y-27,12,5,"#caa24a");
+}
+function 책장(x,y){
+  const w=38,h=66;
+  사각(x-2,y+h,w+6,4,"rgba(0,0,0,.2)");
+  사각(x,y,w,h,"#5a3a22"); 사각(x+2,y+2,w-4,h-4,"#7a5236");
+  const 칸=4, 칸높이=(h-8)/칸, 색들=["#c94f4f","#4a90c4","#caa24a","#5a9a5a","#9a6ab0","#d87b3e"];
+  for(let i=0;i<칸;i++){
+    const cy=y+4+i*칸높이; 사각(x+2,cy+칸높이-2,w-4,2,"#4a3020");
+    let bx=x+4;
+    for(let k=0;k<5&&bx<x+w-6;k++){ const bw=3+Math.floor(뒤섞기(i*37+k+1)*3), bh=칸높이-5-Math.floor(뒤섞기(i*53+k)*3); 사각(bx,cy+칸높이-3-bh,bw,bh,색들[(i*5+k)%색들.length]); bx+=bw+1; }
   }
-  캔버스.addEventListener("pointerdown",누름);
+  사각(x,y,w,2,"#8a6038");
+}
+function 의자(x,y,방향){
+  사각(x-7,y+2,14,3,"rgba(0,0,0,.2)");
+  c.strokeStyle="#2a2a2a"; c.lineWidth=1;
+  [[-6,0],[6,0],[0,-5],[0,5]].forEach(p=>{ c.beginPath(); c.moveTo(x,y); c.lineTo(x+p[0],y+p[1]*0.4); c.stroke(); });
+  사각(x-2,y-14,4,10,"#3a3a3a");
+  if(방향==="down"){ 사각(x-9,y-16,18,4,"#2e3b52"); 사각(x-9,y-30,18,16,"#34415c"); 사각(x-9,y-30,18,3,"#425170"); }
+  else if(방향==="up"){ 사각(x-9,y-16,18,4,"#2e3b52"); 사각(x-9,y-14,18,8,"#34415c"); 사각(x-9,y-8,18,2,"#425170"); }
+  else { const s=방향==="left"?1:-1; 사각(x-9,y-16,18,4,"#2e3b52"); 사각(x+s*4,y-30,6,16,"#34415c"); 사각(x+s*4,y-30,6,3,"#425170"); }
+}
+function 화분(x,y){
+  사각(x-9,y+2,18,3,"rgba(0,0,0,.2)");
+  c.fillStyle="#b5613a"; c.beginPath(); c.moveTo(x-9,y); c.lineTo(x+9,y); c.lineTo(x+6,y-14); c.lineTo(x-6,y-14); c.closePath(); c.fill();
+  사각(x-6,y-16,12,3,"#c97a4e"); 사각(x-5,y-15,10,2,"#3a2a1a");
+  const 잎=["#3f6b3f","#4f7f45","#355c33"];
+  for(let i=0;i<7;i++){ const a=뒤섞기(i*13)*Math.PI*2, ly=y-16-뒤섞기(i*41)*10; c.fillStyle=잎[i%잎.length]; c.beginPath(); c.ellipse(x+Math.cos(a)*5,ly,4+뒤섞기(i*7)*2,7+뒤섞기(i*17)*3,a,0,Math.PI*2); c.fill(); }
+}
+function 캐비닛(x,y){
+  const w=72,h=18;
+  사각(x+2,y+h+2,w,4,"rgba(0,0,0,.2)");
+  사각(x,y+4,w,h,"#6b4a30"); 사각(x-2,y,w+4,5,"#8a5f3c"); 사각(x-2,y,w+4,1,"#a3764a");
+  사각(x+4,y+8,w/2-6,h-6,"#5a3d27"); 사각(x+w/2+2,y+8,w/2-6,h-6,"#5a3d27");
+  사각(x+w/2-5,y+13,2,2,"#d8c08a"); 사각(x+w/2+3,y+13,2,2,"#d8c08a");
+  사각(x+6,y-5,16,5,"#e8e0c8"); 사각(x+8,y-9,14,4,"#d8d0b8"); 사각(x+6,y-5,16,1,"#c8c0a8");
+  사각(x+50,y-6,10,6,"#b5613a"); 사각(x+49,y-7,12,2,"#c97a4e");
+  c.fillStyle="#4f7f45"; c.beginPath(); c.ellipse(x+55,y-11,6,5,0,0,Math.PI*2); c.fill();
+}
+function 탁자(x,y){
+  const w=88,h=34;
+  사각(x,y+h+6,w,4,"rgba(0,0,0,.22)");
+  사각(x+4,y+h,4,10,"#4a3220"); 사각(x+w-8,y+h,4,10,"#4a3220");
+  사각(x,y+h,w,8,"#6b4a30"); 사각(x,y+h,w,2,"#7a5638");
+  사각(x-2,y,w+4,h,"#8a5f3c"); 사각(x-2,y,w+4,2,"#a3764a");
+  for(let i=0;i<5;i++) 사각(x+6+i*17,y+5,12,1,"rgba(0,0,0,.12)");
+  사각(x+30,y+9,16,11,"#2a2a32"); 사각(x+32,y+11,12,7,"#5a8bc4");
+  사각(x+54,y+14,14,9,"#eee8d8"); 사각(x+56,y+16,10,1,"#b0a890"); 사각(x+56,y+18,8,1,"#b0a890");
+  사각(x+12,y+18,5,5,"#f0ece0"); 사각(x+13,y+17,3,1,"#8a6a4a");
+  사각(x+70,y+8,5,5,"#f0ece0"); 사각(x+71,y+7,3,1,"#8a6a4a");
+}
+function 좌대그리기(이름){
+  const r=자리[이름].영역, px=r.x+4, py=r.y+18, pw=22, ph=22;
+  사각(px+2,py+ph,pw,3,"rgba(0,0,0,.22)");
+  사각(px,py+3,pw,ph-3,"#dcd7cc"); 사각(px,py+3,pw,1,"#f4f1ea"); 사각(px+pw-2,py+3,2,ph-3,"#bdb7aa");
+  사각(px-1,py,pw+2,4,"#f0ece4"); 사각(px-1,py+3,pw+2,1,"#c9c3b6");
+  const 항목=작품[이름], 그림=썸네일(이름);
+  if(그림){ const 안={x:px+2,y:py-15,w:pw-4,h:15}; 사각(안.x-1,안.y-1,안.w+2,안.h+2,"#2a2a2a"); 그림채우기(그림,안); }
+  else if(항목) 작은건물(px+pw/2,py);
+}
+function 사람그리기(p){
+  const 걷는중=p.걷는중, 흔들=Math.sin(p.걸음)*1.2*(걷는중?1:0), 다리흔들=걷는중?Math.sin(p.걸음)*3:0;
+  const x=p.x, y=p.y;
+  c.fillStyle="rgba(0,0,0,.25)"; c.beginPath(); c.ellipse(x,y+2,7,2.4,0,0,Math.PI*2); c.fill();
+  const 피부="#e0b98a", 셔츠=p.색||"#3f6b9e", 바지="#28324f", 머리색="#2b2320";
+  const 앞=p.방향==="down", 뒤=p.방향==="up", 좌우=p.방향==="left"||p.방향==="right", 플립=p.방향==="left"?-1:1;
+  c.save(); c.translate(Math.round(x),Math.round(y+흔들)); if(좌우) c.scale(플립,1);
+  사각(-4,-4+Math.max(0,다리흔들*0.3),3,7-Math.max(0,다리흔들*0.3),바지);
+  사각(1,-4+Math.max(0,-다리흔들*0.3),3,7-Math.max(0,-다리흔들*0.3),바지);
+  사각(-4,2,3,2,"#1c1c1c"); 사각(1,2,3,2,"#1c1c1c");
+  사각(-4,-14,8,10,셔츠); 사각(-4,-14,8,2,"rgba(0,0,0,.18)");
+  사각(-6,-13+다리흔들*0.4,2,7,셔츠); 사각(4,-13-다리흔들*0.4,2,7,셔츠);
+  사각(-6,-7+다리흔들*0.4,2,2,피부); 사각(4,-7-다리흔들*0.4,2,2,피부);
+  사각(-5,-18,10,6,피부);
+  if(앞){ 사각(-3,-16,1.5,1.5,"#1a1a1a"); 사각(1.5,-16,1.5,1.5,"#1a1a1a"); }
+  else if(좌우) 사각(2,-16,1.5,1.5,"#1a1a1a");
+  사각(-5,-20,10,4,머리색); if(뒤) 사각(-5,-17,10,3,머리색);
+  c.restore();
+}
+function 비네트(){
+  const g=c.createRadialGradient(폭/2,높이/2,80,폭/2,높이/2,300);
+  g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,.35)"); c.fillStyle=g; c.fillRect(0,0,폭,높이);
+}
+const 가구=[
+  {그리기:()=>캐비닛(34,98), 막음:[32,96,76,26], 바닥y:120},
+  {그리기:()=>책장(424,100), 막음:[422,100,40,68], 바닥y:166},
+  {그리기:()=>좌대그리기("좌대1"), 막음:[134,126,26,24], 바닥y:150},
+  {그리기:()=>좌대그리기("좌대2"), 막음:[310,126,26,24], 바닥y:150},
+  {그리기:()=>탁자(196,152), 막음:[192,150,96,48], 바닥y:198},
+  {그리기:()=>의자(186,180,"right"), 막음:[178,172,16,12], 바닥y:182},
+  {그리기:()=>의자(294,180,"left"), 막음:[286,172,16,12], 바닥y:182},
+  {그리기:()=>의자(218,150,"down"), 막음:[210,142,16,10], 바닥y:150},
+  {그리기:()=>의자(262,150,"down"), 막음:[254,142,16,10], 바닥y:150},
+  {그리기:()=>의자(218,212,"up"), 막음:[210,204,16,12], 바닥y:214},
+  {그리기:()=>의자(262,212,"up"), 막음:[254,204,16,12], 바닥y:214},
+  {그리기:()=>책상(40,186), 막음:[34,182,76,32], 바닥y:216},
+  {그리기:()=>의자(76,234,"up"), 막음:[68,226,16,12], 바닥y:236},
+  {그리기:()=>화분(448,246), 막음:[438,236,20,16], 바닥y:252}
+];
 
-  function 갱신(dt){
-    if (나.tx==null) return;
-    const dx=나.tx-나.x, dy=나.ty-나.y;
-    const 거리=Math.hypot(dx,dy);
-    if (거리<2){ 나.tx=null; 나.ty=null; return; }
-    나.방향= Math.abs(dx)>Math.abs(dy) ? (dx>0?"right":"left") : (dy>0?"down":"up");
-    const 이동=Math.min(거리, 속도*dt);
-    나.x += dx/거리*이동; 나.y += dy/거리*이동;
-    나.걸음 += dt*8;
+/* ===================== 5. 길찾기 ===================== */
+const 칸=4, 열=폭/칸, 행=Math.ceil(높이/칸);
+const 막힘=new Uint8Array(열*행).fill(1);
+(function 길준비(){
+  for(let gy=0;gy<행;gy++) for(let gx=0;gx<열;gx++){ const cx=gx*칸+칸/2, cy=gy*칸+칸/2; if(cx>=바닥.x1&&cx<=바닥.x2&&cy>=바닥.y1&&cy<=바닥.y2) 막힘[gy*열+gx]=0; }
+  가구.forEach(g=>{ if(!g.막음) return; const [x,y,w,h]=g.막음; for(let gy=Math.floor(y/칸);gy<=Math.floor((y+h)/칸);gy++) for(let gx=Math.floor(x/칸);gx<=Math.floor((x+w)/칸);gx++) if(gx>=0&&gy>=0&&gx<열&&gy<행) 막힘[gy*열+gx]=1; });
+})();
+function 자유(x,y){ if(x<0||y<0||x>=폭||y>=높이) return false; return 막힘[Math.floor(y/칸)*열+Math.floor(x/칸)]===0; }
+function 가까운자유칸(x,y){
+  const gx0=Math.max(0,Math.min(열-1,Math.floor(x/칸))), gy0=Math.max(0,Math.min(행-1,Math.floor(y/칸)));
+  for(let r=0;r<40;r++) for(let gy=gy0-r;gy<=gy0+r;gy++) for(let gx=gx0-r;gx<=gx0+r;gx++){
+    if(Math.abs(gy-gy0)!==r&&Math.abs(gx-gx0)!==r) continue;
+    if(gx<0||gy<0||gx>=열||gy>=행) continue;
+    if(!막힘[gy*열+gx]) return gy*열+gx;
   }
-
-  function 사각(x,y,w,h,col){ c.fillStyle=col; c.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); }
-
-  // ---- 바닥: 나무 판자 + 결 ----
-  function 바닥그리기(){
-    const fy=방.y+벽높이, fh=방.h-벽높이;
-    사각(방.x,fy,방.w,fh,"#caa06a");
-    const 칸높이=9;
-    let row=0;
-    for (let y=fy; y<방.y+방.h; y+=칸높이, row++){
-      const h=Math.min(칸높이, 방.y+방.h-y);
-      const 결=뒤섞기(row*7+3);
-      사각(방.x,y,방.w,h, 결>0.5 ? "rgba(255,255,255,"+((결-0.5)*0.08).toFixed(3)+")" : "rgba(0,0,0,"+((0.5-결)*0.10).toFixed(3)+")");
-      사각(방.x,y+h-1,방.w,1,"rgba(90,60,30,.35)");
+  return -1;
+}
+function 직선자유(a,b){ const d=Math.hypot(b.x-a.x,b.y-a.y), n=Math.max(1,Math.ceil(d/2)); for(let i=1;i<=n;i++){ const t=i/n; if(!자유(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t)) return false; } return true; }
+function 다듬기(시작,점들){ const out=[]; let cur=시작, i=0; while(i<점들.length){ let j=점들.length-1; while(j>i&&!직선자유(cur,점들[j])) j--; out.push(점들[j]); cur=점들[j]; i=j+1; } return out; }
+function 경로찾기(x0,y0,x1,y1){
+  const s=가까운자유칸(x0,y0), t=가까운자유칸(x1,y1); if(s<0||t<0) return null;
+  const 끝점=자유(x1,y1)?{x:x1,y:y1}:{x:(t%열)*칸+칸/2,y:Math.floor(t/열)*칸+칸/2};
+  if(s===t) return [끝점];
+  const prev=new Int32Array(열*행).fill(-1); prev[s]=s; const q=[s]; let qi=0;
+  const 방향들=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  while(qi<q.length){
+    const cur=q[qi++]; if(cur===t) break;
+    const cx=cur%열, cy=Math.floor(cur/열);
+    for(const [dx,dy] of 방향들){
+      const nx=cx+dx, ny=cy+dy; if(nx<0||ny<0||nx>=열||ny>=행) continue;
+      const n=ny*열+nx; if(막힘[n]||prev[n]!==-1) continue;
+      if(dx&&dy&&(막힘[cy*열+nx]||막힘[ny*열+cx])) continue;
+      prev[n]=cur; q.push(n);
     }
-    for (let x=방.x; x<방.x+방.w; x+=46){
-      사각(x,fy,1,fh,"rgba(90,60,30,.22)");
+  }
+  if(prev[t]===-1) return null;
+  const 점들=[]; for(let n=t;n!==s;n=prev[n]) 점들.push({x:(n%열)*칸+칸/2,y:Math.floor(n/열)*칸+칸/2});
+  점들.reverse(); 점들[점들.length-1]=끝점;
+  return 다듬기({x:x0,y:y0},점들);
+}
+
+/* ===================== 6. 사람(나·남) ===================== */
+const 나={x:입구.x,y:입구.y,방향:"up",걸음:0,걷는중:false,경로:[],상호작용:null,이름:"",색:"#3f6b9e",말풍선:null,말풍선끝:0};
+const 키=new Set();
+let 근처=null, 키이동중=false;
+function 좌표(e){ const r=보기.getBoundingClientRect(); return {x:(e.clientX-r.left)/배율+카메라.x,y:(e.clientY-r.top)/배율+카메라.y}; }
+function 안에(p,r){ return p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h; }
+function 상호작용맞춤(p){ return 상호작용들.find(o=>안에(p,o.영역))||null; }
+function 가기(x,y,obj){
+  나.상호작용=obj;
+  if(obj&&Math.hypot(나.x-obj.서는곳.x,나.y-obj.서는곳.y)<12){ 나.경로=[]; 열기(obj); 나.상호작용=null; return; }
+  나.경로=경로찾기(나.x,나.y,x,y)||[];
+}
+보기.addEventListener("pointerdown",e=>{
+  e.preventDefault(); if(e.button&&e.button!==0) return;
+  const p=좌표(e);
+  if(편집중){ const s=자리순서.map(k=>자리[k]).find(o=>안에(p,o.영역)); if(s) 편집열기(s.이름); return; }
+  const o=상호작용맞춤(p);
+  if(o) 가기(o.서는곳.x,o.서는곳.y,o); else 가기(p.x,p.y,null);
+});
+function 입력중(){ const a=document.activeElement; return a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA"); }
+document.addEventListener("keydown",e=>{
+  if(입력중()){ if(e.key==="Escape"){ if(채팅.hidden===false&&document.activeElement===채팅입력){ 채팅닫기(); } e.target.blur(); } return; }
+  const k=e.key;
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d","W","A","S","D"].includes(k)){ if(창열림()||편집중) return; 키.add(k.toLowerCase()); 나.경로=[]; 나.상호작용=null; e.preventDefault(); return; }
+  if(k==="Enter"||k===" "){ if(창열림()) return; if(근처){ 열기(근처); e.preventDefault(); } return; }
+  if(k==="t"||k==="T"){ if(통신.peer&&!창열림()){ 채팅열기(); e.preventDefault(); } return; }
+  if(k==="e"||k==="E"){ if(편집가능&&!창열림()) 편집토글(); return; }
+  if(k==="Escape"){ 창모두닫기(); }
+});
+document.addEventListener("keyup",e=>{ 키.delete(e.key.toLowerCase()); });
+window.addEventListener("blur",()=>키.clear());
+function 키방향(){ let dx=0,dy=0; if(키.has("arrowleft")||키.has("a")) dx-=1; if(키.has("arrowright")||키.has("d")) dx+=1; if(키.has("arrowup")||키.has("w")) dy-=1; if(키.has("arrowdown")||키.has("s")) dy+=1; return {dx,dy}; }
+function 나갱신(dt){
+  const {dx,dy}=키방향(); 키이동중=false;
+  if(dx||dy){
+    const 길이=Math.hypot(dx,dy), 이동=설정.걷기속도*dt;
+    const nx=나.x+dx/길이*이동, ny=나.y+dy/길이*이동;
+    if(자유(nx,나.y)) 나.x=nx; if(자유(나.x,ny)) 나.y=ny;
+    나.방향=Math.abs(dx)>=Math.abs(dy)?(dx>0?"right":"left"):(dy>0?"down":"up");
+    나.걸음+=dt*8; 나.걷는중=true; 키이동중=true;
+  } else if(나.경로.length){
+    const 목표=나.경로[0], ddx=목표.x-나.x, ddy=목표.y-나.y, 거리=Math.hypot(ddx,ddy);
+    if(거리<1.5){ 나.x=목표.x; 나.y=목표.y; 나.경로.shift(); if(!나.경로.length){ 나.걷는중=false; if(나.상호작용){ const o=나.상호작용; 나.상호작용=null; 열기(o); } } }
+    else { 나.방향=Math.abs(ddx)>Math.abs(ddy)?(ddx>0?"right":"left"):(ddy>0?"down":"up"); const 이동=Math.min(거리,설정.걷기속도*dt); 나.x+=ddx/거리*이동; 나.y+=ddy/거리*이동; 나.걸음+=dt*8; 나.걷는중=true; }
+  } else 나.걷는중=false;
+  let 최근=null, 최근거리=18;
+  상호작용들.forEach(o=>{ const d=Math.hypot(나.x-o.서는곳.x,나.y-o.서는곳.y); if(d<최근거리){ 최근거리=d; 최근=o; } });
+  근처=최근;
+}
+
+/* ===================== 7. 통신 (PeerJS) ===================== */
+const 통신={peer:null,내자리:-1,방:"",이름:"",연결:new Map(),마이크:null,화면:null,들어가는중:false};
+let 공유화면=null; // {id, 이름, video, call}
+let 오디오ctx=null; const 분석들=new Map(), 말하는중=new Map();
+const 숨김=document.getElementById("숨김");
+const 내화면비디오=document.createElement("video"); 내화면비디오.muted=true; 내화면비디오.playsInline=true; 내화면비디오.autoplay=true; 숨김.appendChild(내화면비디오);
+function 방코드정리(s){ s=(s||"").trim(); if(!s) return 설정.방기본; if(/^[a-zA-Z0-9_-]{1,32}$/.test(s)) return s.toLowerCase(); return "h"+해시(s).toString(16); }
+function 아이디(방,자리번호){ return 설정.접두+"-"+방+"-"+자리번호; }
+function 자리번호(id){ return parseInt(id.split("-").pop(),10); }
+function 마이크켜짐(){ const t=통신.마이크&&통신.마이크.getAudioTracks()[0]; return !!(t&&t.enabled); }
+function 방송(m){ 통신.연결.forEach(e=>{ if(e.conn&&e.conn.open){ try{ e.conn.send(m); }catch(_){} } }); }
+
+function 입장(이름,방){
+  if(typeof Peer==="undefined"){ 상태("통신 라이브러리(peerjs.min.js)를 불러오지 못했습니다","오류"); return; }
+  통신.이름=이름; 통신.방=방; 통신.들어가는중=true; 나.이름=이름; 나.색=색고르기(이름);
+  상태("서버에 연결하는 중…"); 자리시도(0);
+}
+function 자리시도(n){
+  if(n>=설정.최대인원){ 통신.들어가는중=false; 상태("자리가 모두 찼습니다 ("+설정.최대인원+"명)","오류"); 입장실패(); return; }
+  const opt={debug:0,config:{iceServers:설정.ICE}}; if(설정.PeerServer) Object.assign(opt,설정.PeerServer);
+  let p; try{ p=new Peer(아이디(통신.방,n),opt); }catch(e){ 상태("Peer 생성 실패: "+e.message,"오류"); 입장실패(); return; }
+  let 끝=false;
+  const 시한=setTimeout(()=>{ if(끝) return; 끝=true; try{p.destroy();}catch(_){} 통신.들어가는중=false; 상태("서버 응답 없음 (네트워크나 PeerServer 확인)","오류"); 입장실패(); },12000);
+  p.on("open",()=>{ if(끝) return; 끝=true; clearTimeout(시한); 통신.peer=p; 통신.내자리=n; 통신.들어가는중=false; 입장완료(); 연결시작(); });
+  p.on("error",e=>{
+    const 종류=e&&e.type;
+    if(!끝){ clearTimeout(시한); 끝=true; try{p.destroy();}catch(_){}
+      if(종류==="unavailable-id"){ 자리시도(n+1); return; }
+      통신.들어가는중=false; 상태("서버 연결 실패: "+(종류||e)+" — 이 환경에서 WebSocket/WebRTC가 막혀 있거나 PeerServer가 꺼져 있을 수 있습니다","오류"); 입장실패(); return; }
+    if(종류==="peer-unavailable") return;                 // 빈 자리에 연결 시도한 것 — 정상
+    if(종류==="network"||종류==="socket-error"||종류==="socket-closed"||종류==="server-error") 상태("서버 연결에 문제: "+종류,"오류");
+  });
+  p.on("connection",conn=>연결준비(conn,false));
+  p.on("call",받은통화);
+  p.on("disconnected",()=>{ if(통신.peer!==p) return; 상태("서버와 끊김 · 다시 연결 중"); try{ p.reconnect(); }catch(_){} });
+}
+function 연결시작(){
+  for(let s=0;s<설정.최대인원;s++){ if(s===통신.내자리) continue;
+    try{ const conn=통신.peer.connect(아이디(통신.방,s),{serialization:"json",reliable:true,metadata:{n:통신.이름}}); 연결준비(conn,true); }catch(_){}
+  }
+  갱신상태();
+}
+function 연결준비(conn,내가시작){
+  conn.on("open",()=>{
+    const id=conn.peer, 원격=자리번호(id), 기존=통신.연결.get(id);
+    if(기존&&기존.conn!==conn&&기존.conn.open){
+      const 이것유지=내가시작?(통신.내자리<원격):(원격<통신.내자리);   // 낮은 자리가 시작한 연결을 남김
+      if(이것유지){ const 옛=기존.conn; 기존.conn=conn; try{옛.close();}catch(_){} }
+      else { try{conn.close();}catch(_){} return; }
+    } else if(기존) 기존.conn=conn;
+    else 통신.연결.set(id,{conn,사람:null,통화:{},마지막:performance.now()});
+    try{ conn.send({t:"hi",n:통신.이름,c:나.색,x:나.x,y:나.y,d:나.방향,mic:마이크켜짐(),scr:!!통신.화면}); }catch(_){}
+    if(통신.마이크) 통화걸기(id,"audio",통신.마이크);
+    if(통신.화면) 통화걸기(id,"screen",통신.화면);
+    갱신상태();
+  });
+  conn.on("data",m=>메시지(conn.peer,m,conn));
+  conn.on("close",()=>떠남(conn.peer,conn));
+  conn.on("error",()=>{});
+}
+function 메시지(id,m,conn){
+  const e=통신.연결.get(id); if(!e||e.conn!==conn||!m||typeof m!=="object") return;
+  e.마지막=performance.now();
+  switch(m.t){
+    case "hi": e.사람={이름:String(m.n||"손님").slice(0,16),색:색고르기(String(m.n||"손님")),x:+m.x||입구.x,y:+m.y||입구.y,목표:null,방향:m.d||"down",걸음:0,걷는중:false,움직임:false,mic:!!m.mic,scr:!!m.scr,말풍선:null,말풍선끝:0}; 채팅알림(e.사람.이름+" 입장"); 갱신상태(); break;
+    case "p": if(e.사람){ e.사람.목표={x:+m.x,y:+m.y}; e.사람.방향=m.d||e.사람.방향; e.사람.움직임=!!m.m; } break;
+    case "mic": if(e.사람) e.사람.mic=!!m.on; 갱신상태(); break;
+    case "scr": if(e.사람) e.사람.scr=!!m.on; if(!m.on&&공유화면&&공유화면.id===id) 화면지우기(); 갱신상태(); break;
+    case "say": if(e.사람){ const s=String(m.s||"").slice(0,200); e.사람.말풍선=s; e.사람.말풍선끝=performance.now()+7000; 채팅기록추가(e.사람.이름,s); } break;
+    case "hb": break;
+    case "bye": 떠남(id,conn); break;
+  }
+}
+function 떠남(id,conn){
+  const e=통신.연결.get(id); if(!e||(conn&&e.conn!==conn)) return;
+  Object.values(e.통화).forEach(c=>{ try{c.close();}catch(_){} });
+  if(e.오디오){ e.오디오.srcObject=null; e.오디오.remove(); }
+  분석들.delete(id); 말하는중.delete(id);
+  if(공유화면&&공유화면.id===id) 화면지우기();
+  const 이름표=겹층.querySelector('[data-id="'+id+'"]'); if(이름표) 이름표.remove();
+  const 풍선=겹층.querySelector('[data-bubble="'+id+'"]'); if(풍선) 풍선.remove();
+  if(e.사람) 채팅알림(e.사람.이름+" 퇴장");
+  통신.연결.delete(id); 갱신상태();
+}
+function ICE감시(call,id){
+  setTimeout(()=>{ const pc=call.peerConnection; if(!pc) return;
+    pc.addEventListener("iceconnectionstatechange",()=>{ if(pc.iceConnectionState==="failed"){ const e=통신.연결.get(id); 상태((e&&e.사람?e.사람.이름:"상대")+"와 직접 연결 실패 — 네트워크(NAT) 제한. TURN 서버가 필요할 수 있습니다","오류"); } });
+  },300);
+}
+function 통화걸기(id,종류,stream){
+  const e=통신.연결.get(id); if(!e||!통신.peer) return;
+  if(e.통화[종류]){ try{e.통화[종류].close();}catch(_){} }
+  let call; try{ call=통신.peer.call(id,stream,{metadata:{t:종류,n:통신.이름}}); }catch(_){ return; }
+  if(!call) return;
+  e.통화[종류]=call;
+  call.on("close",()=>{ if(e.통화[종류]===call) delete e.통화[종류]; });
+  call.on("error",()=>{});
+  ICE감시(call,id);
+}
+function 받은통화(call){
+  const 종류=(call.metadata&&call.metadata.t)||"audio", id=call.peer;
+  try{ call.answer(); }catch(_){ return; }
+  call.on("stream",s=>{ if(종류==="screen") 화면받음(id,s,call); else 소리받음(id,s,call); });
+  call.on("close",()=>{ if(종류==="screen"){ if(공유화면&&공유화면.call===call) 화면지우기(); } else { const e=통신.연결.get(id); if(e&&e.오디오&&e.오디오.dataset.call===String(call.connectionId)){ e.오디오.srcObject=null; e.오디오.remove(); e.오디오=null; 분석들.delete(id); 말하는중.delete(id); } } });
+  call.on("error",()=>{});
+  ICE감시(call,id);
+}
+function 소리받음(id,s,call){
+  const e=통신.연결.get(id); if(!e) return;
+  if(e.오디오){ e.오디오.srcObject=null; e.오디오.remove(); }
+  const a=document.createElement("audio"); a.autoplay=true; a.playsInline=true; a.srcObject=s; a.dataset.call=String(call.connectionId); 숨김.appendChild(a);
+  a.play().catch(()=>{ 상태("소리 재생이 막혔습니다 — 화면을 한 번 누르면 재생됩니다"); const 재생=()=>{ a.play().catch(()=>{}); document.removeEventListener("pointerdown",재생); }; document.addEventListener("pointerdown",재생); });
+  e.오디오=a; 분석기(id,s);
+}
+function 화면받음(id,s,call){
+  const e=통신.연결.get(id);
+  if(공유화면&&공유화면.video!==내화면비디오){ 공유화면.video.srcObject=null; 공유화면.video.remove(); }
+  const v=document.createElement("video"); v.autoplay=true; v.playsInline=true; v.muted=true; v.srcObject=s; 숨김.appendChild(v); v.play().catch(()=>{});
+  공유화면={id,이름:(e&&e.사람?e.사람.이름:"상대"),video:v,call};
+  s.getVideoTracks().forEach(t=>t.addEventListener("ended",()=>{ if(공유화면&&공유화면.video===v) 화면지우기(); }));
+  채팅알림(공유화면.이름+"의 화면 공유 시작 · 스크린을 누르면 크게 봅니다"); 갱신상태();
+}
+function 화면지우기(){
+  if(!공유화면) return;
+  const v=공유화면.video; 공유화면=null; try{ v.srcObject=null; v.remove(); }catch(_){}
+  if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; }
+  갱신상태();
+}
+function 분석기(id,stream){
+  if(!오디오ctx) return;
+  try{ const src=오디오ctx.createMediaStreamSource(stream), an=오디오ctx.createAnalyser(); an.fftSize=256; src.connect(an); 분석들.set(id,{an,buf:new Uint8Array(an.fftSize)}); }catch(_){}
+}
+setInterval(()=>{
+  분석들.forEach((a,id)=>{ a.an.getByteTimeDomainData(a.buf); let s=0; for(let i=0;i<a.buf.length;i++){ const v=(a.buf[i]-128)/128; s+=v*v; } 말하는중.set(id,Math.sqrt(s/a.buf.length)>0.02); });
+},120);
+setInterval(()=>{
+  if(!통신.peer) return; 방송({t:"hb"});
+  const now=performance.now(); 통신.연결.forEach((e,id)=>{ if(e.conn.open&&now-e.마지막>20000) 떠남(id,e.conn); });
+},4000);
+
+async function 마이크토글(){
+  if(!통신.peer) return;
+  if(!통신.마이크){
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ 상태("이 환경에서는 마이크를 쓸 수 없습니다 (https 필요)","오류"); return; }
+    try{
+      const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+      통신.마이크=s; if(오디오ctx&&오디오ctx.state==="suspended") 오디오ctx.resume().catch(()=>{}); 분석기("나",s);
+      통신.연결.forEach((e,id)=>{ if(e.conn.open) 통화걸기(id,"audio",s); });
+    }catch(e){ 상태("마이크 사용 불가: "+(e&&e.name==="NotAllowedError"?"권한이 거부됨":(e&&e.name)||e),"오류"); return; }
+  } else { const t=통신.마이크.getAudioTracks()[0]; t.enabled=!t.enabled; }
+  방송({t:"mic",on:마이크켜짐()}); 버튼갱신(); 갱신상태();
+}
+async function 화면토글(){
+  if(!통신.peer) return;
+  if(통신.화면){ 화면중지(); return; }
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){ 상태("이 브라우저는 화면 공유를 지원하지 않습니다 (모바일은 보기만 가능)","오류"); return; }
+  try{
+    const s=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:12,max:15},width:{max:1920},height:{max:1080}},audio:false});
+    통신.화면=s; 내화면비디오.srcObject=s; 내화면비디오.play().catch(()=>{});
+    s.getVideoTracks()[0].addEventListener("ended",화면중지);
+    통신.연결.forEach((e,id)=>{ if(e.conn.open) 통화걸기(id,"screen",s); });
+    방송({t:"scr",on:true}); 채팅알림("내 화면 공유 시작 — PPT나 창을 띄우면 모두의 스크린에 보입니다");
+  }catch(e){ if(!(e&&e.name==="NotAllowedError")) 상태("화면 공유 불가: "+((e&&e.name)||e),"오류"); return; }
+  버튼갱신(); 갱신상태();
+}
+function 화면중지(){
+  if(!통신.화면) return;
+  통신.화면.getTracks().forEach(t=>t.stop()); 통신.화면=null; 내화면비디오.srcObject=null;
+  통신.연결.forEach(e=>{ if(e.통화.screen){ try{e.통화.screen.close();}catch(_){} delete e.통화.screen; } });
+  방송({t:"scr",on:false}); if(!창화면.hidden&&큰화면.srcObject===null){ 창화면.hidden=true; }
+  버튼갱신(); 갱신상태();
+}
+function 나가기(){
+  방송({t:"bye"});
+  if(통신.화면){ 통신.화면.getTracks().forEach(t=>t.stop()); 통신.화면=null; 내화면비디오.srcObject=null; }
+  if(통신.마이크){ 통신.마이크.getTracks().forEach(t=>t.stop()); 통신.마이크=null; }
+  [...통신.연결.keys()].forEach(id=>떠남(id,null));
+  if(통신.peer){ try{ 통신.peer.destroy(); }catch(_){} }
+  통신.peer=null; 통신.내자리=-1; 분석들.clear(); 말하는중.clear(); 화면지우기();
+  겹층.querySelectorAll("[data-id],[data-bubble]").forEach(el=>el.remove());
+  채팅닫기(); 채팅기록.textContent=""; 버튼갱신(); 갱신상태();
+}
+window.addEventListener("pagehide",()=>{ if(통신.peer){ 방송({t:"bye"}); try{통신.peer.destroy();}catch(_){} } });
+
+/* ===================== 8. 화면 조립·HUD ===================== */
+const 상태el=document.getElementById("상태"), 안내=document.getElementById("안내");
+const 버튼={입장:document.getElementById("버튼-입장"),마이크:document.getElementById("버튼-마이크"),화면:document.getElementById("버튼-화면"),채팅:document.getElementById("버튼-채팅"),나가기:document.getElementById("버튼-나가기"),편집:document.getElementById("버튼-편집"),JSON:document.getElementById("버튼-JSON")};
+const 창입장=document.getElementById("창-입장"), 창작품=document.getElementById("창-작품"), 창편집=document.getElementById("창-편집"), 창JSON=document.getElementById("창-JSON"), 창화면=document.getElementById("창-화면");
+const 큰화면=document.getElementById("큰화면"), 채팅=document.getElementById("채팅"), 채팅입력=document.getElementById("채팅입력"), 채팅기록=document.getElementById("채팅기록");
+const 터치=matchMedia("(pointer:coarse)").matches;
+let 상태시한=0;
+function 상태(글,종류){ 상태el.textContent=글; 상태el.dataset.종류=종류||""; clearTimeout(상태시한); if(종류==="오류") 상태시한=setTimeout(갱신상태,9000); }
+function 갱신상태(){
+  if(통신.들어가는중) return;
+  if(!통신.peer){ 상태(편집중?"작품 편집 중 · 액자나 좌대를 누르세요":"둘러보는 중"); return; }
+  const n=[...통신.연결.values()].filter(e=>e.conn.open&&e.사람).length;
+  let 글="방 "+통신.방+" · "+(n+1)+"명";
+  if(마이크켜짐()) 글+=" · 마이크 켜짐";
+  if(통신.화면) 글+=" · 내 화면 공유 중";
+  else if(공유화면) 글+=" · "+공유화면.이름+"의 화면";
+  상태(글);
+}
+function 버튼갱신(){
+  const 들어옴=!!통신.peer;
+  버튼.입장.hidden=들어옴; 버튼.마이크.hidden=!들어옴; 버튼.채팅.hidden=!들어옴; 버튼.나가기.hidden=!들어옴;
+  버튼.화면.hidden=!들어옴||!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
+  버튼.마이크.textContent=마이크켜짐()?"마이크 끄기":"마이크 켜기"; 버튼.마이크.classList.toggle("켜짐",마이크켜짐());
+  버튼.화면.textContent=통신.화면?"공유 중지":"화면 공유"; 버튼.화면.classList.toggle("켜짐",!!통신.화면);
+  버튼.편집.hidden=!편집가능; 버튼.편집.textContent=편집중?"편집 끝":"작품 편집"; 버튼.편집.classList.toggle("켜짐",편집중);
+  버튼.JSON.hidden=!편집중;
+  안내.textContent=편집중?"액자·좌대를 누르면 작품을 넣습니다 · 끝나면 JSON 보기 → 복사해서 gallery.json으로 올립니다":(터치?"바닥을 누르면 걸어갑니다 · 액자·좌대·스크린을 누르면 봅니다":"클릭 또는 방향키로 이동 · 액자·좌대·스크린 클릭 · Enter 보기"+(들어옴?" · T 채팅":""));
+}
+function 창열림(){ return !창입장.hidden||!창작품.hidden||!창편집.hidden||!창JSON.hidden||!창화면.hidden; }
+function 창모두닫기(){ 창입장.hidden=true; 창작품.hidden=true; 창편집.hidden=true; 창JSON.hidden=true; if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; } 작품내용비우기(); }
+[창입장,창작품,창편집,창JSON,창화면].forEach(w=>w.addEventListener("pointerdown",e=>{ if(e.target===w) 창모두닫기(); }));
+
+// --- 입장 창
+버튼.입장.addEventListener("click",()=>{
+  if(설정.미리보기){ 상태("미리보기입니다. 입장·음성·화면 공유는 ledeuxions.com/사무실/ 에 올린 뒤 동작합니다","오류"); return; }
+  document.getElementById("입장이름").value=저장소읽기("사무실.이름")||"";
+  document.getElementById("입장방").value=매개.get("방")||매개.get("room")||저장소읽기("사무실.방")||설정.방기본;
+  창입장.hidden=false; setTimeout(()=>document.getElementById("입장이름").focus(),50);
+});
+document.getElementById("입장취소").addEventListener("click",()=>{ 창입장.hidden=true; });
+function 입장확인(){
+  const 이름=(document.getElementById("입장이름").value.trim()||"손님").slice(0,16);
+  const 방=방코드정리(document.getElementById("입장방").value);
+  저장소쓰기("사무실.이름",이름); 저장소쓰기("사무실.방",방);
+  try{ if(!오디오ctx) 오디오ctx=new (window.AudioContext||window.webkitAudioContext)(); if(오디오ctx.state==="suspended") 오디오ctx.resume().catch(()=>{}); }catch(_){}
+  창입장.hidden=true; 버튼.입장.disabled=true; 입장(이름,방);
+}
+document.getElementById("입장확인").addEventListener("click",입장확인);
+document.getElementById("입장방").addEventListener("keydown",e=>{ if(e.key==="Enter") 입장확인(); });
+document.getElementById("입장이름").addEventListener("keydown",e=>{ if(e.key==="Enter") 입장확인(); });
+function 입장완료(){ 버튼.입장.disabled=false; 버튼갱신(); 갱신상태(); 채팅알림("입장했습니다. 마이크는 아래 버튼으로 켭니다."); }
+function 입장실패(){ 버튼.입장.disabled=false; if(통신.peer){ try{통신.peer.destroy();}catch(_){} 통신.peer=null; } 버튼갱신(); }
+버튼.마이크.addEventListener("click",마이크토글);
+버튼.화면.addEventListener("click",화면토글);
+버튼.나가기.addEventListener("click",나가기);
+
+// --- 채팅
+버튼.채팅.addEventListener("click",()=>{ if(채팅.hidden) 채팅열기(); else 채팅닫기(); });
+function 채팅열기(){ 채팅.hidden=false; 채팅입력.focus(); }
+function 채팅닫기(){ 채팅.hidden=true; 채팅입력.blur(); }
+채팅입력.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){ const s=채팅입력.value.trim(); 채팅입력.value=""; if(!s) return; 방송({t:"say",s}); 나.말풍선=s; 나.말풍선끝=performance.now()+7000; 채팅기록추가(나.이름||"나",s); e.preventDefault(); }
+  if(e.key==="Escape"){ 채팅닫기(); }
+});
+function 채팅기록추가(이름,글){ const d=document.createElement("div"); const b=document.createElement("b"); b.textContent=이름+" "; d.appendChild(b); d.appendChild(document.createTextNode(글)); 채팅기록.appendChild(d); while(채팅기록.children.length>60) 채팅기록.firstChild.remove(); 채팅기록.scrollTop=채팅기록.scrollHeight; }
+function 채팅알림(글){ const d=document.createElement("div"); d.className="알림"; d.textContent=글; 채팅기록.appendChild(d); while(채팅기록.children.length>60) 채팅기록.firstChild.remove(); 채팅기록.scrollTop=채팅기록.scrollHeight; }
+function 알림(글){ 채팅알림(글); 상태(글); }
+
+// --- 열기(상호작용)
+function 열기(o){
+  if(o.종류==="스크린"){
+    const v=공유중비디오();
+    if(!v){ 상태(통신.peer?"지금 공유 중인 화면이 없습니다":"입장하면 화면 공유를 볼 수 있습니다"); return; }
+    큰화면.srcObject=v.srcObject; 큰화면.play().catch(()=>{});
+    document.getElementById("큰화면설명").textContent=통신.화면?"내 화면 (다른 사람에게 이렇게 보입니다)":(공유화면?공유화면.이름+"의 화면":"");
+    창화면.hidden=false; return;
+  }
+  작품열기(o.이름);
+}
+document.getElementById("큰화면닫기").addEventListener("click",()=>{ 큰화면.srcObject=null; 창화면.hidden=true; });
+
+// --- 작품 보기(라이트박스)
+let 보는자리=null;
+const 작품내용=document.getElementById("작품내용"), 작품설명=document.getElementById("작품설명");
+function 작품내용비우기(){ 작품내용.textContent=""; }
+function 모형뷰어준비(){ if(document.querySelector("script[data-모형뷰어]")) return; const s=document.createElement("script"); s.type="module"; s.src=설정.모형뷰어; s.dataset.모형뷰어="1"; document.head.appendChild(s); }
+function 작품열기(이름){
+  const 항목=작품[이름]; 보는자리=이름; 작품내용비우기();
+  if(!항목){ const d=document.createElement("div"); d.className="없음"; d.textContent=이름+" — 비어 있는 자리입니다"+(편집가능?" (작품 편집에서 채웁니다)":""); 작품내용.appendChild(d); 작품설명.textContent=""; }
+  else {
+    const 원본=미리보기URL[이름]||항목.파일;
+    if(모형인가(항목.파일)){ 모형뷰어준비(); const mv=document.createElement("model-viewer"); mv.setAttribute("src",원본); mv.setAttribute("camera-controls",""); mv.setAttribute("auto-rotate",""); mv.setAttribute("shadow-intensity","1"); mv.setAttribute("exposure","1"); mv.setAttribute("alt",항목.제목||이름); 작품내용.appendChild(mv); }
+    else { const img=document.createElement("img"); img.src=원본; img.alt=항목.제목||이름; img.onerror=()=>{ 작품내용비우기(); const d=document.createElement("div"); d.className="없음"; d.textContent="파일을 불러오지 못했습니다: "+항목.파일; 작품내용.appendChild(d); }; 작품내용.appendChild(img); }
+    작품설명.textContent="";
+    const b=document.createElement("b"); b.textContent=항목.제목||이름; 작품설명.appendChild(b);
+    if(항목.날짜){ const s=document.createElement("span"); s.className="날짜"; s.textContent=항목.날짜; 작품설명.appendChild(s); }
+    if(항목.메모){ const m=document.createElement("span"); m.className="메모"; m.textContent=항목.메모; 작품설명.appendChild(m); }
+  }
+  창작품.hidden=false;
+}
+function 작품이동(방향){ if(!보는자리) return; const i=자리순서.indexOf(보는자리); 작품열기(자리순서[(i+방향+자리순서.length)%자리순서.length]); }
+document.getElementById("작품이전").addEventListener("click",()=>작품이동(-1));
+document.getElementById("작품다음").addEventListener("click",()=>작품이동(1));
+document.getElementById("작품닫기").addEventListener("click",()=>{ 창작품.hidden=true; 작품내용비우기(); });
+document.addEventListener("keydown",e=>{ if(창작품.hidden||입력중()) return; if(e.key==="ArrowLeft") 작품이동(-1); if(e.key==="ArrowRight") 작품이동(1); });
+
+// --- 작품 편집
+let 편집자리=null;
+const 편집입력={파일:document.getElementById("편집파일"),선택:document.getElementById("편집선택"),사진:document.getElementById("편집사진"),제목:document.getElementById("편집제목입력"),메모:document.getElementById("편집메모"),날짜:document.getElementById("편집날짜")};
+const 미리보기=document.getElementById("미리보기");
+function 편집토글(){ 편집중=!편집중; 자리표갱신(); 버튼갱신(); 갱신상태(); }
+버튼.편집.addEventListener("click",편집토글);
+function 자리표갱신(){
+  겹층.querySelectorAll(".자리표").forEach(el=>el.remove()); if(!편집중) return;
+  자리순서.forEach(k=>{ const el=document.createElement("div"); el.className="자리표"+(작품[k]?"":" 빈"); el.dataset.slot=k; el.textContent=k+(작품[k]?"":" +"); 겹층.appendChild(el); });
+  자리표위치();
+}
+function 자리표위치(){ 겹층.querySelectorAll(".자리표").forEach(el=>{ const s=자리[el.dataset.slot]; el.style.left=((s.영역.x+s.영역.w/2-카메라.x)*배율)+"px"; el.style.top=((s.영역.y+s.영역.h/2-카메라.y)*배율)+"px"; }); }
+function 편집열기(이름){
+  편집자리=이름; const 항목=작품[이름]||{};
+  document.getElementById("편집제목").textContent=이름+(자리[이름].종류==="좌대"?" (좌대 · 모형 자리)":" (벽 액자)");
+  편집입력.파일.value=항목.파일||""; 편집입력.사진.value=항목.사진||""; 편집입력.제목.value=항목.제목||""; 편집입력.메모.value=항목.메모||""; 편집입력.날짜.value=항목.날짜||""; 편집입력.선택.value="";
+  const 원본=썸네일원본(이름,항목); if(원본){ 미리보기.src=원본; 미리보기.hidden=false; } else { 미리보기.hidden=true; 미리보기.removeAttribute("src"); }
+  창편집.hidden=false; setTimeout(()=>편집입력.파일.focus(),50);
+}
+편집입력.선택.addEventListener("change",()=>{
+  const f=편집입력.선택.files&&편집입력.선택.files[0]; if(!f||!편집자리) return;
+  if(!편집입력.파일.value) 편집입력.파일.value="작품/"+f.name;
+  if(/^image\//.test(f.type)){ const r=new FileReader(); r.onload=()=>{ 미리보기URL[편집자리]=r.result; 미리보기.src=r.result; 미리보기.hidden=false; }; r.readAsDataURL(f); }
+  알림("미리보기만 이 브라우저에 보입니다. 실제 파일을 "+편집입력.파일.value+" 경로로 올려야 합니다");
+});
+document.getElementById("편집저장").addEventListener("click",()=>{
+  if(!편집자리) return;
+  const 파일=편집입력.파일.value.trim(); if(!파일){ 상태("파일 경로가 비어 있습니다","오류"); return; }
+  const 항목={파일}; const 사진=편집입력.사진.value.trim(), 제목=편집입력.제목.value.trim(), 메모=편집입력.메모.value.trim(), 날짜=편집입력.날짜.value.trim();
+  if(사진) 항목.사진=사진; if(제목) 항목.제목=제목; if(메모) 항목.메모=메모; if(날짜) 항목.날짜=날짜;
+  작품[편집자리]=항목; 초안쓰기(); 썸네일예열(); 자리표갱신(); 창편집.hidden=true; 상태(편집자리+" 저장 (초안)");
+});
+document.getElementById("편집비우기").addEventListener("click",()=>{ if(!편집자리) return; delete 작품[편집자리]; delete 미리보기URL[편집자리]; 초안쓰기(); 자리표갱신(); 창편집.hidden=true; 상태(편집자리+" 비움 (초안)"); });
+document.getElementById("편집닫기").addEventListener("click",()=>{ 창편집.hidden=true; });
+function JSON글(){ const 정리={}; 자리순서.forEach(k=>{ if(작품[k]) 정리[k]=작품[k]; }); return JSON.stringify({제목:갤러리제목,작품:정리},null,2); }
+버튼.JSON.addEventListener("click",()=>{ document.getElementById("JSON내용").value=JSON글(); document.getElementById("JSON알림").textContent=""; 창JSON.hidden=false; });
+document.getElementById("JSON복사").addEventListener("click",()=>{
+  const 글=JSON글(), 알림el=document.getElementById("JSON알림");
+  const 대체=()=>{ const ta=document.getElementById("JSON내용"); ta.focus(); ta.select(); 알림el.textContent="자동 복사가 막혀 있습니다. 선택된 내용을 직접 복사하세요."; };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(글).then(()=>{ 알림el.textContent="복사했습니다. gallery.json으로 저장해 올리세요."; }).catch(대체); else 대체();
+});
+document.getElementById("JSON내려받기").addEventListener("click",()=>{
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON글()],{type:"application/json"})); a.download="gallery.json"; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1000);
+  document.getElementById("JSON알림").textContent="내려받기가 시작되지 않으면 복사 버튼을 쓰세요.";
+});
+document.getElementById("JSON초안지우기").addEventListener("click",()=>{ 저장소쓰기("사무실.갤러리.초안",null); 창JSON.hidden=true; location.reload(); });
+document.getElementById("JSON닫기").addEventListener("click",()=>{ 창JSON.hidden=true; });
+
+// --- 겹층(이름표·말풍선)
+function 이름표(id,p,나인가){
+  let el=겹층.querySelector('[data-id="'+id+'"]');
+  if(!el){ el=document.createElement("div"); el.className="이름표"+(나인가?" 나":""); el.dataset.id=id; 겹층.appendChild(el); }
+  if(el.textContent!==p.이름) el.textContent=p.이름;
+  el.style.left=((p.x-카메라.x)*배율)+"px"; el.style.top=((p.y-24-카메라.y)*배율)+"px";
+  el.dataset.mic=p.mic?"on":"off"; el.dataset.scr=p.scr?"on":"off";
+  el.classList.toggle("말함",!!말하는중.get(나인가?"나":id));
+  let 풍선=겹층.querySelector('[data-bubble="'+id+'"]');
+  const now=performance.now();
+  if(p.말풍선&&now<p.말풍선끝){
+    if(!풍선){ 풍선=document.createElement("div"); 풍선.className="말풍선"; 풍선.dataset.bubble=id; 겹층.appendChild(풍선); }
+    if(풍선.textContent!==p.말풍선) 풍선.textContent=p.말풍선;
+    풍선.style.left=((p.x-카메라.x)*배율)+"px"; 풍선.style.top=((p.y-24-카메라.y)*배율-el.offsetHeight-4)+"px";
+  } else if(풍선) 풍선.remove();
+}
+function 겹층갱신(){
+  if(통신.peer||나.이름) 이름표("나",{이름:나.이름||"나",x:나.x,y:나.y,mic:마이크켜짐(),scr:!!통신.화면,말풍선:나.말풍선,말풍선끝:나.말풍선끝},true);
+  통신.연결.forEach((e,id)=>{ if(e.사람) 이름표(id,e.사람,false); });
+  if(편집중) 자리표위치();
+}
+
+/* ===================== 9. 루프 ===================== */
+function 남갱신(dt){
+  통신.연결.forEach(e=>{ const p=e.사람; if(!p) return;
+    if(p.목표){ const dx=p.목표.x-p.x, dy=p.목표.y-p.y, d=Math.hypot(dx,dy);
+      if(d>60){ p.x=p.목표.x; p.y=p.목표.y; p.걷는중=p.움직임; }
+      else if(d>0.6){ const 이동=Math.min(d,설정.걷기속도*1.5*dt); p.x+=dx/d*이동; p.y+=dy/d*이동; p.걸음+=dt*8; p.걷는중=true; }
+      else { p.x=p.목표.x; p.y=p.목표.y; p.걷는중=p.움직임; if(p.걷는중) p.걸음+=dt*8; }
     }
-    // 벽 밑 그림자(은은한 경계)
-    const sg=c.createLinearGradient(0,fy,0,fy+10);
-    sg.addColorStop(0,"rgba(0,0,0,.28)"); sg.addColorStop(1,"rgba(0,0,0,0)");
-    c.fillStyle=sg; c.fillRect(방.x,fy,방.w,10);
-  }
-
-  function 러그(x,y,w,h){
-    사각(x+2,y+2,w,h,"rgba(0,0,0,.15)");
-    사각(x,y,w,h,"#9a4a3e");
-    사각(x+4,y+3,w-8,h-6,"#b5603f");
-    사각(x+8,y+6,w-16,h-12,"#c97a4e");
-    c.strokeStyle="rgba(0,0,0,.18)"; c.lineWidth=1;
-    c.strokeRect(Math.round(x+4)+.5,Math.round(y+3)+.5,w-9,h-7);
-  }
-
-  // ---- 벽: 몰딩 + 패널 결 ----
-  function 벽그리기(){
-    const g=c.createLinearGradient(0,방.y,0,방.y+벽높이);
-    g.addColorStop(0,"#4a3a2c"); g.addColorStop(1,"#3a2c22");
-    c.fillStyle=g; c.fillRect(방.x,방.y,방.w,벽높이);
-    사각(방.x,방.y+벽높이-3,방.w,2,"#241a12"); // 몰딩
-    for (let i=0;i<9;i++) 사각(방.x+6+i*31,방.y+2,1,벽높이-8,"rgba(0,0,0,.14)");
-  }
-
-  function 창문(x,y,w,h){
-    사각(x-3,y-3,w+6,h+6,"#2a1f15"); // 바깥 테두리
-    const g=c.createLinearGradient(x,y,x,y+h);
-    g.addColorStop(0,"#7fa8d8"); g.addColorStop(1,"#f0c878");
-    c.fillStyle=g; c.fillRect(Math.round(x+2),Math.round(y+2),Math.round(w-4),Math.round(h-4));
-    c.fillStyle="rgba(255,255,255,.35)";
-    c.fillRect(Math.round(x+w*0.15),Math.round(y+h*0.35),Math.round(w*0.3),Math.round(h*0.14));
-    c.fillStyle="rgba(255,255,255,.22)";
-    c.fillRect(Math.round(x+w*0.55),Math.round(y+h*0.18),Math.round(w*0.22),Math.round(h*0.1));
-    사각(x,y,w,2,"#5a3a22"); 사각(x,y+h-2,w,2,"#5a3a22");
-    사각(x,y,2,h,"#5a3a22"); 사각(x+w-2,y,2,h,"#5a3a22");
-    사각(x+w/2-1,y,2,h,"#5a3a22");
-    사각(x,y+h/2-1,w,2,"#5a3a22");
-    사각(x-4,y+h,w+8,4,"#6b4a30"); // 창턱
-    사각(x-4,y+h+3,w+8,1,"#4a3120");
-  }
-
-  function 빛살(창x,창y,창w,창h,아래끝){
-    c.save();
-    c.beginPath();
-    c.moveTo(창x+4,창y+창h+4);
-    c.lineTo(창x+창w-4,창y+창h+4);
-    c.lineTo(창x+창w+30,아래끝);
-    c.lineTo(창x-22,아래끝);
-    c.closePath();
-    c.clip();
-    const g=c.createLinearGradient(0,창y+창h,0,아래끝);
-    g.addColorStop(0,"rgba(255,224,160,.24)");
-    g.addColorStop(1,"rgba(255,224,160,0)");
-    c.fillStyle=g;
-    c.fillRect(방.x,창y,방.w,아래끝-창y);
-    c.restore();
-  }
-
-  function 천장등(x,벽y){
-    사각(x-1,벽y,1,15,"#2a2a2a"); // 줄
-    c.fillStyle="rgba(255,214,130,.20)";
-    c.beginPath(); c.ellipse(x,벽y+58,52,38,0,0,Math.PI*2); c.fill();
-    c.fillStyle="#caa24a";
-    c.beginPath(); c.moveTo(x-10,벽y+15); c.lineTo(x+10,벽y+15); c.lineTo(x+6,벽y+23); c.lineTo(x-6,벽y+23); c.closePath(); c.fill();
-    사각(x-9,벽y+14,18,2,"#dcb868");
-    사각(x-3,벽y+23,6,2,"#fff6d8");
-  }
-
-  // ---- 가구 ----
-  function 책상(x,y){ // x,y = 상판 좌상단
-    const w=66,h=14;
-    사각(x-2,y+32,w+10,4,"rgba(0,0,0,.2)"); // 그림자
-    사각(x+4,y+h,4,26,"#4a3220"); 사각(x+w-8,y+h,4,26,"#4a3220"); // 다리
-    사각(x,y+h,w,24,"#6b4a30"); // 몸통
-    사각(x,y+h,w,3,"#7a5638");
-    사각(x-3,y,w+6,h,"#8a5f3c"); // 상판
-    사각(x-3,y,w+6,3,"#a3764a");
-    for (let i=0;i<4;i++) 사각(x+5+i*14,y+3,10,1,"rgba(0,0,0,.12)");
-    사각(x+8,y-16,20,14,"#2a2a32"); // 모니터
-    사각(x+10,y-14,16,10,"#5a8bc4");
-    사각(x+15,y-2,6,3,"#2a2a32");
-    사각(x+32,y-3,18,5,"#3a3a42"); // 키보드
-    사각(x+32,y-3,18,1,"#55555f");
-    c.strokeStyle="#d8d0b8"; c.lineWidth=2; // 도면 롤
-    c.beginPath(); c.moveTo(x+53,y-1); c.lineTo(x+53,y-13); c.stroke();
-    사각(x+49,y-16,10,4,"#e8e0c8");
-    사각(x+36,y-9,6,7,"#3a2a1a"); // 연필꽂이
-    사각(x+37,y-13,1,5,"#e0b04a"); 사각(x+39,y-14,1,6,"#c94f4f"); 사각(x+41,y-12,1,4,"#4a90c4");
-    c.fillStyle="rgba(255,214,120,.35)"; // 데스크 램프 불빛
-    c.beginPath(); c.ellipse(x+59,y-19,9,7,0,0,Math.PI*2); c.fill();
-    사각(x+60,y-23,3,6,"#3a3a3a");
-    사각(x+54,y-27,12,5,"#caa24a");
-  }
-
-  function 책장(x,y){
-    const w=38,h=74;
-    사각(x-2,y+h,w+6,4,"rgba(0,0,0,.2)");
-    사각(x,y,w,h,"#5a3a22");
-    사각(x+2,y+2,w-4,h-4,"#7a5236");
-    const 칸=4, 칸높이=(h-8)/칸;
-    const 색들=["#c94f4f","#4a90c4","#caa24a","#5a9a5a","#9a6ab0","#d87b3e"];
-    for (let i=0;i<칸;i++){
-      const cy=y+4+i*칸높이;
-      사각(x+2,cy+칸높이-2,w-4,2,"#4a3020");
-      let bx=x+4;
-      for (let k=0;k<5 && bx<x+w-6;k++){
-        const bw=3+Math.floor(뒤섞기(i*37+k+1)*3);
-        const bh=칸높이-5-Math.floor(뒤섞기(i*53+k)*3);
-        사각(bx,cy+칸높이-3-bh,bw,bh,색들[(i*5+k)%색들.length]);
-        bx+=bw+1;
-      }
-    }
-    사각(x,y,w,2,"#8a6038");
-  }
-
-  function 의자(x,y){ // x,y = 바닥 접지점
-    사각(x-7,y+2,14,3,"rgba(0,0,0,.2)");
-    c.strokeStyle="#2a2a2a"; c.lineWidth=1;
-    [[-6,0],[6,0],[0,-5],[0,5]].forEach(function(p){ c.beginPath(); c.moveTo(x,y); c.lineTo(x+p[0],y+p[1]*0.4); c.stroke(); });
-    사각(x-2,y-14,4,10,"#3a3a3a");
-    사각(x-9,y-16,18,4,"#2e3b52");
-    사각(x-9,y-30,18,16,"#34415c");
-    사각(x-9,y-30,18,3,"#425170");
-  }
-
-  function 화분(x,y){
-    사각(x-9,y+2,18,3,"rgba(0,0,0,.2)");
-    c.fillStyle="#b5613a";
-    c.beginPath(); c.moveTo(x-9,y); c.lineTo(x+9,y); c.lineTo(x+6,y-14); c.lineTo(x-6,y-14); c.closePath(); c.fill();
-    사각(x-6,y-16,12,3,"#c97a4e");
-    사각(x-5,y-15,10,2,"#3a2a1a");
-    const 잎=["#3f6b3f","#4f7f45","#355c33"];
-    for (let i=0;i<7;i++){
-      const a=뒤섞기(i*13)*Math.PI*2, r=8+뒤섞기(i*29)*6;
-      const ly=y-16-뒤섞기(i*41)*10;
-      c.fillStyle=잎[i%잎.length];
-      c.beginPath(); c.ellipse(x+Math.cos(a)*5, ly, 4+뒤섞기(i*7)*2, 7+뒤섞기(i*17)*3, a, 0, Math.PI*2); c.fill();
-    }
-  }
-
-  function 사람(나){
-    const 걷는중 = 나.tx!=null;
-    const 흔들 = Math.sin(나.걸음)*1.2*(걷는중?1:0);
-    const 다리흔들 = 걷는중 ? Math.sin(나.걸음)*3 : 0;
-    const x=나.x, y=나.y;
-    c.fillStyle="rgba(0,0,0,.25)";
-    c.beginPath(); c.ellipse(x,y+2,7,2.4,0,0,Math.PI*2); c.fill();
-
-    const 피부="#e0b98a", 셔츠="#3f6b9e", 바지="#28324f", 머리색="#2b2320";
-    const 앞=나.방향==="down", 뒤=나.방향==="up", 좌우=나.방향==="left"||나.방향==="right";
-    const 플립 = 나.방향==="left" ? -1 : 1;
-
-    c.save(); c.translate(Math.round(x), Math.round(y+흔들));
-    if (좌우) c.scale(플립,1);
-
-    // 다리
-    사각(-4, -4+Math.max(0,다리흔들*0.3), 3, 7-Math.max(0,다리흔들*0.3), 바지);
-    사각(1, -4+Math.max(0,-다리흔들*0.3), 3, 7-Math.max(0,-다리흔들*0.3), 바지);
-    사각(-4,2,3,2,"#1c1c1c"); 사각(1,2,3,2,"#1c1c1c");
-
-    // 몸(셔츠)
-    사각(-4,-14,8,10,셔츠);
-    사각(-4,-14,8,2,"#355c85");
-    // 팔
-    사각(-6,-13+다리흔들*0.4,2,7,셔츠);
-    사각(4,-13-다리흔들*0.4,2,7,셔츠);
-    사각(-6,-7+다리흔들*0.4,2,2,피부); 사각(4,-7-다리흔들*0.4,2,2,피부);
-
-    // 머리
-    사각(-5,-18,10,6,피부);
-    if (앞){ 사각(-3,-16,1.5,1.5,"#1a1a1a"); 사각(1.5,-16,1.5,1.5,"#1a1a1a"); }
-    else if (좌우){ 사각(2,-16,1.5,1.5,"#1a1a1a"); }
-    사각(-5,-20,10,4,머리색);
-    if (뒤) 사각(-5,-17,10,3,머리색);
-
-    c.restore();
-
-    if (걷는중){
-      c.strokeStyle="rgba(255,255,255,.5)"; c.lineWidth=1;
-      c.beginPath(); c.arc(나.tx,나.ty,4,0,Math.PI*2); c.stroke();
-    }
-  }
-
-  function 비네트(){
-    const g=c.createRadialGradient(폭/2,높이/2,50,폭/2,높이/2,210);
-    g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,.35)");
-    c.fillStyle=g; c.fillRect(0,0,폭,높이);
-  }
-
-  function 그리기(){
-    사각(0,0,폭,높이,"#141a30");
-    바닥그리기();
-    러그(방.x+94,방.y+76,70,46);
-    벽그리기();
-    창문(방.x+96,방.y+6,88,28);
-    천장등(방.x+200,방.y+2);
-    빛살(방.x+96,방.y+6,88,28,방.y+방.h);
-    책상(방.x+16,방.y+54);
-    책장(방.x+226,방.y+16);
-    화분(방.x+38,방.y+128);
-    의자(방.x+58,방.y+96);
-    사람(나);
-    비네트();
-  }
-
-  let 이전=performance.now();
-  function 루프(now){
-    const dt=Math.min(0.05,(now-이전)/1000); 이전=now;
-    갱신(dt); 그리기();
-    requestAnimationFrame(루프);
-  }
+  });
+}
+let 마지막전송=0, 마지막보낸={x:-1,y:-1,d:"",m:false};
+function 위치전송(now){
+  if(!통신.peer) return;
+  const m=나.걷는중, 변함=Math.abs(나.x-마지막보낸.x)>0.4||Math.abs(나.y-마지막보낸.y)>0.4||나.방향!==마지막보낸.d||m!==마지막보낸.m;
+  if(!변함) return; if(now-마지막전송<90&&m===마지막보낸.m) return;
+  마지막전송=now; 마지막보낸={x:나.x,y:나.y,d:나.방향,m};
+  방송({t:"p",x:Math.round(나.x*10)/10,y:Math.round(나.y*10)/10,d:나.방향,m});
+}
+function 그리기(){
+  사각(0,0,폭,높이,"#141a30");
+  벽그리기(); 창문그리기(); 자리순서.slice(0,4).forEach(k=>액자그리기(자리[k])); 시계그리기(); 스크린그리기();
+  바닥그리기(); 등불빛(); 러그(178,140,124,76); 빛살(); 천장등(215,방.y+2);
+  const 목록=가구.map(g=>({y:g.바닥y,f:g.그리기}));
+  목록.push({y:나.y,f:()=>사람그리기(나)});
+  통신.연결.forEach(e=>{ if(e.사람) 목록.push({y:e.사람.y,f:()=>사람그리기(e.사람)}); });
+  목록.sort((a,b)=>a.y-b.y).forEach(o=>o.f());
+  if(나.경로.length&&!키이동중){ const 끝=나.경로[나.경로.length-1]; c.strokeStyle="rgba(255,255,255,.5)"; c.lineWidth=1; c.beginPath(); c.arc(끝.x,끝.y,4,0,Math.PI*2); c.stroke(); }
+  if(근처&&!편집중){ const o=근처; c.strokeStyle="rgba(227,182,90,.9)"; c.lineWidth=1; c.strokeRect(Math.round(o.영역.x)-1.5,Math.round(o.영역.y)-1.5,o.영역.w+3,o.영역.h+3); }
+  비네트();
+  vc.imageSmoothingEnabled=false; vc.drawImage(판,카메라.x,카메라.y,보임.w,보임.h,0,0,보기.width,보기.height);
+}
+let 이전=performance.now();
+function 루프(now){
+  const dt=Math.min(0.05,(now-이전)/1000); 이전=now;
+  나갱신(dt); 남갱신(dt); 카메라갱신(false); 위치전송(now); 그리기(); 겹층갱신();
   requestAnimationFrame(루프);
+}
+크기(); 버튼갱신(); 갱신상태(); 갤러리불러오기().then(()=>{ 자리표갱신(); });
+requestAnimationFrame(루프);
 })();
 </script>
 </body>
