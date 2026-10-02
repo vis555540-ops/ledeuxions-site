@@ -29,6 +29,13 @@
   .phrase{min-height:88px;border:0;border-radius:16px;background:var(--card);color:var(--txt);font-size:var(--big);font-weight:800;padding:12px;line-height:1.25;box-shadow:0 2px 0 #0006;transition:transform .06s}
   .phrase:active{transform:scale(.96);background:#24405f}
   .phrase.wide{grid-column:1/-1}
+  body.joy-on main{padding-bottom:250px} /* 조이스틱에 마지막 버튼이 가리지 않게 */
+  /* 조이스틱 화면의 큰 네모 — 자리도 방향대로(왼쪽 위·위·오른쪽·왼쪽 아래·아래) */
+  main.joyv{grid-template-rows:repeat(3,minmax(104px,auto));gap:14px}
+  .jq{min-height:104px;font-size:clamp(28px,8vw,40px);position:relative;border:3px solid transparent}
+  .jq small{position:absolute;left:10px;top:6px;font-size:15px;color:#8ec5ff;font-weight:800}
+  .jq.hot{background:#20406e;border-color:#5b9bff}
+  .jq.arm{background:#5a4300;border-color:#ffd24a}
 </style>
 </head>
 <body>
@@ -41,6 +48,9 @@
 
 <nav class="tabs" id="tabs"></nav>
 <main id="grid"></main>
+
+<!-- 2026-10-02 형 그림: 아래 왼쪽 조이스틱 + 가운데 큰 네모 4개 + 오른쪽 위 3초 누르기(설정) -->
+<script src="joystick.js?v=6" data-gear="corner"></script>
 
 <script>
 // ── 문구 세트 v0.1 (이음 작성: 위관로·석션·신앙 반영, 8카테고리 89문구. 나중에 서버 동기화='빌드업 통로') ──
@@ -61,6 +71,7 @@ function pickVoice(){
   voice = vs.find(v=>/ko(-|_)?KR/i.test(v.lang)) || vs.find(v=>/ko/i.test(v.lang)) || null;
 }
 pickVoice(); speechSynthesis.onvoiceschanged=pickVoice;
+window.malhaeSpeak=t=>speak(t); // 조이스틱(joystick.js)도 같은 목소리로
 function speak(t){
   if(!t.trim())return;
   speechSynthesis.cancel();
@@ -70,16 +81,32 @@ function speak(t){
 }
 
 const tabs=document.getElementById('tabs'), grid=document.getElementById('grid');
-let cur=Object.keys(PHRASES)[0];
+const JOY='🕹️ 조이스틱';           // 2026-10-02 형: 첫 화면 = 조이스틱. 문구 목록은 뒤 탭에 그대로
+const JQ_AREA=['1/1','1/2','2/2','2/1','3/2']; // 번호 1~5 → 네모 자리 (행/열)
+let cur=JOY;
 function renderTabs(){
   tabs.innerHTML='';
-  Object.keys(PHRASES).forEach(k=>{
+  [JOY,...Object.keys(PHRASES)].forEach(k=>{
     const b=document.createElement('button'); b.className='tab'+(k===cur?' on':''); b.textContent=k;
     b.onclick=()=>{cur=k;renderTabs();renderGrid();}; tabs.appendChild(b);
   });
 }
 function renderGrid(){
   grid.innerHTML='';
+  const joyOn = cur===JOY && !!window.malhaeJoy;
+  grid.classList.toggle('joyv', joyOn);
+  if(window.malhaeJoy) malhaeJoy.setPage(cur===JOY);
+  if(cur===JOY){
+    if(!joyOn) return;
+    malhaeJoy.words().forEach((w,i)=>{
+      if(!w) return;
+      const b=document.createElement('button'); b.className='phrase jq'; b.dataset.i=i;
+      b.style.gridArea=JQ_AREA[i]; b.innerHTML='<small>'+(i+1)+'</small>'; b.appendChild(document.createTextNode(w));
+      b.onclick=()=>speak(w);
+      grid.appendChild(b);
+    });
+    return;
+  }
   PHRASES[cur].forEach(p=>{
     const b=document.createElement('button'); b.className='phrase'; b.textContent=p;
     b.onclick=()=>speak(p); // 누르면 바로 말함
@@ -87,12 +114,18 @@ function renderGrid(){
   });
 }
 renderTabs(); renderGrid();
+// 조이스틱으로 방향을 고르면 같은 번호 네모도 밝힌다
+addEventListener('malhaejoy',e=>{
+  grid.querySelectorAll('.jq').forEach(b=>{
+    const on = +b.dataset.i===e.detail.dir;
+    b.classList.toggle('hot', on && !e.detail.armed); b.classList.toggle('arm', on && e.detail.armed);
+  });
+});
+addEventListener('malhaejoy-words',()=>{ if(cur===JOY) renderGrid(); });
 
 // PWA 서비스워커 (오프라인/홈화면)
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
   <script src="/count.js" defer></script>
-<!-- 10/02 형: 「맨 밑에 너랑 대화 가능하게 창 바로 변경할 수 있게」 → 회의실(맺음·이음) 바로가기. 형 폰(Tailscale)에서만 열림 -->
-<a id="맺음창" href="http://100.76.105.37:8765/" target="_blank" rel="noopener" style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 12px);z-index:9999;background:#2b3a55;color:#fff;font:600 14px/1 system-ui,sans-serif;padding:10px 12px;border-radius:999px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.35);opacity:.92">💬 맺음</a>
 </body>
 </html>
