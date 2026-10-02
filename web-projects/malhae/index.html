@@ -31,8 +31,9 @@
   .phrase.wide{grid-column:1/-1}
   /* 조이스틱 화면: 위에는 묶음 이름 + 방금 한 말만 크게 (말 칸은 아래 호 띠에) */
   main.joyv{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:4px 12px}
-  .jt{font-size:16px;font-weight:800;color:#8ec5ff}
-  .js{font-size:clamp(30px,10vw,52px);font-weight:900;line-height:1.15;color:#fff;word-break:keep-all}
+  .jt{font-size:clamp(30px,9vw,44px);font-weight:900;color:#8ec5ff;line-height:1.1}
+  .jt small{display:block;font-size:15px;color:var(--mut);font-weight:700}
+  .js{font-size:clamp(26px,8vw,40px);font-weight:900;line-height:1.15;color:#fff;word-break:keep-all}
   .js.idle{font-size:17px;font-weight:700;color:var(--mut)}
 </style>
 </head>
@@ -48,7 +49,7 @@
 <main id="grid"></main>
 
 <!-- 2026-10-02 형 그림 ②: 아래 왼쪽 조이스틱 + 둘레 호 띠(칸=말). 위 네모 판 없앰. ⚙ 3초 = 설정 -->
-<script src="joystick.js?v=9" data-gear="corner"></script>
+<script src="joystick.js?v=10" data-gear="corner"></script>
 
 <script>
 // ── 문구 세트 v0.1 (이음 작성: 위관로·석션·신앙 반영, 8카테고리 89문구. 나중에 서버 동기화='빌드업 통로') ──
@@ -97,9 +98,9 @@ function renderGrid(){
     if(!joyOn) return;
     // 말 칸은 아래 호 띠에 있다. 여기는 지금 묶음 + 방금 한 말 (형 그림 ②)
     const g=malhaeJoy.group();
-    const t=document.createElement('div'); t.className='jt'; t.textContent='묶음 '+(g.n+1)+'/'+g.count+' · '+g.name; grid.appendChild(t);
+    const t=document.createElement('div'); t.className='jt'; t.innerHTML='<small>묶음 '+(g.n+1)+' / '+g.count+'</small>'; t.appendChild(document.createTextNode(g.name)); grid.appendChild(t);
     const s=document.createElement('div'); s.className='js'+(lastSaid?'':' idle');
-    s.textContent=lastSaid||'손잡이를 칸 쪽으로 밀었다 떼거나, 칸을 톡 누르세요'; grid.appendChild(s);
+    s.textContent=lastSaid||'조이스틱 = 묶음 바꾸기 · 칸 톡 = 말하기'; grid.appendChild(s);
     return;
   }
   PHRASES[cur].forEach(p=>{
@@ -113,7 +114,8 @@ addEventListener('malhaejoy-group',()=>{ lastSaid=''; if(cur===JOY) renderGrid()
 addEventListener('malhaejoy-said',e=>{ lastSaid=e.detail.text; if(cur===JOY) renderGrid(); });
 
 // PWA 서비스워커 (오프라인/홈화면)
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{});
+  let reloaded=!navigator.serviceWorker.controller; navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(reloaded)return; reloaded=true; location.reload(); }); }
 </script>
   <script src="/count.js" defer></script>
 </body>

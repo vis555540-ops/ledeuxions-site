@@ -2,11 +2,11 @@
    아래 왼쪽에 조이스틱 동그라미, 그 둘레를 크게 감싸는 「호 모양 띠」(왼쪽 위 → 위 → 오른쪽 → 오른쪽 아래).
    띠의 칸 하나하나가 곧 말이다. 위의 큰 네모 판은 없앴다.
 
-   쓰는 법 두 가지 (둘 다 기다림 0):
-   ① 손잡이를 칸 쪽으로 민다 → 그 칸이 바로 밝아진다 → 손을 떼면 그 말을 한다.
-      가운데로 돌아와서 떼면 취소. 조금만 건드린 건(PUSH 미만) 무시 — 실수 줄이기.
-   ② 칸을 손가락으로 바로 톡 → 바로 말한다.
-   - 띠 끝 작은 칸 「다음 묶음 ▸」 = 누르면 바로 다음 묶음으로.
+   역할 나누기 (형 15:38 「조이스틱은 말 묶음 → 다른 말 묶음으로 바꿀 수 있게」):
+   ① 조이스틱 = 묶음 바꾸기 전용. 손잡이를 밀면(방향 = 묶음) 띠의 말 칸이 즉시 그 묶음 말로 바뀐다.
+      엄지로 쓸면 묶음이 차례로 바뀌고 바뀔 때마다 진동 톡. 조이스틱으로는 말하지 않는다.
+      조금만 건드린 건(PUSH 미만) 무시 — 실수 줄이기.
+   ② 띠 칸 톡 → 바로 말한다 (기다림 0).
    - 설정은 ⚙ 3초 꾹 (장인어른이 실수로 못 바꾸게): 칸 추가/삭제(4~8)·글 고치기·순서·묶음·좌우.
    - 옛 묶음(malhae_joy2)은 지우지 않고 「기본」 묶음 뒤에 이어 붙인다.
    말하기는 페이지의 기존 함수(window.malhaeSpeak)를 그대로 쓴다. */
@@ -29,8 +29,8 @@
   const RB = 92, RK = 36;         // 바탕 원, 손잡이
   const RI = 120, RO = 232;       // 띠 안쪽·바깥 반지름
   const A0 = -40, A1 = 128;       // 말 칸들이 놓이는 호
-  const N0 = 130, N1 = 153;       // 「다음 묶음」 작은 칸
-  const PUSH = 46;                // 이만큼 밀어야 고른다 (바탕 원 반지름의 반)
+  const G0 = -40, G1 = 150;       // 조이스틱: 이 호 안을 묶음 수만큼 나눔 (방향 = 묶음)
+  const PUSH = 46;                // 이만큼 밀어야 묶음이 바뀐다 (바탕 원 반지름의 반)
   const HOLD = 3000;
   const ME = document.currentScript;
   const GEAR_MODE = (ME && ME.dataset.gear) || "joy";
@@ -114,6 +114,7 @@
 
   const css = `
   #joy{position:fixed;bottom:env(safe-area-inset-bottom,0px);left:0;right:0;margin:0 auto;z-index:900;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+  #joy,#joy svg{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   #joy svg{display:block;width:100%;height:100%;overflow:visible}
   #joy .hit{pointer-events:auto;touch-action:none;cursor:pointer}
   #joy .cell{fill:#1d2a3c;stroke:#0e1116;stroke-width:4}
@@ -121,14 +122,13 @@
   #joy .cell.done{fill:#2e9d4a}
   #joy .ct{fill:#fff;font-weight:900;pointer-events:none}
   #joy .ct.on{fill:#111}
-  #joy .nx{fill:#2b3442;stroke:#0e1116;stroke-width:4}
-  #joy .nx.on{fill:#5b9bff}
-  #joy .nt{fill:#cfe2ff;font-weight:800;pointer-events:none}
-  #joy .num{fill:#8ea6c4;font-weight:800;pointer-events:none}
-  #joy .num.on{fill:#111}
+  #joy .gn{fill:#8ec5ff;font-weight:900;pointer-events:none}
+  #joy .gn2{fill:#cfe2ff;font-weight:800;pointer-events:none}
+  #joy .sn{fill:#9fb7d6;font-weight:900;pointer-events:none}
+  #joy .kt{fill:#1b2a3c;font-weight:900;pointer-events:none}
   #joy .base{fill:#111821;stroke:#5b7fae;stroke-width:3}
   #joy .sec{fill:#1d2a3c;stroke:#3a5272;stroke-width:1.5;pointer-events:none}
-  #joy .sec.on{fill:#f5c518}
+  #joy .sec.on{fill:#5b9bff}
   #joy .dead{fill:#0b0e13;pointer-events:none}
   #joy .knob{fill:#e8eef7;stroke:#fff;stroke-width:3;pointer-events:none;filter:drop-shadow(0 3px 4px #000c)}
   #joyGear{position:fixed;z-index:902;width:46px;height:46px;border-radius:50%;border:2px solid #3a5272;background:#1b2029;color:#c9d3e0;font-size:22px;padding:0;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overflow:hidden}
@@ -141,6 +141,7 @@
   @property --p{syntax:'<angle>';inherits:false;initial-value:0deg}
   @keyframes joyHold{from{--p:0deg}to{--p:360deg}}
   body.joy-on{padding-bottom:var(--joyH,0px)}
+  html:has(body.joy-on),body.joy-on{overflow:hidden;overscroll-behavior:none;position:fixed;inset:0;width:100%}
   #joySet{position:fixed;inset:0;z-index:950;background:#000b;display:none;align-items:center;justify-content:center;padding:12px}
   #joySet.on{display:flex}
   #joySet .box{background:#1b2029;color:#f2f4f7;border-radius:16px;padding:14px;width:min(440px,100%);max-height:94vh;overflow:auto;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
@@ -170,75 +171,72 @@
   const joy = document.createElement("div"); joy.id = "joy";
   const svg = mk("svg", { viewBox: `0 0 ${VW} ${VH}`, role: "application", "aria-label": "조이스틱과 말 칸" });
   joy.appendChild(svg);
-  let cells = [], texts = [], nums = [], secs = [], nxCell = null, base = null, knob = null;
+  let cells = [], texts = [], secs = [], knob = null, kTxt = null;
 
   function cellAng(k){ const n = words().length, w = (A1-A0)/n; return [A0+k*w, A0+(k+1)*w]; }
+  function grpAng(k){ const n = st.groups.length, w = (G1-G0)/n; return [G0+k*w, G0+(k+1)*w]; }
   const words = () => st.groups[st.cur].words;
 
-  function draw(){
-    svg.innerHTML = ""; cells = []; texts = []; nums = []; secs = [];
-    const ws = words(), n = ws.length;
-    // 띠: 말 칸
-    ws.forEach((w,k)=>{
+  // 띠(말 칸)만 다시 그리기 — 묶음 바뀔 때마다
+  const gBand = mk("g", {}, svg), gJoy = mk("g", {}, svg);
+  function drawBand(){
+    gBand.innerHTML = ""; cells = []; texts = [];
+    words().forEach((w,k)=>{
       const [lo,hi] = cellAng(k);
-      const p = mk("path", { d: ring(lo,hi,RI,RO), class: "cell hit", "data-k": k, role: "button", "aria-label": w }, svg);
+      const p = mk("path", { d: ring(lo,hi,RI,RO), class: "cell hit", "data-k": k, role: "button", "aria-label": w }, gBand);
+      p.addEventListener("pointerdown", cellDown);
       cells.push(p);
       const mid = (lo+hi)/2, rm = (RI+RO)/2 + 6;
       const [x,y] = P(mid, rm);
       const chord = 2*rm*Math.sin((hi-lo)/2*Math.PI/180);
       const fz = fit(w, Math.min(chord, RO-RI) - 10, RO-RI-30, 42);
-      const t = mk("text", { x, y: y - (fz.lines.length-1)*fz.f*1.15/2 + fz.f*0.36, "text-anchor": "middle", class: "ct", "font-size": fz.f.toFixed(1) }, svg);
+      const t = mk("text", { x, y: y - (fz.lines.length-1)*fz.f*1.15/2 + fz.f*0.36, "text-anchor": "middle", class: "ct", "font-size": fz.f.toFixed(1) }, gBand);
       fz.lines.forEach((l,i)=>{ const s = mk("tspan", { x, dy: i ? (fz.f*1.15).toFixed(1) : 0 }, t); s.textContent = l; });
       texts.push(t);
-      const [nx,ny] = P(mid, RI+12);
-      const nm = mk("text", { x: nx, y: ny+5, "text-anchor": "middle", class: "num", "font-size": 13 }, svg); nm.textContent = k+1;
-      nums.push(nm);
     });
-    // 띠 끝: 다음 묶음
-    if(st.groups.length > 1){
-      nxCell = mk("path", { d: ring(N0,N1,RI+20,RO-8), class: "nx hit", "data-k": "next", role: "button", "aria-label": "다음 묶음" }, svg);
-      const [x,y] = P((N0+N1)/2, (RI+RO)/2+6);
-      const t = mk("text", { x, y: y-20, "text-anchor": "middle", class: "nt", "font-size": 15 }, svg);
-      ["다음", "묶음", "▸"].forEach((l,i)=>{ const s = mk("tspan", { x, dy: i ? 19 : 0 }, t); s.textContent = l; });
-      const g = st.groups[(st.cur+1) % st.groups.length];
-      const gn = mk("text", { x, y: y+44, "text-anchor": "middle", class: "nt", "font-size": 11 }, svg);
-      gn.textContent = (g.name.length > 4 ? g.name.slice(0,4) : g.name);
-    } else nxCell = null;
-    // 조이스틱: 바탕(칸 방향대로 나눔) + 손잡이
-    base = mk("circle", { cx: CX2(), cy: CY, r: RB, class: "base hit", "aria-label": "조이스틱" }, svg);
-    mk("path", { d: wedge(A1, A0+360, RB-3), class: "dead" }, svg);
-    ws.forEach((w,k)=>{ const [lo,hi] = cellAng(k); secs.push(mk("path", { d: wedge(lo,hi,RB-3), class: "sec" }, svg)); });
-    if(nxCell) secs.push(mk("path", { d: wedge(N0,N1,RB-3), class: "sec" }, svg));
-    mk("circle", { cx: CX2(), cy: CY, r: PUSH, fill: "#111821", stroke: "#3a5272", "stroke-width": 1.5, "pointer-events": "none" }, svg);
-    knob = mk("circle", { cx: CX2(), cy: CY, r: RK, class: "knob" }, svg);
-    // 맨 위에 투명 잡이 (손잡이·안쪽 원 위에서도 잡히게)
-    const grab = mk("circle", { cx: CX2(), cy: CY, r: RB, fill: "transparent", class: "hit grab" }, svg);
+    // 띠 끝: 지금 묶음 이름 (크게)
+    const [x,y] = P(141, (RI+RO)/2+4);
+    const a = mk("text", { x, y: y-8, "text-anchor": "middle", class: "gn", "font-size": 30 }, gBand); a.textContent = st.cur+1;
+    const b = mk("text", { x, y: y+18, "text-anchor": "middle", class: "gn2", "font-size": 17 }, gBand);
+    b.textContent = st.groups[st.cur].name.length > 4 ? st.groups[st.cur].name.slice(0,4) : st.groups[st.cur].name;
+  }
+  // 조이스틱: 바탕을 묶음 수만큼 나눔 (방향 = 묶음)
+  function drawJoy(){
+    gJoy.innerHTML = ""; secs = [];
+    mk("circle", { cx: CX2(), cy: CY, r: RB, class: "base" }, gJoy);
+    mk("path", { d: wedge(G1, G0+360, RB-3), class: "dead" }, gJoy);
+    st.groups.forEach((g,k)=>{
+      const [lo,hi] = grpAng(k);
+      secs.push(mk("path", { d: wedge(lo,hi,RB-3), class: "sec" }, gJoy));
+      const [x,y] = P((lo+hi)/2, RB-17);
+      const t = mk("text", { x, y: y+6, "text-anchor": "middle", class: "sn", "font-size": 16 }, gJoy); t.textContent = k+1;
+    });
+    knob = mk("circle", { cx: CX2(), cy: CY, r: RK, class: "knob" }, gJoy);
+    kTxt = mk("text", { x: CX2(), y: CY+10, "text-anchor": "middle", class: "kt", "font-size": 28 }, gJoy);
+    const grab = mk("circle", { cx: CX2(), cy: CY, r: RB, fill: "transparent", class: "hit" }, gJoy);
     grab.addEventListener("pointerdown", joyDown);
-    svg.querySelectorAll(".cell,.nx").forEach(c=>c.addEventListener("pointerdown", cellDown));
-    lit(-1);
+    paintJoy();
   }
-  // 밝히기: k = 칸 번호, "next", 또는 -1(없음)
-  let litK = -1;
-  function lit(k){
-    litK = k;
-    cells.forEach((c,i)=>{ c.classList.toggle("on", i===k); texts[i].classList.toggle("on", i===k); nums[i].classList.toggle("on", i===k); });
-    if(nxCell) nxCell.classList.toggle("on", k==="next");
-    secs.forEach((s,i)=>s.classList.toggle("on", i===k || (k==="next" && i===secs.length-1 && !!nxCell)));
+  function paintJoy(){
+    secs.forEach((s,i)=>s.classList.toggle("on", i===st.cur));
+    if(kTxt) kTxt.textContent = st.cur+1;
   }
+  function draw(){ drawBand(); drawJoy(); }
+
+  function lit(k){ cells.forEach((c,i)=>{ c.classList.toggle("on", i===k); texts[i].classList.toggle("on", i===k); }); }
   function fire(k){
-    if(k === "next"){ nextGroup(); return; }
     if(k < 0 || !cells[k]) return;
-    const w = words()[k]; say(w); buzz(25);
+    say(words()[k]); buzz(25);
     const c = cells[k]; c.classList.add("done");
     setTimeout(()=>c.classList.remove("done"), 220);
   }
-  function nextGroup(){
-    if(st.groups.length < 2) return;
-    st.cur = (st.cur+1) % st.groups.length; save(); buzz(12); draw();
-    tell("malhaejoy-group", { cur: st.cur });
+  function setGroup(k){
+    if(k < 0 || k === st.cur) return;
+    st.cur = k; save(); buzz(15);
+    drawBand(); paintJoy();
+    tell("malhaejoy-group", { cur: k });
   }
 
-  // 화면 좌표 → 설계 좌표
   function local(e){
     const b = svg.getBoundingClientRect(), s = b.width / VW;
     return [(e.clientX - b.left)/s, (e.clientY - b.top)/s];
@@ -247,53 +245,68 @@
     let deg = Math.atan2(y-CY, x-CX2())*180/Math.PI + 90; if(deg > 180) deg -= 360;
     return mirror() ? -deg : deg;
   }
-  function pickAng(a){
-    if(a >= A0 && a < A1){ const n = words().length; return Math.min(n-1, Math.floor((a-A0)/((A1-A0)/n))); }
-    if(nxCell && a >= A1 && a < N1) return "next";
-    return -1;
-  }
+  const inArc = (a, lo, hi, n) => a >= lo && a < hi ? Math.min(n-1, Math.floor((a-lo)/((hi-lo)/n))) : -1;
 
-  /* ① 조이스틱: 밀면 바로 밝아짐 → 떼면 말함. 가운데(PUSH 안)로 돌아와 떼면 취소 */
-  let pid = null, mode = null;
+  /* ① 조이스틱 = 묶음 바꾸기 전용. 미는 즉시 띠가 그 묶음 말로. 말은 안 한다 (형 15:38) */
+  let pid = null, mode = null, tapK = -1;
   function joyMove(e){
     const [x,y] = local(e), dx = x-CX2(), dy = y-CY, dist = Math.hypot(dx,dy), lim = RB-RK*0.4;
     const k = dist > lim ? lim/dist : 1;
     knob.setAttribute("cx", CX2()+dx*k); knob.setAttribute("cy", CY+dy*k);
-    const pick = dist < PUSH ? -1 : pickAng(angleOf(x,y));
-    if(pick !== litK){ lit(pick); if(pick !== -1) buzz(8); }
+    kTxt.setAttribute("x", CX2()+dx*k); kTxt.setAttribute("y", CY+dy*k+10);
+    if(dist < PUSH) return;                                     // 짧게 건드린 건 무시
+    setGroup(inArc(angleOf(x,y), G0, G1, st.groups.length));   // 쓸면 차례로 바뀜 (칸마다 진동)
   }
   function joyDown(e){
     if(pid !== null) return;
     pid = e.pointerId; mode = "joy"; try { svg.setPointerCapture(pid); } catch(_){}
-    e.preventDefault(); joyMove(e);
+    if(e.cancelable !== false) e.preventDefault(); joyMove(e);
   }
-  /* ② 칸 바로 톡: 누른 칸이 밝아지고, 뗄 때 그 칸 위면 말함 (밀려 나가면 취소) */
+  /* ② 띠 칸 톡 = 바로 말함. 누르면 밝아지고, 뗄 때 그 칸 위면 말함 */
   function cellAt(e){
     const [x,y] = local(e), r = Math.hypot(x-CX2(), y-CY);
     if(r < RI-6 || r > RO+10) return -1;
-    return pickAng(angleOf(x,y));
+    return inArc(angleOf(x,y), A0, A1, words().length);
   }
   function cellDown(e){
     if(pid !== null) return;
     pid = e.pointerId; mode = "tap"; try { svg.setPointerCapture(pid); } catch(_){}
     e.preventDefault(); e.stopPropagation();
-    const k = e.currentTarget.dataset.k;
-    lit(k === "next" ? "next" : +k);
+    tapK = +e.currentTarget.dataset.k; lit(tapK);
   }
-  svg.addEventListener("pointermove", e=>{
-    if(e.pointerId !== pid) return; e.preventDefault();
+  function onMove(e){
+    if(e.pointerId !== pid) return; if(e.cancelable) e.preventDefault();
     if(mode === "joy") joyMove(e);
-    else { const k = cellAt(e); if(k !== litK) lit(k); }
-  });
+    else { const k = cellAt(e); if(k !== tapK){ tapK = k; lit(k); } }
+  }
   function finish(e, ok){
     if(e.pointerId !== pid) return;
-    const k = litK; pid = null; mode = null;
-    if(knob){ knob.setAttribute("cx", CX2()); knob.setAttribute("cy", CY); }
+    const k = tapK, m = mode; pid = null; mode = null; tapK = -1;
+    if(knob){ knob.setAttribute("cx", CX2()); knob.setAttribute("cy", CY); kTxt.setAttribute("x", CX2()); kTxt.setAttribute("y", CY+10); }
     lit(-1);
-    if(ok) fire(k);
+    if(ok && m === "tap") fire(k);
   }
-  svg.addEventListener("pointerup", e=>finish(e, true));
-  svg.addEventListener("pointercancel", e=>finish(e, false));
+  // 실기기(갤럭시·삼성 인터넷) 대비: 손가락이 그림 밖으로 나가도 놓치지 않게 window 에서 받는다
+  if(window.PointerEvent){
+    addEventListener("pointermove", onMove, { passive: false });
+    addEventListener("pointerup", e=>finish(e, true));
+    addEventListener("pointercancel", e=>finish(e, false));
+  } else {
+    // 포인터 이벤트가 없는 옛 브라우저: 터치로 대신
+    const fake = (t, el, ev) => ({ pointerId: "t"+t.identifier, clientX: t.clientX, clientY: t.clientY, currentTarget: el,
+      cancelable: true, preventDefault: ()=>ev.preventDefault(), stopPropagation: ()=>{} });
+    svg.addEventListener("touchstart", ev=>{
+      const t = ev.changedTouches[0], el = ev.target.closest ? ev.target.closest(".hit") : null; if(!el) return;
+      ev.preventDefault();
+      if(el.classList.contains("cell")) cellDown(fake(t, el, ev)); else joyDown(fake(t, el, ev));
+    }, { passive: false });
+    addEventListener("touchmove", ev=>{ [...ev.changedTouches].forEach(t=>onMove(fake(t, null, ev))); }, { passive: false });
+    addEventListener("touchend", ev=>{ [...ev.changedTouches].forEach(t=>finish(fake(t, null, ev), true)); });
+    addEventListener("touchcancel", ev=>{ [...ev.changedTouches].forEach(t=>finish(fake(t, null, ev), false)); });
+  }
+  // 브라우저가 끌기를 스크롤·뒤로가기 몸짓으로 가로채지 못하게
+  svg.addEventListener("touchstart", ev=>{ if(ev.target.closest && ev.target.closest(".hit")) ev.preventDefault(); }, { passive: false });
+  svg.addEventListener("touchmove", ev=>{ if(pid !== null || (ev.target.closest && ev.target.closest(".hit"))) ev.preventDefault(); }, { passive: false });
   svg.addEventListener("contextmenu", e=>e.preventDefault());
 
   /* ── 설정: ⚙ 3초 꾹 ── */
@@ -323,7 +336,7 @@
     set.innerHTML = `<div class="box" role="dialog" aria-label="조이스틱 설정">
       <h2>🕹️ 말 칸 고치기</h2>
       <p>띠의 칸 = 말 하나. 위에서부터 왼쪽 위 → 오른쪽 아래 순서. 칸은 ${MINW}~${MAXW}개.<br>
-      손잡이를 밀었다 떼거나, 칸을 바로 톡 누르면 말합니다.</p>
+      조이스틱을 밀면 묶음이 바뀌고(방향 = 묶음), 칸을 톡 누르면 말합니다.</p>
       <div class="tabs">${draft.map((x,i)=>`<button type="button" data-g="${i}" class="${i===dg?"on":""}">${i+1}. ${esc(x.name||"(이름)")}</button>`).join("")}</div>
       <div class="w"><b>묶음</b><input class="gn" type="text" maxlength="20" placeholder="묶음 이름" value="${esc(g.name)}"></div>
       ${g.words.map((w,i)=>`<div class="w"><b>${i+1}</b><input class="wd" type="text" maxlength="30" placeholder="말" value="${esc(w)}">
