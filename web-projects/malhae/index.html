@@ -35,6 +35,25 @@
   .jt small{display:block;font-size:15px;color:var(--mut);font-weight:700}
   .js{font-size:clamp(26px,8vw,40px);font-weight:900;line-height:1.15;color:#fff;word-break:keep-all}
   .js.idle{font-size:17px;font-weight:700;color:var(--mut)}
+  /* 2026-10-02 형 그림 ③: 위 = 손으로 글쓰기, 아래 = 조이스틱 띠 (한 화면) */
+  #pad{flex:1;min-height:0;display:none;flex-direction:column;gap:6px;padding:0 12px 6px}
+  #pad.on{display:flex}
+  body.padv header{display:none}
+  body.padv .tabs{padding-right:66px;padding-top:calc(8px + env(safe-area-inset-top,0px))}
+  #pad .top{display:flex;gap:6px;flex:0 0 auto;height:62px}
+  #cand{flex:1;min-width:0;border:0;border-radius:14px;background:#12233a;color:#fff;font-size:clamp(24px,7vw,34px);font-weight:900;padding:0 12px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #cand.idle{font-size:16px;font-weight:700;color:var(--mut);background:var(--card)}
+  #cand:active{background:#2e7d32}
+  #clr{flex:0 0 96px;border:0;border-radius:14px;background:#c62828;color:#fff;font-size:22px;font-weight:900}
+  #clr:active{background:#8e0000}
+  #alts{display:flex;gap:6px;flex:0 0 auto;height:40px;overflow-x:auto}
+  #alts button{flex:0 0 auto;border:0;border-radius:999px;background:var(--card);color:#cfe2ff;font-size:18px;font-weight:800;padding:0 14px}
+  #alts button:active{background:#2e7d32}
+  #alts .big{margin-left:auto;background:#2a3340;color:#fff}
+  #ink{flex:1;min-height:0;width:100%;border-radius:14px;background:#fffdf5;touch-action:none;display:block;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  #inkBig{position:fixed;inset:0;z-index:980;background:#fffdf5;display:none}
+  #inkBig.on{display:block}
+  #inkBig img{width:100%;height:100%;object-fit:contain}
 </style>
 </head>
 <body>
@@ -47,9 +66,16 @@
 
 <nav class="tabs" id="tabs"></nav>
 <main id="grid"></main>
+<!-- 손으로 글쓰기: 쓰고 손 떼면 0.8초 뒤 글자로 바뀜 → 글자 톡 = 말함. 안 바뀌면(인터넷 X) 쓴 그림 그대로 보여줌 -->
+<section id="pad" aria-label="손으로 글쓰기">
+  <div class="top"><button id="cand" class="idle" type="button">✍️ 아래에 손가락으로 쓰세요</button><button id="clr" type="button">지우기</button></div>
+  <div id="alts"><button class="big" type="button" id="bigBtn">🔍 크게</button></div>
+  <canvas id="ink"></canvas>
+</section>
+<div id="inkBig" role="dialog" aria-label="크게 보기 (누르면 닫힘)"><img alt="쓴 글씨"></div>
 
 <!-- 2026-10-02 형 그림 ②: 아래 왼쪽 조이스틱 + 둘레 호 띠(칸=말). 위 네모 판 없앰. ⚙ 3초 = 설정 -->
-<script src="joystick.js?v=10" data-gear="corner"></script>
+<script src="joystick.js?v=11" data-gear="corner"></script>
 
 <script>
 // ── 문구 세트 v0.1 (이음 작성: 위관로·석션·신앙 반영, 8카테고리 89문구. 나중에 서버 동기화='빌드업 통로') ──
@@ -94,21 +120,100 @@ function renderGrid(){
   const joyOn = cur===JOY && !!window.malhaeJoy;
   grid.classList.toggle('joyv', joyOn);
   if(window.malhaeJoy) malhaeJoy.setPage(cur===JOY);
-  if(cur===JOY){
-    if(!joyOn) return;
-    // 말 칸은 아래 호 띠에 있다. 여기는 지금 묶음 + 방금 한 말 (형 그림 ②)
-    const g=malhaeJoy.group();
-    const t=document.createElement('div'); t.className='jt'; t.innerHTML='<small>묶음 '+(g.n+1)+' / '+g.count+'</small>'; t.appendChild(document.createTextNode(g.name)); grid.appendChild(t);
-    const s=document.createElement('div'); s.className='js'+(lastSaid?'':' idle');
-    s.textContent=lastSaid||'조이스틱 = 묶음 바꾸기 · 칸 톡 = 말하기'; grid.appendChild(s);
-    return;
-  }
+  // 조이스틱 화면 = 위 손글씨판 + 아래 조이스틱 띠 (형 그림 ③). 묶음 이름은 띠 끝에 있음
+  grid.style.display = cur===JOY ? 'none' : '';
+  document.getElementById('pad').classList.toggle('on', cur===JOY);
+  document.body.classList.toggle('padv', cur===JOY); // 글쓰는 칸 넓히려고 제목 줄 숨김 (⚙ 는 그대로 오른쪽 위)
+  if(cur===JOY){ if(window.malhaePad) malhaePad.fit(); return; }
   PHRASES[cur].forEach(p=>{
     const b=document.createElement('button'); b.className='phrase'; b.textContent=p;
     b.onclick=()=>speak(p); // 누르면 바로 말함
     grid.appendChild(b);
   });
 }
+// ── 손으로 글쓰기 (2026-10-02) ──
+(function(){
+  const cv=document.getElementById('ink'), cx=cv.getContext('2d');
+  const cand=document.getElementById('cand'), alts=document.getElementById('alts'), bigBtn=document.getElementById('bigBtn');
+  const big=document.getElementById('inkBig');
+  const HINT='✍️ 아래에 손가락으로 쓰세요';
+  let strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null;
+  function pen(){ cx.lineWidth=Math.max(7,Math.min(W,H)/32); cx.lineCap='round'; cx.lineJoin='round'; cx.strokeStyle='#111'; cx.fillStyle='#111'; }
+  function redraw(){
+    cx.clearRect(0,0,W,H); pen();
+    strokes.forEach(s=>{ const [xs,ys]=s; cx.beginPath(); cx.moveTo(xs[0],ys[0]);
+      if(xs.length===1){ cx.arc(xs[0],ys[0],cx.lineWidth/2,0,7); cx.fill(); return; }
+      for(let i=1;i<xs.length;i++) cx.lineTo(xs[i],ys[i]); cx.stroke(); });
+  }
+  function fit(){
+    const r=cv.getBoundingClientRect(); if(!r.width||!r.height) return;
+    const d=window.devicePixelRatio||1, w=Math.round(r.width), h=Math.round(r.height);
+    if(w===W&&h===H&&cv.width===Math.round(w*d)) return;
+    // 크기 바뀌면 획을 같은 비율로 옮겨서 다시 그림 (쓴 게 안 날아감)
+    if(W&&H) strokes.forEach(s=>{ s[0]=s[0].map(x=>x*w/W); s[1]=s[1].map(y=>y*h/H); });
+    W=w; H=h; cv.width=Math.round(w*d); cv.height=Math.round(h*d); cx.setTransform(d,0,0,d,0,0); redraw();
+  }
+  function setCand(list){
+    alts.querySelectorAll('.c').forEach(b=>b.remove());
+    if(!list.length){ cand.textContent=HINT; cand.classList.add('idle'); return; }
+    cand.textContent=list[0]; cand.classList.remove('idle');
+    list.slice(1,4).forEach(t=>{ const b=document.createElement('button'); b.type='button'; b.className='c'; b.textContent=t;
+      b.onclick=()=>{ speak(t); cand.textContent=t; }; alts.insertBefore(b,bigBtn); });
+  }
+  function clear(){ strokes=[]; cur=null; seq++; clearTimeout(timer); if(ctl)try{ctl.abort();}catch(e){} redraw(); setCand([]); }
+  // 글자 알아보기: 구글 손글씨 (인터넷 필요). 안 되면 조용히 그림만
+  function recog(){
+    if(!strokes.length) return;
+    const my=++seq; if(ctl)try{ctl.abort();}catch(e){}
+    ctl=window.AbortController?new AbortController():null;
+    const ink=strokes.map(s=>[s[0].map(Math.round),s[1].map(Math.round),s[2]]);
+    const to=setTimeout(()=>{ if(ctl)try{ctl.abort();}catch(e){} },6000);
+    fetch('https://inputtools.google.com/request?ime=handwriting&app=mobilesearch&cs=1&oe=UTF-8&itc=ko-t-i0-handwrit',{
+      method:'POST', headers:{'Content-Type':'application/json'}, signal:ctl?ctl.signal:undefined,
+      body:JSON.stringify({options:'enable_pre_space',requests:[{writing_guide:{writing_area_width:W,writing_area_height:H},ink,language:'ko'}]})
+    }).then(r=>r.json()).then(j=>{
+      clearTimeout(to); if(my!==seq) return;
+      const c=(j&&j[0]==='SUCCESS'&&j[1]&&j[1][0]&&j[1][0][1])||[];
+      const seen=new Set(), list=c.map(t=>String(t).trim()).filter(t=>t&&!seen.has(t)&&seen.add(t));
+      setCand(list);
+    }).catch(()=>{ clearTimeout(to); });
+  }
+  function pt(e){ const r=cv.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
+  function add(e){ const [x,y]=pt(e); const last=cur[0].length-1;
+    pen(); cx.beginPath(); cx.moveTo(cur[0][last],cur[1][last]); cx.lineTo(x,y); cx.stroke();
+    cur[0].push(x); cur[1].push(y); cur[2].push(Date.now()-t0); }
+  let pid=null;
+  function down(e){
+    if(pid!==null) return; pid=e.pointerId; clearTimeout(timer);
+    if(e.cancelable!==false) e.preventDefault();
+    try{ cv.setPointerCapture(pid); }catch(_){}
+    if(!strokes.length) t0=Date.now();
+    const [x,y]=pt(e); cur=[[x],[y],[Date.now()-t0]]; strokes.push(cur);
+    pen(); cx.beginPath(); cx.arc(x,y,cx.lineWidth/2,0,7); cx.fill();
+  }
+  function move(e){
+    if(e.pointerId!==pid||!cur) return; if(e.cancelable) e.preventDefault();
+    const evs=e.getCoalescedEvents?e.getCoalescedEvents():[]; (evs.length?evs:[e]).forEach(add);
+  }
+  function up(e){ if(e.pointerId!==pid) return; pid=null; cur=null; clearTimeout(timer); timer=setTimeout(recog,800); }
+  if(window.PointerEvent){
+    cv.addEventListener('pointerdown',down); cv.addEventListener('pointermove',move,{passive:false});
+    cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+  } else {
+    const f=(t,ev)=>({pointerId:'t'+t.identifier,clientX:t.clientX,clientY:t.clientY,cancelable:true,preventDefault:()=>ev.preventDefault()});
+    cv.addEventListener('touchstart',ev=>{ev.preventDefault();down(f(ev.changedTouches[0],ev));},{passive:false});
+    cv.addEventListener('touchmove',ev=>{ev.preventDefault();[...ev.changedTouches].forEach(t=>move(f(t,ev)));},{passive:false});
+    cv.addEventListener('touchend',ev=>{[...ev.changedTouches].forEach(t=>up(f(t,ev)));});
+  }
+  cv.addEventListener('touchstart',ev=>ev.preventDefault(),{passive:false}); // 스크롤·당겨서 새로고침 막기
+  cv.addEventListener('contextmenu',e=>e.preventDefault());
+  document.getElementById('clr').addEventListener('click',clear);
+  cand.addEventListener('click',()=>{ if(!cand.classList.contains('idle')) speak(cand.textContent); });
+  bigBtn.addEventListener('click',()=>{ if(!strokes.length) return; big.querySelector('img').src=cv.toDataURL(); big.classList.add('on'); });
+  big.addEventListener('click',()=>big.classList.remove('on'));
+  addEventListener('resize',()=>requestAnimationFrame(fit));
+  window.malhaePad={fit:()=>requestAnimationFrame(fit), clear, strokes:()=>strokes.length, cand:()=>cand.classList.contains('idle')?'':cand.textContent};
+})();
 renderTabs(); renderGrid();
 addEventListener('malhaejoy-group',()=>{ lastSaid=''; if(cur===JOY) renderGrid(); });
 addEventListener('malhaejoy-said',e=>{ lastSaid=e.detail.text; if(cur===JOY) renderGrid(); });
