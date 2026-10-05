@@ -175,6 +175,7 @@
                 <label class="label">모양</label>
                 <div class="seg" id="gen-shape">
                     <button class="on" data-shape="circle">원형</button>
+                    <button data-shape="seal">인감</button>
                     <button data-shape="square">사각</button>
                     <button data-shape="ellipse">타원</button>
                 </div>
@@ -215,13 +216,22 @@
                 </div>
             </div>
 
+            <div class="form-row" id="gen-layout-row">
+                <label class="label">글자 배치</label>
+                <div class="seg" id="gen-layout">
+                    <button class="on" data-layout="auto">기본</button>
+                    <button data-layout="vertical">세로</button>
+                    <button data-layout="arc">아치</button>
+                </div>
+            </div>
+
             <div class="form-row">
-                <label class="label">텍스처</label>
-                <select class="select" id="gen-texture">
-                    <option value="none">매끈</option>
-                    <option value="rough" selected>거친 인주 느낌</option>
-                    <option value="distressed">오래된 도장</option>
-                </select>
+                <label class="label">마감</label>
+                <div class="seg" id="gen-style">
+                    <button class="on" data-style="natural">자연스럽게</button>
+                    <button data-style="clean">깔끔하게</button>
+                </div>
+                <p class="help">「자연스럽게」는 실제 찍은 도장처럼 잉크 번짐과 거친 질감을 넣고, 「깔끔하게」는 선명한 디지털 도장을 만듭니다.</p>
             </div>
 
             <button class="btn btn-primary btn-block" id="gen-download">투명 PNG 다운로드</button>
@@ -285,7 +295,7 @@
     <div class="site-footer-inner">
         <p style="margin:0 0 10px;color:inherit;opacity:.75;font-size:.92em">쓰다가 아쉬운 점 있으면 <a href="mailto:vis555540@gmail.com">메일</a>로 알려주세요.</p>
         <div class="site-footer-bottom">
-            <span>© 2017–2026 LeDeuxions. Stamp Tool v2026.05</span>
+            <span>© 2017–2026 LeDeuxions. Stamp Tool v2026.10</span>
             <span><a href="/web-projects/">← 다른 도구</a></span>
         </div>
     </div>
@@ -317,21 +327,40 @@
         color: '#C62828',
         border: 16,
         size: 160,
-        texture: 'rough'
+        layout: 'auto',
+        style: 'natural'
     };
     var gctx = G.canvas.getContext('2d');
+    // offscreen canvas holds the clean artwork before the ink pass
+    var baseCv = document.createElement('canvas');
+    baseCv.width = G.canvas.width;
+    baseCv.height = G.canvas.height;
+    var bctx = baseCv.getContext('2d');
 
-    function drawStamp() {
-        var c = G.canvas, ctx = gctx;
-        var w = c.width, h = c.height;
+    // smooth low-frequency noise field (bilinear) → uneven inking
+    function makeField(w, h, cell) {
+        var cols = Math.ceil(w / cell) + 2, rows = Math.ceil(h / cell) + 2;
+        var g = new Float32Array(cols * rows);
+        for (var i = 0; i < g.length; i++) g[i] = Math.random();
+        return function (x, y) {
+            var fx = x / cell, fy = y / cell;
+            var x0 = fx | 0, y0 = fy | 0;
+            var tx = fx - x0, ty = fy - y0;
+            var a = g[y0 * cols + x0], b = g[y0 * cols + x0 + 1];
+            var c = g[(y0 + 1) * cols + x0], d = g[(y0 + 1) * cols + x0 + 1];
+            var top = a + (b - a) * tx, bot = c + (d - c) * tx;
+            return top + (bot - top) * ty; // 0..1
+        };
+    }
+
+    // draw border/ring + name solid onto a context
+    function drawSolid(ctx, w, h) {
         ctx.clearRect(0, 0, w, h);
-
         ctx.save();
         ctx.fillStyle = G.color;
         ctx.strokeStyle = G.color;
         ctx.lineWidth = G.border;
 
-        // shape
         var pad = G.border + 20;
         if (G.shape === 'circle') {
             ctx.beginPath();
@@ -341,54 +370,166 @@
             ctx.beginPath();
             ctx.ellipse(w/2, h/2, (w-pad*2)/2, (h-pad*2)/2 * 0.78, 0, 0, Math.PI*2);
             ctx.stroke();
+        } else if (G.shape === 'seal') {
+            // 인감: thick outer ring + thin inner ring
+            var rOuter = (w - pad*2)/2;
+            ctx.beginPath();
+            ctx.arc(w/2, h/2, rOuter, 0, Math.PI*2);
+            ctx.stroke();
+            ctx.save();
+            ctx.lineWidth = Math.max(3, G.border * 0.4);
+            ctx.beginPath();
+            ctx.arc(w/2, h/2, rOuter - G.border * 0.9 - 10, 0, Math.PI*2);
+            ctx.stroke();
+            ctx.restore();
         } else {
             ctx.strokeRect(pad, pad, w - pad*2, h - pad*2);
         }
 
-        // text
+        drawText(ctx, w, h, pad);
+        ctx.restore();
+    }
+
+    function drawText(ctx, w, h, pad) {
         var t = G.text || ' ';
-        var fitW = w - pad*2 - 40;
-        ctx.font = '800 ' + G.size + 'px ' + G.font;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
+        var layout = G.layout;
+        if (G.shape === 'seal' && layout === 'auto') layout = 'vertical';
+
+        if (layout === 'arc') { drawArc(ctx, w, h, pad, t); return; }
+        if (layout === 'vertical') { drawVertical(ctx, w, h, pad, t); return; }
+
+        // auto grid (original behaviour)
+        ctx.font = '800 ' + G.size + 'px ' + G.font;
         if (t.length <= 1) {
             ctx.fillText(t, w/2, h/2);
         } else if (t.length === 2) {
             ctx.fillText(t[0], w*0.32, h/2);
             ctx.fillText(t[1], w*0.68, h/2);
         } else if (t.length === 3) {
-            // top-bottom 2x1 or grid? Use 3 vertical chars on 2 columns
             ctx.fillText(t[0], w*0.32, h*0.35);
             ctx.fillText(t[1], w*0.68, h*0.35);
             ctx.fillText(t[2], w/2, h*0.72);
         } else {
-            // 4+ chars: 2x2 grid
             ctx.font = '800 ' + Math.round(G.size * 0.78) + 'px ' + G.font;
             ctx.fillText(t[0] || '', w*0.32, h*0.36);
             ctx.fillText(t[1] || '', w*0.68, h*0.36);
             ctx.fillText(t[2] || '', w*0.32, h*0.68);
             ctx.fillText(t[3] || '', w*0.68, h*0.68);
         }
+    }
 
-        // texture
-        if (G.texture !== 'none') {
-            var img = ctx.getImageData(0, 0, w, h);
-            var d = img.data;
-            var intensity = G.texture === 'distressed' ? 0.65 : 0.85;
-            for (var i = 0; i < d.length; i += 4) {
-                if (d[i + 3] > 0) {
-                    var noise = Math.random();
-                    if (noise > intensity) {
-                        d[i + 3] = Math.max(0, d[i + 3] * (0.3 + Math.random() * 0.5));
-                    } else if (noise > intensity - 0.15) {
-                        d[i + 3] = Math.max(0, d[i + 3] * (0.7 + Math.random() * 0.3));
-                    }
-                }
-            }
-            ctx.putImageData(img, 0, 0);
+    // vertical columns, read right-to-left (traditional seal order)
+    function drawVertical(ctx, w, h, pad, t) {
+        var n = t.length;
+        var cx = w/2, cy = h/2;
+        var inner = (w - pad*2) - 44;
+        var cols;
+        if (n <= 1) cols = [[t || ' ']];
+        else if (n === 2) cols = [[t[0], t[1]]];
+        else if (n === 3) cols = [[t[0]], [t[1], t[2]]];
+        else if (n === 4) cols = [[t[0], t[1]], [t[2], t[3]]];
+        else {
+            var perCol = Math.ceil(n / Math.ceil(n / 3));
+            cols = [];
+            for (var k = 0; k < n; k += perCol) cols.push(t.slice(k, k + perCol).split(''));
         }
-        ctx.restore();
+        var nCols = cols.length, maxRows = 1;
+        cols.forEach(function (c) { if (c.length > maxRows) maxRows = c.length; });
+        var fs = Math.min(G.size, (inner / nCols) * 0.9, (inner / maxRows) * 0.92);
+        fs = Math.max(26, fs);
+        ctx.font = '800 ' + Math.round(fs) + 'px ' + G.font;
+        var colGap = inner / nCols;
+        for (var ci = 0; ci < nCols; ci++) {
+            var colX = cx + (nCols - 1) / 2 * colGap - ci * colGap; // cols[0] on the right
+            var col = cols[ci], rows = col.length;
+            var rowGap = (rows > 1) ? Math.min(colGap, inner / rows) : 0;
+            for (var ri = 0; ri < rows; ri++) {
+                var colY = cy - (rows - 1) / 2 * rowGap + ri * rowGap;
+                ctx.fillText(col[ri], colX, colY);
+            }
+        }
+    }
+
+    // name curved along the top arc (company-seal style)
+    function drawArc(ctx, w, h, pad, t) {
+        var n = t.length;
+        var cx = w/2, cy = h/2;
+        var R = (w - pad*2)/2 - G.border * 0.5 - 30;
+        var fs = Math.min(G.size * 0.72, (2 * Math.PI * R) / Math.max(n, 1) * 0.9);
+        fs = Math.max(30, fs);
+        ctx.font = '800 ' + Math.round(fs) + 'px ' + G.font;
+        if (n <= 1) { ctx.fillText(t || ' ', cx, cy); return; }
+        var spread = Math.min(Math.PI * 1.15, n * (fs / R) * 1.05);
+        var start = -Math.PI/2 - spread/2;
+        var step = spread / (n - 1);
+        for (var i = 0; i < n; i++) {
+            var ang = start + step * i;
+            var x = cx + R * Math.cos(ang);
+            var y = cy + R * Math.sin(ang);
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(ang + Math.PI/2);
+            ctx.fillText(t[i], 0, 0);
+            ctx.restore();
+        }
+    }
+
+    // realistic ink pass: uneven inking, grain, frayed edges, tiny voids
+    function applyInk(ctx, w, h) {
+        var img = ctx.getImageData(0, 0, w, h);
+        var d = img.data;
+        var field = makeField(w, h, 46);   // fine uneven inking
+        var field2 = makeField(w, h, 170); // large patches
+        for (var y = 0; y < h; y++) {
+            for (var x = 0; x < w; x++) {
+                var p = (y * w + x) * 4;
+                var a = d[p + 3];
+                if (a === 0) continue;
+                var ink = (0.62 + 0.38 * field(x, y)) * (0.78 + 0.22 * field2(x, y));
+                ink *= (1 - Math.random() * 0.13);            // grain
+                if (a < 235) {                                 // soft (blurred) edge → fray
+                    var keep = a / 235;
+                    if (Math.random() > keep * 0.9 + 0.05) { d[p + 3] = 0; continue; }
+                    ink *= 0.55 + 0.45 * Math.random();
+                }
+                if (a > 200 && Math.random() < 0.005) { d[p + 3] = 0; continue; } // ink voids
+                var na = a * ink;
+                d[p + 3] = na < 15 ? 0 : (na > 255 ? 255 : na);
+            }
+        }
+        ctx.putImageData(img, 0, 0);
+    }
+
+    function drawStamp() {
+        var c = G.canvas, ctx = gctx;
+        var w = c.width, h = c.height;
+        drawSolid(bctx, w, h);
+        ctx.clearRect(0, 0, w, h);
+        if (G.style === 'natural') {
+            ctx.save();
+            if (typeof ctx.filter !== 'undefined') {
+                ctx.filter = 'blur(1.6px)';   // slight ink bleed
+                ctx.globalAlpha = 0.9;
+                ctx.drawImage(baseCv, 0, 0);
+                ctx.filter = 'none';
+            }
+            ctx.globalAlpha = 1;
+            ctx.drawImage(baseCv, 0, 0);
+            ctx.restore();
+            applyInk(ctx, w, h);
+        } else {
+            ctx.drawImage(baseCv, 0, 0);
+        }
+    }
+
+    function setLayout(v) {
+        G.layout = v;
+        document.querySelectorAll('#gen-layout button').forEach(function (b) {
+            b.classList.toggle('on', b.dataset.layout === v);
+        });
     }
 
     document.getElementById('gen-text').addEventListener('input', function (e) {
@@ -399,6 +540,12 @@
         document.querySelectorAll('#gen-shape button').forEach(function (b) { b.classList.remove('on'); });
         e.target.classList.add('on');
         G.shape = e.target.dataset.shape;
+        if (G.shape === 'seal' && G.layout === 'auto') setLayout('vertical');
+        drawStamp();
+    });
+    document.getElementById('gen-layout').addEventListener('click', function (e) {
+        if (e.target.tagName !== 'BUTTON') return;
+        setLayout(e.target.dataset.layout);
         drawStamp();
     });
     document.getElementById('gen-color').addEventListener('click', function (e) {
@@ -417,8 +564,12 @@
     document.getElementById('gen-size').addEventListener('input', function (e) {
         G.size = parseInt(e.target.value, 10); drawStamp();
     });
-    document.getElementById('gen-texture').addEventListener('change', function (e) {
-        G.texture = e.target.value; drawStamp();
+    document.getElementById('gen-style').addEventListener('click', function (e) {
+        if (e.target.tagName !== 'BUTTON') return;
+        document.querySelectorAll('#gen-style button').forEach(function (b) { b.classList.remove('on'); });
+        e.target.classList.add('on');
+        G.style = e.target.dataset.style;
+        drawStamp();
     });
 
     document.getElementById('gen-download').addEventListener('click', function () {
