@@ -304,14 +304,16 @@ const c=판.getContext("2d");
 const 틀=document.getElementById("틀"), 겹층=document.getElementById("겹층"), 무대=document.getElementById("무대");
 let 배율=1, 보임={w:폭,h:높이};
 const 카메라={x:0,y:0};
+const 확대=2;                                             // 픽셀 확대 배수 (형 요청: 사무실 픽셀 2배). 전체가 화면에 안 들어오면 카메라가 따라간다.
 function 크기(){
   const r=무대.getBoundingClientRect();
   const cs=getComputedStyle(무대);
   const w=Math.max(120,r.width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight));
   const h=Math.max(120,r.height-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom));
-  const 맞춤=Math.min(w/폭,h/높이);
-  if(맞춤>=1){ 배율=맞춤>=2?Math.floor(맞춤*2)/2:맞춤; 보임={w:폭,h:높이}; }
-  else { 배율=Math.min(2,Math.max(w/폭,h/높이,1.6)); 보임={w:Math.min(폭,w/배율),h:Math.min(높이,h/배율)}; }  // 작은 화면: 확대하고 카메라가 따라감
+  const 맞춤=Math.min(w/폭,h/높이);                       // 전체 방이 다 들어가는 배율
+  배율=Math.min(4,Math.max(2,맞춤*확대));                 // 픽셀을 ≈2배로 키우되 2~4로 묶음 — 폰은 과확대 방지, 데스크톱은 또렷하게
+  배율=Math.round(배율*2)/2;                              // 0.5 단위 스냅 — 픽셀 경계가 또렷하게
+  보임={w:Math.min(폭,w/배율),h:Math.min(높이,h/배율)};    // 화면보다 크면 일부만 보이고 카메라가 따라감 (좌표·겹층 모두 같은 배율/카메라를 써서 클릭 판정 그대로)
   const dpr=Math.min(3,window.devicePixelRatio||1);
   보기.width=Math.round(보임.w*배율*dpr); 보기.height=Math.round(보임.h*배율*dpr);
   보기.style.width=(보임.w*배율)+"px"; 보기.style.height=(보임.h*배율)+"px";
