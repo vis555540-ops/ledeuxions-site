@@ -14,6 +14,7 @@
     { href: '/글/',          icon: '✍️', label: '글·칼럼' },
     { href: '/web-projects/', icon: '🛠', label: '도구' },
     { href: '/work/',        icon: '🖼', label: '작품' },
+    { href: '/games/',       icon: '🎮', label: '게임' },
     { href: '/history/',     icon: '📖', label: '이야기' },
     { href: '/사무실/',       icon: '🏢', label: '사무실' },
     { href: '/오늘/',         icon: '🐑', label: '양몰이' },

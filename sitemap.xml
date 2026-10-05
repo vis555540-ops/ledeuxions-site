@@ -498,6 +498,36 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://ledeuxions.com/games/2048/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/games/hextris/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/games/clumsybird/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/games/0hh1/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/games/snake/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ledeuxions.com/games/blockssaki/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://ledeuxions.com/wriggle/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
