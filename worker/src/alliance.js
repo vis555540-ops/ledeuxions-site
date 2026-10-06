@@ -33,6 +33,7 @@ const intOr = (v, d, lo = 0, hi = 1e15) => {
     const n = Math.floor(Number(String(v ?? "").replace(/[, ]/g, "")));
     return Number.isFinite(n) && n >= lo && n <= hi ? n : d;
 };
+const srv = (v) => intOr(String(v ?? "").replace(/^\s*[sS#]+\s*/, ""), null, 1, 99999);
 const lang = (v) => (LANGS.includes(v) ? v : null);
 const newId = () => {
     const b = new Uint8Array(9); crypto.getRandomValues(b);
@@ -68,7 +69,7 @@ const contactOk = (s) => oneLine(s, 120);
 // ---------- 모집판 ----------
 async function listRecruit(url, env) {
     const now = Date.now();
-    const server = intOr(url.searchParams.get("server"), null, 1, 99999);
+    const server = srv(url.searchParams.get("server"));
     const lg = lang(url.searchParams.get("lang"));
     let posts = (await getArr(env, "al:recruit")).filter(p => p.expires > now && (p.reports || 0) < HIDE_AT_REPORTS);
     if (server) posts = posts.filter(p => p.server === server);
@@ -81,7 +82,7 @@ async function saveRecruit(req, env) {
     const b = await body(req);
     if (!b) return [400, { error: "invalid json" }];
     if (!validPin(b.pin)) return [400, { error: "pin", message: "PIN 4~6자리 숫자 / PIN must be 4-6 digits" }];
-    const server = intOr(b.server, null, 1, 99999);
+    const server = srv(b.server);
     const name = oneLine(b.name, 40);
     if (!server || !name) return [400, { error: "server/name required" }];
     const langs = [...new Set((Array.isArray(b.langs) ? b.langs : []).filter(lang))].slice(0, 6);
@@ -138,7 +139,7 @@ async function ownerDelete(req, env, key) {
 
 // ---------- 캐릭터 명부 ----------
 async function listChars(url, env) {
-    const server = intOr(url.searchParams.get("server"), null, 1, 99999);
+    const server = srv(url.searchParams.get("server"));
     const q = oneLine(url.searchParams.get("q"), 24).toLowerCase();
     const ids = (url.searchParams.get("ids") || "").split(",").filter(Boolean).slice(0, 200);
     let chars = (await getArr(env, "al:chars")).filter(c => (c.reports || 0) < HIDE_AT_REPORTS);
@@ -153,7 +154,7 @@ async function saveChar(req, env) {
     const b = await body(req);
     if (!b) return [400, { error: "invalid json" }];
     if (!validPin(b.pin)) return [400, { error: "pin", message: "PIN 4~6자리 숫자 / PIN must be 4-6 digits" }];
-    const server = intOr(b.server, null, 1, 99999);
+    const server = srv(b.server);
     const nick = oneLine(b.nick, 24);
     if (!server || !nick) return [400, { error: "nick/server required" }];
     const fields = { nick, server, alliance: oneLine(b.alliance, 40), lang: lang(b.lang) || "en",
@@ -237,7 +238,7 @@ async function postChat(req, env) {
     if (!room || !text || !nick) return [400, { error: "room/nick/text required" }];
     const ih = await ipHashOf(req);
     if (await rateLimited(env, ih, "chat", 20, 60)) return [429, { error: "slow down", message: "1분에 20개까지 / max 20 per minute" }];
-    const m = { id: newId(), room, nick, server: intOr(b.server, null, 1, 99999), lang: lang(b.lang) || "en",
+    const m = { id: newId(), room, nick, server: srv(b.server), lang: lang(b.lang) || "en",
         text, ts: Date.now(), reports: 0, ipHash: ih };
     const arr = await getArr(env, `al:chat:${room}`);
     arr.push(m);
