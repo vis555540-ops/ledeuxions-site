@@ -384,6 +384,19 @@ async function 해시(s) {
         .map(x => x.toString(16).padStart(2, "0")).join("");
 }
 
+// 들어온 곳 → 도메인 이름 하나. 우리 집이면 null(안 셈), 비었으면 "direct".
+function 어디서(ref) {
+    let 곳 = String(ref).trim().toLowerCase();
+    if (!곳) return "direct";
+    if (곳.includes("/")) { try { 곳 = new URL(곳).hostname; } catch (e) { return null; } }
+    곳 = 곳.replace(/\.$/, "");
+    if (!/^[a-z0-9.-]{1,80}$/.test(곳) || !곳.includes(".")) return "other";
+    if (/^[0-9.]+$/.test(곳)) return "other";                    // IP 는 안 남긴다
+    if (/(^|\.)(ledeuxions\.com|pdf300\.com)$/.test(곳)) return null;   // 우리 안에서 옮긴 것
+    if (/(^|\.)pages\.dev$/.test(곳) || 곳 === "localhost") return null;
+    return 곳;
+}
+
 async function handleHit(request, env, origin) {
     const h = corsHeaders(origin);
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -436,6 +449,17 @@ async function handleHit(request, env, origin) {
 
     const pk = `hitp:${사이트}:${날}:${쪽}`;
     await env.KV.put(pk, String(Number(await env.KV.get(pk) || 0) + 1), { expirationTtl: 살 });
+
+    // 어디서 왔나 (2026-10-06 형 물음) — 들어온 사이트의 「도메인 이름만」 센다.
+    //   전체 주소·검색어·IP·쿠키는 안 남긴다. 우리 사이트끼리 옮겨다닌 건 안 센다.
+    //   count.js 가 ref 를 보낼 때만 센다 (옛 count.js 는 ref 가 없다 → 안 셈).
+    if (typeof body.ref === "string") {
+        const 곳 = 어디서(body.ref);
+        if (곳) {
+            const rk = `hitref:${사이트}:${날}:${곳}`;
+            await env.KV.put(rk, String(Number(await env.KV.get(rk) || 0) + 1), { expirationTtl: 살 });
+        }
+    }
 
     return json({ ok: true }, 200, h);
 }
@@ -494,7 +518,30 @@ async function handleHitStats(request, env, origin) {
         }
     }
 
-    return json({ ok: true, days: 며칠, stats: 답, pages: 쪽별 }, 200, h);
+    // 어디서 왔나 — ?refs=1 일 때만 (KV list 비쌈)
+    let 들어온곳 = undefined;
+    if (url.searchParams.get("refs")) {
+        const 좁은날 = new Set(날들.slice(0, Math.min(며칠, 31)));
+        들어온곳 = {};
+        for (const 사이트 of 우리사이트) {
+            const 모음 = {};
+            let 커서 = undefined, 바퀴 = 0;
+            do {
+                const r = await env.KV.list({ prefix: `hitref:${사이트}:`, cursor: 커서, limit: 1000 });
+                for (const k of r.keys) {
+                    const [, , 날, 곳] = k.name.split(":");
+                    if (!좁은날.has(날)) continue;
+                    모음[곳] = (모음[곳] || 0) + Number(await env.KV.get(k.name) || 0);
+                }
+                커서 = r.list_complete ? undefined : r.cursor;
+            } while (커서 && ++바퀴 < 8);
+            들어온곳[사이트] = Object.entries(모음)
+                .sort((a, b) => b[1] - a[1]).slice(0, 30)
+                .map(([곳, 수]) => ({ 곳, 방문: 수 }));
+        }
+    }
+
+    return json({ ok: true, days: 며칠, stats: 답, pages: 쪽별, refs: 들어온곳 }, 200, h);
 }
 
 // 손님이 열쇠를 넣었을 때 — 살아 있나 답해준다

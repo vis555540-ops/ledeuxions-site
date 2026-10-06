@@ -16,6 +16,61 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="assets/css/ledeuxions-classical.css">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://ledeuxions.com/#website", "url": "https://ledeuxions.com/", "name": "LeDeuxions", "inLanguage": "ko", "description": "건축과 그림, 그리고 브라우저에서 끝나는 웹 도구들."}, {"@type": "Person", "@id": "https://ledeuxions.com/#person", "name": "LeDeuxions", "url": "https://ledeuxions.com/", "jobTitle": "건축가"}]}</script>
+<style>
+/* 첫 화면 손보기 (2026-10-06 형: 「게임을 메인으로 당기고, 첫화면 부담스럽고 게임까지 들어가기 힘들어」)
+   게임을 맨 위로, 자주 쓰는 도구는 짧은 목록으로. 나머지(이야기·작품·전체 목록)는 그 아래 그대로. */
+.play{padding-block:34px 18px}
+.play-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.play-head h2{font-family:var(--font-heading);font-weight:600;font-size:clamp(28px,3.4vw,38px);margin:0;letter-spacing:-.01em}
+.play-head .sub{font-size:13.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent);word-break:keep-all}
+.play-head .all{margin-left:auto;font-size:14px;border-bottom:1px solid var(--color-accent);padding-bottom:2px;white-space:nowrap}
+.play-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,2fr);gap:14px}
+.gcard{display:flex;flex-direction:column;justify-content:center;gap:4px;background:var(--color-surface);border:1px solid var(--color-divider);border-radius:14px;padding:16px;color:var(--color-text);min-width:0;transition:transform .12s ease,border-color .12s ease}
+.gcard:hover{border-color:var(--color-accent);color:var(--color-text)}
+.gcard:active{transform:scale(.97)}
+.gcard .e{font-size:30px;line-height:1}
+.gcard .n{font-family:var(--font-heading);font-weight:600;font-size:19px;margin-top:6px}
+.gcard .d{font-size:12.5px;line-height:1.45;color:color-mix(in srgb,var(--color-text) 60%,transparent);word-break:keep-all}
+.gcard.big{background:var(--color-colophon);border-color:var(--color-colophon);color:var(--color-colophon-text);padding:24px 22px;gap:6px}
+.gcard.big:hover{color:var(--color-colophon-text);border-color:var(--color-accent)}
+.gcard.big .e{font-size:52px}
+.gcard.big .n{font-size:28px}
+.gcard.big .d{font-size:14px;color:color-mix(in srgb,#ece9e4 72%,transparent)}
+.gcard.big .go{align-self:flex-start;margin-top:12px;background:var(--color-accent);color:#1a1917;font-weight:600;font-size:15px;padding:10px 20px;border-radius:99px}
+.gcard.big .tag{align-self:flex-start;font-size:11px;letter-spacing:.12em;color:var(--color-accent-400)}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.mini .gcard{align-items:center;text-align:center;padding:14px 8px}
+.mini .gcard .n{font-size:17px}
+.mini .gcard.hub{background:color-mix(in srgb,var(--color-accent) 16%,var(--color-surface));border-color:var(--color-accent)}
+.quick{padding-block:22px 30px}
+.quick h2{font-family:var(--font-heading);font-weight:600;font-size:22px;margin:0 0 6px}
+.qlist{list-style:none;margin:0;padding:0;border-top:1px solid var(--color-text)}
+.qlist a{display:flex;align-items:baseline;gap:12px;padding:13px 4px;border-bottom:1px solid var(--color-divider);color:var(--color-text)}
+.qlist a:hover{background:color-mix(in srgb,var(--color-accent) 6%,transparent)}
+.qlist .n{font-family:var(--font-heading);font-size:18px;font-weight:600;white-space:nowrap}
+.qlist .d{font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);word-break:keep-all;min-width:0}
+.qlist .arrow{margin-left:auto;font-size:13px;color:color-mix(in srgb,var(--color-text) 45%,transparent)}
+.more-head{margin-top:12px;padding-top:26px;border-top:1px solid var(--color-divider)}
+@media (max-width:760px){
+.play{padding-block:22px 12px}
+.play-head{margin-bottom:14px}
+.play-head .sub{order:3;flex-basis:100%}
+.play-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+.gcard.big{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:14px;padding:18px}
+.gcard.big .e{font-size:44px}
+.gcard.big .txt{flex:1;min-width:0}
+.gcard.big .go{margin-top:6px;flex-basis:100%;text-align:center}
+.mini{gap:10px}
+.mini .gcard{padding:12px 4px}
+.mini .gcard .e{font-size:26px}
+.mini .gcard .n{font-size:15.5px}
+.mini .gcard .d{display:none}
+.qlist a{flex-wrap:wrap;gap:2px 10px}
+.qlist .d{flex-basis:100%;order:3}
+.qlist .arrow{order:2}
+.band.top{padding-block:40px 56px}
+}
+</style>
 </head>
 <body>
 <div class="page">
@@ -29,7 +84,44 @@
 </nav>
 </header>
 <main>
-<section class="wrap band">
+<section class="wrap play" aria-labelledby="play-title">
+<div class="play-head">
+<h2 id="play-title">게임</h2>
+<span class="sub">설치·가입 없이 누르면 바로 시작합니다.</span>
+<a class="all" href="/games/">전체 게임 →</a>
+</div>
+<div class="play-grid">
+<a class="gcard big" href="/web-projects/game-world/dozer/">
+<span class="e" aria-hidden="true">🪙</span>
+<span class="txt">
+<span class="tag">요즘 제일 많이 하는 게임</span>
+<span class="n" style="display:block">동전 밀기</span>
+<span class="d" style="display:block">오락실에 있던 그 기계. 동전을 쌓아서 우르르 떨어뜨립니다.</span>
+</span>
+<span class="go">바로 하기 ▶</span>
+</a>
+<div class="mini">
+<a class="gcard" href="/web-projects/game-world/suika/"><span class="e" aria-hidden="true">🍉</span><span class="n">수박 게임</span><span class="d">같은 과일끼리 합치기</span></a>
+<a class="gcard" href="/wriggle/"><span class="e" aria-hidden="true">🪱</span><span class="n">꿈틀</span><span class="d">지렁이 구멍까지 뛰기</span></a>
+<a class="gcard" href="/games/2048/"><span class="e" aria-hidden="true">🔢</span><span class="n">2048</span><span class="d">숫자 밀어 합치기</span></a>
+<a class="gcard" href="/web-projects/game-world/tower/"><span class="e" aria-hidden="true">🏗️</span><span class="n">타워 쌓기</span><span class="d">블록 정확히 겹치기</span></a>
+<a class="gcard" href="/games/clumsybird/"><span class="e" aria-hidden="true">🐦</span><span class="n">날아라 새</span><span class="d">톡톡 눌러 날기</span></a>
+<a class="gcard hub" href="/games/"><span class="e" aria-hidden="true">🎮</span><span class="n">게임 나라</span><span class="d">게임 전부 보기</span></a>
+</div>
+</div>
+</section>
+<section class="wrap quick" aria-labelledby="quick-title">
+<h2 id="quick-title">자주 쓰는 도구</h2>
+<ul class="qlist">
+<li><a href="/web-projects/freecomfortlab/"><span class="n">미디어 변환</span><span class="d">영상·소리 파일 바꾸기 — 브라우저에서 끝</span><span class="arrow">→</span></a></li>
+<li><a href="/web-projects/freecomfortlab/video-to-mp3"><span class="n">영상 → MP3</span><span class="d">영상에서 소리만 뽑기</span><span class="arrow">→</span></a></li>
+<li><a href="/applications/iphoneheic/"><span class="n">HEIC → JPG</span><span class="d">아이폰 사진을 어디서나 열리게</span><span class="arrow">→</span></a></li>
+<li><a href="/notes/cad-hwp-vector/"><span class="n">캐드 → 한글 벡터</span><span class="d">도면 글자가 뭉개지지 않게 붙이기</span><span class="arrow">→</span></a></li>
+<li><a href="/web-projects/malhae/"><span class="n">말해요</span><span class="d">말 대신 눌러서 소리내기</span><span class="arrow">→</span></a></li>
+<li><a href="/web-projects/"><span class="n">도구 전체</span><span class="d">PDF·도장·HWP 뷰어 등 모두 보기</span><span class="arrow">→</span></a></li>
+</ul>
+</section>
+<section class="wrap band top more-head">
 <figure class="plate">
 <img src="assets/img/portrait-studio.png" alt="작업실의 초상" style="aspect-ratio:4/3;object-position:50% 42%">
 <figcaption>Plate I — Studio, 2025</figcaption>
