@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FAF9F5">
+<title>연맹 광장 · Alliance Plaza</title>
+<meta name="description" content="전략 게임 연맹 모집·캐릭터 명부·번역 토론방. 팬이 만든 비공식 커뮤니티.">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/assets/css/claude-design.css">
+<style>
+    html, body { overflow-x: hidden; }
+    body { background: var(--bg-canvas); }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px 48px; }
+    .hero { padding: 24px 0 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .hero h1 { font-family: var(--font-serif); font-size: clamp(1.7rem, 7vw, 2.4rem); margin: 0; line-height: 1.15; }
+    .hero .sub { margin: 6px 0 0; color: var(--text-secondary); font-size: .95rem; }
+    .disclaim { margin: 6px 0 0; font-size: .78rem; color: var(--text-muted); line-height: 1.45; }
+    .langbtn { flex: none; border: 1px solid var(--border-strong); background: var(--bg-card); border-radius: 999px; padding: 7px 12px; font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; color: var(--text-primary); }
+    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: var(--bg-sunken); padding: 4px; border-radius: var(--radius-md); margin: 12px 0 16px; position: sticky; top: 0; z-index: 5; }
+    .tab { border: 0; background: transparent; padding: 10px 2px; border-radius: 8px; font: inherit; font-size: .86rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; line-height: 1.25; min-width: 0; }
+    .tab[aria-selected="true"] { background: var(--bg-card); color: var(--accent-deep); box-shadow: var(--shadow-xs); }
+    .mode { display: none; } .mode.on { display: block; }
+    .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 14px; }
+    .panel h2 { font-family: var(--font-sans); font-size: 1rem; font-weight: 700; margin: 0 0 12px; }
+    details.panel > summary { cursor: pointer; font-weight: 700; list-style: none; }
+    details.panel > summary::before { content: "＋ "; color: var(--accent); }
+    details.panel[open] > summary::before { content: "－ "; }
+    details.panel[open] > summary { margin-bottom: 12px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .f { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; min-width: 0; }
+    .f label { font-size: .85rem; font-weight: 600; }
+    .f input, .f select, .f textarea, .bar input, .bar select { font: inherit; font-size: 16px; padding: 9px 10px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); width: 100%; min-width: 0; box-sizing: border-box; }
+    .f textarea { min-height: 80px; resize: vertical; }
+    .hint { font-size: .78rem; color: var(--text-muted); line-height: 1.45; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chips label { display: inline-flex; align-items: center; gap: 4px; font-size: .85rem; font-weight: 500; border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+    .bar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .bar > * { flex: 1 1 120px; }
+    .btn { font: inherit; }
+    .btn-s { font: inherit; font-size: .82rem; border: 1px solid var(--border-strong); background: var(--bg-card); border-radius: 8px; padding: 6px 10px; cursor: pointer; color: var(--text-secondary); }
+    .btn-s:hover { background: var(--bg-sunken); }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 10px; overflow-wrap: anywhere; }
+    .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .card .title { font-weight: 700; font-size: 1.02rem; }
+    .badge { display: inline-block; font-size: .74rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-deep); white-space: nowrap; }
+    .meta { font-size: .84rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.55; }
+    .desc { margin: 8px 0 0; white-space: pre-wrap; font-size: .93rem; line-height: 1.55; }
+    .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .empty { text-align: center; color: var(--text-muted); padding: 28px 8px; font-size: .92rem; }
+    .msg { padding: 10px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+    .msg:last-child { border-bottom: 0; }
+    .msg .who { font-size: .8rem; color: var(--text-muted); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .msg .who b { color: var(--text-primary); }
+    .msg .txt { margin-top: 3px; white-space: pre-wrap; line-height: 1.5; }
+    .msg .orig { margin-top: 3px; font-size: .82rem; color: var(--text-muted); white-space: pre-wrap; display: none; }
+    .msg.show-orig .orig { display: block; }
+    .linkbtn { border: 0; background: none; padding: 0; color: var(--text-muted); font: inherit; font-size: .78rem; text-decoration: underline; cursor: pointer; }
+    #chatLog { max-height: 56vh; overflow-y: auto; }
+    .send { display: flex; gap: 8px; margin-top: 10px; }
+    .send textarea { flex: 1; font: inherit; font-size: 16px; padding: 9px 10px; border: 1px solid var(--border-strong); border-radius: 8px; min-height: 44px; max-height: 120px; resize: vertical; min-width: 0; }
+    .soon { display: flex; gap: 12px; align-items: center; }
+    .soon .ic { font-size: 1.6rem; }
+    .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--bg-inverse); color: var(--text-inverse); padding: 10px 16px; border-radius: 999px; font-size: .88rem; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw; z-index: 50; }
+    .toast.on { opacity: 1; }
+    .foot { text-align: center; font-size: .78rem; color: var(--text-muted); margin-top: 28px; line-height: 1.6; }
+    @media (max-width: 420px) { .grid2 { grid-template-columns: 1fr 1fr; gap: 8px; } .tab { font-size: .8rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <header class="hero">
+        <div>
+            <h1 data-t="title">연맹 광장</h1>
+            <p class="sub" data-t="sub">연맹 모집 · 캐릭터 명부 · 번역 토론방</p>
+            <p class="disclaim" data-t="disclaim">팬이 만든 비공식 커뮤니티 — 게임사와 무관</p>
+        </div>
+        <button class="langbtn" id="uiLang" type="button">EN</button>
+    </header>
+
+    <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-mode="recruit" aria-selected="true" data-t="tabRecruit">모집판</button>
+        <button class="tab" role="tab" data-mode="chars" aria-selected="false" data-t="tabChars">캐릭터</button>
+        <button class="tab" role="tab" data-mode="friends" aria-selected="false" data-t="tabFriends">친구</button>
+        <button class="tab" role="tab" data-mode="chat" aria-selected="false" data-t="tabChat">토론방</button>
+    </div>
+
+    <!-- 모집판 -->
+    <section class="mode on" id="m-recruit">
+        <details class="panel" id="recruitFormBox">
+            <summary data-t="newRecruit">모집글 올리기</summary>
+            <form id="recruitForm" autocomplete="off">
+                <input type="hidden" name="id">
+                <div class="grid2">
+                    <div class="f"><label data-t="server">서버 번호</label><input name="server" inputmode="numeric" required placeholder="1234"></div>
+                    <div class="f"><label data-t="tag">태그</label><input name="tag" maxlength="8" placeholder="ABC"></div>
+                </div>
+                <div class="f"><label data-t="allianceName">연맹 이름</label><input name="name" maxlength="40" required></div>
+                <div class="f"><label data-t="langs">사용 언어</label><div class="chips" id="langChips"></div></div>
+                <div class="grid2">
+                    <div class="f"><label data-t="members">현재 인원</label><input name="members" inputmode="numeric" placeholder="72"></div>
+                    <div class="f"><label data-t="power">전투력 조건</label><input name="power" maxlength="20" placeholder="50M+"></div>
+                </div>
+                <div class="f"><label data-t="needs">필요한 사람</label><input name="needs" maxlength="60" data-ph="needsPh" placeholder="활동적인 랠리 멤버 10명"></div>
+                <div class="f"><label data-t="desc">소개</label><textarea name="desc" maxlength="600"></textarea></div>
+                <div class="f"><label data-t="contact">연락 방법</label><input name="contact" maxlength="120" data-ph="contactPh" placeholder="게임 닉네임 또는 https://discord.gg/..."></div>
+                <div class="grid2">
+                    <div class="f"><label data-t="nick">내 닉네임</label><input name="nick" maxlength="24" required></div>
+                    <div class="f"><label>PIN</label><input name="pin" inputmode="numeric" pattern="\d{4,6}" maxlength="6" required placeholder="4~6"></div>
+                </div>
+                <p class="hint" data-t="pinHint">PIN은 내 글을 고치거나 지울 때 씁니다. 다른 곳 비밀번호는 쓰지 마세요.</p>
+                <p class="hint" data-t="expireHint">모집글은 14일 뒤 사라집니다. 끌어올리면 다시 14일.</p>
+                <button class="btn btn-primary" type="submit" data-t="submit">올리기</button>
+            </form>
+        </details>
+        <div class="bar">
+            <input id="rServer" inputmode="numeric" data-ph="filterServer" placeholder="서버 번호로 찾기">
+            <select id="rLang"></select>
+        </div>
+        <div id="recruitList"></div>
+    </section>
+
+    <!-- 캐릭터 명부 -->
+    <section class="mode" id="m-chars">
+        <details class="panel">
+            <summary data-t="newChar">내 캐릭터 등록</summary>
+            <form id="charForm" autocomplete="off">
+                <input type="hidden" name="id">
+                <div class="grid2">
+                    <div class="f"><label data-t="nick">닉네임</label><input name="nick" maxlength="24" required></div>
+                    <div class="f"><label data-t="server">서버 번호</label><input name="server" inputmode="numeric" required></div>
+                </div>
+                <div class="grid2">
+                    <div class="f"><label data-t="alliance">연맹</label><input name="alliance" maxlength="40"></div>
+                    <div class="f"><label data-t="powerOpt">전투력(선택)</label><input name="power" maxlength="20"></div>
+                </div>
+                <div class="grid2">
+                    <div class="f"><label data-t="lang1">언어</label><select name="lang" id="charLang"></select></div>
+                    <div class="f"><label>PIN</label><input name="pin" inputmode="numeric" pattern="\d{4,6}" maxlength="6" required placeholder="4~6"></div>
+                </div>
+                <div class="f"><label data-t="note">한마디(선택)</label><input name="note" maxlength="120"></div>
+                <p class="hint" data-t="selfReport">본인이 적은 정보입니다. 확인된 정보가 아닙니다.</p>
+                <button class="btn btn-primary" type="submit" data-t="submit">올리기</button>
+            </form>
+        </details>
+        <div class="bar">
+            <input id="cServer" inputmode="numeric" data-ph="whoOnServer" placeholder="서버 N 에 누가 있나">
+            <input id="cQ" data-ph="searchNick" placeholder="닉네임·연맹 검색">
+        </div>
+        <div id="charList"></div>
+    </section>
+
+    <!-- 친구 -->
+    <section class="mode" id="m-friends">
+        <p class="hint" style="margin:0 0 12px" data-t="friendHint">캐릭터 카드에서 ☆친구 추가를 누르면 여기 모입니다. 이 브라우저에만 저장됩니다.</p>
+        <div id="friendList"></div>
+    </section>
+
+    <!-- 토론방 -->
+    <section class="mode" id="m-chat">
+        <div class="panel">
+            <div class="bar" style="margin-bottom:8px">
+                <select id="roomSel"></select>
+                <input id="roomServer" inputmode="numeric" data-ph="serverRoom" placeholder="서버 방 번호" style="display:none">
+                <select id="readLang"></select>
+            </div>
+            <p class="hint" data-t="chatHint">모든 글은 내가 고른 언어로 자동 번역됩니다(AI 번역, 틀릴 수 있음).</p>
+            <div id="chatLog"><div class="empty" data-t="loading">불러오는 중…</div></div>
+            <div class="grid2" style="margin-top:10px">
+                <div class="f" style="margin:0"><input id="chatNick" maxlength="24" data-ph="nick" placeholder="닉네임"></div>
+                <div class="f" style="margin:0"><select id="writeLang"></select></div>
+            </div>
+            <div class="send">
+                <textarea id="chatText" maxlength="500" data-ph="chatPh" placeholder="메시지 (아무 언어나)"></textarea>
+                <button class="btn btn-primary" id="chatSend" type="button" data-t="send">보내기</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="panel soon">
+        <div class="ic">🎧</div>
+        <div>
+            <div style="font-weight:700" data-t="voiceTitle">통역방 — 음성 실시간 통역</div>
+            <div class="hint" data-t="voiceSoon">말하면 상대 언어로 들려주는 음성 통역방. 곧 열림.</div>
+        </div>
+    </div>
+
+    <p class="foot"><span data-t="disclaim">팬이 만든 비공식 커뮤니티 — 게임사와 무관</span><br>
+        <span data-t="footNote">게임 이름·상표는 각 권리자의 것입니다. 문제 글은 신고해 주세요.</span><br>
+        <a href="/">LeDeuxions</a></p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="/count.js" defer></script>
+<script>
+(function () {
+'use strict';
+var API = 'https://api.ledeuxions.com';
+var LANGS = [['ko','한국어'],['en','English'],['ja','日本語'],['zh','中文'],['es','Español'],['pt','Português'],['de','Deutsch'],['fr','Français'],['ru','Русский'],['vi','Tiếng Việt'],['th','ไทย'],['id','Bahasa Indonesia'],['tr','Türkçe'],['ar','العربية'],['it','Italiano'],['pl','Polski']];
+var LNAME = {}; LANGS.forEach(function (l) { LNAME[l[0]] = l[1]; });
+
+var T = {
+ ko: { title:'연맹 광장', sub:'연맹 모집 · 캐릭터 명부 · 번역 토론방', disclaim:'팬이 만든 비공식 커뮤니티 — 게임사와 무관',
+  tabRecruit:'모집판', tabChars:'캐릭터', tabFriends:'친구', tabChat:'토론방', newRecruit:'모집글 올리기', server:'서버 번호', tag:'태그',
+  allianceName:'연맹 이름', langs:'사용 언어', members:'현재 인원', power:'전투력 조건', needs:'필요한 사람', needsPh:'활동적인 랠리 멤버 10명',
+  desc:'소개', contact:'연락 방법', contactPh:'게임 닉네임 또는 https://discord.gg/...', nick:'닉네임', pinHint:'PIN은 내 글을 고치거나 지울 때 씁니다. 다른 곳 비밀번호는 쓰지 마세요.',
+  expireHint:'모집글은 14일 뒤 사라집니다. 끌어올리면 다시 14일.', submit:'올리기', filterServer:'서버 번호로 찾기', allLangs:'모든 언어',
+  newChar:'내 캐릭터 등록', alliance:'연맹', powerOpt:'전투력(선택)', lang1:'언어', note:'한마디(선택)', selfReport:'본인이 적은 정보입니다. 확인된 정보가 아닙니다.',
+  whoOnServer:'서버 N 에 누가 있나', searchNick:'닉네임·연맹 검색', friendHint:'캐릭터 카드에서 ☆친구 추가를 누르면 여기 모입니다. 이 브라우저에만 저장됩니다.',
+  chatHint:'모든 글은 내가 고른 언어로 자동 번역됩니다(AI 번역, 틀릴 수 있음).', loading:'불러오는 중…', chatPh:'메시지 (아무 언어나)', send:'보내기',
+  voiceTitle:'통역방 — 음성 실시간 통역', voiceSoon:'말하면 상대 언어로 들려주는 음성 통역방. 곧 열림.', footNote:'게임 이름·상표는 각 권리자의 것입니다. 문제 글은 신고해 주세요.',
+  noRecruit:'아직 모집글이 없습니다. 첫 글을 올려 보세요.', noChars:'찾는 캐릭터가 없습니다.', noFriends:'아직 친구가 없습니다.', noMsgs:'아직 대화가 없습니다. 먼저 인사해 보세요.',
+  people:'명', need:'필요', powerReq:'전투력', contactL:'연락', bump:'끌어올리기', edit:'고치기', del:'지우기', report:'신고', addFriend:'☆ 친구 추가', unfriend:'★ 친구 해제',
+  pinAsk:'PIN을 넣어 주세요', confirmDel:'정말 지울까요?', done:'됐습니다', reported:'신고했습니다. 고맙습니다', pinWrong:'PIN이 맞지 않습니다', err:'잘 안 됐습니다',
+  roomGlobal:'🌐 전체 방', roomServer:'🏰 서버 방…', serverRoom:'서버 방 번호', readIn:'읽을 언어', writeIn:'내가 쓰는 언어', showOrig:'원문', translating:'번역 중…',
+  left:'일 남음', updated:'수정', server1:'서버', copied:'복사했습니다', needNick:'닉네임을 넣어 주세요', editing:'고치는 중 — 올리기를 누르면 저장' },
+ en: { title:'Alliance Plaza', sub:'Alliance recruiting · Player directory · Translated chat', disclaim:"Unofficial fan community — not affiliated with the game's publisher",
+  tabRecruit:'Recruit', tabChars:'Players', tabFriends:'Friends', tabChat:'Chat', newRecruit:'Post a recruitment', server:'Server #', tag:'Tag',
+  allianceName:'Alliance name', langs:'Languages', members:'Members now', power:'Power requirement', needs:'Looking for', needsPh:'10 active rally members',
+  desc:'Description', contact:'Contact', contactPh:'In-game name or https://discord.gg/...', nick:'Nickname', pinHint:'Your PIN lets you edit or delete your post. Do not reuse a real password.',
+  expireHint:'Posts expire after 14 days. Bumping resets to 14 days.', submit:'Post', filterServer:'Filter by server #', allLangs:'All languages',
+  newChar:'Register my character', alliance:'Alliance', powerOpt:'Power (optional)', lang1:'Language', note:'Short note (optional)', selfReport:'Self-reported. Not verified.',
+  whoOnServer:'Who is on server N?', searchNick:'Search nickname / alliance', friendHint:'Tap ☆ Add friend on a player card to collect them here. Saved in this browser only.',
+  chatHint:'Every message is auto-translated into your reading language (AI translation, may be imperfect).', loading:'Loading…', chatPh:'Message (any language)', send:'Send',
+  voiceTitle:'Voice room — live interpreter', voiceSoon:'Speak and others hear it in their language. Coming soon.', footNote:'Game names and trademarks belong to their owners. Please report bad posts.',
+  noRecruit:'No recruitment posts yet. Be the first.', noChars:'No players found.', noFriends:'No friends yet.', noMsgs:'No messages yet. Say hi!',
+  people:'members', need:'Looking for', powerReq:'Power', contactL:'Contact', bump:'Bump', edit:'Edit', del:'Delete', report:'Report', addFriend:'☆ Add friend', unfriend:'★ Unfriend',
+  pinAsk:'Enter your PIN', confirmDel:'Delete this?', done:'Done', reported:'Reported. Thank you', pinWrong:'Wrong PIN', err:'Something went wrong',
+  roomGlobal:'🌐 Global room', roomServer:'🏰 Server room…', serverRoom:'Server room #', readIn:'Read in', writeIn:'I write in', showOrig:'original', translating:'translating…',
+  left:'days left', updated:'edited', server1:'Server', copied:'Copied', needNick:'Enter a nickname', editing:'Editing — press Post to save' }
+};
+var ui = 'ko';
+try { ui = localStorage.getItem('al_ui') || ((navigator.language || 'ko').indexOf('ko') === 0 ? 'ko' : 'en'); } catch (e) {}
+function t(k) { return (T[ui] && T[ui][k]) || T.ko[k] || k; }
+function store(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } }
+
+function el(tag, attrs) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+        if (k === 'text') n.textContent = attrs[k];
+        else if (k === 'cls') n.className = attrs[k];
+        else if (k.indexOf('on') === 0) n.addEventListener(k.slice(2), attrs[k]);
+        else n.setAttribute(k, attrs[k]);
+    }
+    for (var i = 2; i < arguments.length; i++) { var c = arguments[i]; if (c == null) continue; n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); }
+    return n;
+}
+var toastT;
+function toast(s) { var x = document.getElementById('toast'); x.textContent = s; x.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { x.classList.remove('on'); }, 2200); }
+function api(path, data) {
+    var o = data ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) } : {};
+    return fetch(API + path, o).then(function (r) { return r.json().then(function (j) { j._status = r.status; return j; }); });
+}
+function fail(j) { toast(j && j._status === 403 ? t('pinWrong') : (j && j.message) || t('err')); }
+function ago(ts) {
+    var s = Math.max(0, (Date.now() - ts) / 1000);
+    if (s < 60) return ui === 'ko' ? '방금' : 'now';
+    if (s < 3600) return Math.floor(s / 60) + (ui === 'ko' ? '분 전' : 'm ago');
+    if (s < 86400) return Math.floor(s / 3600) + (ui === 'ko' ? '시간 전' : 'h ago');
+    return Math.floor(s / 86400) + (ui === 'ko' ? '일 전' : 'd ago');
+}
+function contactNode(c) {
+    if (!c) return null;
+    if (/^https:\/\/(discord\.gg|discord\.com\/invite)\/[A-Za-z0-9-]{2,40}\/?$/.test(c))
+        return el('a', { href: c, target: '_blank', rel: 'noopener noreferrer nofollow ugc', text: c });
+    return el('span', { text: c });
+}
+
+/* ---------- 말 바꾸기 ---------- */
+function fillLangSelect(sel, withAll, val) {
+    sel.innerHTML = '';
+    if (withAll) sel.appendChild(el('option', { value: '', text: t('allLangs') }));
+    LANGS.forEach(function (l) { sel.appendChild(el('option', { value: l[0], text: l[1] })); });
+    if (val != null) sel.value = val;
+}
+function applyUi() {
+    document.documentElement.lang = ui;
+    document.querySelectorAll('[data-t]').forEach(function (n) { n.textContent = t(n.getAttribute('data-t')); });
+    document.querySelectorAll('[data-ph]').forEach(function (n) { n.placeholder = t(n.getAttribute('data-ph')); });
+    document.getElementById('uiLang').textContent = ui === 'ko' ? 'EN' : '한국어';
+    document.title = ui === 'ko' ? '연맹 광장 · Alliance Plaza' : 'Alliance Plaza · 연맹 광장';
+    var rl = document.getElementById('rLang'); fillLangSelect(rl, true, rl.value || '');
+    var rs = document.getElementById('roomSel'), rv = rs.value || 'global';
+    rs.innerHTML = ''; rs.appendChild(el('option', { value: 'global', text: t('roomGlobal') })); rs.appendChild(el('option', { value: 'server', text: t('roomServer') })); rs.value = rv;
+    renderRecruit(); renderChars(); renderFriends(); renderChat();
+}
+document.getElementById('uiLang').onclick = function () { ui = ui === 'ko' ? 'en' : 'ko'; try { localStorage.setItem('al_ui', ui); } catch (e) {} applyUi(); };
+
+/* ---------- 탭 ---------- */
+var mode = 'recruit';
+document.querySelectorAll('.tab').forEach(function (b) {
+    b.onclick = function () { setMode(b.getAttribute('data-mode')); };
+});
+function setMode(m) {
+    mode = m;
+    document.querySelectorAll('.tab').forEach(function (b) { b.setAttribute('aria-selected', b.getAttribute('data-mode') === m); });
+    document.querySelectorAll('.mode').forEach(function (s) { s.classList.toggle('on', s.id === 'm-' + m); });
+    try { history.replaceState(null, '', '#' + m); } catch (e) {}
+    if (m === 'recruit') loadRecruit();
+    if (m === 'chars') loadChars();
+    if (m === 'friends') loadFriends();
+    if (m === 'chat') startChat(); else stopChat();
+}
+
+/* ---------- 프로필(이 브라우저) ---------- */
+var prof = store('al_prof') || {};
+function remember(o) { for (var k in o) if (o[k]) prof[k] = o[k]; store('al_prof', prof); }
+function prefill(form) { ['nick', 'server'].forEach(function (k) { if (form[k] && !form[k].value && prof[k]) form[k].value = prof[k]; }); }
+function askPin() { var p = prompt(t('pinAsk')); return p && /^\d{4,6}$/.test(p.trim()) ? p.trim() : null; }
+function formData(form) { var o = {}; new FormData(form).forEach(function (v, k) { o[k] = v; }); return o; }
+
+/* ---------- 모집판 ---------- */
+var recruits = [];
+(function () {
+    var box = document.getElementById('langChips');
+    LANGS.forEach(function (l) { box.appendChild(el('label', null, el('input', { type: 'checkbox', value: l[0] }), l[1])); });
+})();
+function loadRecruit() {
+    var s = document.getElementById('rServer').value.trim(), l = document.getElementById('rLang').value;
+    api('/alliance/recruit?server=' + encodeURIComponent(s) + '&lang=' + encodeURIComponent(l)).then(function (j) { recruits = j.posts || []; renderRecruit(); }).catch(function () { toast(t('err')); });
+}
+function renderRecruit() {
+    var box = document.getElementById('recruitList'); box.innerHTML = '';
+    if (!recruits.length) { box.appendChild(el('div', { cls: 'empty', text: t('noRecruit') })); return; }
+    recruits.forEach(function (p) {
+        var days = Math.max(0, Math.ceil((p.expires - Date.now()) / 86400000));
+        var name = (p.tag ? '[' + p.tag + '] ' : '') + p.name;
+        var meta = [];
+        if (p.members != null) meta.push(p.members + ' ' + t('people'));
+        if (p.power) meta.push(t('powerReq') + ' ' + p.power);
+        meta.push((p.langs || []).map(function (x) { return LNAME[x] || x; }).join(' · '));
+        var c = el('div', { cls: 'card' },
+            el('div', { cls: 'top' }, el('span', { cls: 'title', text: name }), el('span', { cls: 'badge', text: t('server1') + ' ' + p.server })),
+            el('div', { cls: 'meta', text: meta.join('  ·  ') }),
+            p.needs ? el('div', { cls: 'meta' }, el('b', { text: t('need') + ': ' }), p.needs) : null,
+            p.desc ? el('p', { cls: 'desc', text: p.desc }) : null,
+            p.contact ? el('div', { cls: 'meta' }, el('b', { text: t('contactL') + ': ' }), contactNode(p.contact)) : null,
+            el('div', { cls: 'meta', text: p.nick + ' · ' + ago(p.bumped) + ' · ' + days + ' ' + t('left') }),
+            el('div', { cls: 'acts' },
+                el('button', { cls: 'btn-s', type: 'button', text: t('bump'), onclick: function () { var pin = askPin(); if (!pin) return; api('/alliance/recruit/bump', { id: p.id, pin: pin }).then(function (j) { if (j.ok) { toast(t('done')); loadRecruit(); } else fail(j); }); } }),
+                el('button', { cls: 'btn-s', type: 'button', text: t('edit'), onclick: function () { editRecruit(p); } }),
+                el('button', { cls: 'btn-s', type: 'button', text: t('del'), onclick: function () { var pin = askPin(); if (!pin || !confirm(t('confirmDel'))) return; api('/alliance/recruit/delete', { id: p.id, pin: pin }).then(function (j) { if (j.ok) { toast(t('done')); loadRecruit(); } else fail(j); }); } }),
+                el('button', { cls: 'btn-s', type: 'button', text: t('report'), onclick: function () { doReport('recruit', p.id); } })));
+        box.appendChild(c);
+    });
+}
+function editRecruit(p) {
+    var f = document.getElementById('recruitForm');
+    ['id', 'server', 'tag', 'name', 'members', 'power', 'needs', 'desc', 'contact', 'nick'].forEach(function (k) { f[k].value = p[k] == null ? '' : p[k]; });
+    f.pin.value = '';
+    document.querySelectorAll('#langChips input').forEach(function (i) { i.checked = (p.langs || []).indexOf(i.value) > -1; });
+    var d = document.getElementById('recruitFormBox'); d.open = true; d.scrollIntoView({ behavior: 'smooth' });
+    toast(t('editing'));
+}
+document.getElementById('recruitForm').onsubmit = function (e) {
+    e.preventDefault();
+    var f = e.target, d = formData(f);
+    d.langs = Array.prototype.map.call(document.querySelectorAll('#langChips input:checked'), function (i) { return i.value; });
+    if (!d.id) delete d.id;
+    api('/alliance/recruit', d).then(function (j) {
+        if (!j.ok) return fail(j);
+        remember({ nick: d.nick, server: d.server });
+        f.reset(); f.id.value = ''; document.getElementById('recruitFormBox').open = false; toast(t('done')); loadRecruit();
+    }).catch(function () { toast(t('err')); });
+};
+var deb;
+function debounce(fn) { clearTimeout(deb); deb = setTimeout(fn, 350); }
+document.getElementById('rServer').oninput = function () { debounce(loadRecruit); };
+document.getElementById('rLang').onchange = loadRecruit;
+
+/* ---------- 캐릭터 ---------- */
+var chars = [];
+var friends = store('al_friends') || [];
+function isFriend(id) { return friends.indexOf(id) > -1; }
+function toggleFriend(id) { if (isFriend(id)) friends = friends.filter(function (x) { return x !== id; }); else friends.push(id); store('al_friends', friends); renderChars(); renderFriends(); }
+function loadChars() {
+    var s = document.getElementById('cServer').value.trim(), q = document.getElementById('cQ').value.trim();
+    api('/alliance/chars?server=' + encodeURIComponent(s) + '&q=' + encodeURIComponent(q)).then(function (j) { chars = j.chars || []; renderChars(); }).catch(function () { toast(t('err')); });
+}
+function charCard(c, inFriends) {
+    var meta = [t('server1') + ' ' + c.server];
+    if (c.alliance) meta.push(c.alliance);
+    if (c.power) meta.push(t('powerReq') + ' ' + c.power);
+    meta.push(LNAME[c.lang] || c.lang);
+    return el('div', { cls: 'card' },
+        el('div', { cls: 'top' }, el('span', { cls: 'title', text: c.nick }), el('span', { cls: 'badge', text: 'S' + c.server })),
+        el('div', { cls: 'meta', text: meta.join('  ·  ') }),
+        c.note ? el('p', { cls: 'desc', text: c.note }) : null,
+        el('div', { cls: 'acts' },
+            el('button', { cls: 'btn-s', type: 'button', text: isFriend(c.id) ? t('unfriend') : t('addFriend'), onclick: function () { toggleFriend(c.id); } }),
+            el('button', { cls: 'btn-s', type: 'button', text: ui === 'ko' ? '닉네임 복사' : 'Copy name', onclick: function () { try { navigator.clipboard.writeText(c.nick); toast(t('copied')); } catch (e) {} } }),
+            inFriends ? null : el('button', { cls: 'btn-s', type: 'button', text: t('edit'), onclick: function () { editChar(c); } }),
+            inFriends ? null : el('button', { cls: 'btn-s', type: 'button', text: t('del'), onclick: function () { var pin = askPin(); if (!pin || !confirm(t('confirmDel'))) return; api('/alliance/chars/delete', { id: c.id, pin: pin }).then(function (j) { if (j.ok) { toast(t('done')); loadChars(); } else fail(j); }); } }),
+            el('button', { cls: 'btn-s', type: 'button', text: t('report'), onclick: function () { doReport('char', c.id); } })));
+}
+function renderChars() {
+    var box = document.getElementById('charList'); box.innerHTML = '';
+    if (!chars.length) { box.appendChild(el('div', { cls: 'empty', text: t('noChars') })); return; }
+    chars.forEach(function (c) { box.appendChild(charCard(c)); });
+}
+function editChar(c) {
+    var f = document.getElementById('charForm');
+    ['id', 'nick', 'server', 'alliance', 'power', 'note'].forEach(function (k) { f[k].value = c[k] == null ? '' : c[k]; });
+    f.lang.value = c.lang; f.pin.value = '';
+    var d = f.closest('details'); d.open = true; d.scrollIntoView({ behavior: 'smooth' }); toast(t('editing'));
+}
+fillLangSelect(document.getElementById('charLang'), false, ui);
+document.getElementById('charForm').onsubmit = function (e) {
+    e.preventDefault();
+    var f = e.target, d = formData(f);
+    if (!d.id) delete d.id;
+    api('/alliance/chars', d).then(function (j) {
+        if (!j.ok) return fail(j);
+        remember({ nick: d.nick, server: d.server, lang: d.lang });
+        f.reset(); f.id.value = ''; f.closest('details').open = false; toast(t('done'));
+        document.getElementById('cServer').value = d.server; loadChars();
+    }).catch(function () { toast(t('err')); });
+};
+document.getElementById('cServer').oninput = function () { debounce(loadChars); };
+document.getElementById('cQ').oninput = function () { debounce(loadChars); };
+
+/* ---------- 친구 ---------- */
+var friendChars = [];
+function loadFriends() {
+    if (!friends.length) { friendChars = []; renderFriends(); return; }
+    api('/alliance/chars?ids=' + encodeURIComponent(friends.join(','))).then(function (j) { friendChars = j.chars || []; renderFriends(); });
+}
+function renderFriends() {
+    var box = document.getElementById('friendList'); box.innerHTML = '';
+    var list = friendChars.filter(function (c) { return isFriend(c.id); });
+    if (!list.length) { box.appendChild(el('div', { cls: 'empty', text: t('noFriends') })); return; }
+    list.forEach(function (c) { box.appendChild(charCard(c, true)); });
+}
+
+/* ---------- 신고 ---------- */
+function doReport(kind, id, room) {
+    if (!confirm(t('report') + '?')) return;
+    api('/alliance/report', { kind: kind, id: id, room: room }).then(function (j) { toast(j.ok ? t('reported') : t('err')); });
+}
+
+/* ---------- 토론방 ---------- */
+var readLang = store('al_read') || ui, writeLang = store('al_write') || ui;
+fillLangSelect(document.getElementById('readLang'), false, readLang);
+fillLangSelect(document.getElementById('writeLang'), false, writeLang);
+document.getElementById('chatNick').value = prof.nick || '';
+var room = 'global', msgs = [], since = 0, pollT = null, busy = false;
+function curRoom() {
+    if (document.getElementById('roomSel').value !== 'server') return 'global';
+    var n = document.getElementById('roomServer').value.replace(/\D/g, '');
+    return n ? 's' + n : null;
+}
+function resetChat() { msgs = []; since = 0; renderChat(); poll(); }
+document.getElementById('roomSel').onchange = function () {
+    var isS = this.value === 'server';
+    document.getElementById('roomServer').style.display = isS ? '' : 'none';
+    if (isS && !document.getElementById('roomServer').value && prof.server) document.getElementById('roomServer').value = prof.server;
+    resetChat();
+};
+document.getElementById('roomServer').oninput = function () { debounce(resetChat); };
+document.getElementById('readLang').onchange = function () { readLang = this.value; store('al_read', readLang); resetChat(); };
+document.getElementById('writeLang').onchange = function () { writeLang = this.value; store('al_write', writeLang); };
+function poll() {
+    var r = curRoom();
+    if (!r || busy) return;
+    busy = true;
+    var pend = msgs.filter(function (m) { return m.trPending; });
+    var from = pend.length ? Math.min.apply(null, pend.map(function (m) { return m.ts; })) - 1 : since;
+    api('/alliance/chat?room=' + r + '&lang=' + readLang + '&since=' + from).then(function (j) {
+        busy = false;
+        if (r !== curRoom() || !j.msgs) return;
+        var byId = {}; msgs.forEach(function (m) { byId[m.id] = m; });
+        var added = false;
+        j.msgs.forEach(function (m) { if (byId[m.id]) { Object.assign(byId[m.id], m); if (!m.trPending) delete byId[m.id].trPending; } else { msgs.push(m); added = true; } });
+        msgs.sort(function (a, b) { return a.ts - b.ts; });
+        if (msgs.length) since = Math.max(since, msgs[msgs.length - 1].ts);
+        renderChat(added);
+    }).catch(function () { busy = false; });
+}
+function renderChat(scroll) {
+    var log = document.getElementById('chatLog');
+    var atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+    log.innerHTML = '';
+    if (!msgs.length) { log.appendChild(el('div', { cls: 'empty', text: curRoom() ? t('noMsgs') : t('serverRoom') })); return; }
+    msgs.forEach(function (m) {
+        var translated = m.lang !== readLang;
+        var main = translated ? (m.tr || m.text) : m.text;
+        var row = el('div', { cls: 'msg' });
+        row.appendChild(el('div', { cls: 'who' }, el('b', { text: m.nick }), m.server ? 'S' + m.server : null, LNAME[m.lang] || m.lang, ago(m.ts),
+            translated && m.tr ? el('button', { cls: 'linkbtn', type: 'button', text: t('showOrig'), onclick: function () { row.classList.toggle('show-orig'); } }) : null,
+            translated && m.trPending ? el('span', { text: t('translating') }) : null,
+            el('button', { cls: 'linkbtn', type: 'button', text: t('report'), onclick: function () { doReport('chat', m.id, m.room); } })));
+        row.appendChild(el('div', { cls: 'txt', text: main }));
+        if (translated && m.tr) row.appendChild(el('div', { cls: 'orig', text: m.text }));
+        log.appendChild(row);
+    });
+    if (scroll || atBottom) log.scrollTop = log.scrollHeight;
+}
+function startChat() { stopChat(); poll(); pollT = setInterval(function () { if (!document.hidden) poll(); }, 4000); }
+function stopChat() { if (pollT) clearInterval(pollT); pollT = null; }
+function sendChat() {
+    var r = curRoom(), nick = document.getElementById('chatNick').value.trim(), ta = document.getElementById('chatText'), text = ta.value.trim();
+    if (!r) return toast(t('serverRoom'));
+    if (!nick) return toast(t('needNick'));
+    if (!text) return;
+    remember({ nick: nick });
+    api('/alliance/chat', { room: r, nick: nick, text: text, lang: writeLang, server: prof.server || '' }).then(function (j) {
+        if (!j.ok) return fail(j);
+        ta.value = ''; poll();
+    }).catch(function () { toast(t('err')); });
+}
+document.getElementById('chatSend').onclick = sendChat;
+document.getElementById('chatText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendChat(); } });
+
+/* ---------- 시작 ---------- */
+prefill(document.getElementById('recruitForm')); prefill(document.getElementById('charForm'));
+applyUi();
+var start = (location.hash || '').slice(1);
+setMode(['recruit', 'chars', 'friends', 'chat'].indexOf(start) > -1 ? start : 'recruit');
+})();
+</script>
+</body>
+</html>

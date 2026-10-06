@@ -66,6 +66,8 @@ const TIERS = {
 const ALLOWED_TOOLS = ["transcribe", "remove-bg", "ocr", "pdf-compress", "restore-face",
     ...PDF_SERVER_TOOLS];
 
+import { handleAlliance } from "./alliance.js";
+
 // ---------- Helpers ----------
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
@@ -883,6 +885,12 @@ export default {
         // CORS preflight
         if (request.method === "OPTIONS") {
             return new Response(null, { status: 204, headers: corsHeaders(origin) });
+        }
+
+        // 연맹 광장 (unlisted 시제품) — /alliance/*, /admin/alliance/*
+        if (url.pathname.startsWith("/alliance/") || url.pathname.startsWith("/admin/alliance/")) {
+            const r = await handleAlliance(request, env, corsHeaders(origin));
+            if (r) return r;
         }
 
         if (url.pathname === "/health" || url.pathname === "/") {
