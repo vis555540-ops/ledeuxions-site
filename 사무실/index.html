@@ -1069,7 +1069,7 @@ function 받은통화(call){
 function 소리받음(id,s,call){
   const e=통신.연결.get(id); if(!e) return;
   if(e.오디오){ e.오디오.srcObject=null; e.오디오.remove(); }
-  const a=document.createElement("audio"); a.autoplay=true; a.playsInline=true; a.srcObject=s; a.dataset.call=String(call.connectionId); 숨김.appendChild(a);
+  const a=document.createElement("audio"); a.autoplay=true; a.playsInline=true; a.srcObject=s; a.dataset.call=String(call.connectionId); a.volume=0; 숨김.appendChild(a);
   a.play().catch(()=>{ 상태("소리 재생이 막혔습니다 — 화면을 한 번 누르면 재생됩니다"); const 재생=()=>{ a.play().catch(()=>{}); document.removeEventListener("pointerdown",재생); }; document.addEventListener("pointerdown",재생); });
   e.오디오=a; 분석기(id,s);
 }
@@ -1094,6 +1094,16 @@ function 분석기(id,stream){
 setInterval(()=>{
   분석들.forEach((a,id)=>{ a.an.getByteTimeDomainData(a.buf); let s=0; for(let i=0;i<a.buf.length;i++){ const v=(a.buf[i]-128)/128; s+=v*v; } 말하는중.set(id,Math.sqrt(s/a.buf.length)>0.02); });
 },120);
+function 음성볼륨(d){                                   // 거리→볼륨: 가까우면 1, 멀면 0 (화면 공유 오디오는 없으므로 마이크에만 적용)
+  const 가까움=40, 멀음=220;                             // 멀음≈방 폭(448)의 절반 — Gather식 근접 음성
+  if(d<=가까움) return 1;
+  if(d>=멀음) return 0;
+  const t=1-(d-가까움)/(멀음-가까움);
+  return Math.max(0,Math.min(1,t*t));                    // 제곱 감쇠로 가까울 때 급격히 안 끊기게
+}
+setInterval(()=>{
+  통신.연결.forEach(e=>{ if(!e.오디오||!e.사람) return; e.오디오.volume=음성볼륨(Math.hypot(나.x-e.사람.x,나.y-e.사람.y)); });
+},200);
 setInterval(()=>{
   if(!통신.peer) return; 방송({t:"hb"});
   const now=performance.now(); 통신.연결.forEach((e,id)=>{ if(e.conn.open&&now-e.마지막>20000) 떠남(id,e.conn); });
