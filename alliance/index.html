@@ -14,7 +14,9 @@
     body { background: var(--bg-canvas); }
     .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px 48px; }
     .hero { padding: 24px 0 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .hero h1 { font-family: var(--font-serif); font-size: clamp(1.7rem, 7vw, 2.4rem); margin: 0; line-height: 1.15; }
+    .hero > div { text-align: left; min-width: 0; }
+    .hero h1 { text-align: left; font-family: var(--font-serif); font-size: clamp(1.7rem, 7vw, 2.4rem); margin: 0; line-height: 1.15; }
+    .hero .sub, .disclaim { text-align: left; }
     .hero .sub { margin: 6px 0 0; color: var(--text-secondary); font-size: .95rem; }
     .disclaim { margin: 6px 0 0; font-size: .78rem; color: var(--text-muted); line-height: 1.45; }
     .langbtn { flex: none; border: 1px solid var(--border-strong); background: var(--bg-card); border-radius: 999px; padding: 7px 12px; font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer; color: var(--text-primary); }
@@ -486,7 +488,7 @@ function renderChat(scroll) {
         var translated = m.lang !== readLang;
         var main = translated ? (m.tr || m.text) : m.text;
         var row = el('div', { cls: 'msg' });
-        row.appendChild(el('div', { cls: 'who' }, el('b', { text: m.nick }), m.server ? 'S' + m.server : null, LNAME[m.lang] || m.lang, ago(m.ts),
+        row.appendChild(el('div', { cls: 'who' }, el('b', { text: m.nick }), m.server ? el('span', { text: 'S' + m.server }) : null, el('span', { text: LNAME[m.lang] || m.lang }), el('span', { text: '· ' + ago(m.ts) }),
             translated && m.tr ? el('button', { cls: 'linkbtn', type: 'button', text: t('showOrig'), onclick: function () { row.classList.toggle('show-orig'); } }) : null,
             translated && m.trPending ? el('span', { text: t('translating') }) : null,
             el('button', { cls: 'linkbtn', type: 'button', text: t('report'), onclick: function () { doReport('chat', m.id, m.room); } })));
