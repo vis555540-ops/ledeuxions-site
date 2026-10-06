@@ -22,6 +22,31 @@
     { href: '/contact/',     icon: '✉️', label: '연락' }
   ];
 
+  // ── 영어 쪽 (2026-10-06 형: 「홈페이지 영어로 옮기자」) — <html lang="en"> 이면 영어 리모컨 ──
+  var EN = /^en/i.test(document.documentElement.lang || '');
+  var LINKS_EN = [
+    { href: '/en/',          icon: '🏠', label: 'Home' },
+    { href: '/games/en/',    icon: '🎮', label: 'Games' },
+    { href: '/en/#tools',    icon: '🛠', label: 'Tools' },
+    { href: 'https://pdf300.com', icon: '📄', label: 'PDF300' },
+    { href: '/notes/',       icon: '📐', label: 'Field Notes' },
+    { href: '/gallery/',     icon: '🎨', label: 'Gallery' },
+    { href: '/history/en/',  icon: '📖', label: 'Story' },
+    { href: '/contact/en/',  icon: '✉️', label: 'Contact' }
+  ];
+  if (EN) LINKS = LINKS_EN;
+
+  // ── 한/영 바꾸기: 페이지의 hreflang 짝을 먼저 쓰고, 없으면 각 홈으로 ──
+  function altHref(lang) {
+    var l = document.querySelector('link[rel="alternate"][hreflang="' + lang + '"]');
+    if (!l) return null;
+    try { var u = new URL(l.href, location.href); return u.origin === location.origin ? u.pathname + u.search : u.href; }
+    catch (e) { return l.getAttribute('href'); }
+  }
+  var SWITCH = EN
+    ? { href: altHref('ko') || '/', label: '한국어', lang: 'ko', aria: '한국어로 보기' }
+    : { href: altHref('en') || '/en/', label: 'English', lang: 'en', aria: 'View in English' };
+
   // ── 지금 어느 방인지 (버튼 하나에 현재 표시) ─────────────────────────
   var here = '/';
   try { here = decodeURIComponent(location.pathname).replace(/index\.html?$/, ''); } catch (e) {}
@@ -115,16 +140,22 @@
 
   var keys = LINKS.map(function (l) {
     var cur = isCurrent(l.href) ? ' aria-current="page"' : '';
+    var aria = EN ? 'Go to ' + l.label : l.label + josaRo(l.label) + ' 가기';
     return '<a class="lxrn-key" href="' + l.href + '"' + cur +
-           ' aria-label="' + l.label + josaRo(l.label) + ' 가기">' +
+           ' aria-label="' + aria + '">' +
            '<span class="lxrn-ico" aria-hidden="true">' + l.icon + '</span>' +
            '<span class="lxrn-lbl">' + l.label + '</span></a>';
-  }).join('');
+  }).join('') +
+    '<a class="lxrn-key lxrn-lang" href="' + SWITCH.href + '" hreflang="' + SWITCH.lang + '" lang="' + SWITCH.lang + '"' +
+    ' aria-label="' + SWITCH.aria + '">' +
+    '<span class="lxrn-ico" aria-hidden="true" style="font:700 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em">' +
+    (EN ? 'KO' : 'EN') + '</span>' +
+    '<span class="lxrn-lbl">' + SWITCH.label + '</span></a>';
 
   root.innerHTML =
-    '<button type="button" class="lxrn-fab" aria-label="바로가기 리모컨 열기" aria-expanded="false" aria-controls="lxrn-body">📺</button>' +
-    '<nav id="lxrn-body" class="lxrn-body" aria-label="바로가기 리모컨">' +
-      '<div class="lxrn-screen" aria-hidden="true"><span class="lxrn-led"></span><span class="lxrn-cap">LEDEUX · 바로가기</span></div>' +
+    '<button type="button" class="lxrn-fab" aria-label="' + (EN ? 'Open shortcuts' : '바로가기 리모컨 열기') + '" aria-expanded="false" aria-controls="lxrn-body">📺</button>' +
+    '<nav id="lxrn-body" class="lxrn-body" aria-label="' + (EN ? 'Shortcuts' : '바로가기 리모컨') + '">' +
+      '<div class="lxrn-screen" aria-hidden="true"><span class="lxrn-led"></span><span class="lxrn-cap">LEDEUX · ' + (EN ? 'GO TO' : '바로가기') + '</span></div>' +
       keys +
     '</nav>';
   document.body.appendChild(root);

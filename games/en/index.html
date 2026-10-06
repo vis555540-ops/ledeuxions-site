@@ -5,81 +5,367 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#141b24">
-<title>Free Browser Games — No Install, No Signup | LeDeuxions</title>
-<meta name="description" content="Small games you can play right now in your browser. No download, no account, no ads in the way. Works on phone and desktop. Made by hand, pixel by pixel.">
-<meta property="og:title" content="Free Browser Games — No Install, No Signup">
+<title>Free Browser Games — No Install, No Signup | L.D Game Land</title>
+<meta name="description" content="34 small games you can play right now in your browser: Coin Pusher, Fruit Merge, 2048, Dino Run, Memory Match, Bubble Shooter and more. No download, no account. Works on phone and desktop.">
+<meta property="og:title" content="L.D Game Land — Free Browser Games">
 <meta property="og:description" content="Play instantly in your browser. No download, no account.">
 <meta property="og:url" content="https://ledeuxions.com/games/en/">
 <meta name="robots" content="index,follow">
+<link rel="alternate" hreflang="ko" href="https://ledeuxions.com/games/">
+<link rel="alternate" hreflang="en" href="https://ledeuxions.com/games/en/">
+<link rel="alternate" hreflang="x-default" href="https://ledeuxions.com/games/en/">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 <style>
-:root{ --bg:#141b24; --card:#1e2733; --line:#2f3d4d; --ink:#eef3f8; --dim:#93a3b5; --hot:#ffd166; }
+:root{
+  --bg:#141b24; --card:#1e2733; --line:#2f3d4d;
+  --ink:#eef3f8; --dim:#93a3b5; --hot:#ffd166;
+}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  line-height:1.6;-webkit-font-smoothing:antialiased}
-.wrap{max-width:860px;margin:0 auto;padding:48px 20px 80px}
-h1{font-size:1.75rem;margin:0 0 6px;letter-spacing:-.02em}
-.sub{color:var(--dim);margin:0 0 8px}
-.note{color:var(--dim);font-size:.9rem;margin:0 0 34px}
-h2{font-size:1rem;color:var(--dim);font-weight:600;margin:38px 0 14px;
-   letter-spacing:.08em;text-transform:uppercase}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-.g{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;
-   padding:16px 18px;text-decoration:none;color:inherit;transition:.18s}
-.g:hover{border-color:var(--hot);transform:translateY(-2px)}
-.g b{display:block;font-size:1.05rem;margin-bottom:4px}
-.g span{color:var(--dim);font-size:.9rem}
-.tag{display:inline-block;font-size:.72rem;color:#141b24;background:var(--hot);
-     border-radius:99px;padding:1px 8px;margin-left:6px;vertical-align:2px;font-weight:700}
-footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);color:var(--dim);font-size:.9rem}
-footer a{color:var(--hot)}
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
+  -webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding:28px 18px 64px}
+header{text-align:center;padding:18px 0 26px}
+h1{margin:0;font-size:2rem;letter-spacing:-.02em}
+h1 .ld{color:var(--hot)}
+.sub{margin:8px 0 0;color:var(--dim);font-size:.95rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+a.g{display:block;text-decoration:none;color:inherit;background:var(--card);
+  border:1px solid var(--line);border-radius:14px;padding:18px 16px 16px;
+  transition:transform .12s ease,border-color .12s ease}
+a.g:active{transform:scale(.98)}
+a.g:hover{border-color:var(--hot)}
+a.g.out{background:#1a222c}
+a.g.out .gn::after{content:' ↗';font-size:.7em;color:var(--dim)}
+.emo{font-size:2.2rem;line-height:1}
+.gn{margin:10px 0 4px;font-size:1.12rem;font-weight:700}
+.gd{margin:0;color:var(--dim);font-size:.88rem;line-height:1.5}
+.tag{display:inline-block;margin-top:10px;font-size:.72rem;color:var(--hot);
+  border:1px solid var(--hot);border-radius:99px;padding:2px 9px}
+.by{margin:8px 0 0;font-size:.74rem;color:#7d8b9a;line-height:1.45}
+.by b{color:#b9c6d4;font-weight:600}
+.flag{display:inline-block;margin-left:6px;font-size:.7rem;color:#141b24;background:#8bd3ff;border-radius:99px;padding:1px 8px;vertical-align:2px}
+.adbox{margin:26px 0 8px;min-height:90px;overflow:hidden}
+footer{margin-top:34px;text-align:center;color:#5d6b7c;font-size:.78rem;line-height:1.7}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <h1>Free games you can play right now</h1>
-  <p class="sub">No download. No account. No launcher. Open the link and it starts.</p>
-  <p class="note">Made by hand — the pixels are drawn one at a time, not generated. Works on phone and desktop.</p>
+<header>
+  <h1><span class="ld">L.D</span> Game Land</h1>
+  <p class="sub">Nothing to install. Tap and it starts.</p>
+</header>
 
-  <h2>Puzzle</h2>
-  <div class="grid">
-    <a class="g" href="/games/outpost/en/"><b>Outpost<span class="tag">NEW</span></b><span>A random soldier every round. Merge three of the same and they rank up. Hold the outpost for 25 waves.</span></a>
-    <a class="g" href="/games/outbound/"><b>Outbound<span class="tag">NEW</span></b><span>Tap arrows to send them flying off the board. Every board is 100% solvable — no dead ends, no timer.</span></a>
-    <a class="g" href="/web-projects/game-world/suika/en/"><b>Fruit Merge</b><span>Drop fruit, merge matching pairs, try to reach the watermelon. Physics does the rest.</span></a>
-    <a class="g" href="/web-projects/game-world/tower/en/"><b>Tower Builder</b><span>Stack blocks as high as you can. Land one perfectly and the next gets wider.</span></a>
-    <a class="g" href="/web-projects/game-world/simon/en/"><b>Color Memory</b><span>Follow the sequence of colors and sounds. It gets one step longer every round.</span></a>
-  </div>
+<h2 style="margin:8px 0 6px;font-size:1.15rem">Made here</h2>
+<p style="margin:0 0 14px;color:var(--dim);font-size:.85rem">
+  Games we built ourselves — the pixels are drawn by hand, one at a time.</p>
 
-  <h2>One button</h2>
-  <div class="grid">
-    <a class="g" href="/games/pixel-ghost/en/"><b>Pixel Ghost</b><span>Tap to fly, don't hit anything. The palette shifts every 10 points.</span></a>
-    <a class="g" href="/web-projects/game-world/hardhat/en/"><b>Hard Hat Bird</b><span>Same idea, a bird in a safety helmet. Hand-drawn sprites.</span></a>
-    <a class="g" href="/web-projects/game-world/jump/en/"><b>Rubber Jump</b><span>Time the tap at the bottom of the bounce and go higher. Eventually you leave the planet.</span></a>
-    <a class="g" href="/wriggle/"><b>Wriggle</b><span>A worm climbing 5,000m to the surface before it dries out. Tap to lunge.</span></a>
-  </div>
+<div class="grid">
+  <a class="g" href="/wriggle/">
+    <div class="emo">🪱</div>
+    <p class="gn">Wriggle</p>
+    <p class="gd">Get the worm to the hole on the surface before it dries out. Tap a side to hop, hold to jump higher.</p>
+    <span class="tag">NEW</span>
+  </a>
+  <a class="g" href="/web-projects/game-world/dozer/en/">
+    <div class="emo">🪙</div>
+    <p class="gn">Coin Pusher</p>
+    <p class="gd">The arcade machine you remember. Stack up coins and send a whole pile over the edge.</p>
+  </a>
+  <a class="g" href="/web-projects/game-world/suika/en/">
+    <div class="emo">🍉</div>
+    <p class="gn">Fruit Merge</p>
+    <p class="gd">Drop fruit, merge matching pairs into bigger fruit. Can you reach the watermelon?</p>
+  </a>
+  <a class="g" href="/web-projects/game-world/snake/en/">
+    <div class="emo">🐍</div>
+    <p class="gn">Snake</p>
+    <p class="gd">The more you eat, the longer you get. Bite your own tail and it's over.</p>
+  </a>
+  <a class="g" href="/web-projects/game-world/jump/en/">
+    <div class="emo">🚀</div>
+    <p class="gn">Rubber Jump</p>
+    <p class="gd">Pull back, let go, and bounce higher. Time the tap at the bottom of the stretch.</p>
+  </a>
+  <a class="g" href="/web-projects/game-world/simon/en/">
+    <div class="emo">🎵</div>
+    <p class="gn">Color Memory</p>
+    <p class="gd">Watch the order the lights come on, then repeat it. One step longer every round.</p>
+  </a>
+  <a class="g" href="/web-projects/game-world/tower/en/">
+    <div class="emo">🏗️</div>
+    <p class="gn">Tower Stack</p>
+    <p class="gd">Drop blocks exactly on top of each other. Whatever hangs over gets sliced off.</p>
+  </a>
+  <a class="g" href="/web-projects/game-world/pixel/en/">
+    <div class="emo">🎨</div>
+    <p class="gn">Pixel Art Maker</p>
+    <p class="gd">Not a game — draw dot by dot on an 8, 16 or 32 grid and save a transparent PNG.</p>
+  </a>
+  <a class="g" href="/web-projects/game-world/quake/en/">
+    <div class="emo">🏢</div>
+    <p class="gn">Brace</p>
+    <p class="gd">Reinforce a building so it survives the earthquake. Made by an architect who does seismic retrofits. A bit hard.</p>
+  </a>
+  <a class="g" href="/web-projects/game-world/hangle/">
+    <div class="emo">🟩</div>
+    <p class="gn">Hangul Wordle</p>
+    <p class="gd">Guess the Korean word in six tries. Green means right letter, right spot. For Korean readers and learners.</p>
+    <span class="tag">KOREAN</span>
+  </a>
+  <a class="g" href="/games/outpost/en/">
+    <div class="emo">🛡️</div>
+    <p class="gn">Outpost</p>
+    <p class="gd">A random soldier every round. Merge three of a kind to rank up. Hold out for 25 waves.</p>
+  </a>
+  <a class="g" href="/games/outbound/">
+    <div class="emo">➡️</div>
+    <p class="gn">Outbound</p>
+    <p class="gd">Tap arrows to send them flying off the board. Every board is solvable — no dead ends, no timer.</p>
+  </a>
+  <a class="g" href="/games/pixel-ghost/en/">
+    <div class="emo">👻</div>
+    <p class="gn">Pixel Ghost</p>
+    <p class="gd">Tap to fly, don't hit anything. The palette shifts every 10 points.</p>
+  </a>
+  <a class="g" href="/web-projects/game-world/hardhat/en/">
+    <div class="emo">👷</div>
+    <p class="gn">Hard Hat Bird</p>
+    <p class="gd">A bird in a safety helmet, flapping between pipes. Hand-drawn sprites.</p>
+  </a>
+</div>
 
-  <h2>Arcade</h2>
-  <div class="grid">
-    <a class="g" href="/web-projects/game-world/snake/en/"><b>Snake</b><span>The one you already know. Swipe or arrow keys, gets faster as you eat.</span></a>
-    <a class="g" href="/web-projects/game-world/dozer/en/"><b>Coin Dozer</b><span>The arcade machine that pushes coins off a ledge. Satisfying when a pile goes over.</span></a>
-    <a class="g" href="/web-projects/game-world/pixel/en/"><b>Pixel Art Maker</b><span>Not a game — draw on an 8, 16 or 32 grid and save it as a transparent PNG. Drop in a photo and it pixelates.</span></a>
-  </div>
 
-  <h2>Made for a reason</h2>
-  <div class="grid">
-    <a class="g" href="/web-projects/game-world/quake/en/"><b>Brace</b><span>Patch every crack before the quake hits. Miss one and that floor comes down. Built by an architect who does seismic retrofits for a living.</span></a>
-  </div>
+<h2 style="margin:38px 0 6px;font-size:1.15rem">Break-time classics</h2>
+<p style="margin:0 0 14px;color:var(--dim);font-size:.85rem">
+  No install, no signup, no ads in the game. Open-source games we host ourselves.</p>
 
-  <footer>
-    <p>Small tools I built for everyday work — <a href="https://pdf300.com">pdf300.com</a></p>
-    <p>Notes from twenty years on construction sites — <a href="/notes/basement-water-from-below/">ledeuxions.com/notes</a></p>
-    <p>Everything free, in one place — <a href="/en/">ledeuxions.com/en</a></p>
-    <p><a href="/games/">한국어</a></p>
-  </footer>
+<div class="grid">
+  <a class="g" href="/games/2048/">
+    <div class="emo">🔢</div>
+    <p class="gn">2048</p>
+    <p class="gd">Slide matching numbers together to double them. Reach 2048 to win.</p>
+    <p class="by">Made by <b>Gabriele Cirulli</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/hextris/">
+    <div class="emo">🔷</div>
+    <p class="gn">Hextris</p>
+    <p class="gd">Colored blocks fall around a spinning hexagon — group the same colors, fast.</p>
+    <p class="by">Made by <b>Hextris team</b> · GPL-3.0</p>
+  </a>
+  <a class="g" href="/games/clumsybird/">
+    <div class="emo">🐤</div>
+    <p class="gn">Clumsy Bird</p>
+    <p class="gd">Tap to keep the bird in the air and slip between the pipes.</p>
+    <p class="by">Made by <b>Ellison Leão</b> · GPL-3.0</p>
+  </a>
+  <a class="g" href="/games/0hh1/">
+    <div class="emo">🟦</div>
+    <p class="gn">0h h1</p>
+    <p class="gd">Fill the grid with red and blue by the rules. No three of a color in a row.</p>
+    <p class="by">Made by <b>Q42</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/snake/">
+    <div class="emo">🐍</div>
+    <p class="gn">Snake Classic</p>
+    <p class="gd">Eat, grow, don't hit yourself. Works with touch, too.</p>
+    <p class="by">Made by <b>R. Çetinkaya</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/blockssaki/">
+    <div class="emo">🧱</div>
+    <p class="gn">Block Stack</p>
+    <p class="gd">Fill a whole row with falling blocks to clear it. On-screen buttons for phones.</p>
+    <p class="by">Made by <b>Jake Gordon</b> · MIT</p>
+  </a>
+</div>
+
+
+<h2 id="world" style="margin:38px 0 6px;font-size:1.15rem;scroll-margin-top:16px">🌍 Games from friends around the world<span class="flag">14 NEW</span></h2>
+<p style="margin:0 0 14px;color:var(--dim);font-size:.85rem">
+  Games people in other countries released for anyone to use — we brought them home to our server. No install, no signup, no ads. The maker's name is on every card. (A few show short on-screen hints in Korean.)</p>
+
+<div class="grid">
+  <a class="g" href="/games/ellaz/memory/">
+    <div class="emo">🐶</div>
+    <p class="gn">Memory Match</p>
+    <p class="gd">Flip two cards at a time and find the matching pictures. No reading needed.</p>
+    <p class="by">Made by <b>Ellaz (Sigmafier)</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/ellaz/coloring/">
+    <div class="emo">🖍️</div>
+    <p class="gn">Coloring</p>
+    <p class="gd">Pick a picture and tap to fill in the colors — or paint with a brush.</p>
+    <p class="by">Made by <b>Ellaz (Sigmafier)</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/ellaz/maze/">
+    <div class="emo">🐭</div>
+    <p class="gn">Way Home</p>
+    <p class="gd">Guide the mouse to the cheese and then all the way home.</p>
+    <p class="by">Made by <b>Ellaz (Sigmafier)</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/ellaz/balloons/">
+    <div class="emo">🎈</div>
+    <p class="gn">Balloon Pop</p>
+    <p class="gd">Pop only the balloons in the color you're asked for.</p>
+    <p class="by">Made by <b>Ellaz (Sigmafier)</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/ellaz/finddiff/">
+    <div class="emo">🔍</div>
+    <p class="gn">Spot the Difference</p>
+    <p class="gd">Find and tap what's different between the two pictures.</p>
+    <p class="by">Made by <b>Ellaz (Sigmafier)</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/ellaz/jigsaw/">
+    <div class="emo">🧩</div>
+    <p class="gn">Jigsaw</p>
+    <p class="gd">Pick up the pieces and drop them in the right spot to finish the picture.</p>
+    <p class="by">Made by <b>Ellaz (Sigmafier)</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/ellaz/sort/">
+    <div class="emo">🧪</div>
+    <p class="gn">Color Sort</p>
+    <p class="gd">Move the balls between tubes until each tube holds just one color.</p>
+    <p class="by">Made by <b>Ellaz (Sigmafier)</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/ellaz/parking/">
+    <div class="emo">🚗</div>
+    <p class="gn">Parking Escape</p>
+    <p class="gd">Slide the cars back and forth to clear a way out for the orange car.</p>
+    <p class="by">Made by <b>Ellaz (Sigmafier)</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/dino/">
+    <div class="emo">🦖</div>
+    <p class="gn">Dino Run</p>
+    <p class="gd">Tap to jump the cacti and run as far as you can.</p>
+    <p class="by">Made by <b>The Chromium Authors · wayou</b> · BSD</p>
+  </a>
+  <a class="g" href="/games/yumyum/">
+    <div class="emo">🟡</div>
+    <p class="gn">Yum-Yum Maze</p>
+    <p class="gd">Eat every dot in the maze and dodge the ghosts. Swipe to steer.</p>
+    <p class="by">Made by <b>路人甲 (mumuy) · China</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/friedlander/bubbles/">
+    <div class="emo">🫧</div>
+    <p class="gn">Bubble Shooter</p>
+    <p class="gd">Stick three bubbles of the same color together and they pop. You can't lose.</p>
+    <p class="by">Made by <b>Mark Friedlander</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/friedlander/arrows/">
+    <div class="emo">↗️</div>
+    <p class="gn">Arrow Out</p>
+    <p class="gd">Tap any arrow with a clear path to slide it off the board. Mistakes are fine.</p>
+    <p class="by">Made by <b>Mark Friedlander</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/four/">
+    <div class="emo">🔴</div>
+    <p class="gn">Four in a Row</p>
+    <p class="gd">Two players take turns dropping discs. First to line up four wins.</p>
+    <p class="by">Made by <b>Bryan Braun · USA</b> · MIT</p>
+  </a>
+  <a class="g" href="/games/mines/">
+    <div class="emo">🐣</div>
+    <p class="gn">Emoji Minesweeper</p>
+    <p class="gd">Read the numbers and open only the safe squares. Long-press to plant a flag.</p>
+    <p class="by">Made by <b>Mu-An Chiou · Taiwan</b> · MIT</p>
+  </a>
+</div>
+
+
+<h2 style="margin:38px 0 6px;font-size:1.15rem">Picks of the month</h2>
+<p style="margin:0 0 14px;color:var(--dim);font-size:.85rem">
+  We didn't make these — we just think they're fun. They open in a new tab.</p>
+
+<div class="grid">
+  <a class="g out" href="https://littlealchemy2.com/" target="_blank" rel="noopener">
+    <div class="emo">⚗️</div>
+    <p class="gn">Little Alchemy 2</p>
+    <p class="gd">What do you get when you mix fire and water? Find all 720 things.</p>
+  </a>
+  <a class="g out" href="https://neal.fun/infinite-craft/" target="_blank" rel="noopener">
+    <div class="emo">🧪</div>
+    <p class="gn">Infinite Craft</p>
+    <p class="gd">Combine anything with anything. It never ends.</p>
+  </a>
+  <a class="g out" href="https://sandspiel.club/" target="_blank" rel="noopener">
+    <div class="emo">🏖️</div>
+    <p class="gn">Sandspiel</p>
+    <p class="gd">Sprinkle sand, water, fire and plants, then watch what happens.</p>
+  </a>
+  <a class="g out" href="https://www.linerider.com/" target="_blank" rel="noopener">
+    <div class="emo">✏️</div>
+    <p class="gn">Line Rider</p>
+    <p class="gd">Draw a line and a sledder rides it. Draw well or they wipe out.</p>
+  </a>
+  <a class="g out" href="https://slowroads.io/" target="_blank" rel="noopener">
+    <div class="emo">🚗</div>
+    <p class="gn">Slow Roads</p>
+    <p class="gd">Just drive down an endless road. There's no destination.</p>
+  </a>
+  <a class="g out" href="https://orteil.dashnet.org/cookieclicker/" target="_blank" rel="noopener">
+    <div class="emo">🍪</div>
+    <p class="gn">Cookie Clicker</p>
+    <p class="gd">Click the cookie. Keep clicking. Eventually grandma bakes for you.</p>
+  </a>
+  <a class="g out" href="https://quickdraw.withgoogle.com/" target="_blank" rel="noopener">
+    <div class="emo">🤖</div>
+    <p class="gn">Quick, Draw!</p>
+    <p class="gd">Draw in 20 seconds and the computer guesses what it is.</p>
+  </a>
+  <a class="g out" href="https://musiclab.chromeexperiments.com/" target="_blank" rel="noopener">
+    <div class="emo">🎹</div>
+    <p class="gn">Chrome Music Lab</p>
+    <p class="gd">Tap to make music — rhythm, melody, even spectrograms.</p>
+  </a>
+  <a class="g out" href="https://blockly.games/" target="_blank" rel="noopener">
+    <div class="emo">🧱</div>
+    <p class="gn">Blockly Games</p>
+    <p class="gd">Snap blocks together and learn to code through puzzles.</p>
+  </a>
+  <a class="g out" href="https://www.autodraw.com/" target="_blank" rel="noopener">
+    <div class="emo">🖌️</div>
+    <p class="gn">AutoDraw</p>
+    <p class="gd">Scribble something rough and it turns into a clean drawing.</p>
+  </a>
+  <a class="g out" href="https://www.coolmathgames.com/" target="_blank" rel="noopener">
+    <div class="emo">🎲</div>
+    <p class="gn">Coolmath Games</p>
+    <p class="gd">A place with a huge pile of games. If you can't pick here, pick there.</p>
+  </a>
+</div>
+
+<div class="adbox">
+  <ins class="adsbygoogle" style="display:block;width:100%"
+       data-ad-client="ca-pub-2824624880449066"
+       data-ad-format="auto" data-full-width-responsive="true"></ins>
+</div>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+<footer>
+  <p style="margin:0 0 14px;line-height:1.8">
+    Open-source credits ·
+    2048 (MIT, Gabriele Cirulli) ·
+    <a href="https://github.com/Hextris/hextris" target="_blank" rel="noopener" style="color:#7d8b9a">Hextris</a> (GPL-3.0) ·
+    <a href="https://github.com/ellisonleao/clumsy-bird" target="_blank" rel="noopener" style="color:#7d8b9a">Clumsy Bird</a> (GPL-3.0) ·
+    0h h1 (MIT, Q42) ·
+    Snake (MIT, R. Çetinkaya) ·
+    Block Stack (MIT, Jake Gordon)<br>
+    Games from around the world ·
+    <a href="https://github.com/Sigmafier/ellaz-games" target="_blank" rel="noopener" style="color:#7d8b9a">Ellaz</a> (MIT, Sigmafier — Memory Match, Coloring, Way Home, Balloon Pop, Spot the Difference, Jigsaw, Color Sort, Parking Escape) ·
+    <a href="https://github.com/wayou/t-rex-runner" target="_blank" rel="noopener" style="color:#7d8b9a">Dino Run</a> (BSD, The Chromium Authors · wayou) ·
+    <a href="https://github.com/mumuy/pacman" target="_blank" rel="noopener" style="color:#7d8b9a">Yum-Yum Maze</a> (MIT, 路人甲) ·
+    <a href="https://github.com/markfriedlander/arcade" target="_blank" rel="noopener" style="color:#7d8b9a">Bubble Shooter · Arrow Out</a> (MIT, Mark Friedlander) ·
+    <a href="https://github.com/bryanbraun/connect-four" target="_blank" rel="noopener" style="color:#7d8b9a">Four in a Row</a> (MIT, Bryan Braun) ·
+    <a href="https://github.com/muan/emoji-minesweeper" target="_blank" rel="noopener" style="color:#7d8b9a">Emoji Minesweeper</a> (MIT, Mu-An Chiou)
+  </p>
+  More games keep arriving<br>
+  <a href="/en/" style="color:#5d6b7c;text-decoration:none;border-bottom:1px dotted #3d4a58">Made at · LeDeuxions</a>
+</footer>
 
 </div>
+<div style="max-width:860px;margin:0 auto;padding:0 20px 40px"><a href="/games/" lang="ko" style="color:#ffd166">한국어</a></div>
 <script src="/count.js" defer></script>
+<script src="/assets/remote-nav.js" defer></script>
 </body>
 </html>

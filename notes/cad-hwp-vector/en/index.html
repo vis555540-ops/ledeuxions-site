@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<title>CAD to Word/HWP as Vector — Why Pasted Drawings Blur in Reports | LeDeuxions</title>
+<meta name="description" content="Screenshot a CAD drawing into an inspection report and the dimension text turns to mush when printed. The fix isn't a quality setting — it's the format. Paste as vector: WMF for Hangul (HWP), EMF for Word and PowerPoint.">
+<meta property="og:title" content="Why CAD drawings blur when you paste them into a report">
+<meta property="og:description" content="A screenshot is pixels; a drawing is coordinates. The problem is turning coordinates into pixels before you paste.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://ledeuxions.com/notes/cad-hwp-vector/en/">
+<link rel="canonical" href="https://ledeuxions.com/notes/cad-hwp-vector/en/">
+<link rel="alternate" hreflang="ko" href="https://ledeuxions.com/notes/cad-hwp-vector/">
+<link rel="alternate" hreflang="en" href="https://ledeuxions.com/notes/cad-hwp-vector/en/">
+<link rel="alternate" hreflang="x-default" href="https://ledeuxions.com/notes/cad-hwp-vector/en/">
+<style>
+  :root{
+    --bg:#FAF9F5; --ink:#1F1E1B; --muted:#6B675E; --rule:#E3E0D8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16150F; --ink:#EDEAE0; --muted:#9B968A; --rule:#302E27; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;
+    line-height:1.85; font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px; margin:0 auto; padding:64px 24px 96px}
+  a{color:inherit}
+  h1{font-size:1.6rem; line-height:1.45; margin:0 0 8px; letter-spacing:-.01em}
+  .kicker{color:var(--muted); font-size:.86rem; margin:0 0 40px}
+  h2{font-size:1.08rem; margin:44px 0 12px; letter-spacing:-.01em}
+  p{margin:0 0 20px}
+  ul{margin:0 0 20px; padding-left:20px}
+  li{margin:0 0 8px}
+  .lead{font-size:1.06rem}
+  hr{border:0; border-top:1px solid var(--rule); margin:56px 0 28px}
+  .foot{color:var(--muted); font-size:.9rem}
+  strong{font-weight:600}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Why CAD drawings blur when you paste them into a report</h1>
+  <p class="kicker">LeDeuxions · <a href="/notes/cad-hwp-vector/" lang="ko">한국어</a></p>
+
+  <p class="lead">You need a CAD drawing in an inspection or supervision report. You take a screenshot and paste it in. On screen it looks fine. Then you print it, or zoom in, and the dimension text has turned to mush.</p>
+
+  <p>The client says they can't read the numbers. You take another screenshot. Same mush.</p>
+
+  <h2>Why it happens</h2>
+
+  <p>A screenshot is <strong>pixels</strong> — a grid of, say, 1,000 by 700 dots. Zoom in and the dots just get bigger; no new detail appears. That's why the strokes of each letter smear together.</p>
+
+  <p>A CAD drawing, on the other hand, is <strong>coordinates</strong>. A line is a start point and an end point; text is a font and a size. Coordinates get redrawn every time you zoom, so they stay sharp at any scale.</p>
+
+  <p>So the problem isn't a quality setting. It's the <strong>format</strong>: you're converting coordinates into pixels before you paste.</p>
+
+  <h2>The usual workarounds, and where they fall short</h2>
+
+  <ul>
+    <li><strong>Screenshot at a higher resolution</strong> — a little better, but not a fix. The file gets heavier, the report gets heavier, and past a certain zoom it blurs just the same.</li>
+    <li><strong>Print to PDF, then convert to an image</strong> — it becomes pixels again along the way. You're back where you started.</li>
+    <li><strong>Insert the PDF as-is</strong> — the vectors survive, but positioning and resizing it inside the document is fiddly, and cropping out just the part you need is hard.</li>
+  </ul>
+
+  <h2>The proper way</h2>
+
+  <p><strong>Export from CAD as vector</strong> and paste that. Windows has clipboard formats made for vectors: WMF and EMF.</p>
+
+  <p>One thing trips people up here: <strong>Hangul (HWP) takes WMF well, while PowerPoint and Word prefer EMF.</strong> If the same drawing pasted the same way breaks in only one program, this difference is usually why.</p>
+
+  <p>In CAD you can export with the <strong>WMFOUT</strong> command. In practice, though, it's a chore:</p>
+
+  <ul>
+    <li>You save to a file, then import that file into the document</li>
+    <li>A big white margin comes along from outside the area you selected</li>
+    <li>With several sheets, you repeat the whole thing every time</li>
+  </ul>
+
+  <h2>A tool that cuts that down</h2>
+
+  <p>I built a tool that turns all of that into a single command. Drag a window in CAD and it goes onto the clipboard as vector, ready to paste straight into your document. The margin is trimmed to the area you selected.</p>
+
+  <p>It's called <strong>WC</strong>. It runs on Windows with CAD and Hangul (HWP). Using Word instead? Email me and we'll check it works for your setup before you pay anything.</p>
+
+  <ul>
+    <li><strong>30 days free</strong> — try it first, decide later</li>
+    <li><strong>$10 per year</strong> <span style="color:var(--muted)">(early price)</span></li>
+  </ul>
+
+  <p>Send me an email and I'll reply with a 30-day trial key. See whether it earns its place first.</p>
+
+  <p style="margin:28px 0 8px">
+    <a href="https://ledeuxions.gumroad.com/l/wc-cad-vector-paste"
+       style="display:inline-block;padding:13px 26px;border:1px solid var(--ink);border-radius:2px;
+              text-decoration:none;font-weight:600;letter-spacing:.01em">Get a 1-year license &nbsp;·&nbsp; $10</a>
+  </p>
+  <p class="foot" style="margin-top:6px">You can try it for 30 days first. Email the address below and I'll send a trial key.</p>
+
+  <hr>
+
+  <p class="foot">Questions · trial requests: <a href="mailto:ledeuxions@gmail.com?subject=WC%20trial%20request">ledeuxions@gmail.com</a></p>
+  <noscript><p class="foot">If the address looks hidden, write to &nbsp;ledeuxions&nbsp;[at]&nbsp;gmail.com.</p></noscript>
+  <p class="foot"><a href="/en/">LeDeuxions</a> · <a href="/notes/">Field Notes</a></p>
+
+</div>
+<script src="/count.js" defer></script>
+<script src="/assets/remote-nav.js" defer></script>
+</body>
+</html>

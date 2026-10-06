@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <link rel="canonical" href="https://ledeuxions.com/">
+<link rel="alternate" hreflang="ko" href="https://ledeuxions.com/">
+<link rel="alternate" hreflang="en" href="https://ledeuxions.com/en/">
+<link rel="alternate" hreflang="x-default" href="https://ledeuxions.com/en/">
 <meta charset="UTF-8">
 <meta name="naver-site-verification" content="607c855a9670328d2560d4e3ac7ec73b8769aef8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -101,6 +104,7 @@
 <a href="/history/">Story</a>
 <a href="/web-projects/">Tools</a>
 <a href="/contact/">Contact</a>
+<a href="/en/" hreflang="en" lang="en">EN</a>
 </nav>
 </header>
 <main>
@@ -365,6 +369,25 @@
   상자.querySelector(".닫기").onclick = 닫기;
   상자.querySelector("a.가기").onclick = function(){ try { localStorage.setItem("홈알림본날", 오늘); } catch(e) {} };
   상자.querySelector("a.곁").onclick  = function(){ try { localStorage.setItem("홈알림본날", 오늘); } catch(e) {} };
+})();
+</script>
+<!-- 한국어가 아닌 브라우저에만: 「영어로 볼래요?」 작은 띠 — 강제 이동 없음, 닫으면 다시 안 뜸 (2026-10-06) -->
+<script>
+(function(){
+  try {
+    var ls = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || '']).join(',').toLowerCase();
+    if (!ls || /(^|,)ko/.test(ls)) return;
+    if (localStorage.getItem('enHintClosed') === '1') return;
+  } catch (e) { return; }
+  var b = document.createElement('div');
+  b.setAttribute('role', 'note'); b.lang = 'en';
+  b.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:9px 44px 9px 16px;position:relative;' +
+    'background:#1a1917;color:#ece9e4;font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  b.innerHTML = '<span>This page is in Korean.</span>' +
+    '<a href="/en/" hreflang="en" style="color:#1a1917;background:#e1ad66;padding:5px 12px;border-radius:99px;font-weight:600;text-decoration:none">View in English →</a>' +
+    '<button type="button" aria-label="Dismiss" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;color:#a9a498;font-size:20px;line-height:1;cursor:pointer;padding:6px 8px">&times;</button>';
+  b.querySelector('button').onclick = function(){ try { localStorage.setItem('enHintClosed', '1'); } catch (e) {} b.remove(); };
+  document.body.insertBefore(b, document.body.firstChild);
 })();
 </script>
   <script src="/count.js" defer></script>
