@@ -67,6 +67,20 @@
     .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--bg-inverse); color: var(--text-inverse); padding: 10px 16px; border-radius: 999px; font-size: .88rem; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw; z-index: 50; }
     .toast.on { opacity: 1; }
     .foot { text-align: center; font-size: .78rem; color: var(--text-muted); margin-top: 28px; line-height: 1.6; }
+    .roomhead { display: flex; gap: 8px; margin-bottom: 10px; }
+    .roomhead select { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 16px; padding: 9px 10px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); }
+    .roomhead .btn { flex: none; white-space: nowrap; padding: 9px 14px; }
+    .grid3 { display: grid; grid-template-columns: 1.4fr .8fr 1.2fr; gap: 8px; }
+    .grid3 input, .grid3 select { font: inherit; font-size: 16px; padding: 9px 8px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); width: 100%; min-width: 0; box-sizing: border-box; }
+    .pres { background: var(--bg-sunken); border-radius: 10px; padding: 8px 10px; margin: 8px 0; }
+    .pres-h { font-size: .82rem; font-weight: 700; color: var(--text-secondary); }
+    .pres-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; max-height: 92px; overflow-y: auto; }
+    .pchip { display: inline-flex; align-items: center; gap: 4px; font-size: .8rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; max-width: 100%; overflow-wrap: anywhere; }
+    .pchip.me { border-color: var(--accent); }
+    .pchip small { color: var(--text-muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #2e9d5b; display: inline-block; flex: none; }
+    .msg.sys { text-align: center; font-size: .8rem; color: var(--text-muted); padding: 6px 0; }
+    .rcount { font-size: .82rem; color: var(--text-secondary); }
     @media (max-width: 420px) { .grid2 { grid-template-columns: 1fr 1fr; gap: 8px; } .tab { font-size: .8rem; } }
 </style>
 </head>
@@ -161,17 +175,42 @@
 
     <!-- 토론방 -->
     <section class="mode" id="m-chat">
+        <div class="roomhead">
+            <select id="roomSel" aria-label="room"></select>
+            <button class="btn btn-primary" id="newRoomBtn" type="button" data-t="newRoom">＋ 방 만들기</button>
+        </div>
+        <div class="panel" id="roomFormBox" style="display:none">
+            <h2 id="roomFormTitle" data-t="newRoomTitle">새 그룹 방 만들기</h2>
+            <form id="roomForm" autocomplete="off">
+                <input type="hidden" name="id">
+                <div class="f"><label data-t="roomName">방 이름</label><input name="name" maxlength="40" required data-ph="roomNamePh" placeholder="예: [ABC] 연맹 작전방"></div>
+                <div class="f"><label data-t="roomDesc">소개(선택)</label><input name="desc" maxlength="300"></div>
+                <div class="f"><label data-t="roomPw">방 비밀번호(선택, 4~6자리 숫자)</label><input name="password" inputmode="numeric" pattern="\d{4,6}" maxlength="6" data-ph="roomPwPh" placeholder="비워 두면 누구나 들어옴"></div>
+                <label class="hint" id="clearPwRow" style="display:none"><input type="checkbox" name="clearPassword"> <span data-t="clearPw">비밀번호 없애기</span></label>
+                <div class="grid2">
+                    <div class="f"><label data-t="nick">닉네임</label><input name="nick" maxlength="24" required></div>
+                    <div class="f"><label>PIN</label><input name="pin" inputmode="numeric" pattern="\d{4,6}" maxlength="6" required placeholder="4~6"></div>
+                </div>
+                <p class="hint" data-t="roomHint">닉네임+PIN으로 방을 고치거나 지웁니다. 30일 동안 대화가 없으면 방이 사라집니다.</p>
+                <div class="acts"><button class="btn btn-primary" type="submit" data-t="makeRoom">만들기</button><button class="btn-s" type="button" id="roomFormCancel" data-t="cancel">닫기</button></div>
+            </form>
+        </div>
+        <details class="panel" id="roomListBox">
+            <summary><span data-t="groupRooms">👥 그룹 방</span> <span class="rcount" id="roomCount"></span></summary>
+            <div id="roomList"></div>
+        </details>
         <div class="panel">
             <div class="bar" style="margin-bottom:8px">
-                <select id="roomSel"></select>
                 <input id="roomServer" inputmode="numeric" data-ph="serverRoom" placeholder="서버 방 번호" style="display:none">
-                <select id="readLang"></select>
+                <select id="readLang" aria-label="read language"></select>
             </div>
             <p class="hint" data-t="chatHint">모든 글은 내가 고른 언어로 자동 번역됩니다(AI 번역, 틀릴 수 있음).</p>
+            <div class="pres" id="presBox"><div class="pres-h"><span class="dot"></span> <span data-t="onlineNow">지금 들어와 있는 사람</span> <b id="presN">0</b></div><div class="pres-list" id="presList"></div></div>
             <div id="chatLog"><div class="empty" data-t="loading">불러오는 중…</div></div>
-            <div class="grid2" style="margin-top:10px">
-                <div class="f" style="margin:0"><input id="chatNick" maxlength="24" data-ph="nick" placeholder="닉네임"></div>
-                <div class="f" style="margin:0"><select id="writeLang"></select></div>
+            <div class="grid3" style="margin-top:10px">
+                <input id="chatNick" maxlength="24" data-ph="nick" placeholder="닉네임">
+                <input id="chatServer" inputmode="numeric" maxlength="6" data-ph="serverShort" placeholder="서버">
+                <select id="writeLang" aria-label="write language"></select>
             </div>
             <div class="send">
                 <textarea id="chatText" maxlength="500" data-ph="chatPh" placeholder="메시지 (아무 언어나)"></textarea>
@@ -216,7 +255,13 @@ var T = {
   people:'명', need:'필요', powerReq:'전투력', contactL:'연락', bump:'끌어올리기', edit:'고치기', del:'지우기', report:'신고', addFriend:'☆ 친구 추가', unfriend:'★ 친구 해제',
   pinAsk:'PIN을 넣어 주세요', confirmDel:'정말 지울까요?', done:'됐습니다', reported:'신고했습니다. 고맙습니다', pinWrong:'PIN이 맞지 않습니다', err:'잘 안 됐습니다',
   roomGlobal:'🌐 전체 방', roomServer:'🏰 서버 방…', serverRoom:'서버 방 번호', readIn:'읽을 언어', writeIn:'내가 쓰는 언어', showOrig:'원문', translating:'번역 중…',
-  left:'일 남음', updated:'수정', server1:'서버', copied:'복사했습니다', needNick:'닉네임을 넣어 주세요', editing:'고치는 중 — 올리기를 누르면 저장' },
+  left:'일 남음', updated:'수정', server1:'서버', copied:'복사했습니다', needNick:'닉네임을 넣어 주세요', editing:'고치는 중 — 올리기를 누르면 저장',
+  newRoom:'＋ 방 만들기', newRoomTitle:'새 그룹 방 만들기', editRoomTitle:'방 고치기', roomName:'방 이름', roomNamePh:'예: [ABC] 연맹 작전방', roomDesc:'소개(선택)',
+  roomPw:'방 비밀번호(선택, 4~6자리 숫자)', roomPwPh:'비워 두면 누구나 들어옴', roomPwEditPh:'비워 두면 그대로', clearPw:'비밀번호 없애기', makeRoom:'만들기', saveRoom:'저장', cancel:'닫기',
+  roomHint:'닉네임+PIN으로 방을 고치거나 지웁니다. 30일 동안 대화가 없으면 방이 사라집니다.', groupRooms:'👥 그룹 방 목록', noRooms:'아직 그룹 방이 없습니다. ＋ 방 만들기로 첫 방을 여세요.',
+  enter:'들어가기', memb:'멤버', onlineN:'명 접속', by:'만든 사람', pwAsk:'방 비밀번호 (4~6자리)', pwWrong:'방 비밀번호가 맞지 않습니다', nickAsk:'방을 만든 닉네임',
+  roomGone:'방이 없어졌거나 비밀번호가 바뀌었습니다', onlineNow:'지금 들어와 있는 사람', guest:'손님', serverShort:'서버 번호', joined:'님이 들어왔어요', leftRoom:'님이 나갔어요',
+  andMore:' 외 ', people2:'명', roomsN:'개', locked:'🔒', roomMade:'방을 만들었습니다', groupHead:'— 내 그룹 방 —' },
  en: { title:'Alliance Plaza', sub:'Alliance recruiting · Player directory · Translated chat', disclaim:"Unofficial fan community — not affiliated with the game's publisher",
   tabRecruit:'Recruit', tabChars:'Players', tabFriends:'Friends', tabChat:'Chat', newRecruit:'Post a recruitment', server:'Server #', tag:'Tag',
   allianceName:'Alliance name', langs:'Languages', members:'Members now', power:'Power requirement', needs:'Looking for', needsPh:'10 active rally members',
@@ -230,7 +275,13 @@ var T = {
   people:'members', need:'Looking for', powerReq:'Power', contactL:'Contact', bump:'Bump', edit:'Edit', del:'Delete', report:'Report', addFriend:'☆ Add friend', unfriend:'★ Unfriend',
   pinAsk:'Enter your PIN', confirmDel:'Delete this?', done:'Done', reported:'Reported. Thank you', pinWrong:'Wrong PIN', err:'Something went wrong',
   roomGlobal:'🌐 Global room', roomServer:'🏰 Server room…', serverRoom:'Server room #', readIn:'Read in', writeIn:'I write in', showOrig:'original', translating:'translating…',
-  left:'days left', updated:'edited', server1:'Server', copied:'Copied', needNick:'Enter a nickname', editing:'Editing — press Post to save' }
+  left:'days left', updated:'edited', server1:'Server', copied:'Copied', needNick:'Enter a nickname', editing:'Editing — press Post to save',
+  newRoom:'＋ New room', newRoomTitle:'Create a group room', editRoomTitle:'Edit room', roomName:'Room name', roomNamePh:'e.g. [ABC] alliance war room', roomDesc:'Description (optional)',
+  roomPw:'Room password (optional, 4-6 digits)', roomPwPh:'Leave empty = open to everyone', roomPwEditPh:'Leave empty = unchanged', clearPw:'Remove password', makeRoom:'Create', saveRoom:'Save', cancel:'Close',
+  roomHint:'Your nickname + PIN let you edit or delete the room. Rooms with no messages for 30 days disappear.', groupRooms:'👥 Group rooms', noRooms:'No group rooms yet. Tap ＋ New room to open the first one.',
+  enter:'Join', memb:'members', onlineN:' online', by:'by', pwAsk:'Room password (4-6 digits)', pwWrong:'Wrong room password', nickAsk:'Nickname that created the room',
+  roomGone:'Room is gone or its password changed', onlineNow:'Here now', guest:'Guest', serverShort:'Server #', joined:' joined', leftRoom:' left',
+  andMore:' and ', people2:' more', roomsN:'', locked:'🔒', roomMade:'Room created', groupHead:'— My group rooms —' }
 };
 var ui = 'ko';
 try { ui = localStorage.getItem('al_ui') || ((navigator.language || 'ko').indexOf('ko') === 0 ? 'ko' : 'en'); } catch (e) {}
@@ -283,9 +334,8 @@ function applyUi() {
     document.getElementById('uiLang').textContent = ui === 'ko' ? 'EN' : '한국어';
     document.title = ui === 'ko' ? '연맹 광장 · Alliance Plaza' : 'Alliance Plaza · 연맹 광장';
     var rl = document.getElementById('rLang'); fillLangSelect(rl, true, rl.value || '');
-    var rs = document.getElementById('roomSel'), rv = rs.value || 'global';
-    rs.innerHTML = ''; rs.appendChild(el('option', { value: 'global', text: t('roomGlobal') })); rs.appendChild(el('option', { value: 'server', text: t('roomServer') })); rs.value = rv;
-    renderRecruit(); renderChars(); renderFriends(); renderChat();
+    renderRoomSel(); renderRooms();
+    renderRecruit(); renderChars(); renderFriends(); renderChat(); renderPres();
 }
 document.getElementById('uiLang').onclick = function () { ui = ui === 'ko' ? 'en' : 'ko'; try { localStorage.setItem('al_ui', ui); } catch (e) {} applyUi(); };
 
@@ -446,19 +496,194 @@ var readLang = store('al_read') || ui, writeLang = store('al_write') || ui;
 fillLangSelect(document.getElementById('readLang'), false, readLang);
 fillLangSelect(document.getElementById('writeLang'), false, writeLang);
 document.getElementById('chatNick').value = prof.nick || '';
+document.getElementById('chatServer').value = prof.server || '';
 var room = 'global', msgs = [], since = 0, pollT = null, busy = false;
+var groups = store('al_groups') || {};   // 들어간 그룹 방: id → {name, key}
+var rooms = [], onlineCounts = {};
+function selVal() { return document.getElementById('roomSel').value || 'global'; }
 function curRoom() {
-    if (document.getElementById('roomSel').value !== 'server') return 'global';
+    var v = selVal();
+    if (v.charAt(0) === 'g' && v !== 'global') return v;
+    if (v !== 'server') return 'global';
     var n = document.getElementById('roomServer').value.replace(/\D/g, '');
     return n ? 's' + n : null;
 }
-function resetChat() { msgs = []; since = 0; renderChat(); poll(); }
+function roomKeyOf(r) { return r && r.charAt(0) === 'g' && r !== 'global' && groups[r.slice(1)] ? groups[r.slice(1)].key || '' : ''; }
+function resetChat() { msgs = []; since = 0; renderChat(); poll(); beat(); }
+function cnt(r) { var n = onlineCounts[r] || 0; return n ? '  · 🟢' + n : ''; }
+function renderRoomSel() {
+    var rs = document.getElementById('roomSel'), rv = rs.value || room || 'global';
+    rs.innerHTML = '';
+    rs.appendChild(el('option', { value: 'global', text: t('roomGlobal') + cnt('global') }));
+    rs.appendChild(el('option', { value: 'server', text: t('roomServer') }));
+    var ids = Object.keys(groups);
+    if (ids.length) {
+        var og = el('optgroup', { label: t('groupHead') });
+        ids.forEach(function (id) { var g = groups[id]; og.appendChild(el('option', { value: 'g' + id, text: (g.key ? '🔒 ' : '👥 ') + g.name + cnt('g' + id) })); });
+        rs.appendChild(og);
+    }
+    rs.value = rv; if (!rs.value) rs.value = 'global';
+}
+function goRoom(v) { renderRoomSel(); document.getElementById('roomSel').value = v; document.getElementById('roomSel').onchange(); }
 document.getElementById('roomSel').onchange = function () {
     var isS = this.value === 'server';
+    room = this.value;
     document.getElementById('roomServer').style.display = isS ? '' : 'none';
     if (isS && !document.getElementById('roomServer').value && prof.server) document.getElementById('roomServer').value = prof.server;
     resetChat();
 };
+function dropGroup(r) {
+    delete groups[r.slice(1)]; store('al_groups', groups);
+    toast(t('roomGone')); goRoom('global');
+}
+
+/* ---------- 그룹 방 ---------- */
+function loadRooms() {
+    api('/alliance/rooms').then(function (j) {
+        rooms = j.rooms || []; onlineCounts = j.online || {};
+        rooms.forEach(function (r) { if (groups[r.id] && groups[r.id].name !== r.name) { groups[r.id].name = r.name; store('al_groups', groups); } });
+        renderRooms(); renderRoomSel();
+    }).catch(function () {});
+}
+function renderRooms() {
+    var box = document.getElementById('roomList'); box.innerHTML = '';
+    var on = rooms.reduce(function (a, r) { return a + (r.online || 0); }, 0);
+    document.getElementById('roomCount').textContent = rooms.length ? '(' + rooms.length + t('roomsN') + (on ? ' · 🟢' + on : '') + ')' : '';
+    if (!rooms.length) { box.appendChild(el('div', { cls: 'empty', text: t('noRooms') })); return; }
+    rooms.forEach(function (r) {
+        box.appendChild(el('div', { cls: 'card' },
+            el('div', { cls: 'top' }, el('span', { cls: 'title', text: (r.hasPw ? '🔒 ' : '') + r.name }), r.online ? el('span', { cls: 'badge', text: '🟢 ' + r.online + t('onlineN') }) : null),
+            r.desc ? el('p', { cls: 'desc', text: r.desc }) : null,
+            el('div', { cls: 'meta', text: t('memb') + ' ' + r.members + '  ·  ' + t('by') + ' ' + r.nick + '  ·  ' + ago(Math.max(r.lastMsg || 0, r.created)) }),
+            el('div', { cls: 'acts' },
+                el('button', { cls: 'btn btn-primary', type: 'button', text: t('enter'), onclick: function () { joinRoom(r); } }),
+                el('button', { cls: 'btn-s', type: 'button', text: t('edit'), onclick: function () { openRoomForm(r); } }),
+                el('button', { cls: 'btn-s', type: 'button', text: t('del'), onclick: function () { delRoom(r); } }),
+                el('button', { cls: 'btn-s', type: 'button', text: t('report'), onclick: function () { doReport('room', r.id); } }))));
+    });
+}
+function myNick() { return document.getElementById('chatNick').value.trim() || prof.nick || ''; }
+function joinRoom(r) {
+    if (groups[r.id] && (!r.hasPw || groups[r.id].key)) { document.getElementById('roomListBox').open = false; return goRoom('g' + r.id); }
+    var pw = '';
+    if (r.hasPw) { pw = prompt(t('pwAsk')); if (!pw) return; pw = pw.trim(); }
+    api('/alliance/rooms/join', { id: r.id, password: pw, nick: myNick() }).then(function (j) {
+        if (!j.ok) return toast(j._status === 403 ? t('pwWrong') : (j.message || t('err')));
+        groups[r.id] = { name: j.room.name, key: j.key || '' }; store('al_groups', groups);
+        document.getElementById('roomListBox').open = false;
+        goRoom('g' + r.id); loadRooms();
+    }).catch(function () { toast(t('err')); });
+}
+function delRoom(r) {
+    var nick = prompt(t('nickAsk'), myNick()); if (!nick) return;
+    var pin = askPin(); if (!pin || !confirm(t('confirmDel'))) return;
+    api('/alliance/rooms/delete', { id: r.id, nick: nick.trim(), pin: pin }).then(function (j) {
+        if (!j.ok) return fail(j);
+        delete groups[r.id]; store('al_groups', groups); toast(t('done'));
+        if (selVal() === 'g' + r.id) goRoom('global');
+        loadRooms();
+    });
+}
+function openRoomForm(r) {
+    var box = document.getElementById('roomFormBox'), f = document.getElementById('roomForm');
+    f.reset();
+    f.id.value = r ? r.id : ''; f.name.value = r ? r.name : ''; f.desc.value = r && r.desc ? r.desc : '';
+    f.nick.value = myNick();
+    f.password.placeholder = r ? t('roomPwEditPh') : t('roomPwPh');
+    document.getElementById('clearPwRow').style.display = r && r.hasPw ? '' : 'none';
+    document.getElementById('roomFormTitle').textContent = r ? t('editRoomTitle') : t('newRoomTitle');
+    f.querySelector('[type=submit]').textContent = r ? t('saveRoom') : t('makeRoom');
+    box.style.display = ''; box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    (r ? f.pin : f.name).focus();
+}
+document.getElementById('newRoomBtn').onclick = function () {
+    var box = document.getElementById('roomFormBox');
+    if (box.style.display === '' && !document.getElementById('roomForm').id.value) { box.style.display = 'none'; return; }
+    openRoomForm(null);
+};
+document.getElementById('roomFormCancel').onclick = function () { document.getElementById('roomFormBox').style.display = 'none'; };
+document.getElementById('roomForm').onsubmit = function (e) {
+    e.preventDefault();
+    var f = e.target, d = formData(f);
+    d.clearPassword = !!f.clearPassword.checked;
+    if (!d.password) delete d.password;
+    if (!d.id) delete d.id;
+    api('/alliance/rooms', d).then(function (j) {
+        if (!j.ok) return fail(j);
+        remember({ nick: d.nick });
+        if (!document.getElementById('chatNick').value) document.getElementById('chatNick').value = d.nick;
+        groups[j.room.id] = { name: j.room.name, key: j.key || '' }; store('al_groups', groups);
+        f.reset(); document.getElementById('roomFormBox').style.display = 'none';
+        toast(d.id ? t('done') : t('roomMade'));
+        goRoom('g' + j.room.id); loadRooms();
+    }).catch(function () { toast(t('err')); });
+};
+
+/* ---------- 접속자 ---------- */
+var uid = store('al_uid');
+if (!uid || !/^[A-Za-z0-9]{8,32}$/.test(uid)) { uid = ''; var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; for (var i = 0; i < 20; i++) uid += abc.charAt(Math.floor(Math.random() * abc.length)); store('al_uid', uid); }
+var FLAG = { ko:'🇰🇷', en:'🇺🇸', ja:'🇯🇵', zh:'🇨🇳', es:'🇪🇸', pt:'🇧🇷', de:'🇩🇪', fr:'🇫🇷', ru:'🇷🇺', vi:'🇻🇳', th:'🇹🇭', id:'🇮🇩', tr:'🇹🇷', ar:'🇸🇦', it:'🇮🇹', pl:'🇵🇱' };
+var online = [], meId = null, presRoom = null, presKnown = null, recentLeft = {}, beatT = null, beatBusy = false, sysN = 0;
+function leaveRoom(r) {
+    if (!r) return;
+    var data = JSON.stringify({ room: r, uid: uid });
+    try { if (navigator.sendBeacon && navigator.sendBeacon(API + '/alliance/presence/leave', data)) return; } catch (e) {}
+    fetch(API + '/alliance/presence/leave', { method: 'POST', body: data, keepalive: true }).catch(function () {});
+}
+function beat() {
+    var r = curRoom();
+    if (mode !== 'chat' || document.hidden) return;
+    if (presRoom && presRoom !== r) { leaveRoom(presRoom); presRoom = null; online = []; presKnown = null; renderPres(); }
+    if (!r || beatBusy) return;
+    presRoom = r; beatBusy = true;
+    api('/alliance/presence', { room: r, uid: uid, nick: myNick(), server: document.getElementById('chatServer').value.trim(), lang: readLang, key: roomKeyOf(r) }).then(function (j) {
+        beatBusy = false;
+        if (r !== curRoom()) return;
+        if (j._status === 403 || j._status === 404) return dropGroup(r);
+        if (!j.online) return;
+        meId = j.me; diffPres(j.online); online = j.online; renderPres();
+        onlineCounts[r] = online.length;
+    }).catch(function () { beatBusy = false; });
+}
+function nameOf(p) { return p.nick || t('guest'); }
+function sysLine(text) { msgs.push({ id: 'sys' + (++sysN), sys: true, ts: Date.now(), text: text }); renderChat(); }
+function diffPres(list) {
+    var now = Date.now(), cur = {};
+    list.forEach(function (p) { cur[p.id] = p; });
+    if (presKnown) {
+        var joins = [];
+        list.forEach(function (p) {
+            if (p.id === meId || presKnown[p.id]) return;
+            if (!(recentLeft[p.id] && now - recentLeft[p.id] < 90000)) joins.push(nameOf(p));   // 금방 나갔다 온 건 다시 안 알림
+            delete recentLeft[p.id];
+        });
+        var leaves = [];
+        Object.keys(presKnown).forEach(function (id) { if (!cur[id] && id !== meId) { recentLeft[id] = now; leaves.push(nameOf(presKnown[id])); } });
+        function line(names, tail) {
+            if (!names.length) return;
+            sysLine(names.length > 3 ? names[0] + t('andMore') + (names.length - 1) + t('people2') + tail : names.join(', ') + tail);
+        }
+        line(joins, t('joined')); line(leaves, t('leftRoom'));
+    }
+    presKnown = cur;
+}
+function renderPres() {
+    var box = document.getElementById('presList'); if (!box) return;
+    box.innerHTML = '';
+    document.getElementById('presN').textContent = online.length;
+    online.forEach(function (p) {
+        box.appendChild(el('span', { cls: 'pchip' + (p.id === meId ? ' me' : ''), title: LNAME[p.lang] || p.lang },
+            (FLAG[p.lang] || '🏳️') + ' ', el('b', { text: nameOf(p) }), p.server ? el('small', { text: 'S' + p.server }) : null));
+    });
+}
+function startBeat() { stopBeat(); beat(); beatT = setInterval(function () { beat(); if (document.getElementById('roomListBox').open) loadRooms(); }, 25000); }
+function stopBeat() { if (beatT) clearInterval(beatT); beatT = null; if (presRoom) leaveRoom(presRoom); presRoom = null; presKnown = null; online = []; renderPres(); }
+document.addEventListener('visibilitychange', function () { if (!document.hidden && mode === 'chat') { beat(); poll(); } });
+window.addEventListener('pagehide', function () { if (presRoom) leaveRoom(presRoom); });
+function saveWho() { remember({ nick: document.getElementById('chatNick').value.trim(), server: document.getElementById('chatServer').value.trim() }); beat(); }
+document.getElementById('chatNick').onchange = saveWho;
+document.getElementById('chatServer').onchange = saveWho;
+document.getElementById('roomListBox').addEventListener('toggle', function () { if (this.open) loadRooms(); });
 document.getElementById('roomServer').oninput = function () { debounce(resetChat); };
 document.getElementById('readLang').onchange = function () { readLang = this.value; store('al_read', readLang); resetChat(); };
 document.getElementById('writeLang').onchange = function () { writeLang = this.value; store('al_write', writeLang); };
@@ -468,14 +693,16 @@ function poll() {
     busy = true;
     var pend = msgs.filter(function (m) { return m.trPending; });
     var from = pend.length ? Math.min.apply(null, pend.map(function (m) { return m.ts; })) - 1 : since;
-    api('/alliance/chat?room=' + r + '&lang=' + readLang + '&since=' + from).then(function (j) {
+    api('/alliance/chat?room=' + r + '&lang=' + readLang + '&since=' + from + '&key=' + encodeURIComponent(roomKeyOf(r))).then(function (j) {
         busy = false;
-        if (r !== curRoom() || !j.msgs) return;
+        if (r !== curRoom()) return;
+        if (j._status === 403 || j._status === 404) return dropGroup(r);
+        if (!j.msgs) return;
         var byId = {}; msgs.forEach(function (m) { byId[m.id] = m; });
         var added = false;
         j.msgs.forEach(function (m) { if (byId[m.id]) { Object.assign(byId[m.id], m); if (!m.trPending) delete byId[m.id].trPending; } else { msgs.push(m); added = true; } });
         msgs.sort(function (a, b) { return a.ts - b.ts; });
-        if (msgs.length) since = Math.max(since, msgs[msgs.length - 1].ts);
+        msgs.forEach(function (m) { if (!m.sys) since = Math.max(since, m.ts); });
         renderChat(added);
     }).catch(function () { busy = false; });
 }
@@ -485,6 +712,7 @@ function renderChat(scroll) {
     log.innerHTML = '';
     if (!msgs.length) { log.appendChild(el('div', { cls: 'empty', text: curRoom() ? t('noMsgs') : t('serverRoom') })); return; }
     msgs.forEach(function (m) {
+        if (m.sys) { log.appendChild(el('div', { cls: 'msg sys', text: m.text })); return; }
         var translated = m.lang !== readLang;
         var main = translated ? (m.tr || m.text) : m.text;
         var row = el('div', { cls: 'msg' });
@@ -498,15 +726,17 @@ function renderChat(scroll) {
     });
     if (scroll || atBottom) log.scrollTop = log.scrollHeight;
 }
-function startChat() { stopChat(); poll(); pollT = setInterval(function () { if (!document.hidden) poll(); }, 4000); }
-function stopChat() { if (pollT) clearInterval(pollT); pollT = null; }
+function startChat() { stopChat(); poll(); pollT = setInterval(function () { if (!document.hidden) poll(); }, 4000); startBeat(); loadRooms(); }
+function stopChat() { if (pollT) clearInterval(pollT); pollT = null; stopBeat(); }
 function sendChat() {
     var r = curRoom(), nick = document.getElementById('chatNick').value.trim(), ta = document.getElementById('chatText'), text = ta.value.trim();
     if (!r) return toast(t('serverRoom'));
     if (!nick) return toast(t('needNick'));
     if (!text) return;
-    remember({ nick: nick });
-    api('/alliance/chat', { room: r, nick: nick, text: text, lang: writeLang, server: prof.server || '' }).then(function (j) {
+    var sv = document.getElementById('chatServer').value.trim();
+    remember({ nick: nick, server: sv });
+    api('/alliance/chat', { room: r, nick: nick, text: text, lang: writeLang, server: sv || prof.server || '', key: roomKeyOf(r) }).then(function (j) {
+        if (j._status === 403 || j._status === 404) return dropGroup(r);
         if (!j.ok) return fail(j);
         ta.value = ''; poll();
     }).catch(function () { toast(t('err')); });

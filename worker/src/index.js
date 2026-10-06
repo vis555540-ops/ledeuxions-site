@@ -67,6 +67,7 @@ const ALLOWED_TOOLS = ["transcribe", "remove-bg", "ocr", "pdf-compress", "restor
     ...PDF_SERVER_TOOLS];
 
 import { handleAlliance } from "./alliance.js";
+export { AlliancePresence } from "./alliance.js";
 
 // ---------- Helpers ----------
 const todayKey = () => new Date().toISOString().slice(0, 10);

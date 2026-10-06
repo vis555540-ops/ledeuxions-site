@@ -9,6 +9,11 @@
  *   al:tr:{msgId}:{lang}  → 번역문   (30일 보관)
  *   al:rl:{ipHash}:{kind} → 횟수     (짧은 TTL, 도배 막기)
  *   al:reports            → [{kind,id,room,n,ts}]
+ *   al:rooms              → [room]   그룹 방 (마지막 글 30일 지나면 사라짐). 채팅은 al:chat:g{id} (31일 TTL)
+ *
+ * 접속자(presence)는 KV 에 안 씀 — Durable Object(AlliancePresence) 하나가 들고 있음.
+ *   KV 무료 쓰기 하루 1,000번이라 25초 하트비트를 KV 에 쓰면 한 사람이 1시간에 144번 → 바로 바닥남.
+ *   DO 는 메모리 + 자기 SQLite 저장소(무료 하루 10만 줄 쓰기). 하트비트 1번 = 1줄. KV 쓰기 0.
  *
  * 계정 없음. 닉네임 + PIN(4~6자리). PIN 은 글마다 무작위 소금 + SHA-256 으로만 저장.
  * 번역: DeepSeek (env.DEEPSEEK_API_KEY). 브라우저에는 절대 안 나감.
@@ -63,7 +68,7 @@ async function rateLimited(env, ipHash, kind, max, windowSec) {
 async function getArr(env, key) { return (await env.KV.get(key, "json")) || []; }
 async function putArr(env, key, arr) { await env.KV.put(key, JSON.stringify(arr)); }
 async function body(req) { try { return await req.json(); } catch (e) { return null; } }
-const roomOk = (r) => (r === "global" || /^s\d{1,5}$/.test(r) ? r : null);
+const roomOk = (r) => (r === "global" || /^s\d{1,5}$/.test(r) || /^g[A-Za-z0-9]{6,12}$/.test(r) ? r : null);
 const contactOk = (s) => oneLine(s, 120);
 
 // ---------- 모집판 ----------
@@ -207,6 +212,8 @@ async function translate(env, text, target) {
 async function getChat(url, env) {
     const room = roomOk(url.searchParams.get("room") || "global");
     if (!room) return [400, { error: "room" }];
+    const acc = await roomAccess(env, room, url.searchParams.get("key"));
+    if (acc.err) return acc.err;
     const since = Number(url.searchParams.get("since")) || 0;
     const target = lang(url.searchParams.get("lang"));
     let msgs = (await getArr(env, `al:chat:${room}`)).filter(m => m.ts > since && (m.reports || 0) < HIDE_AT_REPORTS);
@@ -236,18 +243,206 @@ async function postChat(req, env) {
     const text = clean(b.text, 500);
     const nick = oneLine(b.nick, 24);
     if (!room || !text || !nick) return [400, { error: "room/nick/text required" }];
+    const acc = await roomAccess(env, room, b.key);
+    if (acc.err) return acc.err;
     const ih = await ipHashOf(req);
     if (await rateLimited(env, ih, "chat", 20, 60)) return [429, { error: "slow down", message: "1분에 20개까지 / max 20 per minute" }];
     const m = { id: newId(), room, nick, server: srv(b.server), lang: lang(b.lang) || "en",
         text, ts: Date.now(), reports: 0, ipHash: ih };
     const arr = await getArr(env, `al:chat:${room}`);
     arr.push(m);
-    await putArr(env, `al:chat:${room}`, arr.slice(-150));
+    if (acc.room) {
+        // 그룹 방 글은 31일 TTL. 방의 lastMsg 는 하루 한 번만 고침(KV 쓰기 아끼기).
+        await env.KV.put(`al:chat:${room}`, JSON.stringify(arr.slice(-150)), { expirationTtl: 31 * 86400 });
+        if (m.ts - (acc.room.lastMsg || 0) > DAY) {
+            const rooms = acc.rooms, r = rooms.find(x => x.id === acc.room.id);
+            if (r) { r.lastMsg = m.ts; await putArr(env, "al:rooms", rooms); }
+        }
+    } else await putArr(env, `al:chat:${room}`, arr.slice(-150));
     return [200, { ok: true, msg: strip(m) }];
 }
 
+// ---------- 그룹 방 ----------
+const ROOM_IDLE = 30 * DAY;
+const roomAlive = (r, now) => Math.max(r.lastMsg || 0, r.created) > now - ROOM_IDLE && (r.reports || 0) < HIDE_AT_REPORTS;
+const roomKey = async (r) => (await sha("al-room-key|" + r.id + "|" + r.pwHash)).slice(0, 24);
+const pubRoom = (r) => ({ id: r.id, name: r.name, desc: r.desc, nick: r.nick, hasPw: !!r.pwHash,
+    created: r.created, lastMsg: r.lastMsg || 0, members: (r.members || []).length });
+const sameNick = (a, b) => String(a || "").toLowerCase() === String(b || "").toLowerCase();
+
+// 그룹 방이면 방이 살아 있는지 + 비밀번호 방이면 열쇠(key)가 맞는지. 아니면 그냥 통과.
+async function roomAccess(env, room, key) {
+    if (room === "global" || room[0] !== "g") return {};
+    const rooms = await getArr(env, "al:rooms");
+    const r = rooms.find(x => x.id === room.slice(1));
+    if (!r || !roomAlive(r, Date.now())) return { err: [404, { error: "room gone" }] };
+    if (r.pwHash && String(key || "") !== (await roomKey(r))) return { err: [403, { error: "room key" }] };
+    return { room: r, rooms };
+}
+
+async function listRooms(env) {
+    const now = Date.now();
+    const rooms = (await getArr(env, "al:rooms")).filter(r => roomAlive(r, now));
+    const counts = await presenceCall(env, "/counts", null) || {};
+    const out = rooms.map(r => ({ ...pubRoom(r), online: counts["g" + r.id] || 0 }));
+    out.sort((a, b) => (b.online - a.online) || (Math.max(b.lastMsg, b.created) - Math.max(a.lastMsg, a.created)));
+    return [200, { rooms: out.slice(0, 200), online: counts }];
+}
+
+async function saveRoom(req, env) {
+    const b = await body(req);
+    if (!b) return [400, { error: "invalid json" }];
+    if (!validPin(b.pin)) return [400, { error: "pin", message: "PIN 4~6자리 숫자 / PIN must be 4-6 digits" }];
+    const name = oneLine(b.name, 40), nick = oneLine(b.nick, 24);
+    if (!name || !nick) return [400, { error: "name/nick required" }];
+    const pw = b.password == null ? null : String(b.password).trim();
+    if (pw && !/^\d{4,6}$/.test(pw)) return [400, { error: "password", message: "방 비밀번호 4~6자리 숫자 / room password must be 4-6 digits" }];
+    const now = Date.now();
+    const rooms = (await getArr(env, "al:rooms")).filter(r => roomAlive(r, now));
+    if (b.id) {
+        const r = rooms.find(x => x.id === b.id);
+        if (!r) return [404, { error: "not found" }];
+        if (!sameNick(r.nick, nick) || !(await pinOk(r, b.pin))) return [403, { error: "pin wrong" }];
+        r.name = name; r.desc = clean(b.desc, 300); r.edited = now;
+        if (b.clearPassword) { delete r.pwHash; delete r.pwSalt; }
+        else if (pw) { r.pwSalt = newId(); r.pwHash = await sha("al-room-pw|" + r.pwSalt + "|" + pw); }
+        await putArr(env, "al:rooms", rooms);
+        return [200, { ok: true, room: pubRoom(r), key: r.pwHash ? await roomKey(r) : "" }];
+    }
+    if (rooms.length >= 300) return [429, { error: "full", message: "방이 너무 많습니다 / too many rooms" }];
+    const ih = await ipHashOf(req);
+    if (await rateLimited(env, ih, "room", 3, 3600)) return [429, { error: "slow down", message: "1시간에 방 3개까지 / max 3 rooms per hour" }];
+    const salt = newId();
+    const r = { id: newId(), name, desc: clean(b.desc, 300), nick, created: now, lastMsg: 0, reports: 0,
+        members: [nick], salt, pinHash: await pinHash(String(b.pin), salt), ipHash: ih };
+    if (pw) { r.pwSalt = newId(); r.pwHash = await sha("al-room-pw|" + r.pwSalt + "|" + pw); }
+    rooms.push(r);
+    await putArr(env, "al:rooms", rooms);
+    return [200, { ok: true, room: pubRoom(r), key: r.pwHash ? await roomKey(r) : "" }];
+}
+
+async function deleteRoom(req, env) {
+    const b = await body(req) || {};
+    const rooms = await getArr(env, "al:rooms");
+    const r = rooms.find(x => x.id === b.id);
+    if (!r) return [404, { error: "not found" }];
+    if (!sameNick(r.nick, b.nick) || !(await pinOk(r, b.pin))) return [403, { error: "pin wrong" }];
+    await putArr(env, "al:rooms", rooms.filter(x => x.id !== b.id));
+    await env.KV.delete(`al:chat:g${b.id}`);
+    return [200, { ok: true }];
+}
+
+async function joinRoom(req, env) {
+    const b = await body(req) || {};
+    const now = Date.now();
+    const rooms = await getArr(env, "al:rooms");
+    const r = rooms.find(x => x.id === b.id);
+    if (!r || !roomAlive(r, now)) return [404, { error: "not found" }];
+    if (r.pwHash) {
+        // 틀린 비밀번호만 셈 (10분에 10번). 맞는 건 KV 쓰기 안 함.
+        const ih = await ipHashOf(req), k = `al:rl:${ih}:rpw`;
+        const n = Number(await env.KV.get(k)) || 0;
+        if (n >= 10) return [429, { error: "slow down", message: "잠시 뒤에 / try again later" }];
+        const pw = String(b.password || "").trim();
+        if (!/^\d{4,6}$/.test(pw) || (await sha("al-room-pw|" + r.pwSalt + "|" + pw)) !== r.pwHash) {
+            await env.KV.put(k, String(n + 1), { expirationTtl: 600 });
+            return [403, { error: "password wrong" }];
+        }
+    }
+    const nick = oneLine(b.nick, 24);
+    r.members = r.members || [];
+    if (nick && !r.members.some(x => sameNick(x, nick)) && r.members.length < 500) {
+        r.members.push(nick);
+        await putArr(env, "al:rooms", rooms);
+    }
+    return [200, { ok: true, room: pubRoom(r), key: r.pwHash ? await roomKey(r) : "" }];
+}
+
+// ---------- 접속자 (Durable Object, 메모리만) ----------
+async function presenceCall(env, path, data) {
+    if (!env.AL_PRESENCE) return null;
+    try {
+        const stub = env.AL_PRESENCE.get(env.AL_PRESENCE.idFromName("plaza"));
+        const r = await stub.fetch("https://presence" + path, data ? { method: "POST", body: JSON.stringify(data) } : {});
+        return r.ok ? await r.json() : null;
+    } catch (e) { return null; }
+}
+
+async function presence(req, env, leave) {
+    const b = await body(req) || {};
+    const room = roomOk(b.room);
+    const uid = /^[A-Za-z0-9]{8,32}$/.test(String(b.uid || "")) ? b.uid : null;
+    if (!room || !uid) return [400, { error: "room/uid" }];
+    if (leave) { await presenceCall(env, "/leave", { room, uid }); return [200, { ok: true }]; }
+    const acc = await roomAccess(env, room, b.key);
+    if (acc.err) return acc.err;
+    const j = await presenceCall(env, "/beat", { room, uid, nick: oneLine(b.nick, 24), server: srv(b.server), lang: lang(b.lang) || "en" });
+    return [200, { room, online: (j && j.online) || [], me: j && j.me, now: Date.now() }];
+}
+
+const ONLINE_MS = 60000;
+// 메모리가 원본, DO 자체 저장소(SQLite)는 잠들었다 깨어날 때 되살리는 용도.
+// (DO 는 요청이 10초쯤 없으면 내려가서 메모리가 비워짐 — 실측.) 하트비트 1번 = 저장소 줄 1개 쓰기.
+export class AlliancePresence {
+    constructor(state, env) {
+        this.state = state; this.rooms = new Map(); this.lastSweep = 0;
+        state.blockConcurrencyWhile(async () => {
+            const all = await state.storage.list({ prefix: "r:" });
+            for (const [k, v] of all) this.rooms.set(k.slice(2), new Map(Object.entries(v || {})));
+        });
+    }
+    save(room) {
+        const m = this.rooms.get(room);
+        if (!m || !m.size) { this.rooms.delete(room); return this.state.storage.delete("r:" + room); }
+        return this.state.storage.put("r:" + room, Object.fromEntries(m));
+    }
+    async sweep(now) {
+        if (now - this.lastSweep < 5000) return;
+        this.lastSweep = now;
+        const changed = [];
+        for (const [room, m] of this.rooms) {
+            let c = false;
+            for (const [uid, u] of m) if (now - u.seen > ONLINE_MS) { m.delete(uid); c = true; }
+            if (c) changed.push(room);
+        }
+        await Promise.all(changed.map(r => this.save(r)));
+    }
+    async fetch(request) {
+        const url = new URL(request.url), now = Date.now();
+        await this.sweep(now);
+        if (url.pathname === "/counts") {
+            const out = {};
+            for (const [room, m] of this.rooms) if (m.size) out[room] = m.size;
+            return Response.json(out);
+        }
+        const b = await request.json().catch(() => ({}));
+        if (url.pathname === "/leave") {
+            const m = this.rooms.get(b.room);
+            if (m && m.delete(b.uid)) await this.save(b.room);
+            return Response.json({ ok: true });
+        }
+        if (url.pathname === "/beat") {
+            let m = this.rooms.get(b.room);
+            if (!m) {
+                if (this.rooms.size >= 5000) return Response.json({ online: [] });
+                m = new Map(); this.rooms.set(b.room, m);
+            }
+            const u = m.get(b.uid);
+            if (u || m.size < 500) {
+                const pid = u ? u.pid : (await sha("al-pid|" + b.uid)).slice(0, 10);
+                m.set(b.uid, { pid, nick: b.nick, server: b.server, lang: b.lang, since: u ? u.since : now, seen: now });
+                await this.save(b.room);
+            }
+            const online = [...m.values()].filter(x => now - x.seen <= ONLINE_MS).sort((x, y) => x.since - y.since)
+                .map(x => ({ id: x.pid, nick: x.nick, server: x.server, lang: x.lang, since: x.since }));
+            return Response.json({ online, me: m.get(b.uid)?.pid || null });
+        }
+        return new Response("nope", { status: 404 });
+    }
+}
+
 // ---------- 신고 · 관리 ----------
-const KIND_KEY = { recruit: () => "al:recruit", char: () => "al:chars", chat: (room) => `al:chat:${room}` };
+const KIND_KEY = { recruit: () => "al:recruit", char: () => "al:chars", chat: (room) => `al:chat:${room}`, room: () => "al:rooms" };
 
 async function report(req, env) {
     const b = await body(req) || {};
@@ -287,6 +482,7 @@ async function adminDelete(req, env) {
     const left = arr.filter(x => x.id !== b.id);
     if (left.length !== arr.length) await putArr(env, key, left);
     if (b.kind === "chat") await Promise.all(LANGS.map(l => env.KV.delete(`al:tr:${b.id}:${l}`)));
+    if (b.kind === "room") await env.KV.delete(`al:chat:g${b.id}`);
     const reps = await getArr(env, "al:reports");
     if (reps.some(r => r.id === b.id)) await putArr(env, "al:reports", reps.filter(r => r.id !== b.id));
     return [200, { ok: true, deleted: arr.length - left.length }];
@@ -321,6 +517,12 @@ export async function handleAlliance(request, env, h) {
         if (p === "/alliance/chat" && m === "GET") return send(await getChat(url, env));
         if (p === "/alliance/chat" && m === "POST") return send(await postChat(request, env));
         if (p === "/alliance/report" && m === "POST") return send(await report(request, env));
+        if (p === "/alliance/rooms" && m === "GET") return send(await listRooms(env));
+        if (p === "/alliance/rooms" && m === "POST") return send(await saveRoom(request, env));
+        if (p === "/alliance/rooms/delete" && m === "POST") return send(await deleteRoom(request, env));
+        if (p === "/alliance/rooms/join" && m === "POST") return send(await joinRoom(request, env));
+        if (p === "/alliance/presence" && m === "POST") return send(await presence(request, env, false));
+        if (p === "/alliance/presence/leave" && m === "POST") return send(await presence(request, env, true));
     } catch (e) {
         return send([500, { error: "server" }]);
     }
