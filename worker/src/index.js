@@ -232,7 +232,7 @@ const PASS_HOURS = 24;
 // 헷갈리는 글자(0/O, 1/I/L) 뺀 32자
 const PASS_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
 
-function mintPassCode() {
+function mintPassCode(prefix = "PDF300-") {
     const b = new Uint8Array(16);
     crypto.getRandomValues(b);
     let out = "";
@@ -240,19 +240,19 @@ function mintPassCode() {
         out += PASS_ALPHABET[b[i] % PASS_ALPHABET.length];
         if (i % 4 === 3 && i !== 15) out += "-";
     }
-    return "PDF300-" + out;          // 예: PDF300-K7QM-3XT9-BR2H-WY4N
+    return prefix + out;          // 예: PDF300-K7QM-3XT9-BR2H-WY4N
 }
 
 // 페이힙이 판 열쇠인가 물어본다.
 // 페이힙이 손님한테 열쇠를 만들어 주는데, 그 열쇠는 우리가 만든 게 아니라서
 // 우리 창고에 없다. 그래서 페이힙한테 직접 물어본다.
 // (이걸 안 하면 손님이 0.99 달러를 내고도 계속 막힌다.)
-async function askPayhip(env, code) {
-    if (!env.PAYHIP_SECRET) return false;
+async function askPayhip(env, code, secret = env.PAYHIP_SECRET) {
+    if (!secret) return false;
     try {
         const r = await fetch(
             "https://payhip.com/api/v2/license/verify?license_key=" + encodeURIComponent(code),
-            { headers: { "product-secret-key": env.PAYHIP_SECRET } }
+            { headers: { "product-secret-key": secret } }
         );
         if (!r.ok) return false;
         const d = await r.json();
@@ -271,16 +271,24 @@ async function askPayhip(env, code) {
 
 // 열쇠가 살아 있나. 살아 있으면 남은 시간을 준다.
 // 처음 쓰는 순간 시계가 돌기 시작한다.
-async function checkPass(env, raw) {
+// kind: PASS_KINDS 의 한 칸. 기본은 pdf300.
+//   도장 열쇠와 pdf300 열쇠는 창고 칸(ns)도, 페이힙 상품 비밀키도 다르다 → 서로 안 열린다.
+const PASS_KINDS = {
+    pdf300: { ns: "pass:",      secret: (env) => env.PAYHIP_SECRET,       prefix: "PDF300-" },
+    stamp:  { ns: "stamppass:", secret: (env) => env.PAYHIP_STAMP_SECRET, prefix: "DOJANG-" },
+};
+
+async function checkPass(env, raw, kind = PASS_KINDS.pdf300) {
     const code = (raw || "").trim().toUpperCase();
     if (!code) return null;
-    let rec = await env.KV.get(`pass:${code}`, "json");
+    const ns = kind.ns;
+    let rec = await env.KV.get(`${ns}${code}`, "json");
 
     if (!rec) {
         // 우리 창고에 없다 → 페이힙이 판 것인지 물어본다
-        if (await askPayhip(env, code)) {
+        if (await askPayhip(env, code, kind.secret(env))) {
             rec = { minted: Date.now(), firstUse: null, hours: PASS_HOURS, note: "payhip" };
-            await env.KV.put(`pass:${code}`, JSON.stringify(rec));
+            await env.KV.put(`${ns}${code}`, JSON.stringify(rec));
         }
     }
     if (!rec) return { ok: false, reason: "unknown" };
@@ -290,7 +298,7 @@ async function checkPass(env, raw) {
 
     if (!rec.firstUse) {                       // 첫 사용 — 지금부터 시계 시작
         rec.firstUse = now;
-        await env.KV.put(`pass:${code}`, JSON.stringify(rec),
+        await env.KV.put(`${ns}${code}`, JSON.stringify(rec),
                          { expirationTtl: Math.ceil(hours * 3600) + 86400 });
         return { ok: true, code, endsAt: now + hours * 3600e3, fresh: true };
     }
@@ -590,6 +598,51 @@ async function handlePassMint(request, env, origin) {
     return json({ ok: true, count: codes.length, hours, codes }, 200, h);
 }
 
+// ─────────────────────────────────────────────────────────────
+// 도장문서.store 「고화질 묶음」 열쇠 — 2026-10-06
+//   pdf300 하루 이용권과 똑같이 돈다(첫 사용부터 24시간, 페이힙 열쇠 or 우리가 찍은 열쇠).
+//   다른 점: 창고 칸 stamppass:, 페이힙 비밀키 PAYHIP_STAMP_SECRET, 열쇠 앞머리 DOJANG-.
+//   서버는 열쇠가 살아 있나만 답한다. 고화질 그림은 손님 브라우저가 직접 만든다(올리는 것 없음).
+// ─────────────────────────────────────────────────────────────
+async function handleStampCheck(request, env, origin) {
+    const h = corsHeaders(origin);
+    let body = {};
+    try { body = await request.json(); } catch (e) {}
+    const r = await checkPass(env, body.code, PASS_KINDS.stamp);
+    if (!r) return json({ ok: false, reason: "empty", message: "열쇠를 넣어 주세요." }, 400, h);
+    if (!r.ok) {
+        const 말 = r.reason === "expired"
+            ? "이 열쇠는 쓸 수 있는 24시간이 지났어요. (처음 넣은 때부터 24시간)"
+            : "열쇠를 찾지 못했어요. 글자를 다시 확인하거나, 결제 영수증 메일로 주문번호와 함께 알려 주세요.";
+        return json({ ok: false, reason: r.reason, message: 말 }, 200, h);
+    }
+    return json({
+        ok: true, code: r.code, endsAt: new Date(r.endsAt).toISOString(),
+        message: r.fresh ? "열렸어요. 지금부터 24시간 동안 고화질 묶음을 몇 번이든 받을 수 있어요."
+                         : "열려 있는 열쇠예요.",
+    }, 200, h);
+}
+
+async function handleStampMint(request, env, origin) {
+    const h = corsHeaders(origin);
+    const given = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (!env.ADMIN_KEY || given !== env.ADMIN_KEY) return json({ error: "nope" }, 401, h);
+    let body = {};
+    try { body = await request.json(); } catch (e) {}
+    const n = Math.max(1, Math.min(500, Number(body.count) || 1));
+    const hours = Math.max(1, Math.min(24 * 31, Number(body.hours) || PASS_HOURS));
+    const note = String(body.note || "").slice(0, 80);
+    const codes = [];
+    for (let i = 0; i < n; i++) {
+        const code = mintPassCode(PASS_KINDS.stamp.prefix);
+        await env.KV.put(`${PASS_KINDS.stamp.ns}${code}`, JSON.stringify({
+            minted: Date.now(), firstUse: null, hours, note,
+        }));
+        codes.push(code);
+    }
+    return json({ ok: true, count: codes.length, hours, codes }, 200, h);
+}
+
 // 이용권 손님 — 세지 않고 그냥 보낸다
 async function passThrough(tool, req, env, h, pass) {
     const upstreamHeaders = new Headers();
@@ -863,6 +916,14 @@ export default {
         // 하루 이용권 — 열쇠 찍기 (우리만. 내부 키 필요)
         if (url.pathname === "/admin/pass/mint" && request.method === "POST") {
             return await handlePassMint(request, env, origin);
+        }
+
+        // 도장문서.store 고화질 묶음 열쇠
+        if (url.pathname === "/stamp/check" && request.method === "POST") {
+            return await handleStampCheck(request, env, origin);
+        }
+        if (url.pathname === "/admin/stamp/mint" && request.method === "POST") {
+            return await handleStampMint(request, env, origin);
         }
 
         if (url.pathname === "/share-bonus" && request.method === "POST") {
