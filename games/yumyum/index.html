@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>냠냠 미로 · L.D 게임 나라</title>
+<!-- Original HTML5 maze game by 路人甲 / Haole Zheng (mumuy), MIT License (see LICENSE).
+     Source: https://github.com/mumuy/pacman . Font: Press Start 2P (SIL OFL, CodeMan38).
+     L.D: renamed (no trademark), removed the author-site wrapper/redirect/GitHub buttons, added touch d-pad + swipe. -->
+<link rel="icon" href="favicon.png">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#000;color:#ddd;font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;overscroll-behavior:none}
+.wrap{max-width:960px;margin:0 auto;padding:10px 8px 24px;text-align:center}
+canvas{display:block;width:100%;height:auto;background:#000;touch-action:none;border-radius:6px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:0 4px 8px}
+.top a{color:#ffd166;text-decoration:none}
+.pad{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(3,64px);gap:6px;justify-content:center;margin:14px auto 0;user-select:none;-webkit-user-select:none}
+.pad button{font-size:26px;border:0;border-radius:14px;background:#1f2a44;color:#fff;touch-action:none}
+.pad button:active{background:#3a4f80}
+.pad .c{background:#333;font-size:14px}
+.help{color:#888;font-size:12.5px;line-height:1.7;margin-top:14px}
+.help a{color:#aaa}
+@media (min-width:900px) and (pointer:fine){.pad{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="/games/">← 게임 나라</a><span>냠냠 미로</span></div>
+  <canvas id="canvas" width="960" height="640"></canvas>
+  <div class="pad" id="pad">
+    <span></span><button data-k="38" aria-label="위">▲</button><span></span>
+    <button data-k="37" aria-label="왼쪽">◀</button><button class="c" data-k="13" aria-label="시작·멈춤">시작<br>멈춤</button><button data-k="39" aria-label="오른쪽">▶</button>
+    <span></span><button data-k="40" aria-label="아래">▼</button><span></span>
+  </div>
+  <p class="help">콩을 다 먹으면 다음 판. 유령을 피하세요. 큰 콩을 먹으면 잠깐 유령을 잡을 수 있어요.<br>
+  화면을 밀거나(스와이프) 아래 단추로 움직입니다 · 키보드: 방향키, 스페이스=멈춤<br>
+  만든 사람: <a href="https://github.com/mumuy/pacman" target="_blank" rel="noopener">路人甲 (mumuy) · 중국</a> · MIT</p>
+</div>
+<script src="static/script/game.js"></script>
+<script src="static/script/index.js"></script>
+<script>
+(function(){
+  function key(code){
+    var e=new Event('keydown',{bubbles:true,cancelable:true});
+    Object.defineProperty(e,'keyCode',{value:code});
+    window.dispatchEvent(e);
+  }
+  document.querySelectorAll('#pad button').forEach(function(b){
+    b.addEventListener('pointerdown',function(ev){ev.preventDefault();key(+b.dataset.k);});
+  });
+  var cv=document.getElementById('canvas'),sx=0,sy=0,moved=false;
+  cv.addEventListener('touchstart',function(e){var t=e.touches[0];sx=t.clientX;sy=t.clientY;moved=false;},{passive:true});
+  cv.addEventListener('touchmove',function(e){
+    var t=e.touches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(Math.abs(dx)<24&&Math.abs(dy)<24)return;
+    key(Math.abs(dx)>Math.abs(dy)?(dx>0?39:37):(dy>0?40:38));
+    sx=t.clientX;sy=t.clientY;moved=true;
+  },{passive:true});
+  cv.addEventListener('touchend',function(){ if(!moved && window.__yumyum && __yumyum.isMenu()) key(13); });
+  cv.addEventListener('click',function(){ if(!('ontouchstart' in window) && window.__yumyum && __yumyum.isMenu()) key(13); });
+})();
+</script>
+</body>
+</html>

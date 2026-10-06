@@ -43,6 +43,17 @@
 .mini .gcard{align-items:center;text-align:center;padding:14px 8px}
 .mini .gcard .n{font-size:17px}
 .mini .gcard.hub{background:color-mix(in srgb,var(--color-accent) 16%,var(--color-surface));border-color:var(--color-accent)}
+.world{margin-top:16px}
+.world-head{display:flex;align-items:baseline;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+.world-head h3{font-family:var(--font-heading);font-weight:600;font-size:18px;margin:0}
+.world-head .sub{font-size:12.5px;color:color-mix(in srgb,var(--color-text) 58%,transparent);word-break:keep-all}
+.world-head .all{margin-left:auto;font-size:13px;border-bottom:1px solid var(--color-accent);padding-bottom:2px;white-space:nowrap}
+.wgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.wgrid .gcard{align-items:center;text-align:center;padding:12px 6px;gap:2px}
+.wgrid .gcard .e{font-size:26px}
+.wgrid .gcard .n{font-size:15px;margin-top:4px;word-break:keep-all}
+.wgrid .gcard .by{font-size:10.5px;line-height:1.3;color:color-mix(in srgb,var(--color-text) 50%,transparent);overflow-wrap:anywhere}
+@media (max-width:760px){.wgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.wgrid .gcard{padding:10px 4px}.wgrid .gcard .n{font-size:14px}.world-head .all{margin-left:0}}
 .quick{padding-block:22px 30px}
 .quick h2{font-family:var(--font-heading);font-weight:600;font-size:22px;margin:0 0 6px}
 .qlist{list-style:none;margin:0;padding:0;border-top:1px solid var(--color-text)}
@@ -115,6 +126,21 @@
 <a class="gcard" href="/web-projects/game-world/tower/"><span class="e" aria-hidden="true">🏗️</span><span class="n">타워 쌓기</span><span class="d">블록 정확히 겹치기</span></a>
 <a class="gcard" href="/games/clumsybird/"><span class="e" aria-hidden="true">🐦</span><span class="n">날아라 새</span><span class="d">톡톡 눌러 날기</span></a>
 <a class="gcard hub" href="/games/"><span class="e" aria-hidden="true">🎮</span><span class="n">게임 나라</span><span class="d">게임 전부 보기</span></a>
+</div>
+</div>
+<div class="world" aria-labelledby="world-title">
+<div class="world-head">
+<h3 id="world-title">🌍 외국 친구들이 만든 게임</h3>
+<span class="sub">다른 나라 사람들이 공개한 게임을 옮겨 담았어요.</span>
+<a class="all" href="/games/#world">14개 다 보기 →</a>
+</div>
+<div class="wgrid">
+<a class="gcard" href="/games/dino/"><span class="e" aria-hidden="true">🦖</span><span class="n">공룡 달리기</span><span class="by">Chromium · wayou</span></a>
+<a class="gcard" href="/games/ellaz/memory/"><span class="e" aria-hidden="true">🐶</span><span class="n">짝 맞추기</span><span class="by">Ellaz</span></a>
+<a class="gcard" href="/games/ellaz/balloons/"><span class="e" aria-hidden="true">🎈</span><span class="n">풍선 터뜨리기</span><span class="by">Ellaz</span></a>
+<a class="gcard" href="/games/yumyum/"><span class="e" aria-hidden="true">🟡</span><span class="n">냠냠 미로</span><span class="by">路人甲 · 중국</span></a>
+<a class="gcard" href="/games/ellaz/coloring/"><span class="e" aria-hidden="true">🖍️</span><span class="n">색칠 놀이</span><span class="by">Ellaz</span></a>
+<a class="gcard" href="/games/friedlander/bubbles/"><span class="e" aria-hidden="true">🫧</span><span class="n">거품 쏘기</span><span class="by">M. Friedlander</span></a>
 </div>
 </div>
 <nav aria-label="바로 가기"><ul class="jump">

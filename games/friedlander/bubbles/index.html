@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1">
+<meta name="theme-color" content="#0b0a09">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bubbles">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="A calm bubble shooter. No ads, no timers, no way to lose.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='13' r='8' fill='%237fb069'/%3E%3Ccircle cx='22' cy='21' r='7' fill='%23e2685c'/%3E%3C/svg%3E">
+<title>거품 쏘기 · L.D 게임 나라</title>
+<!-- Bubbles by Mark Friedlander, MIT License (see ../LICENSE). Source: https://github.com/markfriedlander/arcade -->
+<style>
+  /* ============================================================
+     BUBBLES: a calm bubble shooter.
+     One file. No dependencies, no network, no analytics.
+     Palette borrowed from the studio hub so it reads as family.
+     ============================================================ */
+  :root {
+    --bg: #0b0a09;
+    --surface: #16130f;
+    --text: #ece7de;
+    --muted: #948b7e;
+    --accent: #c8b28a;
+    --accent-glow: #e6d3ac;
+    --border: #262119;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse 90% 45% at 50% 4%,
+                      rgba(200, 178, 138, 0.075) 0%,
+                      rgba(200, 178, 138, 0.00) 62%),
+      var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- Top bar, held to the same width as the playfield ---- */
+  #bar {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: calc(env(safe-area-inset-top, 0px) + 0.7rem) 0.4rem 0.55rem;
+  }
+  .stat { display: flex; flex-direction: column; line-height: 1.1; }
+  .stat .k { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.16em; }
+  .stat .v { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .stat.best .v { color: var(--accent); font-size: 1rem; font-weight: 500; padding-top: 0.16rem; }
+  #spacer { flex: 1; }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 10px;
+    font: inherit; font-size: 0.85rem;
+    padding: 0.45rem 0.7rem;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease, opacity .15s ease;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: 0.3; cursor: default; border-color: var(--border); color: var(--muted); }
+  .btn.icon { padding: 0.4rem 0.6rem; min-width: 2.3rem; font-size: 1rem; line-height: 1.1; }
+
+  /* ---- Level progress ---- */
+  #levelbar {
+    width: 100%; max-width: 520px; margin: 0 auto;
+    padding: 0 0.4rem 0.55rem;
+    display: none;
+  }
+  #levelbar.on { display: block; }
+  .lv-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.34rem; }
+  .lv-name { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.16em; }
+  .lv-count { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.05em; font-variant-numeric: tabular-nums; }
+  .lv-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .lv-fill { height: 100%; width: 0%; background: var(--accent); border-radius: 2px; transition: width 0.35s ease; }
+
+  /* ---- Playfield ---- */
+  #wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  canvas { display: block; touch-action: none; }
+
+  /* ---- Overlay ---- */
+  #veil {
+    position: fixed; inset: 0;
+    background: rgba(11, 10, 9, 0.87);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    display: none; align-items: center; justify-content: center;
+    padding: 1.5rem; z-index: 10;
+  }
+  #veil.on { display: flex; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.9rem 1.7rem;
+    max-width: 22rem; width: 100%;
+    text-align: center;
+  }
+  .card h1 { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 0.35rem; }
+  .card .sub { font-style: italic; color: var(--accent); font-size: 1rem; margin-bottom: 1.3rem; }
+  .card p.body { color: var(--muted); font-size: 0.93rem; line-height: 1.62; margin-bottom: 1.4rem; }
+  .card p.body b { color: var(--text); font-weight: 500; }
+  .rowbtns { display: flex; flex-direction: column; gap: 0.6rem; }
+  .rowbtns .btn { padding: 0.75rem; font-size: 0.95rem; }
+  .settings { margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--border); text-align: left; }
+  .set-row { display: flex; align-items: center; justify-content: space-between; gap: 0.55rem; margin-bottom: 0.7rem; font-size: 0.87rem; color: var(--muted); }
+  .set-row:last-child { margin-bottom: 0; }
+  .set-row .lab { flex: 1; }
+  .set-row.lv-only.off { opacity: 0.3; pointer-events: none; }
+  .stepper { display: inline-flex; align-items: center; gap: 0.2rem; }
+  .stepper button {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    width: 1.7rem; height: 1.7rem; border-radius: 7px; font: inherit; font-size: 0.9rem;
+    cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .stepper button:hover { border-color: var(--accent); color: var(--accent); }
+  .stepper b { min-width: 1.7rem; text-align: center; color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .set-row .unit { color: var(--muted); font-size: 0.78rem; min-width: 2.5rem; }
+  #lvToggle { padding: 0.3rem 0.75rem; font-size: 0.82rem; min-width: 3.4rem; }
+
+  .btn.primary { border-color: var(--accent); color: var(--accent); }
+  .btn.primary:hover { background: rgba(200,178,138,0.08); color: var(--accent-glow); }
+  .card .back {
+    display: inline-block; margin-top: 1.4rem;
+    color: var(--muted); font-size: 0.85rem; text-decoration: none;
+    transition: color .15s ease;
+  }
+  .card .back:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <div class="stat"><span class="k">Score</span><span class="v" id="score">0</span></div>
+  <div class="stat best"><span class="k">Best</span><span class="v" id="best">0</span></div>
+  <div id="spacer"></div>
+  <button class="btn icon" id="undo" title="Undo last shot" aria-label="Undo last shot">&#8630;</button>
+  <button class="btn icon" id="sound" title="Sound" aria-label="Toggle sound">&#9834;</button>
+  <button class="btn" id="menu">Menu</button>
+</div>
+
+<div id="levelbar">
+  <div class="lv-row"><span class="lv-name" id="lvName">Level 1</span><span class="lv-count" id="lvCount">0 of 5 lines</span></div>
+  <div class="lv-track"><div class="lv-fill" id="lvFill"></div></div>
+</div>
+
+<div id="wrap"><canvas id="cv"></canvas></div>
+
+<div id="veil" class="on">
+  <div class="card">
+    <h1 id="ttl">Bubbles</h1>
+    <p class="sub" id="sttl">Nothing to lose.</p>
+    <p class="body" id="msg">
+      Drag to aim, let go to shoot. Match <b>three or more</b> of a colour to clear them,
+      and anything left hanging falls too.<br><br>
+      Bank shots off the walls. Tap the small bubble to swap it in.
+      No timers, no lives, and no way to lose. It just keeps going.
+    </p>
+    <div class="rowbtns">
+      <button class="btn primary" id="play">Play</button>
+      <button class="btn" id="newgame" style="display:none">New game</button>
+    </div>
+
+    <div class="settings">
+      <div class="set-row">
+        <span class="lab">Levels</span>
+        <button class="btn" id="lvToggle">On</button>
+      </div>
+      <div class="set-row lv-only">
+        <span class="lab">First level</span>
+        <span class="stepper">
+          <button data-k="base" data-d="-1">&minus;</button><b id="lvBase">5</b><button data-k="base" data-d="1">+</button>
+        </span>
+        <span class="unit">lines</span>
+      </div>
+      <div class="set-row lv-only">
+        <span class="lab">Each level adds</span>
+        <span class="stepper">
+          <button data-k="step" data-d="-1">&minus;</button><b id="lvStep">2</b><button data-k="step" data-d="1">+</button>
+        </span>
+        <span class="unit">lines</span>
+      </div>
+    </div>
+
+    <a class="back" href="/games/">&larr; 게임 나라</a>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   Palette: five hues spaced in lightness as well as hue, so they
+   stay distinguishable for colourblind players.
+   ============================================================ */
+const COLORS = [
+  { base: "#e2685c", lite: "#f4a094", dark: "#a63d33" },  // coral
+  { base: "#e8a23c", lite: "#f7c982", dark: "#a86a17" },  // amber
+  { base: "#7fb069", lite: "#a9d195", dark: "#4d7538" },  // sage
+  { base: "#6ba8d6", lite: "#a2cdec", dark: "#3b6f97" },  // sky
+  { base: "#a98bd4", lite: "#c9b4e8", dark: "#71579b" }   // lavender
+];
+
+const SQRT3      = Math.sqrt(3);
+const MAX_W      = 520;    // playfield cap on wide screens
+const DROP_EVERY = 7;      // shots between ceiling drops
+// Starting rows scale with the display: five rows that fill a laptop pane
+// leave a tall phone looking almost empty.
+const startRows = () => Math.max(4, Math.min(10, Math.round(MAX_ROWS * 0.45)));
+const UNDO_DEPTH = 12;
+const MAX_BOUNCE = 5;
+const STEP_FRAC  = 0.28;   // marching increment, as a fraction of R
+const SPEED_R    = 62;     // shot speed in radii per second
+const AIM_LIMIT  = 1.27;   // radians off vertical, ~73 degrees
+const SAVE_KEY   = "bubbles.save.v1";
+const SET_KEY    = "bubbles.settings.v1";
+const LV_BASE_MIN = 1, LV_BASE_MAX = 20;   // lines needed for level 1
+const LV_STEP_MIN = 0, LV_STEP_MAX = 10;   // extra lines each level adds
+
+/* ---------- canvas ---------- */
+const cv   = document.getElementById("cv");
+const ctx  = cv.getContext("2d");
+const wrap = document.getElementById("wrap");
+
+let COLS = 11, R = 22, ROW_H = 38, STEP = 6, W = 0, H = 0, dpr = 1;
+let shooterY = 0, dangerY = 0, MAX_ROWS = 20;
+
+/* ---------- game state ---------- */
+let grid = [];          // grid[r][c] = null | {color, born}
+let parity = 0;         // flips on every ceiling drop so bubbles keep their x
+let cur = 0, next = 0;
+let shot = null;        // {x, y, dx, dy, color, budget}
+let score = 0, best = 0;
+let shotsSinceDrop = 0;
+let aim = -Math.PI / 2;
+let pointerAiming = false, downOnNext = false;
+let running = false;
+let undoStack = [];
+let pops = [], fallers = [], ripples = [];
+let flashT = 0;
+let banner = null;      // {text, t, dur}
+let lastT = 0;
+
+/* ---------- levels ----------
+   A "line" is a full row's worth of bubbles cleared by her own shots, so the
+   bar always moves when she pops something. Bubbles the tide takes do not
+   count: those are not her doing. Levels add no fail state, only progress. */
+let levelsOn = true, levelBase = 5, levelStep = 2;
+let level = 1, clearedBubbles = 0, bestLevel = 1;
+
+const lineTarget = () => levelBase + (level - 1) * levelStep;
+const linesDone  = () => Math.floor(clearedBubbles / COLS);
+
+/* ---------- sound ---------- */
+let actx = null, soundOn = true;
+const SCALE = [523.25, 587.33, 698.46, 783.99, 880.0, 1046.5, 1174.7, 1396.9];
+
+function audio() {
+  if (!actx) {
+    try { actx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch (e) { soundOn = false; return null; }
+  }
+  if (actx.state === "suspended") actx.resume();
+  return actx;
+}
+function tone(freq, dur, type, gain, delay) {
+  if (!soundOn || !actx) return;
+  const t0 = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || "sine";
+  o.frequency.setValueAtTime(freq, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.03);
+}
+const sfxShoot = () => tone(150, 0.11, "triangle", 0.05);
+const sfxClick = () => tone(340, 0.06, "sine", 0.03);
+const sfxWall  = () => tone(260, 0.05, "sine", 0.022);
+const sfxSwap  = () => tone(620, 0.07, "sine", 0.03);
+const sfxTide  = () => tone(98,  0.55, "sine", 0.05);
+function sfxPop(n) {
+  for (let i = 0; i < Math.min(n, 8); i++) {
+    tone(SCALE[Math.min(i, SCALE.length - 1)], 0.34, "sine", 0.055, i * 0.045);
+  }
+}
+function sfxLevel() {
+  [0, 2, 4, 7].forEach((s, i) => tone(SCALE[s % SCALE.length], 0.5, "sine", 0.05, i * 0.075));
+}
+function sfxClear() {
+  [0, 2, 4, 5, 7].forEach((s, i) => tone(SCALE[s % SCALE.length], 0.7, "sine", 0.05, i * 0.09));
+}
+
+/* ============================================================
+   Geometry. Rows alternate a half-bubble offset; `parity` flips on
+   every ceiling drop so existing bubbles keep the x they had.
+   ============================================================ */
+const rowParity = r => (r + parity) & 1;
+const cellX = (r, c) => R + rowParity(r) * R + 2 * R * c;
+const cellY = r => R + r * ROW_H;
+
+function neighbors(r, c) {
+  const d = rowParity(r) === 1
+    ? [[0,-1],[0,1],[-1,0],[-1,1],[1,0],[1,1]]
+    : [[0,-1],[0,1],[-1,-1],[-1,0],[1,-1],[1,0]];
+  const out = [];
+  for (let i = 0; i < 6; i++) {
+    const nr = r + d[i][0], nc = c + d[i][1];
+    if (nr >= 0 && nc >= 0 && nc < COLS) out.push([nr, nc]);
+  }
+  return out;
+}
+
+function ensureRow(r) { while (grid.length <= r) grid.push(new Array(COLS).fill(null)); }
+const at = (r, c) => (r >= 0 && r < grid.length && c >= 0 && c < COLS) ? grid[r][c] : null;
+
+const HIT2 = () => (2 * R) * (2 * R) * 0.86;
+function hitsBubble(x, y) {
+  const rEst = Math.round((y - R) / ROW_H);
+  const h2 = HIT2();
+  for (let r = Math.max(0, rEst - 1); r <= rEst + 1; r++) {
+    if (r >= grid.length) continue;
+    const row = grid[r], cy = cellY(r), dy = y - cy;
+    if (dy * dy > h2) continue;
+    for (let c = 0; c < COLS; c++) {
+      if (!row[c]) continue;
+      const dx = x - cellX(r, c);
+      if (dx * dx + dy * dy < h2) return true;
+    }
+  }
+  return false;
+}
+
+/* ============================================================
+   Marching. The live shot and the aim preview run through this
+   same function in identical fixed-size steps, so the dotted line
+   cannot disagree with where the bubble actually lands.
+   ============================================================ */
+function march(s, steps, onPoint) {
+  let bounces = 0;
+  for (let i = 0; i < steps; i++) {
+    s.x += s.dx * STEP;
+    s.y += s.dy * STEP;
+
+    if (s.x < R)          { s.x = R;     s.dx = -s.dx; bounces++; if (onPoint) onPoint(s.x, s.y); else if (bounces <= 2) sfxWall(); }
+    else if (s.x > W - R) { s.x = W - R; s.dx = -s.dx; bounces++; if (onPoint) onPoint(s.x, s.y); else if (bounces <= 2) sfxWall(); }
+
+    if (s.y <= R)        { s.y = R; return "ceiling"; }
+    if (hitsBubble(s.x, s.y)) return "bubble";
+    if (bounces > MAX_BOUNCE) return "bounces";
+    if (s.y > H + R * 2) return "out";
+    if (onPoint) onPoint(s.x, s.y);
+  }
+  return null;
+}
+
+/* Nearest empty cell that is anchored: touching a bubble, or on row 0. */
+function snapCell(x, y) {
+  const rEst = Math.max(0, Math.round((y - R) / ROW_H));
+  let bestD = Infinity, bestR = -1, bestC = -1;
+
+  for (let r = Math.max(0, rEst - 2); r <= rEst + 2 && r < MAX_ROWS + 4; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (at(r, c)) continue;
+      let anchored = r === 0;
+      if (!anchored) {
+        const nb = neighbors(r, c);
+        for (let i = 0; i < nb.length; i++) { if (at(nb[i][0], nb[i][1])) { anchored = true; break; } }
+      }
+      if (!anchored) continue;
+      const dx = x - cellX(r, c), dy = y - cellY(r);
+      const d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; bestR = r; bestC = c; }
+    }
+  }
+  return bestR < 0 ? null : { r: bestR, c: bestC };
+}
+
+/* ============================================================
+   Matching
+   ============================================================ */
+function sameColorCluster(r, c) {
+  const color = grid[r][c].color;
+  const seen = new Set([r + "," + c]);
+  const stack = [[r, c]], out = [[r, c]];
+  while (stack.length) {
+    const [cr, cc] = stack.pop();
+    for (const [nr, nc] of neighbors(cr, cc)) {
+      const k = nr + "," + nc, b = at(nr, nc);
+      if (b && b.color === color && !seen.has(k)) {
+        seen.add(k); stack.push([nr, nc]); out.push([nr, nc]);
+      }
+    }
+  }
+  return out;
+}
+
+/* Anything not reachable from row 0 is hanging in mid-air. */
+function findFloaters() {
+  const anchored = new Set(), stack = [];
+  for (let c = 0; c < COLS; c++) if (at(0, c)) { anchored.add("0," + c); stack.push([0, c]); }
+  while (stack.length) {
+    const [cr, cc] = stack.pop();
+    for (const [nr, nc] of neighbors(cr, cc)) {
+      const k = nr + "," + nc;
+      if (at(nr, nc) && !anchored.has(k)) { anchored.add(k); stack.push([nr, nc]); }
+    }
+  }
+  const loose = [];
+  for (let r = 0; r < grid.length; r++)
+    for (let c = 0; c < COLS; c++)
+      if (grid[r][c] && !anchored.has(r + "," + c)) loose.push([r, c]);
+  return loose;
+}
+
+/* ============================================================
+   Effects
+   ============================================================ */
+function addPop(x, y, color) {
+  pops.push({ x, y, color, t: 0, dur: 0.34 });
+  for (let i = 0; i < 5; i++) {
+    const a = Math.random() * Math.PI * 2, sp = R * (1.4 + Math.random() * 2.2);
+    pops.push({ x, y, color, t: 0, dur: 0.42 + Math.random() * 0.2, spark: true,
+                vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, rad: R * (0.10 + Math.random() * 0.13) });
+  }
+}
+function addFaller(x, y, color, kick) {
+  fallers.push({ x, y, color, t: 0,
+                 vx: (Math.random() - 0.5) * R * (kick ? 5 : 2.2),
+                 vy: -R * (kick ? 1.6 : 0.5) * Math.random() });
+}
+
+/* ============================================================
+   Board
+   ============================================================ */
+function activeColors() {
+  const seen = new Set();
+  for (const row of grid) for (const b of row) if (b) seen.add(b.color);
+  return [...seen];
+}
+function pickColor() {
+  const live = activeColors();
+  const pool = live.length ? live : COLORS.map((_, i) => i);
+  return pool[(Math.random() * pool.length) | 0];
+}
+function fillFreshRows(n) {
+  for (let r = 0; r < n; r++) {
+    ensureRow(r);
+    for (let c = 0; c < COLS; c++) grid[r][c] = { color: (Math.random() * COLORS.length) | 0, born: performance.now() + r * 40 };
+  }
+}
+
+function newGame() {
+  resize(true);
+  grid = []; parity = 0; score = 0; shotsSinceDrop = 0;
+  shot = null; undoStack = [];
+  pops = []; fallers = []; ripples = [];
+  flashT = 0; banner = null;
+  level = 1; clearedBubbles = 0;
+  fillFreshRows(startRows());
+  cur = pickColor(); next = pickColor();
+  aim = -Math.PI / 2;
+  save(); syncUI();
+}
+
+function dropRow() {
+  const live = activeColors();
+  const pool = live.length ? live : COLORS.map((_, i) => i);
+  const row = new Array(COLS);
+  for (let c = 0; c < COLS; c++) row[c] = { color: pool[(Math.random() * pool.length) | 0], born: performance.now() };
+  grid.unshift(row);
+  parity ^= 1;
+}
+
+/* The tide. Instead of a game over, the lowest row dissolves away.
+   Pressure still builds, it just never becomes a wall. */
+function runTide() {
+  for (let guard = 0; guard < 4; guard++) {
+    let lowest = -1;
+    for (let r = grid.length - 1; r >= 0; r--) if (grid[r].some(Boolean)) { lowest = r; break; }
+    if (lowest < 0 || cellY(lowest) + R <= dangerY) return;
+    for (let c = 0; c < COLS; c++) {
+      if (grid[lowest][c]) { addFaller(cellX(lowest, c), cellY(lowest), grid[lowest][c].color, false); grid[lowest][c] = null; }
+    }
+    flashT = 0.55;
+    sfxTide();
+  }
+}
+
+function trimGrid() { while (grid.length && !grid[grid.length - 1].some(Boolean)) grid.pop(); }
+
+function showBanner(text, dur) { banner = { text: text, t: 0, dur: dur || 1.7 }; }
+
+function creditCleared(n) {
+  if (!levelsOn || n <= 0) return;
+  clearedBubbles += n;
+  let guard = 0;
+  while (clearedBubbles >= lineTarget() * COLS && guard++ < 60) {
+    clearedBubbles -= lineTarget() * COLS;   // spend the old target, then advance
+    level++;
+    if (level > bestLevel) {
+      bestLevel = level;
+      try { localStorage.setItem("bubbles.bestLevel", bestLevel); } catch (e) {}
+    }
+    showBanner("Level " + level);
+    sfxLevel();
+  }
+}
+
+/* Cut loose anything no longer hanging from the ceiling. Must run after any
+   board change, not just after a match: the tide can strand a bubble too. */
+function settle(kick) {
+  const loose = findFloaters();
+  for (const [r, c] of loose) {
+    addFaller(cellX(r, c), cellY(r), grid[r][c].color, kick);
+    grid[r][c] = null;
+  }
+  return loose.length;
+}
+
+function land(x, y) {
+  const cell = snapCell(x, y);
+  if (!cell) { loadNext(); return; }
+
+  ensureRow(cell.r);
+  grid[cell.r][cell.c] = { color: cur, born: performance.now() };
+  ripples.push({ x: cellX(cell.r, cell.c), y: cellY(cell.r), t: 0 });
+
+  const cluster = sameColorCluster(cell.r, cell.c);
+  if (cluster.length >= 3) {
+    for (const [r, c] of cluster) { addPop(cellX(r, c), cellY(r), grid[r][c].color); grid[r][c] = null; }
+    const knocked = settle(true);
+    // Popped bubbles score 10; anything knocked loose scores double.
+    score += cluster.length * 10 + knocked * 20;
+    if (cluster.length > 3) score += (cluster.length - 3) * 15;
+    sfxPop(cluster.length + Math.min(knocked, 4));
+    creditCleared(cluster.length + knocked);
+  } else {
+    sfxClick();
+  }
+
+  if (++shotsSinceDrop >= DROP_EVERY) { shotsSinceDrop = 0; dropRow(); }
+  runTide();
+  settle(false);        // the tide can leave a bubble hanging; no score for those
+  trimGrid();
+  loadNext();
+}
+
+function loadNext() {
+  shot = null;
+  cur = next;
+  next = pickColor();
+
+  // Sweeping the board is a reward, not an ending: bonus, then fresh rows.
+  if (!grid.some(row => row.some(Boolean))) {
+    score += 500; showBanner("Board cleared", 1.9); sfxClear();
+    grid = []; parity = 0;
+    fillFreshRows(startRows());
+    cur = pickColor(); next = pickColor();
+  } else {
+    // If a big clear wiped a colour off the board, don't hand over a dead bubble.
+    const live = activeColors();
+    if (!live.includes(cur))  cur  = live[(Math.random() * live.length) | 0];
+    if (!live.includes(next)) next = live[(Math.random() * live.length) | 0];
+  }
+  save(); syncUI();
+}
+
+/* ============================================================
+   Firing
+   ============================================================ */
+function fire() {
+  if (shot || !running) return;
+  audio(); snapshot();
+  shot = { x: W / 2, y: shooterY, dx: Math.cos(aim), dy: Math.sin(aim), color: cur, budget: 0 };
+  sfxShoot(); syncUI();
+}
+
+function stepShot(dt) {
+  if (!shot) return;
+  shot.budget += SPEED_R * R * dt;
+  const steps = Math.floor(shot.budget / STEP);
+  if (steps <= 0) return;
+  shot.budget -= steps * STEP;
+
+  const stop = march(shot, steps, null);
+  if (stop === "ceiling" || stop === "bubble") land(shot.x, shot.y);
+  else if (stop === "out" || stop === "bounces") loadNext();
+}
+
+/* ============================================================
+   Undo. The grid is just small integers, so snapshots are cheap.
+   ============================================================ */
+function snapshot() {
+  undoStack.push({
+    grid: grid.map(row => row.map(b => (b ? b.color : -1))),
+    parity, score, shotsSinceDrop, cur, next, level, clearedBubbles
+  });
+  if (undoStack.length > UNDO_DEPTH) undoStack.shift();
+}
+function undo() {
+  if (!undoStack.length || shot) return;
+  const s = undoStack.pop();
+  grid = s.grid.map(row => row.map(v => (v < 0 ? null : { color: v, born: 0 })));
+  parity = s.parity; score = s.score; shotsSinceDrop = s.shotsSinceDrop;
+  cur = s.cur; next = s.next;
+  level = s.level; clearedBubbles = s.clearedBubbles;
+  pops = []; fallers = []; ripples = [];
+  audio(); sfxSwap(); save(); syncUI();
+}
+
+/* ============================================================
+   Persistence, so closing the tab never costs her a board.
+   ============================================================ */
+function save() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      cols: COLS, parity, score, shotsSinceDrop, cur, next, level, clearedBubbles,
+      grid: grid.map(row => row.map(b => (b ? b.color : -1)))
+    }));
+  } catch (e) {}
+}
+function restore() {
+  let s;
+  try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch (e) { return false; }
+  if (!s || s.cols !== COLS || !Array.isArray(s.grid) || !s.grid.some(r => r.some(v => v >= 0))) return false;
+  grid = s.grid.map(row => row.map(v => (v < 0 ? null : { color: v, born: 0 })));
+  parity = s.parity | 0;
+  score = s.score | 0;
+  shotsSinceDrop = s.shotsSinceDrop | 0;
+  cur = s.cur | 0; next = s.next | 0;
+  level = Math.max(1, s.level | 0 || 1);
+  clearedBubbles = Math.max(0, s.clearedBubbles | 0);
+  undoStack = [];
+  syncUI();
+  return true;
+}
+
+/* ============================================================
+   Sizing
+   ============================================================ */
+function resize(allowColsChange) {
+  const rect = wrap.getBoundingClientRect();
+  const availW = Math.max(220, rect.width);
+  const availH = Math.max(300, rect.height);
+
+  // COLS only changes between games; changing it mid-board would break the grid.
+  if (!W || allowColsChange) COLS = availW < 420 ? 9 : 11;
+
+  R = Math.min(availW, MAX_W) / (2 * COLS + 1);
+  ROW_H = R * SQRT3;
+  STEP = R * STEP_FRAC;
+  W = R * (2 * COLS + 1);
+  H = availH;
+
+  dpr = Math.min(window.devicePixelRatio || 1, 3);
+  cv.style.width = W + "px";
+  cv.style.height = H + "px";
+  cv.width = Math.round(W * dpr);
+  cv.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  shooterY = H - R * 2.3;
+  dangerY  = shooterY - R * 2.7;
+  MAX_ROWS = Math.max(6, Math.floor((dangerY - R) / ROW_H) + 3);
+}
+
+/* ============================================================
+   Drawing
+   ============================================================ */
+function bubble(x, y, ci, scale, alpha) {
+  const col = COLORS[ci];
+  const rr = R * (scale === undefined ? 1 : scale) * 0.94;
+  if (rr <= 0.4) return;
+  ctx.globalAlpha = alpha === undefined ? 1 : alpha;
+
+  const g = ctx.createRadialGradient(x - rr * 0.34, y - rr * 0.4, rr * 0.12, x, y, rr);
+  g.addColorStop(0, col.lite); g.addColorStop(0.55, col.base); g.addColorStop(1, col.dark);
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.2832); ctx.fill();
+
+  ctx.fillStyle = "rgba(255,255,255,0.30)";
+  ctx.beginPath(); ctx.ellipse(x - rr * 0.31, y - rr * 0.4, rr * 0.27, rr * 0.19, -0.6, 0, 6.2832); ctx.fill();
+
+  ctx.strokeStyle = "rgba(0,0,0,0.24)";
+  ctx.lineWidth = Math.max(1, R * 0.05);
+  ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.2832); ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+/* The walls have to be visible or every bank shot is guesswork. */
+function drawField() {
+  ctx.fillStyle = "rgba(236,231,222,0.016)";
+  ctx.fillRect(0, 0, W, H);
+
+  const rail = ctx.createLinearGradient(0, 0, 0, H);
+  rail.addColorStop(0,    "rgba(200,178,138,0.30)");
+  rail.addColorStop(0.72, "rgba(200,178,138,0.16)");
+  rail.addColorStop(1,    "rgba(200,178,138,0.04)");
+  ctx.fillStyle = rail;
+  ctx.fillRect(0, 0, 1.5, H);
+  ctx.fillRect(W - 1.5, 0, 1.5, H);
+
+  // Ceiling: the thing everything hangs from.
+  const ceil = ctx.createLinearGradient(0, 0, 0, R * 0.5);
+  ceil.addColorStop(0, "rgba(200,178,138,0.22)");
+  ceil.addColorStop(1, "rgba(200,178,138,0)");
+  ctx.fillStyle = ceil;
+  ctx.fillRect(0, 0, W, R * 0.5);
+
+  ctx.save();
+  ctx.strokeStyle = flashT > 0
+    ? "rgba(226,104,92," + (0.16 + flashT * 0.5) + ")"
+    : "rgba(148,139,126,0.15)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([R * 0.4, R * 0.5]);
+  ctx.beginPath(); ctx.moveTo(0, dangerY); ctx.lineTo(W, dangerY); ctx.stroke();
+  ctx.restore();
+}
+
+function drawAim() {
+  if (shot || !running) return;
+
+  const pts = [];
+  // Identical start to fire(): if the preview began anywhere else, the step
+  // phase would differ and the dotted line would occasionally lie by a cell.
+  const p = { x: W / 2, y: shooterY, dx: Math.cos(aim), dy: Math.sin(aim) };
+  const stop = march(p, 6000, (x, y) => pts.push([x, y]));
+
+  const gap = Math.max(1, Math.round(R * 0.55 / STEP));
+  const skip = Math.ceil(R * 1.25 / STEP);   // don't draw dots inside the shooter
+  ctx.save();
+  for (let i = skip; i < pts.length; i += gap) {
+    const fade = 1 - (i / pts.length) * 0.7;
+    ctx.globalAlpha = 0.62 * fade;
+    ctx.fillStyle = COLORS[cur].lite;
+    ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], R * 0.11, 0, 6.2832); ctx.fill();
+  }
+  ctx.restore();
+
+  // Ghost ring on the predicted cell. Takes the guesswork out of banking.
+  if (stop === "ceiling" || stop === "bubble") {
+    const cell = snapCell(p.x, p.y);
+    if (cell) {
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = COLORS[cur].lite;
+      ctx.lineWidth = Math.max(1.2, R * 0.075);
+      ctx.setLineDash([R * 0.34, R * 0.3]);
+      ctx.beginPath(); ctx.arc(cellX(cell.r, cell.c), cellY(cell.r), R * 0.9, 0, 6.2832); ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+function drawShooter() {
+  ctx.save();
+  ctx.strokeStyle = "rgba(200,178,138,0.14)";
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(W / 2, shooterY, R * 1.42, 0, 6.2832); ctx.stroke();
+  ctx.restore();
+
+  if (!shot) bubble(W / 2, shooterY, cur);
+
+  const nx = W / 2 + R * 3.1;
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  ctx.strokeStyle = "rgba(200,178,138,0.28)";
+  ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.arc(nx, shooterY, R * 0.82, 0, 6.2832); ctx.stroke();
+  ctx.restore();
+  bubble(nx, shooterY, next, 0.62, 0.88);
+}
+
+function render(now) {
+  ctx.clearRect(0, 0, W, H);
+  drawField();
+
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const b = grid[r][c];
+      if (!b) continue;
+      let s = 1;
+      if (b.born) {
+        const k = (now - b.born) / 170;
+        if (k < 0) continue;                                  // staggered fill-in
+        s = k < 1 ? 0.72 + 0.34 * Math.sin(k * Math.PI * 0.5) : 1;
+        if (k >= 1) b.born = 0;
+      }
+      bubble(cellX(r, c), cellY(r), b.color, s);
+    }
+  }
+
+  for (const rp of ripples) {
+    ctx.save();
+    ctx.globalAlpha = (1 - rp.t / 0.4) * 0.3;
+    ctx.strokeStyle = "#ece7de";
+    ctx.lineWidth = Math.max(1, R * 0.06);
+    ctx.beginPath(); ctx.arc(rp.x, rp.y, R * (1 + rp.t * 3.4), 0, 6.2832); ctx.stroke();
+    ctx.restore();
+  }
+
+  for (const f of fallers) bubble(f.x, f.y, f.color, 1, Math.max(0, 1 - f.t / 1.6));
+
+  for (const p of pops) {
+    const k = p.t / p.dur;
+    if (k >= 1) continue;
+    ctx.globalAlpha = (1 - k) * (p.spark ? 0.85 : 0.7);
+    if (p.spark) {
+      ctx.fillStyle = COLORS[p.color].lite;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.rad * (1 - k * 0.4), 0, 6.2832); ctx.fill();
+    } else {
+      ctx.strokeStyle = COLORS[p.color].lite;
+      ctx.lineWidth = Math.max(1, R * 0.16 * (1 - k));
+      ctx.beginPath(); ctx.arc(p.x, p.y, R * (0.6 + k * 1.5), 0, 6.2832); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  if (shot) bubble(shot.x, shot.y, shot.color);
+  drawAim();
+  drawShooter();
+
+  if (banner) {
+    const k = banner.t / banner.dur;
+    // Quick fade in, long hold, gentle fade out, with a small rise.
+    const a = Math.max(0, k < 0.12 ? k / 0.12 : (k > 0.72 ? 1 - (k - 0.72) / 0.28 : 1));
+
+    // Sit in the clear air under the bubbles. If the board has grown too far
+    // down for that, fall back to just above the shooter, which is always free.
+    let lowest = -1;
+    for (let r = grid.length - 1; r >= 0; r--) if (grid[r].some(Boolean)) { lowest = r; break; }
+    const massBottom = lowest >= 0 ? cellY(lowest) + R : R;
+    const lo = massBottom + R * 1.5, hi = shooterY - R * 1.9;
+    const by = (lo <= hi) ? (lo + hi) / 2 : hi;
+
+    ctx.save();
+    ctx.font = "600 " + (R * 0.95).toFixed(0) + "px -apple-system, Helvetica, Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // A backing plate, so the text stays readable whatever it lands on.
+    const tw = ctx.measureText(banner.text).width;
+    const padX = R * 0.85, padY = R * 0.6;
+    const bw = tw + padX * 2, bh = R * 0.95 + padY * 2;
+    const bx = W / 2 - bw / 2, byTop = by - bh / 2 - k * R * 0.6;
+    const rad = bh / 2;
+    ctx.globalAlpha = a * 0.82;
+    ctx.beginPath();
+    ctx.moveTo(bx + rad, byTop);
+    ctx.arcTo(bx + bw, byTop, bx + bw, byTop + bh, rad);
+    ctx.arcTo(bx + bw, byTop + bh, bx, byTop + bh, rad);
+    ctx.arcTo(bx, byTop + bh, bx, byTop, rad);
+    ctx.arcTo(bx, byTop, bx + bw, byTop, rad);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(11,10,9,0.90)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(200,178,138,0.34)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.globalAlpha = a;
+    ctx.fillStyle = "#e6d3ac";
+    ctx.fillText(banner.text, W / 2, byTop + bh / 2);
+    ctx.restore();
+  }
+}
+
+/* ============================================================
+   Loop
+   ============================================================ */
+function frame(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000 || 0);
+  lastT = now;
+
+  if (running) stepShot(dt);
+
+  for (const p of pops)    { p.t += dt; if (p.spark) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += R * 9 * dt; } }
+  for (const f of fallers) { f.t += dt; f.vy += R * 26 * dt; f.x += f.vx * dt; f.y += f.vy * dt; }
+  for (const rp of ripples) rp.t += dt;
+
+  pops    = pops.filter(p => p.t < p.dur);
+  fallers = fallers.filter(f => f.y < H + R * 3 && f.t < 1.6);
+  ripples = ripples.filter(rp => rp.t < 0.4);
+  if (flashT > 0) flashT = Math.max(0, flashT - dt);
+  if (banner) { banner.t += dt; if (banner.t >= banner.dur) banner = null; }
+
+  render(now);
+  requestAnimationFrame(frame);
+}
+
+/* ============================================================
+   Input
+   ============================================================ */
+function pos(e) {
+  const rect = cv.getBoundingClientRect();
+  const t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
+  return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+}
+
+function setAim(p) {
+  const dx = p.x - W / 2, dy = p.y - shooterY;
+  let a;
+  if (dy < -R * 0.35) {
+    a = Math.atan2(dy, dx);
+  } else {
+    // At or below the shooter: pin to the flattest angle on that side rather
+    // than letting the shot wrap around and skim the walls forever.
+    a = dx >= 0 ? -Math.PI / 2 + AIM_LIMIT : -Math.PI / 2 - AIM_LIMIT;
+  }
+  aim = Math.max(-Math.PI / 2 - AIM_LIMIT, Math.min(-Math.PI / 2 + AIM_LIMIT, a));
+}
+
+const onNextBubble = p => Math.hypot(p.x - (W / 2 + R * 3.1), p.y - shooterY) < R * 1.25;
+
+function swap() {
+  if (shot) return;
+  const t = cur; cur = next; next = t;
+  audio(); sfxSwap(); save();
+}
+
+function down(e) {
+  if (!running) return;
+  e.preventDefault();
+  const p = pos(e);
+  audio();
+  if (onNextBubble(p)) { downOnNext = true; return; }
+  downOnNext = false; pointerAiming = true;
+  setAim(p);
+}
+function move(e) {
+  if (!running) return;
+  if (e.touches) { if (pointerAiming) { e.preventDefault(); setAim(pos(e)); } }
+  else if (!downOnNext) setAim(pos(e));      // desktop aims on hover
+}
+function up(e) {
+  if (!running) return;
+  e.preventDefault();
+  if (downOnNext) { if (onNextBubble(pos(e))) swap(); downOnNext = false; pointerAiming = false; return; }
+  if (pointerAiming) { pointerAiming = false; fire(); }
+}
+const cancel = () => { pointerAiming = false; downOnNext = false; };
+
+cv.addEventListener("mousedown", down);
+cv.addEventListener("mousemove", move);
+cv.addEventListener("mouseup", up);
+cv.addEventListener("mouseleave", cancel);
+cv.addEventListener("touchstart", down, { passive: false });
+cv.addEventListener("touchmove", move, { passive: false });
+cv.addEventListener("touchend", up, { passive: false });
+cv.addEventListener("touchcancel", cancel);
+cv.addEventListener("contextmenu", e => e.preventDefault());
+
+window.addEventListener("keydown", e => {
+  if (!running) return;
+  if (e.key === " " || e.key === "Enter") { e.preventDefault(); fire(); }
+  else if (e.key === "s" || e.key === "S") swap();
+  else if (e.key === "z" || e.key === "Z") undo();
+  else if (e.key === "ArrowLeft")  { aim = Math.max(-Math.PI / 2 - AIM_LIMIT, aim - 0.035); e.preventDefault(); }
+  else if (e.key === "ArrowRight") { aim = Math.min(-Math.PI / 2 + AIM_LIMIT, aim + 0.035); e.preventDefault(); }
+});
+
+/* ============================================================
+   Chrome
+   ============================================================ */
+const $score = document.getElementById("score");
+const $best  = document.getElementById("best");
+const $undo  = document.getElementById("undo");
+const $sound = document.getElementById("sound");
+const $veil  = document.getElementById("veil");
+const $lvbar = document.getElementById("levelbar");
+const $lvName = document.getElementById("lvName");
+const $lvCount = document.getElementById("lvCount");
+const $lvFill = document.getElementById("lvFill");
+const $lvToggle = document.getElementById("lvToggle");
+const $lvBase = document.getElementById("lvBase");
+const $lvStep = document.getElementById("lvStep");
+
+function syncUI() {
+  if (score > best) { best = score; try { localStorage.setItem("bubbles.best", best); } catch (e) {} }
+  $score.textContent = score;
+  $best.textContent = best;
+  $undo.disabled = !undoStack.length || !!shot;
+  syncLevelUI();
+}
+
+function syncLevelUI() {
+  $lvbar.classList.toggle("on", levelsOn);
+  $lvToggle.textContent = levelsOn ? "On" : "Off";
+  $lvToggle.style.color = levelsOn ? "var(--accent)" : "var(--muted)";
+  $lvToggle.style.borderColor = levelsOn ? "var(--accent)" : "var(--border)";
+  $lvBase.textContent = levelBase;
+  $lvStep.textContent = levelStep;
+  document.querySelectorAll(".set-row.lv-only").forEach(e => e.classList.toggle("off", !levelsOn));
+  if (!levelsOn) return;
+  const t = lineTarget();
+  $lvName.textContent = "Level " + level;
+  $lvCount.textContent = Math.min(linesDone(), t) + " of " + t + (t === 1 ? " line" : " lines");
+  $lvFill.style.width = (100 * Math.max(0, Math.min(1, clearedBubbles / (t * COLS)))).toFixed(1) + "%";
+}
+
+function saveSettings() {
+  try { localStorage.setItem(SET_KEY, JSON.stringify({ levelsOn, levelBase, levelStep })); } catch (e) {}
+}
+function loadSettings() {
+  let v; try { v = JSON.parse(localStorage.getItem(SET_KEY) || "null"); } catch (e) { return; }
+  if (!v) return;
+  levelsOn = v.levelsOn !== false;
+  levelBase = Math.max(LV_BASE_MIN, Math.min(LV_BASE_MAX, v.levelBase | 0 || 5));
+  levelStep = Math.max(LV_STEP_MIN, Math.min(LV_STEP_MAX, v.levelStep === undefined ? 2 : v.levelStep | 0));
+}
+
+try { best = parseInt(localStorage.getItem("bubbles.best") || "0", 10) || 0; } catch (e) {}
+try { const s = localStorage.getItem("bubbles.sound"); if (s !== null) soundOn = s === "1"; } catch (e) {}
+$sound.style.opacity = soundOn ? "1" : "0.36";
+
+loadSettings();
+try { bestLevel = Math.max(1, parseInt(localStorage.getItem("bubbles.bestLevel") || "1", 10) || 1); } catch (e) {}
+
+$lvToggle.addEventListener("click", () => {
+  levelsOn = !levelsOn;
+  saveSettings(); syncLevelUI();
+  resize(false);                 // the bar changes how much height the board gets
+  audio(); sfxSwap();
+});
+
+document.querySelectorAll(".stepper button").forEach(b => {
+  b.addEventListener("click", () => {
+    const d = parseInt(b.dataset.d, 10);
+    if (b.dataset.k === "base") levelBase = Math.max(LV_BASE_MIN, Math.min(LV_BASE_MAX, levelBase + d));
+    else                        levelStep = Math.max(LV_STEP_MIN, Math.min(LV_STEP_MAX, levelStep + d));
+    // Retarget without punishing her: never let progress exceed the new target.
+    clearedBubbles = Math.min(clearedBubbles, Math.max(0, lineTarget() * COLS - 1));
+    saveSettings(); syncLevelUI(); save();
+    audio(); sfxClick();
+  });
+});
+
+$undo.addEventListener("click", undo);
+$sound.addEventListener("click", () => {
+  soundOn = !soundOn;
+  $sound.style.opacity = soundOn ? "1" : "0.36";
+  try { localStorage.setItem("bubbles.sound", soundOn ? "1" : "0"); } catch (e) {}
+  if (soundOn) { audio(); sfxSwap(); }
+});
+
+document.getElementById("menu").addEventListener("click", () => {
+  running = false;
+  document.getElementById("ttl").textContent = "Paused";
+  document.getElementById("sttl").textContent = "Take your time.";
+  document.getElementById("msg").innerHTML =
+    (levelsOn
+      ? "Level <b>" + level + "</b>, " + Math.min(linesDone(), lineTarget()) + " of " + lineTarget() +
+        " lines. Best level <b>" + bestLevel + "</b>.<br>"
+      : "") +
+    "Score <b>" + score + "</b>. Best <b>" + best + "</b>.<br><br>" +
+    "Drag to aim, release to shoot. Tap the small bubble to swap it in. " +
+    "On a keyboard: arrows aim, space shoots, S swaps, Z undoes.";
+  document.getElementById("play").textContent = "Resume";
+  document.getElementById("newgame").style.display = "block";
+  $veil.classList.add("on");
+});
+document.getElementById("play").addEventListener("click", () => {
+  $veil.classList.remove("on"); audio(); running = true;
+});
+document.getElementById("newgame").addEventListener("click", () => {
+  newGame(); $veil.classList.remove("on"); audio(); running = true;
+});
+
+window.addEventListener("resize", () => resize(false));
+window.addEventListener("orientationchange", () => setTimeout(() => resize(false), 140));
+if (window.visualViewport) window.visualViewport.addEventListener("resize", () => resize(false));
+document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
+
+resize(true);
+if (!restore()) newGame();
+else {
+  document.getElementById("play").textContent = "Resume";
+  document.getElementById("newgame").style.display = "block";
+  document.getElementById("sttl").textContent = "Right where you left it.";
+}
+requestAnimationFrame(t => { lastT = t; frame(t); });
+</script>
+</body>
+</html>

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1">
+<meta name="theme-color" content="#0b0a09">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Arrows">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Clear every arrow off the board. No timers, no wrong moves.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 16h16M16 10l6 6-6 6' stroke='%237fb069' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>화살표 빼내기 · L.D 게임 나라</title>
+<!-- Arrows by Mark Friedlander, MIT License (see ../LICENSE). Source: https://github.com/markfriedlander/arcade -->
+<style>
+  /* ============================================================
+     ARROWS: tap an arrow, and if it has a clear run to the edge
+     it slides out. Clear the board.
+
+     Worth knowing while reading this: removing a piece only ever
+     empties cells, so it can only unblock others, never block them.
+     The clearable set therefore only grows, which means any solvable
+     board is solvable in any order. There are no wrong moves, so
+     there is nothing here that can lose, undo a blunder, or punish.
+     ============================================================ */
+  :root {
+    --bg: #0b0a09;
+    --surface: #16130f;
+    --text: #ece7de;
+    --muted: #948b7e;
+    --accent: #7fb069;
+    --accent-glow: #a9d195;
+    --border: #262119;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse 90% 45% at 50% 4%,
+                      rgba(127, 176, 105, 0.07) 0%,
+                      rgba(127, 176, 105, 0.00) 62%),
+      var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  #bar {
+    flex: 0 0 auto;
+    width: 100%; max-width: 560px; margin: 0 auto;
+    display: flex; align-items: center; gap: 0.9rem;
+    padding: calc(env(safe-area-inset-top, 0px) + 0.7rem) 0.5rem 0.5rem;
+  }
+  .stat { display: flex; flex-direction: column; line-height: 1.1; }
+  .stat .k { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.16em; }
+  .stat .v { font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat.sub .v { color: var(--accent); font-size: 0.95rem; font-weight: 500; padding-top: 0.15rem; }
+  #spacer { flex: 1; }
+
+  .btn {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 10px; font: inherit; font-size: 0.85rem;
+    padding: 0.45rem 0.7rem; cursor: pointer;
+    transition: border-color .15s ease, color .15s ease, opacity .15s ease;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: 0.3; cursor: default; border-color: var(--border); color: var(--muted); }
+  .btn.icon { padding: 0.4rem 0.62rem; min-width: 2.3rem; font-size: 1rem; line-height: 1.1; }
+
+  #wrap {
+    flex: 1 1 auto; min-height: 0;
+    display: flex; justify-content: center; align-items: center;
+    padding: 0 0.5rem calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  }
+  canvas { display: block; touch-action: none; }
+
+  #veil {
+    position: fixed; inset: 0;
+    background: rgba(11, 10, 9, 0.88);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    display: none; align-items: center; justify-content: center;
+    padding: 1.5rem; z-index: 10;
+  }
+  #veil.on { display: flex; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.9rem 1.7rem;
+    max-width: 22rem; width: 100%; text-align: center;
+  }
+  .card h1 { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 0.35rem; }
+  .card .sub { font-style: italic; color: var(--accent); font-size: 1rem; margin-bottom: 1.3rem; }
+  .card p.body { color: var(--muted); font-size: 0.93rem; line-height: 1.62; margin-bottom: 1.4rem; }
+  .card p.body b { color: var(--text); font-weight: 500; }
+  .tiers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1.1rem; }
+  .tiers .btn { padding: 0.6rem 0.4rem; font-size: 0.88rem; }
+  .tiers .btn.on { border-color: var(--accent); color: var(--accent); background: rgba(127,176,105,0.07); }
+  .tiers .btn small { display: block; font-size: 0.68rem; opacity: 0.65; margin-top: 0.15rem; }
+
+  .rowbtns { display: flex; flex-direction: column; gap: 0.6rem; }
+  .rowbtns .btn { padding: 0.75rem; font-size: 0.95rem; }
+  .btn.primary { border-color: var(--accent); color: var(--accent); }
+  .btn.primary:hover { background: rgba(127,176,105,0.08); color: var(--accent-glow); }
+  .card .back {
+    display: inline-block; margin-top: 1.4rem;
+    color: var(--muted); font-size: 0.85rem; text-decoration: none;
+    transition: color .15s ease;
+  }
+  .card .back:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <div class="stat"><span class="k" id="tierName">EASY</span><span class="v" id="level">1</span></div>
+  <div class="stat sub"><span class="k">Left</span><span class="v" id="left">0</span></div>
+  <div id="spacer"></div>
+  <button class="btn icon" id="undo" title="Undo" aria-label="Undo">&#8630;</button>
+  <button class="btn icon" id="sound" title="Sound" aria-label="Sound">&#9834;</button>
+  <button class="btn" id="menu">Menu</button>
+</div>
+
+<div id="wrap"><canvas id="cv"></canvas></div>
+
+<div id="veil" class="on">
+  <div class="card">
+    <h1 id="ttl">Arrows</h1>
+    <p class="sub" id="sttl">No wrong moves.</p>
+    <p class="body" id="msg">
+      Tap an arrow. If it has a <b>clear run to the edge</b> in the direction it points,
+      it slides out. If something is in the way, nothing happens and it shows you what blocked it.<br><br>
+      Clearing an arrow can only ever free others, never trap them, so there is no wrong order
+      and no way to get stuck. Pick a size below and start wherever you like.
+    </p>
+    <div class="tiers" id="tiers"></div>
+    <div class="rowbtns">
+      <button class="btn primary" id="play">Play</button>
+      <button class="btn" id="replay" style="display:none">Restart level</button>
+    </div>
+    <a class="back" href="/games/">&larr; 게임 나라</a>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   Pieces
+   ------------------------------------------------------------
+   A piece is an ordered list of cells [head, ..., tail] where
+   consecutive cells touch orthogonally, plus the direction the
+   head points. It leaves by sliding head first along its own
+   body, so the body only ever moves into cells the piece already
+   occupies. Only the head's forward run has to be clear.
+   ============================================================ */
+
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+
+const PALETTE = [
+  "#cf7468", "#d69a4e", "#7fa868", "#6795bd", "#9b84bb", "#bfa87e", "#5f9e97"
+];
+
+/* Difficulty is a tier you choose, not something you grind toward. Growing the
+   board with the level number alone meant a new player sat on a 6x8 board and
+   needed roughly fifty levels to reach a full sized one, so the interesting
+   boards were effectively hidden. Each tier starts at its own size and creeps
+   up across its own span. */
+const TIERS = [
+  { name: "Easy",   cols: [7, 9],   fill: [0.55, 0.66], len: [4, 7],   span: 20 },
+  { name: "Medium", cols: [10, 12], fill: [0.62, 0.73], len: [6, 10],  span: 25 },
+  { name: "Hard",   cols: [13, 15], fill: [0.68, 0.79], len: [9, 14],  span: 30 },
+  { name: "Expert", cols: [16, 18], fill: [0.72, 0.85], len: [12, 18], span: 40 }
+];
+
+let COLS = 6, ROWS = 6;
+let tier = 1;
+
+const idx = (x, y) => y * COLS + x;
+const ix = i => i % COLS;
+const iy = i => (i / COLS) | 0;
+
+/* ---------- deterministic RNG so a level number always gives the same board ---------- */
+function rngFrom(seed) {
+  let s = (seed >>> 0) + 0x9E3779B9;
+  return function () {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+let placedPieces = [];    // what is already on the board while generating
+let placedBlockers = [];  // how many later pieces already sit in each one's run
+const STRAIGHT_BIAS = 0.62;   // chance a growing body carries straight on
+const pick = (arr, rnd) => arr[(rnd() * arr.length) | 0];
+function shuffle(arr, rnd) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = (rnd() * (i + 1)) | 0;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* ---------- the run from a head cell to the board edge ---------- */
+function forwardRun(cell, dir) {
+  const [dx, dy] = DIRS[dir];
+  const out = [];
+  let x = ix(cell) + dx, y = iy(cell) + dy;
+  while (x >= 0 && x < COLS && y >= 0 && y < ROWS) {
+    out.push(idx(x, y));
+    x += dx; y += dy;
+  }
+  return out;
+}
+
+/* ============================================================
+   Generation, which really is solving in reverse.
+
+   Pieces are placed in reverse removal order. Each one is only
+   placed if its run to the edge is clear of everything already on
+   the board, which is exactly the condition for it to be
+   removable once the pieces placed after it have gone. So the
+   placement order, reversed, is a guaranteed solution and nothing
+   ever needs testing or throwing away.
+   ============================================================ */
+function generate(level, forTier) {
+  const ti = forTier === undefined ? tier : forTier;
+  const T = TIERS[ti];
+  const rnd = rngFrom(level * 2654435761 + ti * 7919);
+
+  // Within a tier the board creeps from its low end to its high end. Boards are
+  // taller than wide, which matches a printed board and uses a phone screen
+  // instead of leaving half of it empty. Single cell arrows are excluded: they
+  // read as dots rather than arrows and block almost nothing, so they make a
+  // board look busy without making it interesting.
+  const k = Math.min(1, (level - 1) / T.span);
+  const lerp = (a, b) => a + (b - a) * k;
+  COLS = Math.round(lerp(T.cols[0], T.cols[1]));
+  ROWS = Math.min(24, Math.round(COLS * 1.28));
+  const minLen = 2;
+  const maxLen = Math.round(lerp(T.len[0], T.len[1]));
+  const fill = lerp(T.fill[0], T.fill[1]);
+
+  // How hard the generator works to lay each new piece across the exit runs of
+  // pieces already down. Higher means longer chains of dependency, so fewer
+  // arrows are clearable at any moment and you have to look harder to find one.
+  // It cannot affect solvability: it only picks between placements that were
+  // already legal.
+  //
+  // Tried scaling this with board size to make dense boards harder. It did the
+  // opposite: a pickier generator fits fewer pieces, so the board came out
+  // emptier and easier, and generation took three times as long. Filling the
+  // board matters more than placing each piece perfectly.
+  const tangle = Math.min(10, 2 + ti + Math.floor(level / 5));
+
+  const owner = new Int16Array(COLS * ROWS).fill(-1);
+  const placed = [];
+  const wanted = Math.floor(COLS * ROWS * fill);
+  let filled = 0, guard = 0;
+
+  const blockers = [];      // per placed piece, how many later pieces intrude on its run
+  while (filled < wanted && guard++ < 9000) {
+    placedPieces = placed;
+    placedBlockers = blockers;
+    const piece = tryPlace(owner, minLen, maxLen, tangle, rnd);
+    if (!piece) continue;
+
+    // Each piece's run is cached here rather than recomputed per candidate,
+    // which is what keeps generation on a full sized board near a tenth of a
+    // second instead of several times that.
+    piece.run = forwardRun(piece.cells[0], piece.dir);
+    blockers.push(0);
+
+    for (const c of piece.cells) owner[c] = placed.length;
+    placed.push(piece);
+    filled += piece.cells.length;
+  }
+
+  // Placement order reversed is the removal order.
+  placed.reverse();
+  placed.forEach((p, i) => { p.id = i; });
+  return placed;
+}
+
+function tryPlace(owner, minLen, maxLen, tangle, rnd) {
+  const empties = [];
+  for (let i = 0; i < owner.length; i++) if (owner[i] === -1) empties.push(i);
+  if (!empties.length) return null;
+  shuffle(empties, rnd);
+
+  let bestPiece = null, bestScore = -1, tried = 0;
+
+  for (const head of empties.slice(0, 40)) {
+    for (const dir of shuffle([0, 1, 2, 3], rnd)) {
+      const run = forwardRun(head, dir);
+      if (run.some(c => owner[c] !== -1)) continue;     // the exit must be clear now
+
+      // The cell behind the head must be free: the shaft has to run into the
+      // arrowhead, the way it does on a printed board. Without this a piece can
+      // meet its head sideways and stop reading as an arrow at all.
+      const behind = (() => {
+        const [bx, by] = DIRS[dir ^ 1];
+        const x = ix(head) + bx, y = iy(head) + by;
+        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return -1;
+        const n = idx(x, y);
+        return owner[n] === -1 ? n : -1;
+      })();
+      if (behind === -1) continue;
+
+      const runSet = new Set(run);
+      const target = minLen + ((rnd() * (maxLen - minLen + 1)) | 0);
+
+      // Growing a body can dead end, so try a few times and keep the longest.
+      let bestCells = null;
+      for (let attempt = 0; attempt < 6; attempt++) {
+        const cells = [head, behind];
+        const used = new Set([head, behind]);
+        let cur = behind, curDir = dir ^ 1;
+        while (cells.length < target) {
+          const opts = [];
+          for (let d = 0; d < 4; d++) {
+            if (d === (curDir ^ 1)) continue;             // never double back
+            const [dx, dy] = DIRS[d];
+            const x = ix(cur) + dx, y = iy(cur) + dy;
+            if (x < 0 || x >= COLS || y < 0 || y >= ROWS) continue;
+            const n = idx(x, y);
+            // The body must not sit in the head's own run, or the piece
+            // would block itself on the way out.
+            if (owner[n] !== -1 || used.has(n) || runSet.has(n)) continue;
+            opts.push({ n, d });
+          }
+          if (!opts.length) break;
+          // Favour carrying straight on, so shapes look drawn rather than random.
+          const straight = opts.find(o => o.d === curDir);
+          const chosen = (straight && rnd() < STRAIGHT_BIAS) ? straight : pick(opts, rnd);
+          cells.push(chosen.n); used.add(chosen.n); cur = chosen.n; curDir = chosen.d;
+        }
+        if (!bestCells || cells.length > bestCells.length) bestCells = cells;
+        if (bestCells.length >= target) break;
+      }
+      if (!bestCells || bestCells.length < minLen) continue;   // no dots
+
+      // Score by how many already placed pieces it gets in the way of.
+      //
+      // Weighting this toward pieces it would be the *sole* blocker of was
+      // tried, on the theory that only those produce a move that opens several
+      // paths at once. It changed nothing, and the reason is arithmetic rather
+      // than tuning: every piece becomes free exactly once, so the unlocks over
+      // a whole board sum to (pieces - those free at the start). Big unlock
+      // moments need fewer arrows free at the start, not cleverer placement.
+      // On a dense board a run reaching the edge crosses several pieces, so
+      // most arrows have more than one thing in their way and no single removal
+      // opens much. Left simple.
+      const cellSet = new Set(bestCells);
+      let score = 0;
+      for (let j = 0; j < placedPieces.length; j++) {
+        if (placedPieces[j].run.some(c => cellSet.has(c))) score++;
+      }
+      if (score > bestScore) { bestScore = score; bestPiece = { cells: bestCells, dir }; }
+      if (++tried >= tangle || score >= 3) return bestPiece;
+    }
+  }
+  return bestPiece;
+}
+
+/* ---------- colour so that touching pieces never match ---------- */
+function colourise(pieces) {
+  const owner = new Int16Array(COLS * ROWS).fill(-1);
+  pieces.forEach((p, i) => { for (const c of p.cells) owner[c] = i; });
+
+  const neighbours = pieces.map(() => new Set());
+  pieces.forEach((p, i) => {
+    for (const c of p.cells) {
+      for (const [dx, dy] of DIRS) {
+        const x = ix(c) + dx, y = iy(c) + dy;
+        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) continue;
+        const o = owner[idx(x, y)];
+        if (o !== -1 && o !== i) neighbours[i].add(o);
+      }
+    }
+  });
+
+  pieces.forEach((p, i) => {
+    const taken = new Set();
+    for (const n of neighbours[i]) if (pieces[n].colour !== undefined) taken.add(pieces[n].colour);
+    let c = 0;
+    while (taken.has(c) && c < PALETTE.length - 1) c++;
+    p.colour = c;
+  });
+}
+
+/* ============================================================
+   State
+   ============================================================ */
+let pieces = [];        // live pieces, in removal order
+let owner = null;       // cell -> piece id, or -1
+let level = 1, best = 1;
+let leaving = [];       // pieces mid-exit, purely visual
+let shake = null;       // {id, t}
+let blockFlash = null;  // {cells, t}
+let history = [];
+let running = false;
+let lastT = 0;
+
+function rebuildOwner() {
+  owner = new Int16Array(COLS * ROWS).fill(-1);
+  for (const p of pieces) for (const c of p.cells) owner[c] = p.id;
+}
+
+function loadLevel(n) {
+  level = n;
+  pieces = generate(n);
+  colourise(pieces);
+  rebuildOwner();
+  leaving = []; shake = null; blockFlash = null; history = [];
+  resize();
+  save(); syncUI();
+}
+
+/* The cells between a piece's head and the edge that are occupied. */
+function blockers(p) {
+  const run = forwardRun(p.cells[0], p.dir);
+  const out = [];
+  for (const c of run) if (owner[c] !== -1 && owner[c] !== p.id) out.push(c);
+  return out;
+}
+const isFree = p => blockers(p).length === 0;
+
+function tapCell(cell) {
+  if (!running || cell < 0) return;
+  const id = owner[cell];
+  if (id === -1) return;
+  const p = pieces.find(q => q.id === id);
+  if (!p) return;
+
+  const blocked = blockers(p);
+  if (blocked.length) {
+    shake = { id: p.id, t: 0 };
+    blockFlash = { cells: blocked.slice(0, 6), t: 0 };
+    sfxBlocked();
+    return;
+  }
+
+  history.push(pieces.map(q => q.id));
+  pieces = pieces.filter(q => q.id !== p.id);
+  rebuildOwner();
+  leaving.push({ piece: p, s: 0, track: buildTrack(p) });
+  sfxClear();
+  syncUI();
+
+  if (pieces.length === 0) {
+    setTimeout(() => {
+      if (level > best) { best = level; storeBest(); }
+      loadLevel(level + 1);
+      banner = { text: "Level " + level, t: 0, dur: 1.5 };
+      sfxLevel();
+    }, 520);
+  }
+}
+
+/* The full path a piece travels: its own body, then out past the edge. */
+function buildTrack(p) {
+  const [dx, dy] = DIRS[p.dir];
+  const track = p.cells.slice().reverse();          // tail first, head last
+  let x = ix(p.cells[0]) + dx, y = iy(p.cells[0]) + dy;
+  for (let k = 0; k < COLS + ROWS + 4; k++) {
+    track.push({ x, y });                            // may be off board, that is the point
+    x += dx; y += dy;
+  }
+  return track.map(t => (typeof t === "number" ? { x: ix(t), y: iy(t) } : t));
+}
+
+function undo() {
+  if (!history.length || leaving.length) return;
+  const ids = history.pop();
+  const all = generate(level);
+  colourise(all);
+  pieces = all.filter(p => ids.includes(p.id));
+  rebuildOwner();
+  sfxUndo(); syncUI();
+}
+
+/* ============================================================
+   Sound: soft, optional, and off the critical path
+   ============================================================ */
+let actx = null, soundOn = true;
+const SCALE = [523.25, 587.33, 698.46, 783.99, 880.0, 1046.5];
+function audio() {
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { soundOn = false; } }
+  if (actx && actx.state === "suspended") actx.resume();
+}
+function tone(freq, dur, type, gain, delay) {
+  if (!soundOn || !actx) return;
+  const t0 = actx.currentTime + (delay || 0);
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || "sine";
+  o.frequency.setValueAtTime(freq, t0);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.03);
+}
+const sfxClear   = () => tone(SCALE[(Math.random() * SCALE.length) | 0], 0.26, "sine", 0.05);
+const sfxBlocked = () => tone(150, 0.10, "triangle", 0.035);
+const sfxUndo    = () => tone(420, 0.09, "sine", 0.03);
+const sfxLevel   = () => [0, 2, 4].forEach((s, i) => tone(SCALE[s], 0.5, "sine", 0.05, i * 0.08));
+
+/* ============================================================
+   Layout and drawing
+   ============================================================ */
+const cv = document.getElementById("cv");
+const ctx = cv.getContext("2d");
+const wrap = document.getElementById("wrap");
+let S = 40, W = 0, H = 0, PAD = 0, dpr = 1;
+let banner = null;
+
+function resize() {
+  const r = wrap.getBoundingClientRect();
+  // Fit each axis against its own dimension. Sizing a tall board by its longer
+  // side against the shorter side of the screen left it marooned in black.
+  const availW = Math.max(180, Math.min(r.width, 620));
+  const availH = Math.max(200, r.height);
+  S = Math.max(8, Math.floor(Math.min(availW / (COLS + 0.6), availH / (ROWS + 0.6))));
+  PAD = Math.round(S * 0.3);
+  W = COLS * S + PAD * 2;
+  H = ROWS * S + PAD * 2;
+  dpr = Math.min(window.devicePixelRatio || 1, 3);
+  cv.style.width = W + "px";
+  cv.style.height = H + "px";
+  cv.width = Math.round(W * dpr);
+  cv.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+const px = x => PAD + x * S + S / 2;
+const py = y => PAD + y * S + S / 2;
+
+/* Draws one piece as a thick rounded polyline with a head.
+
+   The head has to be unmistakable. The entire game is reading which way a
+   piece points, so the body stops short of the last cell and a large
+   triangle fills the gap, while the tail gets a blunt cap. At a glance the
+   two ends must never be confusable. */
+function drawPiece(p, points, alpha, glow) {
+  const col = PALETTE[p.colour % PALETTE.length];
+  const A = alpha === undefined ? 1 : alpha;
+  const head = points[points.length - 1];
+  // Taken from the piece's own direction, never from the last drawn segment.
+  // Deriving it from the geometry made a piece whose body met its head at a
+  // bend draw an arrowhead pointing somewhere it was never going to travel.
+  const vx = DIRS[p.dir][0], vy = DIRS[p.dir][1];
+
+  const HEAD = S * 0.44;                 // how far the triangle reaches
+  const body = points.slice(0, -1).concat([
+    { x: head.x - vx * HEAD * 0.72, y: head.y - vy * HEAD * 0.72 }
+  ]);
+
+  ctx.save();
+  ctx.globalAlpha = A;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  if (glow) {
+    ctx.globalAlpha = A * 0.22;
+    ctx.strokeStyle = col;
+    ctx.lineWidth = S * 0.66;
+    stroke(body);
+    ctx.globalAlpha = A;
+  }
+
+  ctx.strokeStyle = col;
+  ctx.lineWidth = S * 0.42;
+  stroke(body);
+
+  // A lighter core so a long piece reads as one object, not a wall.
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = S * 0.11;
+  stroke(body);
+
+  // The blunt tail, so the two ends never look alike.
+  const tail = points[0];
+  const after = points.length > 1 ? points[1] : { x: tail.x + vx, y: tail.y + vy };
+  let tx = tail.x - after.x, ty = tail.y - after.y;
+  const tl = Math.hypot(tx, ty) || 1;
+  tx /= tl; ty /= tl;
+  ctx.strokeStyle = col;
+  ctx.lineCap = "butt";
+  ctx.lineWidth = S * 0.42;
+  ctx.beginPath();
+  ctx.moveTo(tail.x, tail.y);
+  ctx.lineTo(tail.x + tx * S * 0.16, tail.y + ty * S * 0.16);
+  ctx.stroke();
+
+  // The head.
+  ctx.translate(head.x + vx * HEAD * 0.34, head.y + vy * HEAD * 0.34);
+  ctx.rotate(Math.atan2(vy, vx));
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.moveTo(HEAD * 0.72, 0);
+  ctx.lineTo(-HEAD * 0.62, HEAD * 0.80);
+  ctx.lineTo(-HEAD * 0.30, 0);
+  ctx.lineTo(-HEAD * 0.62, -HEAD * 0.80);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function stroke(pts) {
+  ctx.beginPath();
+  pts.forEach((pt, i) => i ? ctx.lineTo(pt.x, pt.y) : ctx.moveTo(pt.x, pt.y));
+  ctx.stroke();
+}
+
+function render(now) {
+  ctx.clearRect(0, 0, W, H);
+
+  // Board.
+  ctx.fillStyle = "rgba(236,231,222,0.022)";
+  roundRect(PAD - S * 0.16, PAD - S * 0.16,
+            COLS * S + S * 0.32, ROWS * S + S * 0.32, S * 0.22);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(200,178,138,0.10)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let x = 0; x <= COLS; x++) {
+    ctx.moveTo(PAD + x * S, PAD);
+    ctx.lineTo(PAD + x * S, PAD + ROWS * S);
+  }
+  for (let y = 0; y <= ROWS; y++) {
+    ctx.moveTo(PAD, PAD + y * S);
+    ctx.lineTo(PAD + COLS * S, PAD + y * S);
+  }
+  ctx.stroke();
+
+  // Cells that blocked the last attempt.
+  if (blockFlash) {
+    const k = 1 - blockFlash.t / 0.7;
+    if (k > 0) {
+      ctx.save();
+      ctx.globalAlpha = k * 0.55;
+      ctx.strokeStyle = "#cf7468";
+      ctx.lineWidth = Math.max(1.5, S * 0.05);
+      for (const c of blockFlash.cells) {
+        roundRect(PAD + ix(c) * S + S * 0.1, PAD + iy(c) * S + S * 0.1,
+                  S * 0.8, S * 0.8, S * 0.18);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  // Resting pieces.
+  for (const p of pieces) {
+    let pts = p.cells.slice().reverse().map(c => ({ x: px(ix(c)), y: py(iy(c)) }));
+    if (shake && shake.id === p.id) {
+      const k = Math.sin(shake.t * 52) * Math.max(0, 1 - shake.t / 0.34) * S * 0.10;
+      const [dx, dy] = DIRS[p.dir];
+      pts = pts.map(pt => ({ x: pt.x + dx * k, y: pt.y + dy * k }));
+    }
+    drawPiece(p, pts, 1, false);
+  }
+
+  // Pieces on their way out.
+  for (const L of leaving) {
+    const pts = trackPolyline(L.track, L.s, L.piece.cells.length);
+    drawPiece(L.piece, pts, Math.max(0, 1 - L.s / (L.track.length * 0.85)));
+  }
+
+  if (banner) {
+    const k = banner.t / banner.dur;
+    const a = k < 0.15 ? k / 0.15 : (k > 0.7 ? 1 - (k - 0.7) / 0.3 : 1);
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, a);
+    ctx.fillStyle = "#a9d195";
+    ctx.font = "600 " + Math.round(S * 0.7) + "px -apple-system, Helvetica, Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(banner.text, W / 2, H / 2);
+    ctx.restore();
+  }
+}
+
+/* The stretch of track a piece covers, from offset s to s + len - 1.
+   Every whole cell in between is kept as a vertex, otherwise a piece
+   straddling a bend would be drawn as a diagonal short cut across the
+   corner instead of following its own path. */
+function trackPolyline(track, s, len) {
+  const at = t => {
+    const i = Math.max(0, Math.min(track.length - 1, Math.floor(t)));
+    const j = Math.max(0, Math.min(track.length - 1, i + 1));
+    const f = t - Math.floor(t);
+    return { x: px(track[i].x + (track[j].x - track[i].x) * f),
+             y: py(track[i].y + (track[j].y - track[i].y) * f) };
+  };
+  const start = s, end = s + len - 1;
+  const pts = [at(start)];
+  for (let k = Math.ceil(start); k <= Math.floor(end); k++) {
+    if (k <= start || k >= end) continue;
+    const q = { x: px(track[Math.min(k, track.length - 1)].x),
+                y: py(track[Math.min(k, track.length - 1)].y) };
+    const last = pts[pts.length - 1];
+    if (Math.abs(q.x - last.x) > 0.01 || Math.abs(q.y - last.y) > 0.01) pts.push(q);
+  }
+  const e = at(end);
+  const last = pts[pts.length - 1];
+  if (Math.abs(e.x - last.x) > 0.01 || Math.abs(e.y - last.y) > 0.01) pts.push(e);
+  return pts;
+}
+
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000 || 0);
+  lastT = now;
+
+  for (const L of leaving) L.s += dt * 13;
+  leaving = leaving.filter(L => L.s < L.track.length);
+
+  if (shake) { shake.t += dt; if (shake.t > 0.34) shake = null; }
+  if (blockFlash) { blockFlash.t += dt; if (blockFlash.t > 0.7) blockFlash = null; }
+  if (banner) { banner.t += dt; if (banner.t >= banner.dur) banner = null; }
+
+  render(now);
+  requestAnimationFrame(frame);
+}
+
+/* ============================================================
+   Input
+   ============================================================ */
+function cellAt(clientX, clientY) {
+  const r = cv.getBoundingClientRect();
+  const x = Math.floor((clientX - r.left - PAD) / S);
+  const y = Math.floor((clientY - r.top - PAD) / S);
+  if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return -1;
+  return idx(x, y);
+}
+
+cv.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  audio();
+  tapCell(cellAt(e.clientX, e.clientY));
+}, { passive: false });
+cv.addEventListener("contextmenu", e => e.preventDefault());
+
+/* ============================================================
+   Chrome
+   ============================================================ */
+const $level = document.getElementById("level");
+const $left = document.getElementById("left");
+const $undo = document.getElementById("undo");
+const $sound = document.getElementById("sound");
+const $veil = document.getElementById("veil");
+
+function syncUI() {
+  $tierName.textContent = TIERS[tier].name.toUpperCase();
+  $level.textContent = level;
+  $left.textContent = pieces.length;
+  $undo.disabled = !history.length;
+}
+
+function save() {
+  try {
+    localStorage.setItem("arrows.level." + tier, level);
+    localStorage.setItem("arrows.tier", tier);
+  } catch (e) {}
+}
+function savedLevel(t) {
+  try { return parseInt(localStorage.getItem("arrows.level." + t) || "1", 10) || 1; }
+  catch (e) { return 1; }
+}
+function storeBest() { try { localStorage.setItem("arrows.best", best); } catch (e) {} }
+
+try { tier = Math.min(3, Math.max(0, parseInt(localStorage.getItem("arrows.tier") || "0", 10) || 0)); } catch (e) {}
+level = savedLevel(tier);
+try { best = parseInt(localStorage.getItem("arrows.best") || "1", 10) || 1; } catch (e) {}
+try { const s = localStorage.getItem("arrows.sound"); if (s !== null) soundOn = s === "1"; } catch (e) {}
+$sound.style.opacity = soundOn ? "1" : "0.36";
+
+$undo.addEventListener("click", undo);
+$sound.addEventListener("click", () => {
+  soundOn = !soundOn;
+  $sound.style.opacity = soundOn ? "1" : "0.36";
+  try { localStorage.setItem("arrows.sound", soundOn ? "1" : "0"); } catch (e) {}
+  if (soundOn) { audio(); sfxUndo(); }
+});
+
+const $tiers = document.getElementById("tiers");
+const $tierName = document.getElementById("tierName");
+
+function buildTierPicker() {
+  $tiers.innerHTML = "";
+  TIERS.forEach((T, i) => {
+    const b = document.createElement("button");
+    b.className = "btn" + (i === tier ? " on" : "");
+    // Show the board it gives you, so the choice is concrete rather than a word.
+    const lo = T.cols[0], hi = T.cols[1];
+    b.innerHTML = T.name + "<small>" + lo + "x" + Math.round(lo * 1.28) +
+                  (hi !== lo ? " to " + hi + "x" + Math.round(hi * 1.28) : "") + "</small>";
+    b.addEventListener("click", () => {
+      tier = i;
+      level = savedLevel(i);
+      loadLevel(level);
+      buildTierPicker();
+      $veil.classList.remove("on");
+      audio();
+      running = true;
+    });
+    $tiers.appendChild(b);
+  });
+}
+
+document.getElementById("menu").addEventListener("click", () => {
+  running = false;
+  document.getElementById("ttl").textContent = "Paused";
+  document.getElementById("sttl").textContent = "Take your time.";
+  document.getElementById("msg").innerHTML =
+    "Level <b>" + level + "</b>, <b>" + pieces.length + "</b> arrow" +
+    (pieces.length === 1 ? "" : "s") + " left. Furthest reached: <b>" + best + "</b>.<br><br>" +
+    "Tap an arrow with a clear run to the edge. Nothing you do can make the board unsolvable.";
+  document.getElementById("play").textContent = "Resume";
+  document.getElementById("replay").style.display = "block";
+  buildTierPicker();
+  $veil.classList.add("on");
+});
+document.getElementById("play").addEventListener("click", () => {
+  $veil.classList.remove("on"); audio(); running = true;
+});
+document.getElementById("replay").addEventListener("click", () => {
+  loadLevel(level); $veil.classList.remove("on"); audio(); running = true;
+});
+
+window.addEventListener("resize", resize);
+window.addEventListener("orientationchange", () => setTimeout(resize, 140));
+if (window.visualViewport) window.visualViewport.addEventListener("resize", resize);
+
+loadLevel(level);
+buildTierPicker();
+if (level > 1) {
+  document.getElementById("play").textContent = "Resume";
+  document.getElementById("replay").style.display = "block";
+  document.getElementById("sttl").textContent = "Right where you left it.";
+}
+requestAnimationFrame(t => { lastT = t; frame(t); });
+</script>
+</body>
+</html>
