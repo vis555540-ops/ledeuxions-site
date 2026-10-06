@@ -35,6 +35,7 @@
 .gcard.big:hover{color:var(--color-colophon-text);border-color:var(--color-accent)}
 .gcard.big .e{font-size:52px}
 .gcard.big .n{font-size:28px}
+.gcard.big .n,.gcard.big .d{display:block}
 .gcard.big .d{font-size:14px;color:color-mix(in srgb,#ece9e4 72%,transparent)}
 .gcard.big .go{align-self:flex-start;margin-top:12px;background:var(--color-accent);color:#1a1917;font-weight:600;font-size:15px;padding:10px 20px;border-radius:99px}
 .gcard.big .tag{align-self:flex-start;font-size:11px;letter-spacing:.12em;color:var(--color-accent-400)}
@@ -50,8 +51,15 @@
 .qlist .n{font-family:var(--font-heading);font-size:18px;font-weight:600;white-space:nowrap}
 .qlist .d{font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);word-break:keep-all;min-width:0}
 .qlist .arrow{margin-left:auto;font-size:13px;color:color-mix(in srgb,var(--color-text) 45%,transparent)}
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
+.jump a{display:inline-block;white-space:nowrap;font-size:14px;padding:8px 14px;border:1px solid var(--color-divider);border-radius:99px;background:var(--color-surface);color:var(--color-text)}
+.jump a:hover{border-color:var(--color-accent);color:var(--color-accent-700)}
 .more-head{margin-top:12px;padding-top:26px;border-top:1px solid var(--color-divider)}
 @media (max-width:760px){
+.jump{gap:6px;margin-top:12px}
+.jump a{font-size:13px;padding:7px 10px}
+.gcard.big .d{display:none}
+.play-head .sub{font-size:12.5px}
 .play{padding-block:22px 12px}
 .play-head{margin-bottom:14px}
 .play-head .sub{order:3;flex-basis:100%}
@@ -95,8 +103,8 @@
 <span class="e" aria-hidden="true">🪙</span>
 <span class="txt">
 <span class="tag">요즘 제일 많이 하는 게임</span>
-<span class="n" style="display:block">동전 밀기</span>
-<span class="d" style="display:block">오락실에 있던 그 기계. 동전을 쌓아서 우르르 떨어뜨립니다.</span>
+<span class="n">동전 밀기</span>
+<span class="d">오락실에 있던 그 기계. 동전을 쌓아서 우르르 떨어뜨립니다.</span>
 </span>
 <span class="go">바로 하기 ▶</span>
 </a>
@@ -109,6 +117,20 @@
 <a class="gcard hub" href="/games/"><span class="e" aria-hidden="true">🎮</span><span class="n">게임 나라</span><span class="d">게임 전부 보기</span></a>
 </div>
 </div>
+<nav aria-label="바로 가기"><ul class="jump">
+<li><a href="/web-projects/">🛠 도구</a></li>
+<li><a href="https://pdf300.com">📄 PDF300</a></li>
+<li><a href="/tools/hwp/">📑 HWP 뷰어</a></li>
+<li><a href="/applications/">📱 앱</a></li>
+<li><a href="/오늘/">🐑 오늘의 양몰이</a></li>
+<li><a href="/gallery/">🎨 갤러리</a></li>
+<li><a href="/글/">✍️ 글</a></li>
+<li><a href="/notes/ko/">📐 현장 노트</a></li>
+<li><a href="/work/">🏠 작품</a></li>
+<li><a href="/history/">📖 이야기</a></li>
+<li><a href="/모아보기/">🗂 모아보기</a></li>
+<li><a href="/contact/">✉️ 연락</a></li>
+</ul></nav>
 </section>
 <section class="wrap quick" aria-labelledby="quick-title">
 <h2 id="quick-title">자주 쓰는 도구</h2>
