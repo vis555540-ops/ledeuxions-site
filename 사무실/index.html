@@ -29,7 +29,7 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .이름표[data-mic="on"]::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--흐림);margin-right:4px;vertical-align:1px}
 .이름표[data-mic="on"].말함::before{background:var(--좋음);box-shadow:0 0 4px var(--좋음)}
 .이름표[data-scr="on"]::after{content:" ▣";color:var(--강조)}
-.말풍선{position:absolute;transform:translate(-50%,-100%);max-width:260px;font-size:22px;line-height:1.35;padding:7px 10px;background:#f3efe4;color:#1a1a22;border-radius:8px;word-break:break-word;white-space:pre-wrap}
+.말풍선{position:absolute;transform:translate(-50%,-100%);width:max-content;max-width:260px;font-size:22px;line-height:1.35;padding:7px 10px;background:#f3efe4;color:#1a1a22;border-radius:8px;word-break:break-word;white-space:pre-wrap}
 .말풍선::after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-4px;border:4px solid transparent;border-top-color:#f3efe4;border-bottom:0}
 .자리표{position:absolute;transform:translate(-50%,-50%);font-size:20px;line-height:1;padding:4px 7px;background:var(--강조);color:#1a1a22;border-radius:4px;box-shadow:0 1px 0 rgba(0,0,0,.4)}
 .자리표.빈{background:var(--판2);color:var(--강조);border:1px solid var(--강조)}
@@ -106,9 +106,11 @@ label.동의 input{width:auto;margin:2px 0 0;flex:0 0 auto}
 .안내메뉴::after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-4px;border:4px solid transparent;border-top-color:#f3efe4;border-bottom:0}
 .안내메뉴 button{background:#fffaf0;color:#1a1a22;border-color:#d8d0b8;min-height:30px;font-size:11px;text-align:left;padding:5px 8px}
 .안내메뉴 button:hover{border-color:#a89c80}
-.명패{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:20px;line-height:1;padding:3px 6px;background:#d9b45e;color:#2a1f15;border:1px solid #7a5a22;border-radius:3px;pointer-events:none}
+.명패{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:20px;line-height:1;padding:.15em .3em;background:#d9b45e;color:#2a1f15;border:1px solid #7a5a22;border-radius:3px;pointer-events:none}
+.명패.빈{background:#f3efe4;color:#7a5a22;border-style:dashed}
+.단상표{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:11px;line-height:1;color:#f3d27a;letter-spacing:.08em;pointer-events:none;text-shadow:0 1px 0 #1c1309}
 .퇴근판{position:absolute;transform:translate(-50%,-50%) rotate(-3deg);white-space:nowrap;font-size:15px;line-height:1;color:#c0392b;font-weight:bold;letter-spacing:.02em;text-shadow:1px 1px 0 #fff6d0;pointer-events:none}
-.대표팻말{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:20px;line-height:1;padding:3px 6px;background:#f3efe4;color:#2a1f15;border:1px solid #7a5a22;border-radius:3px;pointer-events:none}
+.대표팻말{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:20px;line-height:1;padding:.15em .3em;background:#f3efe4;color:#2a1f15;border:1px solid #7a5a22;border-radius:3px;pointer-events:none}
 .대표팻말.주인{pointer-events:auto;cursor:pointer;box-shadow:0 0 0 1px var(--강조)}
 #창-팻말>.상자{width:min(100%,360px)}
 .팻말묶음{display:grid;gap:6px}
@@ -265,35 +267,41 @@ const 자리={
   벽3:{이름:"벽3",종류:"벽",영역:{x:193,y:36,w:48,h:34},서는곳:{x:217,y:108}},
   벽4:{이름:"벽4",종류:"벽",영역:{x:248,y:32,w:38,h:40},서는곳:{x:267,y:108}},
   벽5:{이름:"벽5",종류:"벽",영역:{x:294,y:30,w:28,h:46},서는곳:{x:308,y:108}},
-  좌대1:{이름:"좌대1",종류:"좌대",영역:{x:132,y:108,w:30,h:46},서는곳:{x:147,y:168}},
-  좌대2:{이름:"좌대2",종류:"좌대",영역:{x:308,y:108,w:30,h:46},서는곳:{x:323,y:168}},
-  이젤1:{이름:"이젤1",종류:"이젤",영역:{x:30,y:117,w:28,h:48},서는곳:{x:44,y:173},발:{x:44,y:164}},
-  이젤2:{이름:"이젤2",종류:"이젤",영역:{x:70,y:117,w:28,h:48},서는곳:{x:84,y:173},발:{x:84,y:164}},
+  // 가운데 단상(작품 갤러리) 위: 좌대1 · 이젤1 · 이젤2 · 좌대2 (가운데=입구 x240 축에 맞춰 좌우 대칭)
+  좌대1:{이름:"좌대1",종류:"좌대",영역:{x:160,y:146,w:30,h:46},서는곳:{x:175,y:204}},
+  좌대2:{이름:"좌대2",종류:"좌대",영역:{x:290,y:146,w:30,h:46},서는곳:{x:305,y:204}},
+  이젤1:{이름:"이젤1",종류:"이젤",영역:{x:194,y:121,w:28,h:48},서는곳:{x:208,y:180},발:{x:208,y:168}},
+  이젤2:{이름:"이젤2",종류:"이젤",영역:{x:258,y:121,w:28,h:48},서는곳:{x:272,y:180},발:{x:272,y:168}},
   스크린:{이름:"스크린",종류:"스크린",영역:{x:336,y:28,w:104,h:63},서는곳:{x:388,y:112}}
 };
 const 자리순서=["벽1","벽2","벽3","벽4","벽5","이젤1","이젤2","좌대1","좌대2","스크린"];
 const 스크린=자리.스크린;
-// 앉을 자리: 가운데 탁자 6개(손님용) + 책상 의자 1개(주인=형 전용). 좌표는 아래 가구의 의자() 호출 위치와 같다.
+const 단상={x:150,y:126,w:180,h:64};                    // 가운데 작품 갤러리 단상: 윗면 y126~190, 앞면 190~197. 올라가 걸을 수 있음(막음은 작품 받침만)
+// 크루 자리 — 형·맺음·이음·빈 자리 모두 똑같은 책상 4개(2×2, 스크린 아래). 대표 큰 책상 없음.
+// x=책상 앞판 왼쪽, y=책상 윗면. 사람은 책상 뒤에 앉아 앞(아래)을 본다. 형 책상을 누르면 상담 예약(주인이면 👑 내 팻말).
+const 책상들=[
+  {이름:"LeDeuxions",종류:"주인",x:340,y:134,w:36},
+  {이름:"맺음",      종류:"동료",x:396,y:134,w:36},
+  {이름:"이음",      종류:"동료",x:340,y:198,w:36},
+  {이름:"친구 자리", 종류:"빈",  x:396,y:198,w:36}
+];
+const 주인책상=책상들[0], 빈책상=책상들[3];
+// 앉을 자리: 왼쪽 라운지 탁자 4개(손님용) + 형 책상 의자(주인) + 빈 친구 자리. 좌표는 아래 가구의 의자() 호출 위치와 같다.
 const 좌석=[
-  {이름:"손님-왼",  종류:"의자",주인:false,자리:{x:186,y:180},방향:"right",서는곳:{x:170,y:180},영역:{x:176,y:146,w:20,h:38}},
-  {이름:"손님-오른",종류:"의자",주인:false,자리:{x:294,y:180},방향:"left", 서는곳:{x:310,y:180},영역:{x:284,y:146,w:20,h:38}},
-  {이름:"손님-위1", 종류:"의자",주인:false,자리:{x:218,y:150},방향:"down",서는곳:{x:218,y:132},영역:{x:208,y:116,w:20,h:38}},
-  {이름:"손님-위2", 종류:"의자",주인:false,자리:{x:262,y:150},방향:"down",서는곳:{x:262,y:132},영역:{x:252,y:116,w:20,h:38}},
-  {이름:"손님-아래1",종류:"의자",주인:false,자리:{x:218,y:212},방향:"up",  서는곳:{x:218,y:226},영역:{x:208,y:178,w:20,h:38}},
-  {이름:"손님-아래2",종류:"의자",주인:false,자리:{x:262,y:212},방향:"up",  서는곳:{x:262,y:226},영역:{x:252,y:178,w:20,h:38}},
-  {이름:"주인",     종류:"의자",주인:true, 자리:{x:76,y:234}, 방향:"up",  서는곳:{x:76,y:248}, 영역:{x:66,y:200,w:20,h:38}}
+  {이름:"손님-위1", 종류:"의자",주인:false,자리:{x:92,y:166}, 방향:"down",서는곳:{x:92,y:148}, 영역:{x:82,y:132,w:20,h:34}},
+  {이름:"손님-위2", 종류:"의자",주인:false,자리:{x:120,y:166},방향:"down",서는곳:{x:120,y:148},영역:{x:110,y:132,w:20,h:34}},
+  {이름:"손님-아래1",종류:"의자",주인:false,자리:{x:92,y:216}, 방향:"up",  서는곳:{x:92,y:230}, 영역:{x:82,y:182,w:20,h:38}},
+  {이름:"손님-아래2",종류:"의자",주인:false,자리:{x:120,y:216},방향:"up",  서는곳:{x:120,y:230},영역:{x:110,y:182,w:20,h:38}},
+  {이름:"주인",     종류:"의자",주인:true, 자리:{x:주인책상.x+18,y:주인책상.y+3},방향:"down",서는곳:{x:386,y:주인책상.y+6},영역:{x:주인책상.x+6,y:주인책상.y-24,w:24,h:23}},
+  {이름:"친구 자리", 종류:"의자",주인:false,자리:{x:빈책상.x+18,y:빈책상.y+3},  방향:"down",서는곳:{x:444,y:빈책상.y+6},  영역:{x:빈책상.x+6,y:빈책상.y-24,w:24,h:23}}
 ];
 const 주인석=좌석.find(s=>s.주인);
-// 맺음·이음 작업대(스크린 아래, 나란히) — 형 말 「너희도 작업대 하나씩 해~ 비서 말고」. 누르면 채팅이 열린다.
-// x=책상 앞판 왼쪽, y=책상 윗면. 사람은 책상 뒤에 앉아 앞(아래)을 본다.
-const 작업대들=[
-  {이름:"맺음",x:344,y:152,w:36},
-  {이름:"이음",x:384,y:152,w:36}
-];
+// 맺음·이음 작업대 — 형 말 「너희도 작업대 하나씩 해~ 비서 말고」. 누르면 채팅이 열린다.
+const 작업대들=책상들.filter(d=>d.종류==="동료");
 const 동료들=작업대들.map(d=>({이름:d.이름,x:d.x+(d.이름==="맺음"?20:18),y:d.y+3,책상:d}));
 const 동료자리=작업대들.map(d=>({이름:d.이름+" 작업대",종류:"동료",영역:{x:d.x-2,y:d.y-22,w:d.w+4,h:44},서는곳:{x:d.x+d.w/2,y:d.y+28}}));
 const 특별자리=[
-  {이름:"대표 책상",종류:"예약",영역:{x:34,y:168,w:76,h:30},서는곳:{x:100,y:228}},          // 누르면 상담 예약 (주인 의자 영역과 안 겹치게 윗부분만)
+  {이름:"LeDeuxions 책상",종류:"예약",영역:{x:주인책상.x-2,y:주인책상.y-1,w:주인책상.w+4,h:24},서는곳:{x:주인책상.x+주인책상.w/2,y:주인책상.y+28}},   // 누르면 상담 예약(주인=내 팻말). 의자 영역(위)과 안 겹치게 책상만
   {이름:"안내",종류:"안내",영역:{x:200,y:222,w:20,h:28},서는곳:{x:224,y:240}}
 ];
 const 상호작용들=자리순서.map(k=>자리[k]).concat(좌석).concat(동료자리).concat(특별자리);
@@ -491,7 +499,7 @@ function 천장등(x,벽y){
   사각(x-9,벽y+줄-1,18,2,"#dcb868"); 사각(x-3,벽y+줄+8,6,2,"#fff6d8");
 }
 function 등불빛(){
-  c.fillStyle="rgba(255,214,130,.16)"; c.beginPath(); c.ellipse(238,150,84,46,0,0,Math.PI*2); c.fill();
+  c.fillStyle="rgba(255,214,130,.16)"; c.beginPath(); c.ellipse(240,160,98,46,0,0,Math.PI*2); c.fill();
 }
 function 시계그리기(){
   const {x,y}=시계;
@@ -569,23 +577,6 @@ function 스크린그리기(){
   }
   사각(r.x-2,r.y+r.h+2,r.w+4,3,"#23232a");
 }
-function 책상(x,y){
-  const w=66,h=14;
-  사각(x-2,y+32,w+10,4,"rgba(0,0,0,.22)");
-  사각(x+4,y+h,4,26,"#4a3220"); 사각(x+4,y+h,1,26,"#5a4028"); 사각(x+w-8,y+h,4,26,"#4a3220"); 사각(x+w-8,y+h,1,26,"#5a4028");
-  사각(x,y+h,w,24,"#6b4a30"); 사각(x,y+h,w,2,"rgba(0,0,0,.25)"); 사각(x,y+h+2,w,1,"#7a5638");
-  for(let i=6;i<w;i+=11) 사각(x+i,y+h+5,0.5,16,"rgba(0,0,0,.1)");
-  사각(x-3,y,w+6,h,"#8a5f3c"); 사각(x-3,y,w+6,2,"#a3764a"); 사각(x-3,y,w+6,0.5,"#b8884f");
-  사각(x-3,y+h-1,w+6,1,"#5a3d27");
-  for(let i=0;i<5;i++) 사각(x+3+i*13,y+3,11,0.5,"rgba(90,58,28,.18)");
-  사각(x+8,y-16,20,14,"#2a2a32"); 사각(x+10,y-14,16,10,"#5a8bc4"); 사각(x+15,y-2,6,3,"#2a2a32");
-  사각(x+32,y-3,18,5,"#3a3a42"); 사각(x+32,y-3,18,1,"#55555f");
-  c.strokeStyle="#d8d0b8"; c.lineWidth=2; c.beginPath(); c.moveTo(x+53,y-1); c.lineTo(x+53,y-13); c.stroke();
-  사각(x+49,y-16,10,4,"#e8e0c8");
-  사각(x+36,y-9,6,7,"#3a2a1a"); 사각(x+37,y-13,1,5,"#e0b04a"); 사각(x+39,y-14,1,6,"#c94f4f"); 사각(x+41,y-12,1,4,"#4a90c4");
-  c.fillStyle="rgba(255,214,120,.35)"; c.beginPath(); c.ellipse(x+59,y-19,9,7,0,0,Math.PI*2); c.fill();
-  사각(x+60,y-23,3,6,"#3a3a3a"); 사각(x+54,y-27,12,5,"#caa24a");
-}
 function 책장(x,y){
   const w=38,h=66;
   사각(x-2,y+h,w+6,4,"rgba(0,0,0,.22)");
@@ -639,20 +630,6 @@ function 캐비닛(x,y){
   사각(x+6,y-5,16,5,"#e8e0c8"); 사각(x+8,y-9,14,4,"#d8d0b8"); 사각(x+6,y-5,16,1,"#c8c0a8");
   사각(x+50,y-6,10,6,"#b5613a"); 사각(x+49,y-7,12,2,"#c97a4e");
   c.fillStyle="#4f7f45"; c.beginPath(); c.ellipse(x+55,y-11,6,5,0,0,Math.PI*2); c.fill();
-}
-function 탁자(x,y){
-  const w=88,h=34;
-  사각(x,y+h+6,w,4,"rgba(0,0,0,.24)");
-  사각(x+4,y+h,4,10,"#4a3220"); 사각(x+4,y+h,1,10,"#5a4028"); 사각(x+w-8,y+h,4,10,"#4a3220"); 사각(x+w-8,y+h,1,10,"#5a4028");
-  사각(x,y+h,w,8,"#6b4a30"); 사각(x,y+h,w,2,"rgba(0,0,0,.22)"); 사각(x,y+h+2,w,1,"#7a5638");
-  사각(x-2,y,w+4,h,"#8a5f3c"); 사각(x-2,y,w+4,2,"#a3764a"); 사각(x-2,y,w+4,0.5,"#b8884f");
-  사각(x-2,y+h-1,w+4,1,"#5a3d27");
-  for(let i=0;i<5;i++) 사각(x+6+i*17,y+5,12,0.5,"rgba(90,58,28,.2)");
-  for(let i=0;i<5;i++) 사각(x+9+i*17,y+14,10,0.5,"rgba(90,58,28,.13)");
-  사각(x+30,y+9,16,11,"#2a2a32"); 사각(x+32,y+11,12,7,"#5a8bc4");
-  사각(x+54,y+14,14,9,"#eee8d8"); 사각(x+56,y+16,10,1,"#b0a890"); 사각(x+56,y+18,8,1,"#b0a890");
-  사각(x+12,y+18,5,5,"#f0ece0"); 사각(x+13,y+17,3,1,"#8a6a4a");
-  사각(x+70,y+8,5,5,"#f0ece0"); 사각(x+71,y+7,3,1,"#8a6a4a");
 }
 function 이젤그리기(이름){                         // 바닥에 세운 이젤 — 그림(목탄·포스터 같은 세로 그림)을 올려 둠
   const s=자리[이름], cx=s.발.x, fy=s.발.y, 꼭대기=fy-47;
@@ -833,33 +810,77 @@ function 퇴근간판(d){                                        // 「퇴근!�
   사각(bx+3,by-3,1,1,"#fff6d0"); 사각(bx+8,by-5,1,1,"#fff6d0"); 사각(bx+bw-10,by-2,1,1,"#fff6d0");  // 별
 }
 function 퇴근판위치(d){ return {x:d.x+d.w/2, y:d.y-33+23/2}; }
+function 작업대그리기_주인(d){                                 // 형(LeDeuxions): 모니터 · 둘둘 만 도면 · 삼각자 · 커피
+  const {x,y}=d;
+  작업대판(d); 모니터(x+1,y,지금팻말==="있습니다",1);
+  사각(x+14,y+1,10,3,"#f3efe4"); 사각(x+14,y+1,10,0.5,"#ffffff"); 사각(x+16,y+2,6,0.5,"#9aa8c8");     // 펼친 도면 한 장
+  사각(x+25,y-3,9,2,"#e8e0c8"); 사각(x+24,y-1,10,2,"#d8d0b8"); 사각(x+33,y-3,1,2,"#b8ae94"); 사각(x+33,y-1,1,2,"#a89e84");  // 둘둘 만 도면
+  c.fillStyle="#7fb0d8"; c.beginPath(); c.moveTo(x+27,y+4); c.lineTo(x+33,y+4); c.lineTo(x+27,y); c.closePath(); c.fill();   // 삼각자
+  사각(x+12,y-4,4,4,"#f0ece0"); 사각(x+12,y-4,4,1,"#5a3d27"); 사각(x+16,y-3,1,2,"#f0ece0");             // 커피 잔
+}
+function 작업대그리기_친구(d){                                 // 빈 친구 자리: 꺼진 모니터 · 작은 화분 · 「환영」 카드
+  const {x,y}=d;
+  작업대판(d); 모니터(x+1,y,false,1);
+  사각(x+15,y-4,8,5,"#fffaf0"); 사각(x+15,y-4,8,1,"#e3b65a"); 사각(x+17,y-2,4,0.5,"#c98a6a");          // 환영 카드
+  사각(x+27,y-4,6,4,"#b5613a"); 사각(x+26,y-5,8,1.5,"#c97a4e");
+  c.fillStyle="#4f7f45"; c.beginPath(); c.ellipse(x+30,y-8,3.5,3,0,0,Math.PI*2); c.fill();
+}
+function 단상그리기(){                                         // 가운데 작품 갤러리 단상 — 낮게 올린 무대, 금 테두리, 작품마다 조명 웅덩이
+  const {x,y,w,h}=단상, 앞=7;
+  사각(x+3,y+h+앞,w,3,"rgba(0,0,0,.22)"); 사각(x+w,y+4,3,h+앞,"rgba(0,0,0,.14)");                  // 바닥 그림자
+  const tg=c.createLinearGradient(0,y,0,y+h); tg.addColorStop(0,"#6a4630"); tg.addColorStop(1,"#80573a");
+  c.fillStyle=tg; c.fillRect(x,y,w,h);                                                            // 윗면(짙은 호두나무 — 작품이 도드라지게)
+  for(let yy=y+3;yy<y+h;yy+=6){ 사각(x+2,yy,w-4,0.5,"rgba(30,16,6,.28)"); 사각(x+2,yy+0.5,w-4,0.5,"rgba(255,225,180,.06)"); for(let xx=x+((yy-y)%12?14:4);xx<x+w-4;xx+=24) 사각(xx,yy-5.5,0.5,5.5,"rgba(30,16,6,.22)"); }
+  사각(x,y,w,1.5,"#9a6a44"); 사각(x,y,1,h,"#8a5f3c"); 사각(x+w-1,y,1,h,"#4a3020");                      // 윗면 테
+  사각(x+3,y+3,w-6,0.5,"#e3b65a"); 사각(x+3,y+h-3.5,w-6,0.5,"#e3b65a"); 사각(x+3,y+3,0.5,h-6.5,"#e3b65a"); 사각(x+w-3.5,y+3,0.5,h-6.5,"#e3b65a");  // 금 선
+  사각(x,y+h,w,앞,"#5a3d27"); 사각(x,y+h,w,1,"#c4935e"); 사각(x,y+h+1,w,0.5,"#e3b65a");                   // 앞면 + 금 몰딩
+  for(let i=12;i<w;i+=24) 사각(x+i,y+h+2,0.5,앞-2,"rgba(0,0,0,.25)");
+  사각(x+w/2-26,y+h+1.5,52,앞-2.5,"#3f2a1a");                                                        // 이름판 자리(글자는 겹층 .단상표)
+  사각(x+w/2-18,y+h+앞,36,3,"#8a5f3c"); 사각(x+w/2-18,y+h+앞,36,0.5,"#b8884f");                       // 가운데 계단 한 칸
+  c.fillStyle="rgba(255,226,150,.2)";
+  [[175,186],[208,168],[272,168],[305,186]].forEach(([cx,cy])=>{ c.beginPath(); c.ellipse(cx,cy,17,6,0,0,Math.PI*2); c.fill(); });
+}
+function 작은탁자(x,y){                                         // 왼쪽 라운지 탁자 (손님 4자리)
+  const w=60,h=22;
+  사각(x,y+h+8,w,3,"rgba(0,0,0,.22)");
+  사각(x+4,y+h,3,8,"#4a3220"); 사각(x+w-7,y+h,3,8,"#4a3220");
+  사각(x,y+h,w,6,"#6b4a30"); 사각(x,y+h,w,1.5,"rgba(0,0,0,.22)"); 사각(x,y+h+1.5,w,1,"#7a5638");
+  사각(x-2,y,w+4,h,"#8a5f3c"); 사각(x-2,y,w+4,2,"#a3764a"); 사각(x-2,y,w+4,0.5,"#b8884f"); 사각(x-2,y+h-1,w+4,1,"#5a3d27");
+  for(let i=0;i<4;i++) 사각(x+5+i*14,y+6,10,0.5,"rgba(90,58,28,.2)");
+  사각(x+20,y+7,16,11,"#eee8d8"); 사각(x+20,y+7,8,11,"#e2dccb"); 사각(x+28,y+7,0.5,11,"#b0a890"); 사각(x+22,y+9,4,3,"#9aa8c8"); 사각(x+30,y+9,5,1,"#b0a890");  // 펼친 작품집
+  사각(x+6,y+12,5,5,"#f0ece0"); 사각(x+7,y+11,3,1,"#8a6a4a");                                         // 찻잔
+  사각(x+47,y+11,5,5,"#f0ece0"); 사각(x+48,y+10,3,1,"#8a6a4a");
+}
 function 비네트(){
   const g=c.createRadialGradient(폭/2,높이/2,80,폭/2,높이/2,300);
   g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,.35)"); c.fillStyle=g; c.fillRect(0,0,폭,높이);
 }
 const 가구=[
   {그리기:()=>캐비닛(34,98), 막음:[32,96,76,26], 바닥y:120},
-  {그리기:()=>책장(424,100), 막음:[422,100,40,68], 바닥y:166},
-  {그리기:()=>좌대그리기("좌대1"), 막음:[134,126,26,24], 바닥y:150},
-  {그리기:()=>좌대그리기("좌대2"), 막음:[310,126,26,24], 바닥y:150},
-  {그리기:()=>탁자(196,152), 막음:[192,150,96,48], 바닥y:198},
-  {그리기:()=>의자(186,180,"right"), 막음:[178,172,16,12], 바닥y:182},
-  {그리기:()=>의자(294,180,"left"), 막음:[286,172,16,12], 바닥y:182},
-  {그리기:()=>의자(218,150,"down"), 막음:[210,142,16,10], 바닥y:150},
-  {그리기:()=>의자(262,150,"down"), 막음:[254,142,16,10], 바닥y:150},
-  {그리기:()=>의자(218,212,"up"), 막음:[210,204,16,12], 바닥y:214},
-  {그리기:()=>의자(262,212,"up"), 막음:[254,204,16,12], 바닥y:214},
-  {그리기:()=>책상(40,186), 막음:[34,182,76,32], 바닥y:216},
-  {그리기:()=>의자(76,234,"up"), 막음:[68,226,16,12], 바닥y:236},
+  {그리기:()=>책장(22,128), 막음:[20,128,40,68], 바닥y:194},
+  // 왼쪽 라운지: 작은 탁자 + 손님 의자 4개
+  {그리기:()=>작은탁자(76,168), 막음:[74,166,64,34], 바닥y:198},
+  {그리기:()=>의자(92,166,"down"), 막음:[84,158,16,10], 바닥y:166},
+  {그리기:()=>의자(120,166,"down"), 막음:[112,158,16,10], 바닥y:166},
+  {그리기:()=>의자(92,216,"up"), 막음:[84,208,16,12], 바닥y:218},
+  {그리기:()=>의자(120,216,"up"), 막음:[112,208,16,12], 바닥y:218},
+  // 가운데 단상 위 작품 (단상 자체는 바닥과 함께 그림 — 단상표 아래 단상그리기)
+  {그리기:()=>좌대그리기("좌대1"), 막음:[162,164,26,24], 바닥y:188},
+  {그리기:()=>좌대그리기("좌대2"), 막음:[292,164,26,24], 바닥y:188},
+  {그리기:()=>이젤그리기("이젤1"), 막음:[196,154,24,14], 바닥y:168},
+  {그리기:()=>이젤그리기("이젤2"), 막음:[260,154,24,14], 바닥y:168},
   {그리기:()=>화분(448,246), 막음:[438,236,20,16], 바닥y:252},
   {그리기:()=>안내그리기(안내봇.x,안내봇.y,performance.now()/1000), 막음:[203,238,14,10], 바닥y:246},
-  {그리기:()=>이젤그리기("이젤1"), 막음:[32,150,24,14], 바닥y:164},
-  {그리기:()=>이젤그리기("이젤2"), 막음:[72,150,24,14], 바닥y:164},
-  // 맺음·이음: 사람(작업대 뒤) → 작업대 → 퇴근이면 간판. 막음은 둘을 한 덩어리로(사이 틈에 끼지 않게)
-  {그리기:()=>{ if(!퇴근함("맺음")) 사람그리기_맺음(동료들[0].x,동료들[0].y,performance.now()/1000); else 빈의자(동료들[0].x,동료들[0].y); }, 바닥y:155},
-  {그리기:()=>{ if(!퇴근함("이음")) 사람그리기_이음(동료들[1].x,동료들[1].y,performance.now()/1000); else 빈의자(동료들[1].x,동료들[1].y); }, 바닥y:155},
-  {그리기:()=>{ const t=performance.now()/1000; 작업대그리기_맺음(작업대들[0],t); if(퇴근함("맺음")) 퇴근간판(작업대들[0]); }, 막음:[341,134,82,40], 바닥y:173},
-  {그리기:()=>{ const t=performance.now()/1000; 작업대그리기_이음(작업대들[1],t); if(퇴근함("이음")) 퇴근간판(작업대들[1]); }, 바닥y:173}
+  // 크루 책상 4개(똑같은 크기): 의자·사람(책상 뒤, 바닥y=d.y+3) → 책상(d.y+21) → 퇴근이면 간판
+  ...책상들.flatMap(d=>[
+    {그리기:()=>{ const t=performance.now()/1000;
+      if(d.이름==="맺음"&&!퇴근함("맺음")) 사람그리기_맺음(동료들[0].x,동료들[0].y,t);
+      else if(d.이름==="이음"&&!퇴근함("이음")) 사람그리기_이음(동료들[1].x,동료들[1].y,t);
+      else { const v=동료들.find(v=>v.책상===d); 빈의자(v?v.x:d.x+18,d.y+3); } }, 바닥y:d.y+3},
+    {그리기:()=>{ const t=performance.now()/1000;
+      if(d.이름==="맺음") 작업대그리기_맺음(d,t); else if(d.이름==="이음") 작업대그리기_이음(d,t); else if(d.종류==="주인") 작업대그리기_주인(d); else 작업대그리기_친구(d);
+      if(d.종류==="동료"&&퇴근함(d.이름)) 퇴근간판(d); }, 막음:[d.x-3,d.y-14,d.w+6,38], 바닥y:d.y+21}
+  ])
 ];
 
 /* ===================== 5. 길찾기 ===================== */
@@ -1179,7 +1200,7 @@ function 버튼갱신(){
   버튼.화면.textContent=통신.화면?"공유 중지":"화면 공유"; 버튼.화면.classList.toggle("켜짐",!!통신.화면);
   버튼.편집.hidden=!편집가능; 버튼.편집.textContent=편집중?"편집 끝":"작품 편집"; 버튼.편집.classList.toggle("켜짐",편집중);
   버튼.JSON.hidden=!편집중;
-  안내.textContent=편집중?"액자·이젤·좌대·스크린을 누르면 작품을 넣습니다 · 끝나면 JSON 보기 → 복사해서 gallery.json으로 올립니다":(터치?"바닥을 누르면 걸어갑니다 · 액자·이젤·좌대를 누르면 봅니다 · 맺음·이음 책상=채팅 · 대표 책상=상담 예약":"클릭 또는 방향키로 이동 · 액자·이젤·좌대·스크린 클릭 · Enter 보기 · T 채팅 · 입구 안내 로봇에게 물어보세요");
+  안내.textContent=편집중?"액자·이젤·좌대·스크린을 누르면 작품을 넣습니다 · 끝나면 JSON 보기 → 복사해서 gallery.json으로 올립니다":(터치?"바닥을 누르면 걸어갑니다 · 액자·이젤·좌대를 누르면 봅니다 · 가운데 단상=작품 갤러리 · 맺음·이음 책상=채팅 · LeDeuxions 책상=상담 예약":"클릭 또는 방향키로 이동 · 액자·이젤·좌대·스크린 클릭 · Enter 보기 · T 채팅 · 입구 안내 로봇에게 물어보세요");
 }
 function 창열림(){ return !창팻말.hidden||!창예약.hidden||!창입장.hidden||!창작품.hidden||!창편집.hidden||!창JSON.hidden||!창화면.hidden; }
 function 창모두닫기(){ 창팻말.hidden=true; 창예약.hidden=true; 창입장.hidden=true; 창작품.hidden=true; 창편집.hidden=true; 창JSON.hidden=true; if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; } 작품내용비우기(); }
@@ -1543,9 +1564,8 @@ function 이름표(id,p,나인가){
     풍선맞춤(풍선,(p.x-카메라.x)*배율); 풍선.style.top=((p.y-24-카메라.y)*배율-el.offsetHeight-4)+"px";
   } else if(풍선) 풍선.remove();
 }
-const 주인표el=document.createElement("div"); 주인표el.className="이름표 나"; 주인표el.textContent="LeDeuxions"; 겹층.appendChild(주인표el);
-function 주인표위치(){ 주인표el.style.left=((주인석.자리.x-카메라.x)*배율)+"px"; 주인표el.style.top=((주인석.자리.y-30-카메라.y)*배율)+"px"; }
-const 명패들=작업대들.map(d=>{ const el=document.createElement("div"); el.className="명패"; el.textContent=d.이름; 겹층.appendChild(el); return el; });
+const 명패들=책상들.map(d=>{ const el=document.createElement("div"); el.className="명패"+(d.종류==="빈"?" 빈":""); el.textContent=d.이름; 겹층.appendChild(el); return el; });
+const 단상표el=document.createElement("div"); 단상표el.className="단상표"; 단상표el.textContent="작품 갤러리"; 겹층.appendChild(단상표el);
 const 대표팻말el=document.createElement("div"); 대표팻말el.className="대표팻말"+(주인열쇠?" 주인":""); 대표팻말el.hidden=true; 겹층.appendChild(대표팻말el);
 if(주인열쇠){ 대표팻말el.addEventListener("pointerdown",e=>e.stopPropagation()); 대표팻말el.addEventListener("click",e=>{ e.stopPropagation(); 팻말창열기(); }); 대표팻말el.title="눌러서 팻말 바꾸기"; }
 const 퇴근판들=작업대들.map(d=>{ const el=document.createElement("div"); el.className="퇴근판"; el.textContent="퇴근!"; el.hidden=true; 겹층.appendChild(el); return el; });
@@ -1565,16 +1585,17 @@ function 겹층갱신(){
   if(통신.peer||나.이름) 이름표("나",{이름:나.이름||"나",x:나.x,y:나.y,mic:마이크켜짐(),scr:!!통신.화면,말풍선:나.말풍선,말풍선끝:나.말풍선끝},true);
   통신.연결.forEach((e,id)=>{ if(e.사람) 이름표(id,e.사람,false); });
   if(편집중) 자리표위치();
-  주인표위치();
+  const 글크기=Math.max(8,Math.min(20,Math.round(배율*7.5)))+"px";      // 책상 4개가 붙어 있어 명패 글자는 배율 따라(폰에서 옆 명패와 안 겹치게)
+  책상들.forEach((d,i)=>{ const 명=명패들[i]; 명.style.left=((d.x+d.w/2-카메라.x)*배율)+"px"; 명.style.top=((d.y+13-카메라.y)*배율)+"px"; 명.style.fontSize=글크기; });
+  단상표el.style.left=((단상.x+단상.w/2-카메라.x)*배율)+"px"; 단상표el.style.top=((단상.y+단상.h+3.6-카메라.y)*배율)+"px"; 단상표el.style.fontSize=Math.max(8,Math.round(배율*4.6))+"px";
   { const 글=팻말이름[지금팻말]; 대표팻말el.hidden=!글; if(글){ if(대표팻말el.textContent!==글) 대표팻말el.textContent=글;
-      대표팻말el.style.left=((94-카메라.x)*배율)+"px"; 대표팻말el.style.top=((175-카메라.y)*배율)+"px"; } }
+      대표팻말el.style.left=((주인책상.x+주인책상.w/2-카메라.x)*배율)+"px"; 대표팻말el.style.top=((주인책상.y-31-카메라.y)*배율)+"px"; 대표팻말el.style.fontSize=글크기; } }
   작업대들.forEach((d,i)=>{
-    const 명=명패들[i]; 명.style.left=((d.x+d.w/2-카메라.x)*배율)+"px"; 명.style.top=((d.y+13-카메라.y)*배율)+"px";
     const 판=퇴근판들[i], 쉼=퇴근함(d.이름); 판.hidden=!쉼;
     if(쉼){ const p=퇴근판위치(d); 판.style.left=((p.x-카메라.x)*배율)+"px"; 판.style.top=((p.y-카메라.y)*배율)+"px"; 판.style.fontSize=Math.max(11,Math.round(배율*9))+"px"; }
     const v=동료들[i]; 고정풍선그리기("동료:"+d.이름,v.x,쉼?d.y-40:v.y-22);
   });
-  고정풍선그리기("주인석",주인석.자리.x,주인석.자리.y-30-주인표el.offsetHeight/배율);
+  고정풍선그리기("주인석",주인석.자리.x,주인책상.y-31-(대표팻말el.hidden?0:대표팻말el.offsetHeight/2/배율+1));
   안내갱신();
 }
 
@@ -1600,7 +1621,7 @@ function 그리기(){
   c.setTransform(선명,0,0,선명,0,0);   // 매 프레임 논리 좌표→2배 버퍼. 모든 그리기는 480×270 좌표 그대로, 디테일만 2배 촘촘.
   사각(0,0,폭,높이,"#141a30");
   벽그리기(); 창문그리기(); 자리순서.filter(k=>자리[k].종류==="벽").forEach(k=>액자그리기(자리[k])); 시계그리기(); 스크린그리기();
-  바닥그리기(); 등불빛(); 러그(178,140,124,76); 빛살(); 천장등(244,방.y+2);
+  바닥그리기(); 러그(66,140,82,100); 단상그리기(); 등불빛(); 빛살(); 천장등(244,방.y+2);
   const 목록=가구.map(g=>({y:g.바닥y,f:g.그리기}));
   목록.push({y:나.y+(나.앉음?4:0),f:()=>사람그리기(나)});           // 앉으면 의자(등받이 등)보다 항상 나중에 그려 사람이 가려지지 않게
   통신.연결.forEach(e=>{ if(e.사람) 목록.push({y:e.사람.y,f:()=>사람그리기(e.사람)}); });
