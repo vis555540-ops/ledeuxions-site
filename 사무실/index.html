@@ -3,145 +3,212 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#1a2238">
+<meta name="theme-color" content="#eef2f3">
 <meta name="description" content="LeDeuxions 픽셀 사무실 — 도면과 모형을 걸어 두고, 얼굴 없이 목소리와 화면으로 만나는 자리.">
 <title>LeDeuxions 사무실</title>
 <link rel="canonical" href="https://ledeuxions.com/사무실/">
 <style>
-/* 배치: 전체 화면 무대(픽셀 캔버스) + 모서리 상태표 + 아래 조작 막대 + 가운데 창(입장·작품·편집·화면). 단일 어두운 테마. */
+/* 배치: 모눈 도면지 위에 방 하나(픽셀 캔버스) + 왼쪽 위 이름·상태 + 아래 조작 막대 + 가운데 창(입장·작품·옷장·예약·편집·화면). 밝은 테마 하나.
+   색: 도면지 #eef2f3 · 먹(브랜드 남색) #1a2238 · 금(브랜드) #e3b65a — 방 안이 주인공이라 바깥은 조용하게. */
 @font-face{font-family:'Galmuri11';src:url(./Galmuri11.woff2) format('woff2');font-display:swap}
 :root{
-  color-scheme:dark;
-  --바탕:#1a2238; --잉크:#ece7da; --흐림:#98a0b8; --선:#2e3852; --판:#111827; --판2:#1c2640;
-  --강조:#e3b65a; --위험:#d9655a; --좋음:#7fc47f;
+  color-scheme:light;
+  --종이:#eef2f3; --모눈:#e1e8eb; --모눈굵:#d3dde2;
+  --먹:#1a2238; --먹2:#56617c; --선:#c5cedb; --판:#ffffff; --판2:#f3f6f8;
+  --금:#e3b65a; --금진:#96690a; --좋음:#23875c; --위험:#c8372f;
   --글꼴:'Galmuri11',-apple-system,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
   --코드:ui-monospace,Menlo,Consolas,monospace;
 }
 html,body{height:100%}
-body{margin:0;background:var(--바탕);color:var(--잉크);font:12px/1.5 var(--글꼴);overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+body{margin:0;color:var(--먹);font:12px/1.5 var(--글꼴);overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+  background-color:var(--종이);
+  background-image:linear-gradient(var(--모눈굵) 1px,transparent 1px),linear-gradient(90deg,var(--모눈굵) 1px,transparent 1px),linear-gradient(var(--모눈) 1px,transparent 1px),linear-gradient(90deg,var(--모눈) 1px,transparent 1px);
+  background-size:120px 120px,120px 120px,24px 24px,24px 24px;background-position:-1px -1px}
 [hidden]{display:none!important}
-#무대{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:44px 8px 86px;padding-top:calc(44px + env(safe-area-inset-top,0px));padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))}
-#틀{position:relative;box-shadow:0 0 0 1px #0d1222,0 18px 40px rgba(0,0,0,.45)}
+#무대{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:50px 8px 100px;padding-top:calc(50px + env(safe-area-inset-top,0px));padding-bottom:calc(var(--막대,94px) + 4px)}   /* --막대 = 아래 조작 막대의 실제 높이(안내 한 줄 + 단추 줄 수). 스크립트가 잰다 */
+#틀{position:relative}
+#틀::before{content:"";position:absolute;left:2.5%;top:6.7%;width:95%;height:90.3%;box-shadow:0 14px 34px rgba(26,34,56,.2),0 3px 8px rgba(26,34,56,.12);pointer-events:none}   /* 방 모형이 도면지에 드리우는 그림자 */
 canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-#겹층{position:absolute;inset:0;pointer-events:none}
-.이름표{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:22px;line-height:1;padding:4px 7px;background:rgba(10,14,26,.74);color:var(--잉크);border-radius:4px}
-.이름표.나{color:var(--강조)}
-.이름표[data-mic="on"]::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--흐림);margin-right:4px;vertical-align:1px}
-.이름표[data-mic="on"].말함::before{background:var(--좋음);box-shadow:0 0 4px var(--좋음)}
-.이름표[data-scr="on"]::after{content:" ▣";color:var(--강조)}
-.말풍선{position:absolute;transform:translate(-50%,-100%);width:max-content;max-width:260px;font-size:22px;line-height:1.35;padding:7px 10px;background:#f3efe4;color:#1a1a22;border-radius:8px;word-break:break-word;white-space:pre-wrap}
-.말풍선::after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-4px;border:4px solid transparent;border-top-color:#f3efe4;border-bottom:0}
-.자리표{position:absolute;transform:translate(-50%,-50%);font-size:20px;line-height:1;padding:4px 7px;background:var(--강조);color:#1a1a22;border-radius:4px;box-shadow:0 1px 0 rgba(0,0,0,.4)}
-.자리표.빈{background:var(--판2);color:var(--강조);border:1px solid var(--강조)}
-#상태{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:12px;max-width:calc(100% - 140px);font-size:11px;line-height:1.3;padding:6px 9px;background:rgba(10,14,26,.7);border:1px solid var(--선);border-radius:4px;color:var(--잉크);word-break:keep-all}
-#상태[data-종류="오류"]{border-color:var(--위험);color:#f0b0a8}
-#집{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:12px;font-size:11px;padding:6px 9px;background:rgba(10,14,26,.7);border:1px solid var(--선);border-radius:4px;color:var(--흐림);text-decoration:none}
-#집:hover{color:var(--잉크)}
-#안내{position:fixed;left:0;right:0;bottom:calc(58px + env(safe-area-inset-bottom,0px));margin:0;text-align:center;color:var(--흐림);font-size:11px;pointer-events:none;padding:0 16px;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-#막대{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:8px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,rgba(10,14,26,.85) 40%)}
-button{font:inherit;font-size:12px;color:var(--잉크);background:var(--판2);border:1px solid var(--선);border-radius:4px;padding:8px 12px;cursor:pointer;min-height:36px;line-height:1.2}
-button:hover{border-color:var(--흐림)}
-button:focus-visible{outline:2px solid var(--강조);outline-offset:1px}
-button.켜짐{background:var(--강조);color:#1a1a22;border-color:var(--강조)}
-button.주요{background:var(--잉크);color:#1a1a22;border-color:var(--잉크)}
-button.위험{border-color:var(--위험);color:#f0b0a8}
+#캔버스{position:relative}
+#겹층{position:absolute;inset:0;pointer-events:none}   /* 방 안 글자 크기 --글자 는 방 배율에 맞춰 스크립트가 12·18·24px 중에 고른다 */
+.이름표{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:var(--글자);line-height:1;padding:.2em .42em;background:var(--판);color:var(--먹);border:1px solid var(--먹);border-radius:3px;box-shadow:0 1px 0 rgba(26,34,56,.3)}
+.이름표.나{background:var(--금)}
+.이름표.주인표{background:var(--먹);color:#fff}
+.이름표[data-mic="on"]::before{content:"";display:inline-block;width:.42em;height:.42em;border-radius:50%;background:#9aa3b6;margin-right:.3em;vertical-align:.08em}
+.이름표[data-mic="on"].말함::before{background:var(--좋음);box-shadow:0 0 0 2px rgba(35,135,92,.3)}
+.이름표[data-scr="on"]::after{content:" ▣"}
+.말풍선{position:absolute;transform:translate(-50%,-100%);width:max-content;max-width:max(124px,calc(var(--배율,3) * 78px));font-size:var(--글자);line-height:1.35;padding:.38em .6em;background:var(--판);color:var(--먹);border:1px solid var(--먹);border-radius:7px;box-shadow:0 2px 0 rgba(26,34,56,.22);word-break:keep-all;overflow-wrap:break-word;overflow-wrap:anywhere;white-space:pre-wrap;z-index:3}   /* 한글은 낱말 중간에서 끊지 않는다(아주 긴 낱말·주소만 끊음) */
+.말풍선::after{content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;margin-left:-4px;background:inherit;border-right:1px solid var(--먹);border-bottom:1px solid var(--먹);transform:rotate(45deg)}
+.말풍선.비서풍선{background:#e6f6f1}
+.자리표{position:absolute;transform:translate(-50%,-50%);font-size:var(--글자);line-height:1;padding:.2em .4em;background:var(--금);color:var(--먹);border:1px solid var(--먹);border-radius:3px}
+.자리표.빈{background:var(--판);border-style:dashed}
+#머리{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:calc(12px + env(safe-area-inset-left,0px));max-width:calc(100% - 130px);display:flex;flex-wrap:wrap;align-items:stretch;font-size:12px;line-height:1.3;background:var(--판);border:2px solid var(--먹);border-radius:3px;box-shadow:3px 3px 0 rgba(26,34,56,.16);z-index:5}
+#간판글{font-weight:normal;background:var(--먹);color:#fff;padding:5px 9px;white-space:nowrap}
+#재실표{padding:5px 9px;white-space:nowrap;background:var(--판2);border-right:1px solid var(--선)}
+#상태{padding:5px 9px;word-break:keep-all;min-width:0;flex:1 1 auto}
+#상태[data-종류="오류"]{color:var(--위험)}
+#집{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));font-size:12px;line-height:1.3;padding:5px 9px;background:var(--판);border:2px solid var(--먹);border-radius:3px;color:var(--먹);text-decoration:none;box-shadow:3px 3px 0 rgba(26,34,56,.16);z-index:5}
+#집:hover{background:#fff6dc}
+#집:focus-visible{outline:3px solid var(--금);outline-offset:2px}
+#안내{flex:0 0 100%;margin:0;text-align:center;color:var(--먹2);font-size:12px;pointer-events:none}   /* 조작 막대의 첫 줄 — 단추가 두 줄이 되어도 가려지지 않는다 */
+#안내 span{display:inline-block;background:rgba(255,255,255,.86);border-radius:3px;padding:3px 9px}
+#막대{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:6px 12px;padding-bottom:calc(13px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(238,242,243,0),rgba(238,242,243,.94) 26px)}
+/* 단추: 픽셀 게임처럼 아래가 두꺼운 단추 — 누르면 내려간다 */
+button{font:inherit;font-size:12px;color:var(--먹);background:var(--판);border:2px solid var(--먹);border-radius:3px;padding:7px 12px;cursor:pointer;min-height:38px;line-height:1.2;box-shadow:0 3px 0 var(--먹);transition:transform .05s,box-shadow .05s}
+button:hover{background:#fff6dc}
+button:active{transform:translateY(3px);box-shadow:0 0 0 var(--먹)}
+button:focus-visible{outline:3px solid var(--금);outline-offset:2px}
+button.켜짐{background:var(--좋음);color:#fff}
+button.주요{background:var(--먹);color:#fff}
+button.주요:hover{background:#2c3860}
+button.권유{background:var(--금)}
+button.권유:hover{background:#efc875}
+button.위험{border-color:var(--위험);color:var(--위험);box-shadow:0 3px 0 var(--위험)}
 button:disabled{opacity:.45;cursor:default}
-.창{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,9,18,.8);padding:16px;z-index:20}
-.창>.상자{background:var(--판);border:1px solid var(--선);border-radius:8px;padding:16px;width:min(100%,380px);max-height:100%;overflow:auto;display:grid;gap:10px;box-sizing:border-box}
-.상자 h2{margin:0;font-size:14px;font-weight:normal;color:var(--강조)}
-.상자 p{margin:0;color:var(--흐림);font-size:11px}
-label{display:grid;gap:4px;font-size:11px;color:var(--흐림)}
-input,textarea{font:inherit;font-size:13px;color:var(--잉크);background:var(--바탕);border:1px solid var(--선);border-radius:4px;padding:8px 10px;width:100%;box-sizing:border-box;-webkit-user-select:text;user-select:text}
-input:focus-visible,textarea:focus-visible{outline:2px solid var(--강조);outline-offset:0;border-color:var(--강조)}
-textarea{font-family:var(--코드);font-size:11px;min-height:200px;resize:vertical;white-space:pre}
-.줄{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.그림{width:12px;height:12px;flex:0 0 auto;fill:currentColor;shape-rendering:crispEdges;margin-right:6px;vertical-align:-1px}
+#막대 button,.안내메뉴 button{display:inline-flex;align-items:center}
+.불{display:inline-block;width:.6em;height:.6em;margin-right:.4em;background:var(--좋음);box-shadow:0 0 0 1px var(--먹);vertical-align:.02em}
+.불[data-값="외출중"]{background:var(--금)} .불[data-값="부재중"]{background:var(--위험)}
+.창{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(26,34,56,.42);padding:16px;z-index:20}
+.창>.상자{background:var(--판);border:2px solid var(--먹);border-radius:4px;box-shadow:6px 6px 0 rgba(26,34,56,.28);padding:16px;width:min(100%,380px);max-height:100%;overflow:auto;display:grid;gap:10px;box-sizing:border-box}
+.상자 h2{margin:-16px -16px 2px;padding:9px 16px;font-size:12px;font-weight:normal;background:var(--먹);color:#fff}
+.상자 p{margin:0;color:var(--먹2);font-size:12px}
+label{display:grid;gap:4px;font-size:12px;color:var(--먹2)}
+input,textarea,select{font:inherit;font-size:12px;color:var(--먹);background:var(--판);border:1px solid #8f99ad;border-radius:3px;padding:8px 10px;width:100%;box-sizing:border-box;-webkit-user-select:text;user-select:text}
+input::placeholder,textarea::placeholder{color:#98a1b3}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--금);outline-offset:0;border-color:var(--먹)}
+textarea{font-family:var(--코드);font-size:12px;min-height:200px;resize:vertical;white-space:pre}
+.줄{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-bottom:3px}
 .줄>button{flex:1}
-.줄>span{flex:1;min-width:0;font-size:11px;color:var(--흐림)}
+.줄>span{flex:1;min-width:0;font-size:12px;color:var(--먹2)}
 #창-작품>.상자{width:min(100%,760px)}
-#작품내용{min-height:120px;display:flex;align-items:center;justify-content:center;background:#0b0f1c;border-radius:4px;overflow:hidden}
+#작품내용{min-height:120px;display:flex;align-items:center;justify-content:center;background:var(--판2);border:1px solid var(--선);border-radius:3px;overflow:hidden}
 #작품내용 img{max-width:100%;max-height:62vh;display:block;image-rendering:auto}
-#작품내용 model-viewer{width:100%;height:min(62vh,520px);background:#e9e6de}
-#작품내용 .없음{padding:28px 12px;color:var(--흐림);text-align:center}
+#작품내용 model-viewer{width:100%;height:min(62vh,520px);background:#eef1f3}
+#작품내용 .없음{padding:28px 12px;color:var(--먹2);text-align:center}
 .설명{font-size:12px;line-height:1.5}
-.설명 b{color:var(--강조);font-weight:normal}
-.설명 .날짜{color:var(--흐림);margin-left:6px}
-.설명 .메모{display:block;color:var(--잉크);opacity:.85;white-space:pre-wrap}
+.설명 b{font-weight:normal;font-size:12px}
+.설명 .날짜{color:var(--먹2);margin-left:6px}
+.설명 .메모{display:block;color:var(--먹2);white-space:pre-wrap;word-break:break-all;-webkit-user-select:text;user-select:text}
+.설명 a.메모{display:inline-block;margin-top:4px;color:var(--먹);text-decoration:underline;text-decoration-color:var(--금);text-decoration-thickness:2px;text-underline-offset:3px}
+.설명 a.메모:focus-visible{outline:3px solid var(--금);outline-offset:2px}
 #창-화면>.상자{width:min(100%,1100px);padding:8px}
-#큰화면{width:100%;max-height:78vh;display:block;background:#000;border-radius:4px}
-/* 채팅: 서버(Worker)에 남는 모두의 채팅. 넓은 화면=오른쪽 아래, 폰=아래 전체 폭 */
-#채팅{position:fixed;right:12px;bottom:calc(80px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100% - 24px));display:grid;gap:4px;z-index:10;background:rgba(10,14,26,.84);border:1px solid var(--선);border-radius:6px;padding:6px;box-sizing:border-box}
+#큰화면{width:100%;max-height:78vh;display:block;background:#000;border-radius:3px}
+/* 채팅: 서버(Worker)에 남는 모두의 채팅. 넓은 화면=오른쪽 기둥, 세로 화면=방 아래 전체 폭, 그 사이=접어 두었다가 단추로 펼침 */
+#채팅{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(var(--막대,94px) + 4px);width:min(340px,calc(100% - 24px));display:flex;flex-direction:column;gap:5px;z-index:10;background:var(--판);border:2px solid var(--먹);border-radius:4px;box-shadow:4px 4px 0 rgba(26,34,56,.2);padding:7px;box-sizing:border-box}
 @media (max-width:640px){#채팅{left:12px;right:12px;width:auto} #채팅기록{max-height:15vh}}
-#채팅머리{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--흐림);padding:0 2px}
-#채팅머리 b{color:var(--강조);font-weight:normal;flex:1}
-#채팅머리 button{min-height:24px;padding:2px 8px;font-size:11px}
-#채팅기록{max-height:min(170px,26vh);min-height:40px;overflow:auto;font-size:11px;line-height:1.45;padding:4px 4px;display:grid;gap:3px;align-content:start;-webkit-user-select:text;user-select:text;word-break:break-word}
-#채팅기록 b{color:var(--강조);font-weight:normal;margin-right:4px}
-#채팅기록 .주인 b{color:#f3d27a}
-#채팅기록 .비서 b{color:#8fd4c4}
-#채팅기록 .손님표{font-size:9px;color:var(--흐림);border:1px solid var(--선);border-radius:3px;padding:0 3px;margin-right:4px;vertical-align:1px}
-#채팅기록 .알림{color:var(--흐림)}
-#채팅기록 .인사{color:#bfe6dc}
-#채팅줄{display:flex;gap:4px}
-#채팅줄 input{padding:7px 8px;font-size:13px;min-width:0}
+#채팅머리{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--먹2);padding:0 2px}
+#채팅머리 b{color:var(--먹);font-weight:normal;flex:1}
+#채팅머리 button{min-height:24px;padding:2px 8px;font-size:12px;box-shadow:0 2px 0 var(--먹)}
+#채팅기록{flex:1 1 auto;max-height:min(170px,26vh);min-height:40px;overflow:auto;font-size:12px;line-height:1.5;padding:4px;display:grid;gap:3px;align-content:start;-webkit-user-select:text;user-select:text;word-break:keep-all;overflow-wrap:break-word;overflow-wrap:anywhere;background:var(--판2);border-radius:3px}
+#채팅기록 b{color:var(--금진);font-weight:normal;margin-right:4px}
+#채팅기록 .주인 b{color:var(--먹);background:var(--금);padding:0 4px;border-radius:2px}
+#채팅기록 .비서 b{color:#157568}
+#채팅기록 .손님표{font-size:12px;line-height:1;color:var(--먹2);border:1px solid var(--선);border-radius:3px;padding:0 3px;margin-right:4px;vertical-align:1px}
+#채팅기록 .알림{color:#8690a5}
+#채팅기록 .인사{color:#1d5f55}
+#채팅줄{display:flex;gap:5px;padding-bottom:3px}
+#채팅줄 input{padding:7px 8px;font-size:12px;min-width:0}
 #채팅이름{flex:0 0 74px}
 #채팅입력{flex:1}
 #채팅보내기{min-height:34px;padding:6px 10px;flex:0 0 auto}
-.말풍선.비서풍선{background:#dff3ee}
-.말풍선.비서풍선::after{border-top-color:#dff3ee}
 /* 상담 예약 창 */
 #창-예약>.상자{width:min(100%,420px)}
-.상자 select{font:inherit;font-size:13px;color:var(--잉크);background:var(--바탕);border:1px solid var(--선);border-radius:4px;padding:8px 10px;width:100%;box-sizing:border-box}
-#예약내용{font-family:var(--글꼴);font-size:13px;min-height:84px;white-space:pre-wrap}
-.칸이름{font-size:11px;color:var(--흐림);display:grid;gap:4px}
+#예약내용{font-family:var(--글꼴);font-size:12px;min-height:84px;white-space:pre-wrap}
+.칸이름{font-size:12px;color:var(--먹2);display:grid;gap:4px}
 .희망줄{display:flex;gap:6px}
 .희망줄 input{flex:1;min-width:0}
-label.동의{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:var(--잉크);cursor:pointer}
+label.동의{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--먹);cursor:pointer}
 label.동의 input{width:auto;margin:2px 0 0;flex:0 0 auto}
 .함정{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
-#예약오류{color:#f0b0a8;min-height:0}
+#예약오류{color:var(--위험);min-height:0}
 #예약완료{display:grid;gap:12px;text-align:center;padding:12px 0}
-#예약완료 b{font-weight:normal;font-size:14px;color:var(--강조)}
+#예약완료 b{font-weight:normal;font-size:24px;line-height:1.3}
 /* 입구 안내 로봇 메뉴 */
-.안내메뉴{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;display:grid;gap:3px;background:#f3efe4;color:#1a1a22;border-radius:6px;padding:5px;width:max-content;max-width:190px;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,.35)}
-.안내메뉴::after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-4px;border:4px solid transparent;border-top-color:#f3efe4;border-bottom:0}
-.안내메뉴 button{background:#fffaf0;color:#1a1a22;border-color:#d8d0b8;min-height:30px;font-size:11px;text-align:left;padding:5px 8px}
-.안내메뉴 button:hover{border-color:#a89c80}
-.명패{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:20px;line-height:1;padding:.15em .3em;background:#d9b45e;color:#2a1f15;border:1px solid #7a5a22;border-radius:3px;pointer-events:none}
-.명패.빈{background:#f3efe4;color:#7a5a22;border-style:dashed}
-.단상표{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:11px;line-height:1;color:#f3d27a;letter-spacing:.08em;pointer-events:none;text-shadow:0 1px 0 #1c1309}
-.퇴근판{position:absolute;transform:translate(-50%,-50%) rotate(-3deg);white-space:nowrap;font-size:15px;line-height:1;color:#c0392b;font-weight:bold;letter-spacing:.02em;text-shadow:1px 1px 0 #fff6d0;pointer-events:none}
-.대표팻말{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:20px;line-height:1;padding:.15em .3em;background:#f3efe4;color:#2a1f15;border:1px solid #7a5a22;border-radius:3px;pointer-events:none}
-.대표팻말.주인{pointer-events:auto;cursor:pointer;box-shadow:0 0 0 1px var(--강조)}
+.안내메뉴{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;display:grid;gap:5px;background:var(--판);border:1px solid var(--먹);border-radius:7px;padding:6px 6px 8px;width:max-content;max-width:200px;z-index:5;box-shadow:0 3px 0 rgba(26,34,56,.22)}
+.안내메뉴::after{content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;margin-left:-4px;background:var(--판);border-right:1px solid var(--먹);border-bottom:1px solid var(--먹);transform:rotate(45deg)}
+.안내메뉴 button{min-height:30px;font-size:12px;text-align:left;padding:5px 8px;box-shadow:0 2px 0 var(--먹)}
+.명패,.대표팻말{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:var(--글자);line-height:1;padding:.14em .3em;color:var(--먹);pointer-events:none}
+.대표팻말.주인{pointer-events:auto;cursor:pointer;background:var(--금);border:1px solid var(--먹);border-radius:3px}
+.퇴근판{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;font-size:var(--글자);line-height:1;color:#c0392b;letter-spacing:.02em;pointer-events:none}
 #창-팻말>.상자{width:min(100%,360px)}
 .팻말묶음{display:grid;gap:6px}
-.팻말묶음>b{font-weight:normal;font-size:12px;color:var(--잉크)}
-.팻말단추들{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px}
-.팻말단추들 button{min-height:48px;font-size:14px;padding:8px 6px}
+.팻말묶음>b{font-weight:normal;font-size:12px}
+.팻말단추들{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px;padding-bottom:3px}
+.팻말단추들 button{min-height:48px;font-size:12px;padding:8px 6px}
+.팻말단추들 button.켜짐{background:var(--먹);color:#fff}
 #팻말알림{min-height:1.5em}
-.배지{display:inline-block;min-width:14px;margin-left:5px;padding:0 4px;border-radius:7px;background:var(--위험);color:#fff;font-size:10px;line-height:14px;text-align:center}
-#미리보기{max-width:100%;max-height:140px;display:block;margin:0 auto;border-radius:4px;background:#0b0f1c}
+.배지{display:inline-block;min-width:14px;margin-left:5px;padding:0 4px;border-radius:7px;background:var(--위험);color:#fff;font-size:12px;line-height:14px;text-align:center}
+#미리보기{max-width:100%;max-height:140px;display:block;margin:0 auto;border-radius:3px;background:var(--판2)}
+/* 옷장 창 */
+#창-옷>.상자{width:min(100%,800px);padding-bottom:0}
+#창-옷>.상자>.줄:last-child{position:sticky;bottom:0;z-index:2;margin:0 -16px;padding:10px 16px 16px;background:var(--판);border-top:1px solid var(--선)}   /* 닫는 단추는 늘 아래에 보이게 */
+.옷장{display:grid;grid-template-columns:156px minmax(0,1fr);gap:14px;align-items:start}
+.옷보기{display:grid;gap:8px;justify-items:center;position:sticky;top:0}
+#옷미리{width:144px;height:216px;border:2px solid var(--먹);border-radius:3px;background:linear-gradient(#f8f6f1 0,#f0ede6 74%,#c9c2b3 74%,#e8d2a8 76%,#e3ca9d 100%)}
+.옷보기 .줄{width:100%}
+.옷보기 .줄 button{padding:6px 4px;min-height:32px;font-size:12px}
+.옷고르기{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 16px;align-items:start}
+.옷쪽{display:grid;gap:9px;align-content:start}
+.옷묶음{display:grid;gap:4px}
+.옷묶음>b{font-weight:normal;font-size:12px;color:var(--먹2)}
+.옷단추들{display:flex;flex-wrap:wrap;gap:5px;padding-bottom:3px}
+.옷단추들 button{min-height:30px;padding:4px 8px;font-size:12px;box-shadow:0 2px 0 var(--먹)}
+.옷단추들 button:active{transform:translateY(2px)}
+.옷단추들 button[aria-pressed="true"]{background:var(--먹);color:#fff}
+.옷단추들 button.색단추{width:28px;min-height:28px;padding:0;color:transparent;overflow:hidden;font-size:0}
+.옷단추들 button.색단추[aria-pressed="true"]{outline:3px solid var(--금);outline-offset:1px}
+.옷추천{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 10px}
+.옷추천 button{display:grid;justify-items:center;gap:1px;flex:0 0 auto;min-width:82px;padding:5px 6px 4px;font-size:12px}
+.옷추천 canvas{width:48px;height:72px}
+#옷코드{font-family:var(--코드);-webkit-user-select:all;user-select:all;word-break:break-all}
+@media (max-width:720px){ .옷고르기{grid-template-columns:1fr} }
+@media (max-width:560px){ .옷장{display:block} .옷보기{z-index:2;grid-template-columns:auto 1fr;align-items:end;justify-items:stretch;background:var(--판);padding:6px 0 8px;margin-bottom:10px;border-bottom:1px solid var(--선)}
+  .옷보기::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:16px;background:var(--판)}   /* 붙어 있을 때 창 위쪽 여백으로 아래 항목이 비치지 않게 */
+  #옷미리{width:96px;height:144px} .옷보기 .줄{flex-direction:column;align-items:stretch} }   /* 폰: 내 모습을 위에 붙여 두고 아래 항목을 넘기며 고른다 */
+/* 넓은 화면: 채팅은 오른쪽 기둥. 방·조작 막대는 그만큼 왼쪽으로 비켜서 서로 가리지 않는다 */
+@media (min-width:1100px){
+  body.채팅열림 #무대{padding-right:372px}
+  body.채팅열림 #막대{right:364px}
+  #채팅{bottom:calc(16px + env(safe-area-inset-bottom,0px));right:12px;width:340px;max-height:calc(100% - 72px - env(safe-area-inset-top,0px))}   /* 글이 쌓이는 만큼만 위로 자란다 */
+  #채팅기록{max-height:none;min-height:110px}
+}
+/* 세로로 긴 화면(폰·태블릿 세로): 방을 위에 붙이고 채팅을 방 바로 아래에 둔다 / 낮은 화면(폰 가로): 여백을 줄여 방을 크게 */
+@media (max-width:480px){ .넓게만{display:none} #머리{max-width:calc(100% - 66px)} #간판글,#재실표,#상태{padding-left:6px;padding-right:6px}
+  #막대{gap:6px;padding-left:8px;padding-right:8px} #막대 button{padding:7px 8px} #막대 .그림{margin-right:4px} }   /* 폰 세로: 처음 보이는 단추 넷이 한 줄에 들어가게 */
+@media (max-width:340px){ #막대 .그림{display:none} }
+@media (max-width:1099px) and (orientation:portrait){
+  #무대{align-items:flex-start;padding-top:calc(58px + env(safe-area-inset-top,0px))}
+  #채팅{left:12px;right:12px;width:auto;top:calc(var(--방아래,300px) + 12px);bottom:calc(var(--막대,94px) + 4px)}
+  #채팅기록{max-height:none}
+}
+@media (max-height:500px){
+  #무대{padding:42px 6px calc(var(--막대,47px) + 6px)} #안내{display:none} #막대{padding:6px 10px calc(9px + env(safe-area-inset-bottom,0px));gap:6px} #막대 button{min-height:32px;padding:5px 10px}
+  #채팅{bottom:calc(var(--막대,47px) + 6px)}
+}
 #숨김{position:fixed;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div id="무대"><div id="틀"><canvas id="캔버스" width="480" height="270"></canvas><div id="겹층"></div></div></div>
-<div id="상태" aria-live="polite">둘러보는 중</div>
-<a id="집" href="/">← LeDeuxions</a>
-<p id="안내"></p>
+<div id="무대"><div id="틀"><canvas id="캔버스" width="480" height="270" role="img" aria-label="LeDeuxions 사무실 방. 걸어 다니며 작품을 보고 상담을 예약할 수 있습니다."></canvas><div id="겹층"></div></div></div>
+<div id="머리"><b id="간판글">LeDeuxions 사무실</b><span id="재실표" hidden></span><span id="상태" aria-live="polite">둘러보는 중</span></div>
+<a id="집" href="/"><span class="넓게만">LeDeuxions </span>홈</a>
 <div id="막대">
-  <button id="버튼-입장" class="주요">입장</button>
-  <button id="버튼-마이크" hidden>마이크 켜기</button>
-  <button id="버튼-화면" hidden>화면 공유</button>
-  <button id="버튼-채팅">채팅</button>
-  <button id="버튼-예약">📅 상담 예약</button>
-  <button id="버튼-팻말" hidden>👑 내 팻말</button>
-  <button id="버튼-나가기" hidden>나가기</button>
-  <button id="버튼-편집" hidden>작품 편집</button>
-  <button id="버튼-JSON" hidden>JSON 보기</button>
+  <p id="안내"><span id="안내글"></span></p>
+  <button id="버튼-입장" class="주요" data-그림="입장"><span class="글">입장</span></button>
+  <button id="버튼-마이크" data-그림="마이크" hidden><span class="글">마이크 켜기</span></button>
+  <button id="버튼-화면" data-그림="화면" hidden><span class="글">화면 공유</span></button>
+  <button id="버튼-채팅" data-그림="채팅"><span class="글">채팅</span></button>
+  <button id="버튼-옷" data-그림="옷"><span class="글">옷 갈아입기</span></button>
+  <button id="버튼-예약" class="권유" data-그림="예약"><span class="글">상담 예약</span></button>
+  <button id="버튼-팻말" data-그림="팻말" hidden><span class="글">내 팻말</span></button>
+  <button id="버튼-나가기" data-그림="나가기" hidden><span class="글">나가기</span></button>
+  <button id="버튼-편집" data-그림="편집" hidden><span class="글">작품 편집</span></button>
+  <button id="버튼-JSON" data-그림="목록" hidden><span class="글">JSON 보기</span></button>
 </div>
 <div id="채팅" hidden>
-  <div id="채팅머리"><b>채팅 · 모두에게 보여요</b><button id="채팅접기" aria-label="채팅 접기">접기</button></div>
+  <div id="채팅머리"><b>모두에게 보이는 채팅</b><button id="채팅접기" aria-label="채팅 접기">접기</button></div>
   <div id="채팅기록" aria-live="polite"></div>
   <div id="채팅줄"><input id="채팅이름" maxlength="16" placeholder="닉네임" autocomplete="nickname" aria-label="닉네임"><input id="채팅입력" placeholder="메시지 입력" maxlength="500" autocomplete="off" enterkeyhint="send" aria-label="메시지"><button id="채팅보내기" class="주요">보내기</button></div>
 </div>
@@ -162,6 +229,23 @@ label.동의 input{width:auto;margin:2px 0 0;flex:0 0 auto}
     <div id="작품내용"></div>
     <div class="설명" id="작품설명"></div>
     <div class="줄"><button id="작품이전">← 이전</button><button id="작품다음">다음 →</button><button id="작품닫기">닫기</button></div>
+  </div>
+</div>
+
+<div id="창-옷" class="창" hidden>
+  <div class="상자" role="dialog" aria-modal="true" aria-labelledby="옷제목">
+    <h2 id="옷제목" data-그림="옷">옷 갈아입기</h2>
+    <div class="옷추천" id="옷추천" aria-label="추천 옷"></div>
+    <div class="옷장">
+      <div class="옷보기">
+        <canvas id="옷미리" width="48" height="72" aria-label="내 모습 미리보기"></canvas>
+        <div class="줄"><button type="button" id="옷돌리기">돌려 보기</button><button type="button" id="옷무작위">아무거나</button></div>
+      </div>
+      <div class="옷고르기" id="옷고르기"></div>
+    </div>
+    <p id="옷안내">고르는 대로 바로 입습니다. 이 기기에 저장되고, 방에 들어가 있으면 다른 사람에게도 보입니다.</p>
+    <p id="옷코드줄" hidden>대표 옷 코드 <span id="옷코드"></span> — index.html 설정의 <span style="font-family:var(--코드)">대표옷</span>에 붙이면 손님에게 보이는 대표 자리 모습이 이 옷이 됩니다.</p>
+    <div class="줄"><button type="button" id="옷닫기" class="주요">이 옷으로 다니기</button></div>
   </div>
 </div>
 
@@ -191,7 +275,7 @@ label.동의 input{width:auto;margin:2px 0 0;flex:0 0 auto}
 
 <div id="창-예약" class="창" hidden>
   <div class="상자" role="dialog" aria-modal="true" aria-labelledby="예약제목">
-    <h2 id="예약제목">📅 상담 예약</h2>
+    <h2 id="예약제목" data-그림="예약">상담 예약</h2>
     <form id="예약폼" novalidate style="display:grid;gap:10px">
       <p>원하시는 날짜·시간을 남겨 주시면 확인 후 연락드릴게요.</p>
       <label>이름<input id="예약이름" maxlength="30" autocomplete="name" required></label>
@@ -211,7 +295,7 @@ label.동의 input{width:auto;margin:2px 0 0;flex:0 0 auto}
 
 <div id="창-팻말" class="창" hidden>
   <div class="상자" role="dialog" aria-modal="true" aria-labelledby="팻말제목">
-    <h2 id="팻말제목">👑 내 팻말</h2>
+    <h2 id="팻말제목" data-그림="팻말">내 팻말</h2>
     <div class="팻말묶음"><b>대표님 (나)</b><div class="팻말단추들" id="팻말-대표"></div></div>
     <div class="팻말묶음"><b>맺음</b><div class="팻말단추들" id="팻말-맺음"></div></div>
     <div class="팻말묶음"><b>이음</b><div class="팻말단추들" id="팻말-이음"></div></div>
@@ -243,11 +327,18 @@ const 설정={
   갤러리파일:"gallery.json",
   모형뷰어:"https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js", // .glb 열 때만 불러옴
   걷기속도:62,                       // px/초 (논리 해상도 기준)
-  API:"https://ledeuxions-office.vis555540.workers.dev"   // 팻말·채팅 서버 (~/office-worker)
+  API:"https://ledeuxions-office.vis555540.workers.dev",  // 팻말·채팅 서버 (~/office-worker)
+  간판:"LeDeuxions",                 // 스크린 위 벽 글씨
+  환영글:["WELCOME","상담 환영"],     // 입구 옆 세움 간판 두 줄
+  대표모습:true,                     // 팻말이 「있습니다」일 때 대표 자리에 앉은 모습을 그린다 (false = 늘 빈 의자)
+  대표옷:[1,1,0,5,2,0,3,1,1,0],      // 대표 자리 모습 + 주인 열쇠로 처음 들어올 때 입는 옷. 옷장 창 맨 아래 「옷 코드」를 복사해 넣으면 바뀐다
+  창밖:"자동"                        // 창밖 하늘: "자동"(방문자 시계 따라 낮·노을·밤) | "낮" | "노을" | "밤"
 };
 if(window.사무실설정&&typeof window.사무실설정==="object") Object.assign(설정,window.사무실설정); // 테스트·배포 시 외부에서 덮어쓰기 가능
 
-/* ===================== 1. 무대 좌표 ===================== */
+/* ===================== 1. 무대 좌표 =====================
+   배치(왼쪽→오른쪽): 창가 작업 코너(도면함·이젤·대표 책상) │ 가운데 상담 테이블 + 발표 스크린 │ 맺음·이음 작업대·책장·손님 소파
+   입구는 아래 가운데. 들어오면 정면에 상담 테이블과 스크린이 보인다. */
 const 폭=480, 높이=270;
 const 선명=2;   // 그림만 더 촘촘하게: 논리 좌표(480×270)는 그대로 두고 오프스크린 버퍼만 2배(960×540)로 그린다. 클릭·길찾기·겹층은 전부 480 좌표라 그대로 동작.
 const 방={x:16,y:22,w:448,h:236};
@@ -255,76 +346,92 @@ const 벽높이=74, 벽끝=방.y+벽높이;                     // 벽끝 = 96
 const 바닥={x1:방.x+4, y1:벽끝+4, x2:방.x+방.w-4, y2:방.y+방.h-4};
 const 입구={x:240,y:244};
 const 안내봇={x:210,y:246};                             // 입구 옆 안내 로봇 (문 매트 228~252 를 비켜 섬)
-const 창문={x:24,y:32,w:72,h:48};
-const 시계={x:453,y:46};
+const 창문={x:24,y:30,w:72,h:50};
+const 시계={x:441,y:43};
+const 살벽={x:184,w:112};                               // 스크린 뒤 나무 살 벽(템바보드)
+const 탁자={x:196,y:150,w:88,h:34,키:11};               // 상담 테이블 윗판(x,y,w,h) + 다리 높이
 /* 작품 자리. gallery.json 의 "작품" 에서 자리 이름 → 작품 하나 {파일,제목,…} 또는 여러 개 [{…},{…}].
    여러 개면 그 자리가 6초마다 돌아가며 보여 주고, 크게 보기에서 ←→ 로 하나씩 넘긴다.
    → 새 작품은 빈 자리에 넣거나, 아무 자리의 목록 끝에 붙이면 코드 안 고치고 걸린다.
-   종류: 벽(액자) · 좌대(모형 받침, 위에 사진) · 이젤(바닥에 세운 그림) · 스크린(공유 화면이 없을 때 보이는 그림) */
+   종류: 벽(액자) · 좌대(모형 받침, 위에 사진) · 이젤(바닥에 세운 그림) · 스크린(공유 화면이 없을 때 보이는 그림)
+   자리 이름(벽1…스크린)은 예전과 같다 — 기존 gallery.json 을 그대로 쓴다. 벽1·2는 스크린 왼쪽, 벽3·4·5는 오른쪽. */
 const 자리={
-  벽1:{이름:"벽1",종류:"벽",영역:{x:104,y:36,w:40,h:32},서는곳:{x:124,y:108}},
-  벽2:{이름:"벽2",종류:"벽",영역:{x:151,y:32,w:36,h:44},서는곳:{x:169,y:108}},
-  벽3:{이름:"벽3",종류:"벽",영역:{x:193,y:36,w:48,h:34},서는곳:{x:217,y:108}},
-  벽4:{이름:"벽4",종류:"벽",영역:{x:248,y:32,w:38,h:40},서는곳:{x:267,y:108}},
-  벽5:{이름:"벽5",종류:"벽",영역:{x:294,y:30,w:28,h:46},서는곳:{x:308,y:108}},
-  // 가운데 단상(작품 갤러리) 위: 좌대1 · 이젤1 · 이젤2 · 좌대2 (가운데=입구 x240 축에 맞춰 좌우 대칭)
-  좌대1:{이름:"좌대1",종류:"좌대",영역:{x:160,y:146,w:30,h:46},서는곳:{x:175,y:204}},
-  좌대2:{이름:"좌대2",종류:"좌대",영역:{x:290,y:146,w:30,h:46},서는곳:{x:305,y:204}},
-  이젤1:{이름:"이젤1",종류:"이젤",영역:{x:194,y:121,w:28,h:48},서는곳:{x:208,y:180},발:{x:208,y:168}},
-  이젤2:{이름:"이젤2",종류:"이젤",영역:{x:258,y:121,w:28,h:48},서는곳:{x:272,y:180},발:{x:272,y:168}},
-  스크린:{이름:"스크린",종류:"스크린",영역:{x:336,y:28,w:104,h:63},서는곳:{x:388,y:112}}
+  벽1:{이름:"벽1",종류:"벽",영역:{x:102,y:38,w:40,h:32},서는곳:{x:124,y:114}},
+  벽2:{이름:"벽2",종류:"벽",영역:{x:148,y:32,w:36,h:44},서는곳:{x:166,y:114}},
+  벽3:{이름:"벽3",종류:"벽",영역:{x:296,y:37,w:48,h:34},서는곳:{x:318,y:114}},
+  벽4:{이름:"벽4",종류:"벽",영역:{x:350,y:34,w:38,h:40},서는곳:{x:369,y:114}},
+  벽5:{이름:"벽5",종류:"벽",영역:{x:394,y:31,w:28,h:46},서는곳:{x:408,y:114}},
+  좌대1:{이름:"좌대1",종류:"좌대",영역:{x:145,y:108,w:30,h:46},서는곳:{x:160,y:168}},
+  좌대2:{이름:"좌대2",종류:"좌대",영역:{x:305,y:108,w:30,h:46},서는곳:{x:320,y:168}},
+  이젤1:{이름:"이젤1",종류:"이젤",영역:{x:30,y:123,w:28,h:48},서는곳:{x:44,y:179},발:{x:44,y:170}},
+  이젤2:{이름:"이젤2",종류:"이젤",영역:{x:70,y:123,w:28,h:48},서는곳:{x:84,y:179},발:{x:84,y:170}},
+  스크린:{이름:"스크린",종류:"스크린",영역:{x:190,y:37,w:100,h:54},서는곳:{x:240,y:122}}
 };
 const 자리순서=["벽1","벽2","벽3","벽4","벽5","이젤1","이젤2","좌대1","좌대2","스크린"];
 const 스크린=자리.스크린;
-const 단상={x:150,y:126,w:180,h:64};                    // 가운데 작품 갤러리 단상: 윗면 y126~190, 앞면 190~197. 올라가 걸을 수 있음(막음은 작품 받침만)
-// 크루 자리 — 형·맺음·이음·빈 자리 모두 똑같은 책상 4개(2×2, 스크린 아래). 대표 큰 책상 없음.
-// x=책상 앞판 왼쪽, y=책상 윗면. 사람은 책상 뒤에 앉아 앞(아래)을 본다. 형 책상을 누르면 상담 예약(주인이면 👑 내 팻말).
-const 책상들=[
-  {이름:"LeDeuxions",종류:"주인",x:340,y:134,w:36},
-  {이름:"맺음",      종류:"동료",x:396,y:134,w:36},
-  {이름:"이음",      종류:"동료",x:340,y:198,w:36},
-  {이름:"친구 자리", 종류:"빈",  x:396,y:198,w:36}
-];
-const 주인책상=책상들[0], 빈책상=책상들[3];
-// 앉을 자리: 왼쪽 라운지 탁자 4개(손님용) + 형 책상 의자(주인) + 빈 친구 자리. 좌표는 아래 가구의 의자() 호출 위치와 같다.
+// 앉을 자리: 상담 테이블 6개 + 손님 소파 2개 + 대표 의자 1개(주인 열쇠가 있어야 앉는다). 자리=앉았을 때 발끝, 서는곳=걸어가서 서는 점.
 const 좌석=[
-  {이름:"손님-위1", 종류:"의자",주인:false,자리:{x:92,y:166}, 방향:"down",서는곳:{x:92,y:148}, 영역:{x:82,y:132,w:20,h:34}},
-  {이름:"손님-위2", 종류:"의자",주인:false,자리:{x:120,y:166},방향:"down",서는곳:{x:120,y:148},영역:{x:110,y:132,w:20,h:34}},
-  {이름:"손님-아래1",종류:"의자",주인:false,자리:{x:92,y:216}, 방향:"up",  서는곳:{x:92,y:230}, 영역:{x:82,y:182,w:20,h:38}},
-  {이름:"손님-아래2",종류:"의자",주인:false,자리:{x:120,y:216},방향:"up",  서는곳:{x:120,y:230},영역:{x:110,y:182,w:20,h:38}},
-  {이름:"주인",     종류:"의자",주인:true, 자리:{x:주인책상.x+18,y:주인책상.y+3},방향:"down",서는곳:{x:386,y:주인책상.y+6},영역:{x:주인책상.x+6,y:주인책상.y-24,w:24,h:23}},
-  {이름:"친구 자리", 종류:"의자",주인:false,자리:{x:빈책상.x+18,y:빈책상.y+3},  방향:"down",서는곳:{x:444,y:빈책상.y+6},  영역:{x:빈책상.x+6,y:빈책상.y-24,w:24,h:23}}
+  {이름:"손님-위1", 종류:"의자",주인:false,자리:{x:218,y:156},방향:"down", 서는곳:{x:218,y:138},영역:{x:209,y:134,w:18,h:18}},
+  {이름:"손님-위2", 종류:"의자",주인:false,자리:{x:262,y:156},방향:"down", 서는곳:{x:262,y:138},영역:{x:253,y:134,w:18,h:18}},
+  {이름:"손님-왼",  종류:"의자",주인:false,자리:{x:184,y:182},방향:"right",서는곳:{x:170,y:184},영역:{x:175,y:160,w:18,h:24}},
+  {이름:"손님-오른",종류:"의자",주인:false,자리:{x:296,y:182},방향:"left", 서는곳:{x:310,y:184},영역:{x:287,y:160,w:18,h:24}},
+  {이름:"손님-아래1",종류:"의자",주인:false,자리:{x:218,y:212},방향:"up",  서는곳:{x:218,y:226},영역:{x:209,y:192,w:18,h:22}},
+  {이름:"손님-아래2",종류:"의자",주인:false,자리:{x:262,y:212},방향:"up",  서는곳:{x:262,y:226},영역:{x:253,y:192,w:18,h:22}},
+  {이름:"소파-왼",  종류:"의자",주인:false,소파:true,자리:{x:384,y:229},방향:"down",서는곳:{x:384,y:234},영역:{x:373,y:204,w:22,h:26}},
+  {이름:"소파-오른",종류:"의자",주인:false,소파:true,자리:{x:408,y:229},방향:"down",서는곳:{x:408,y:234},영역:{x:397,y:204,w:22,h:26}},
+  {이름:"주인",     종류:"의자",주인:true, 자리:{x:62,y:201}, 방향:"down",서는곳:{x:62,y:186}, 영역:{x:52,y:168,w:20,h:27}}   // 대표는 책상 뒤에 앉아 방 쪽을 본다
 ];
 const 주인석=좌석.find(s=>s.주인);
-// 맺음·이음 작업대 — 형 말 「너희도 작업대 하나씩 해~ 비서 말고」. 누르면 채팅이 열린다.
-const 작업대들=책상들.filter(d=>d.종류==="동료");
-const 동료들=작업대들.map(d=>({이름:d.이름,x:d.x+(d.이름==="맺음"?20:18),y:d.y+3,책상:d}));
-const 동료자리=작업대들.map(d=>({이름:d.이름+" 작업대",종류:"동료",영역:{x:d.x-2,y:d.y-22,w:d.w+4,h:44},서는곳:{x:d.x+d.w/2,y:d.y+28}}));
+// 맺음·이음 작업대(벽3~5 아래, 나란히) — 형 말 「너희도 작업대 하나씩 해~ 비서 말고」. 누르면 채팅이 열린다.
+// x=책상 앞판 왼쪽, y=책상 윗면. 사람은 책상 뒤에 앉아 앞(아래)을 본다.
+const 작업대들=[
+  {이름:"맺음",x:344,y:152,w:36},
+  {이름:"이음",x:384,y:152,w:36}
+];
+const 동료들=작업대들.map(d=>({이름:d.이름,x:d.x+(d.이름==="맺음"?21:17),y:d.y+4,책상:d}));
+const 동료자리=작업대들.map(d=>({이름:d.이름+" 작업대",종류:"동료",영역:{x:d.x-2,y:d.y-26,w:d.w+4,h:48},서는곳:{x:d.x+d.w/2,y:d.y+28}}));
+const 옷걸이={x:124,y:238};                             // 입구 왼쪽 행거 + 전신 거울 — 누르면 옷 갈아입기
+const 환영판={x:274,y:249};                             // 입구 오른쪽 세움 간판 — 누르면 상담 예약
+const 소파={x:396,y:227};                               // 손님 소파(가운데 x, 앞 바닥 y)
 const 특별자리=[
-  {이름:"LeDeuxions 책상",종류:"예약",영역:{x:주인책상.x-2,y:주인책상.y-1,w:주인책상.w+4,h:24},서는곳:{x:주인책상.x+주인책상.w/2,y:주인책상.y+28}},   // 누르면 상담 예약(주인=내 팻말). 의자 영역(위)과 안 겹치게 책상만
-  {이름:"안내",종류:"안내",영역:{x:200,y:222,w:20,h:28},서는곳:{x:224,y:240}}
+  {이름:"대표 책상",종류:"예약",영역:{x:35,y:196,w:76,h:33},서는곳:{x:72,y:238}},           // 누르면 상담 예약 (주인은 내 팻말). 책상 앞에 와서 선다
+  {이름:"안내",종류:"안내",영역:{x:200,y:220,w:20,h:30},서는곳:{x:224,y:240}},
+  {이름:"옷걸이",종류:"옷장",영역:{x:120,y:198,w:54,h:42},서는곳:{x:148,y:245}},
+  {이름:"환영 간판",종류:"상담판",영역:{x:256,y:216,w:36,h:34},서는곳:{x:298,y:246}}
 ];
 const 상호작용들=자리순서.map(k=>자리[k]).concat(좌석).concat(동료자리).concat(특별자리);
 
 /* ===================== 2. 캔버스 ===================== */
 const 보기=document.getElementById("캔버스"), vc=보기.getContext("2d");
 const 판=document.createElement("canvas"); 판.width=폭*선명; 판.height=높이*선명;   // 더 촘촘한 디테일용 2배 버퍼
-const c=판.getContext("2d");
-const 틀=document.getElementById("틀"), 겹층=document.getElementById("겹층"), 무대=document.getElementById("무대");
+const 판ctx=판.getContext("2d");
+let c=판ctx;                                                                         // 지금 그리는 곳 — 배경을 미리 그려 둘 때만 잠깐 배경판으로 바뀐다
+const 배경판=document.createElement("canvas"); 배경판.width=폭*선명; 배경판.height=높이*선명;   // 벽·바닥·깔개처럼 안 움직이는 것은 한 번만 그려 둔다
+const 배경ctx=배경판.getContext("2d");
+let 배경됨=false;
+const 틀=document.getElementById("틀"), 겹층=document.getElementById("겹층"), 무대=document.getElementById("무대"), 막대=document.getElementById("막대");
 let 배율=1, 보임={w:폭,h:높이};
 const 카메라={x:0,y:0};
 function 크기(){
+  document.documentElement.style.setProperty("--막대",막대.offsetHeight+"px");   // 아래 조작 막대의 실제 높이(안내 줄 + 단추 줄 수 + 폰 아래 안전 영역) → 방·채팅이 그 위에 선다
   const r=무대.getBoundingClientRect();
   const cs=getComputedStyle(무대);
   const w=Math.max(120,r.width-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight));
   const h=Math.max(120,r.height-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom));
   const 맞춤=Math.min(w/폭,h/높이);                       // 방 전체가 화면에 들어오는 배율
-  배율=맞춤>=2?Math.floor(맞춤*2)/2:Math.max(0.5,맞춤);    // 데스크톱은 0.5 스냅(또렷), 좁은 화면(폰)은 맞춤 그대로 → 방 전체가 폭에 들어온다
+  배율=Math.max(0.5,맞춤);                                 // 방 전체가 화면에 꽉 차게. 정수배에 가까우면(7% 안쪽) 정수배로 맞춰 가장 또렷하게, 아니면 0.05 단위
+  if(배율>=2){ const n=Math.floor(배율); 배율=(배율-n<0.07*n)?n:Math.floor(배율*20)/20; }
   보임={w:폭,h:높이};                                      // 언제나 방 전체 — 가로 스크롤·카메라 팬 없음
-  const dpr=Math.min(3,window.devicePixelRatio||1);
-  보기.width=Math.round(보임.w*배율*dpr); 보기.height=Math.round(보임.h*배율*dpr);
+  // 화면 캔버스는 버퍼(960×540)의 정수배로만 키우고(점이 고르게), 남는 비율은 브라우저가 부드럽게 줄인다 → 어떤 배율에서도 선 굵기가 들쭉날쭉하지 않다
+  const dpr=Math.min(3,window.devicePixelRatio||1), 기기=배율*dpr/선명;      // 버퍼 1px 이 화면에서 몇 px 인가
+  const 배=Math.max(1,Math.min(4,Math.ceil(기기-0.01)));
+  보기.width=보임.w*선명*배; 보기.height=보임.h*선명*배;
+  보기.style.imageRendering=Math.abs(기기-배)<0.01?"pixelated":"auto";
   보기.style.width=(보임.w*배율)+"px"; 보기.style.height=(보임.h*배율)+"px";
   틀.style.width=보기.style.width; 틀.style.height=보기.style.height;
+  틀.style.setProperty("--배율",String(배율));             // 말풍선 폭이 방 크기를 따라가게 (CSS 에서 씀)
+  틀.style.setProperty("--글자",(dpr>=1.5?(배율>=2.4?18:12):(배율>=4.6?24:12))+"px");   // 방 안 이름표·말풍선 글자: 픽셀 글꼴이 또렷한 크기(12의 배수, 고해상도 화면은 6의 배수)만 쓴다. 사람 머리보다 커지지 않게
+  document.documentElement.style.setProperty("--방아래",Math.round(틀.getBoundingClientRect().bottom)+"px");   // 폰 세로 화면에서 채팅을 방 바로 아래에 붙이는 데 씀
   카메라갱신(true);
 }
 function 카메라갱신(즉시){
@@ -336,12 +443,48 @@ function 카메라갱신(즉시){
 window.addEventListener("resize",크기);
 
 function 뒤섞기(i){ return ((i*2654435761)>>>0)/4294967296; }
-function 사각(x,y,w,h,col){ c.fillStyle=col; const q=선명; const x0=Math.round(x*q)/q, y0=Math.round(y*q)/q, x1=Math.round((x+w)*q)/q, y1=Math.round((y+h)*q)/q; c.fillRect(x0,y0,x1-x0,y1-y0); }  // 2배 버퍼 격자(0.5 논리px)에 딱 맞춰 또렷하게
-// 바닥·벽에 닿는 그늘(앰비언트 오클루전) — 물체 밑/옆을 살짝 어둡게 해 바닥에 얹혀 보이게
-function 그늘밑(x,y,w,a){ c.fillStyle="rgba(0,0,0,"+a+")"; c.fillRect(Math.round(x*선명)/선명,Math.round(y*선명)/선명,Math.round(w*선명)/선명,Math.round(1.5*선명)/선명); }
 function 해시(s){ let h=5381; for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))>>>0; return h; }
-const 셔츠색들=["#3f6b9e","#8a4e9e","#c25a5a","#3f8f6b","#c48a2e","#4a7fcf","#9e6b3f","#5a6a8a"];
-function 색고르기(이름){ return 셔츠색들[해시(이름||"손님")%셔츠색들.length]; }
+/* --- 그리기 기본 도구. 좌표는 논리 px(480×270), 버퍼 격자(0.5px)에 딱 맞춰 또렷하게 --- */
+function 사각(x,y,w,h,col){ c.fillStyle=col; const q=선명; const x0=Math.round(x*q)/q, y0=Math.round(y*q)/q, x1=Math.round((x+w)*q)/q, y1=Math.round((y+h)*q)/q; c.fillRect(x0,y0,x1-x0,y1-y0); }
+function 가로(x,y,w,col){ 사각(x,y,w,0.5,col); }          // 가는 가로줄(버퍼 1px)
+function 세로(x,y,h,col){ 사각(x,y,0.5,h,col); }          // 가는 세로줄
+const 깎기={1:[1],2:[2,1],3:[3,2,1],4:[4,2,1,1],5:[5,3,2,1,1],6:[6,4,3,2,1,1]};
+function 둥근(x,y,w,h,r,col){                              // 모서리를 계단으로 깎은 사각. r=논리 px(0.5 단위, 최대 3)
+  const q=선명, n=Math.min(6,Math.round(r*q)); if(n<=0){ 사각(x,y,w,h,col); return; }
+  const X=Math.round(x*q), Y=Math.round(y*q), W=Math.round(w*q), H=Math.round(h*q), 줄=깎기[n];
+  c.fillStyle=col;
+  for(let i=0;i<n&&i*2<H;i++){ const d=줄[i]; c.fillRect((X+d)/q,(Y+i)/q,(W-2*d)/q,1/q); c.fillRect((X+d)/q,(Y+H-1-i)/q,(W-2*d)/q,1/q); }
+  if(H>2*n) c.fillRect(X/q,(Y+n)/q,W/q,(H-2*n)/q);
+}
+function 덩이(cx,cy,rx,ry,col){                            // 계단 타원 — 곡선도 픽셀로 (부드러운 가장자리 없음)
+  const q=선명, RY=Math.max(1,Math.round(ry*q)), CX=Math.round(cx*q), CY=Math.round(cy*q);
+  c.fillStyle=col;
+  for(let i=-RY;i<RY;i++){ const t=(i+0.5)/RY, hw=Math.round(rx*q*Math.sqrt(Math.max(0,1-t*t))); if(hw>0) c.fillRect((CX-hw)/q,(CY+i)/q,(2*hw)/q,1/q); }
+}
+function 그늘(cx,cy,rx,ry,a){ 덩이(cx,cy,rx,ry,"rgba(52,40,30,"+(a==null?0.2:a)+")"); }   // 바닥에 닿는 그림자
+let 글꼴됨=false, 방글꼴="Galmuri11";                        // 방 안 글씨는 글꼴이 준비된 뒤에 그린다. 픽셀 글꼴 파일을 못 받으면 기기 글꼴로라도 쓴다(조금 번져 보임)
+function 글자(글,x,y,col,크기){                              // 방 안에 직접 쓰는 글씨(간판). (x,y)=가운데·글자 밑선(논리 좌표). Galmuri11 은 12px 격자 글꼴 → 12·24px 만 또렷하다
+  if(!글꼴됨||!글) return;
+  c.save(); c.setTransform(1,0,0,1,0,0); c.font=(크기||12)+"px "+방글꼴; c.textBaseline="alphabetic"; c.textAlign="left"; c.fillStyle=col;
+  c.fillText(글,Math.round(x*선명-c.measureText(글).width/2),Math.round(y*선명)); c.restore();
+}
+/* --- 색 도구 --- */
+const 색기억=new Map();
+function 색분해(h){ const n=parseInt(h.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+function 섞기(a,b,t){                                     // a 에서 b 쪽으로 t(0~1)만큼. 둘 다 #rrggbb
+  const k=a+b+t; let v=색기억.get(k);
+  if(!v){ const A=색분해(a), B=색분해(b); v="#"+[0,1,2].map(i=>Math.round(A[i]+(B[i]-A[i])*t).toString(16).padStart(2,"0")).join(""); 색기억.set(k,v); }
+  return v;
+}
+function 밝게(h,t){ return 섞기(h,"#ffffff",t); }
+function 어둡게(h,t){ return 섞기(h,"#1d2238",t); }         // 그늘은 검정이 아니라 남색 쪽으로 — 밝은 방에서 탁해지지 않게
+function 하늘때(){                                         // 창밖 하늘: 낮 · 노을 · 밤
+  if(설정.창밖!=="자동") return 설정.창밖;
+  const d=new Date(), h=d.getHours()+d.getMinutes()/60;
+  if(h>=7&&h<17.2) return "낮";
+  if((h>=17.2&&h<19.3)||(h>=5.6&&h<7)) return "노을";
+  return "밤";
+}
 
 /* ===================== 3. 작품(갤러리) 자료 ===================== */
 let 작품={};               // 자리이름 → {파일, 사진, 제목, 메모, 날짜} 또는 그런 것들의 목록 [ … ]
@@ -397,126 +540,457 @@ async function 갤러리불러오기(){
   썸네일예열();
 }
 
-/* ===================== 4. 그리기 ===================== */
-function 바닥그리기(){
-  const fy=벽끝, fh=방.y+방.h-벽끝;
-  const fg=c.createLinearGradient(0,fy,0,방.y+방.h); fg.addColorStop(0,"#b78a58"); fg.addColorStop(1,"#cda06a");
-  c.fillStyle=fg; c.fillRect(방.x,fy,방.w,fh);
-  const 칸높이=8, 판폭=44; let row=0;
-  for(let y=fy;y<방.y+방.h;y+=칸높이,row++){
-    const h=Math.min(칸높이,방.y+방.h-y); const 결=뒤섞기(row*7+3);
-    사각(방.x,y,방.w,h,결>0.5?"rgba(255,235,200,"+((결-0.5)*0.10).toFixed(3)+")":"rgba(40,22,8,"+((0.5-결)*0.12).toFixed(3)+")");
-    const off=(row%2)*22;
-    for(let x=방.x-off;x<방.x+방.w;x+=판폭){ const t=뒤섞기(row*53+Math.round(x)); const x0=Math.max(방.x,x), ww=Math.min(x+판폭,방.x+방.w)-x0;
-      if(ww<=0) continue;
-      if(t>0.62) 사각(x0,y,ww,h,"rgba(255,230,190,.05)"); else if(t<0.38) 사각(x0,y,ww,h,"rgba(30,16,6,.06)");
-      사각(Math.max(방.x,x+6),y+2,Math.min(판폭-12,방.x+방.w-x-6),0.5,"rgba(90,58,28,.18)");     // 나뭇결
-      사각(Math.max(방.x,x+10),y+5,Math.min(판폭-16,방.x+방.w-x-10),0.5,"rgba(90,58,28,.12)");
-    }
-    사각(방.x,y+h-0.5,방.w,0.5,"rgba(60,38,16,.42)");   // 가로 이음(그림자)
-    사각(방.x,y+h,방.w,0.5,"rgba(255,240,205,.10)");     // 아래 하이라이트
-    for(let x=방.x-off;x<방.x+방.w;x+=판폭){ if(x>방.x){ 사각(x,y,0.5,h,"rgba(60,38,16,.38)"); 사각(x+0.5,y,0.5,h,"rgba(255,240,205,.08)"); } }   // 세로 이음
-  }
-  const sg=c.createLinearGradient(0,fy,0,fy+14); sg.addColorStop(0,"rgba(0,0,0,.34)"); sg.addColorStop(1,"rgba(0,0,0,0)");
-  c.fillStyle=sg; c.fillRect(방.x,fy,방.w,14);           // 벽 밑 그늘(AO)
-  // 출입구 매트(술 달린 러그풍)
-  사각(226,249,28,10,"rgba(0,0,0,.18)");
-  사각(228,250,24,8,"#5a4a3a"); 사각(229,251,22,6,"#6e5c48"); 사각(230,252,20,4,"#5a4a3a");
-  for(let i=0;i<24;i+=3) 사각(228+i,250,1,8,"rgba(40,32,22,.5)");
-  for(let i=0;i<24;i+=2){ 사각(228+i,249,1,1,"#4a3e30"); 사각(228+i,258,1,1,"#4a3e30"); }   // 술
-  사각(228,250,24,0.5,"#8a7658");
+/* ===================== 4-가. 사람과 옷 =====================
+   옷 = 숫자 10개 [피부, 머리 모양, 머리 색, 상의, 상의 색, 하의, 하의 색, 신발, 안경, 모자].
+   · 내 옷은 이 브라우저(localStorage "사무실.옷")에 저장되고, 방에 들어가면 다른 사람에게도 이 숫자 10개만 보낸다.
+   · 사람몸() 이 발 가운데를 원점으로, 버퍼 픽셀(논리 0.5px) 단위 사각형으로 한 사람을 그린다 (32×64 쯤).
+   · 사람판() 이 그 그림에 먹색 윤곽을 둘러 작은 캔버스로 만들어 기억해 둔다 → 방 안·옷장 미리보기가 같이 쓴다.
+   보기를 늘리려면 아래 이름 목록에 이름을 더하고 사람몸() 의 같은 번호 자리에 그림을 더하면 옷장 창에 저절로 나온다. */
+const 피부색들=[
+  {b:"#fbdfc5",s:"#eebf9d",d:"#c98e70"},{b:"#f2cda6",s:"#dfae86",d:"#b57c59"},{b:"#e0b083",s:"#c79164",d:"#986443"},
+  {b:"#bf895b",s:"#a36e42",d:"#7a4c2b"},{b:"#93613e",s:"#794c2f",d:"#58351f"},{b:"#6d4631",s:"#573726",d:"#3d2517"}
+];
+const 머리색들=[
+  {b:"#2b2627",s:"#1b1819",l:"#4a4142"},{b:"#4d3628",s:"#37261b",l:"#6c4f3c"},{b:"#7c5434",s:"#5d3d24",l:"#9e7149"},
+  {b:"#aa7840",s:"#865a2b",l:"#c9965b"},{b:"#e2bf6a",s:"#c19943",l:"#f3da90"},{b:"#b25130",s:"#8b3b20",l:"#d2724a"},
+  {b:"#b9bdc7",s:"#9499a6",l:"#dadde4"},{b:"#f0e7d3",s:"#d5c9af",l:"#fcf8ee"},{b:"#35456c",s:"#253150",l:"#4f6294"},
+  {b:"#e190a7",s:"#c26c86",l:"#f3b5c6"}
+];
+const 머리색이름=["검정","흑갈색","갈색","밝은 갈색","금발","붉은색","은회색","백금색","남색","분홍"];
+const 머리모양이름=["짧은 머리","가르마","단발","긴 머리","포니테일","올림머리","곱슬","반삭","양갈래","민머리"];
+const 상의이름=["반팔 티","니트","셔츠","후드","재킷","터틀넥","줄무늬 티","작업 앞치마","패딩 조끼","원피스","현장 조끼"];
+const 상의색들=["#f5f2eb","#e9ddc3","#2e3039","#565b67","#2f3d63","#3f72b8","#93bfe3","#3f8a62","#9fb89b","#e3b65a","#e58b4d","#cc5248","#eaa9b8","#8068b0","#3f8f8a"];
+const 상의색이름=["흰색","크림","검정","차콜","남색","파랑","하늘","초록","세이지","겨자","귤색","빨강","분홍","보라","청록"];
+const 하의이름=["긴바지","통바지","반바지","치마","긴치마"];
+const 하의색들=["#2f4069","#5375a8","#94aecd","#2e3039","#6b7080","#cfbb93","#7d855a","#7d5c3d","#ebe8e0","#7c3643"];
+const 하의색이름=["진청","청","연청","검정","회색","베이지","카키","갈색","흰색","버건디"];
+const 신발색들=["#f3f0e9","#2b2c34","#7a5333","#2f3d63","#d9a941","#c9483f"];
+const 신발색이름=["흰색","검정","갈색","남색","겨자","빨강"];
+const 안경이름=["없음","둥근 안경","뿔테","선글라스"];
+const 모자이름=["없음","겨자 비니","남색 비니","야구모자","베레모","안전모","헤드폰"];
+const 옷범위=[피부색들.length,머리모양이름.length,머리색들.length,상의이름.length,상의색들.length,하의이름.length,하의색들.length,신발색들.length,안경이름.length,모자이름.length];
+function 옷정리(v){                                       // 남이 보낸 값·저장된 값을 믿지 않고 범위 안의 정수 10개로 맞춘다. 못 쓰면 null
+  if(!Array.isArray(v)||v.length<4||v.length>24) return null;
+  return 옷범위.map((n,i)=>{ const k=v[i]; return Number.isInteger(k)&&k>=0&&k<n?k:0; });
 }
-function 러그(x,y,w,h){
-  사각(x+2,y+2,w,h,"rgba(0,0,0,.15)");
-  사각(x,y,w,h,"#8a4a3e"); 사각(x+4,y+3,w-8,h-6,"#a85a44"); 사각(x+8,y+6,w-16,h-12,"#c47850");
-  for(let i=0;i<w-16;i+=8) 사각(x+8+i,y+6,4,1,"rgba(0,0,0,.12)");
-  c.strokeStyle="rgba(0,0,0,.18)"; c.lineWidth=1; c.strokeRect(Math.round(x+4)+.5,Math.round(y+3)+.5,w-9,h-7);
+function 옷뽑기(r){                                       // r() = 0~1 난수. 어색하지 않게 가중치를 둔 무작위 옷
+  const 고름=(목록)=>목록[Math.floor(r()*목록.length)];
+  return [고름([0,0,1,1,1,2,2,3,4,5]),고름([0,0,1,1,2,2,3,3,4,5,6,7,8]),고름([0,0,0,1,1,2,2,3,4,5,6,8,9]),고름([0,1,1,2,2,3,3,4,4,5,6,6,7,8,9,10]),Math.floor(r()*상의색들.length),
+          고름([0,0,0,1,1,2,3,4]),Math.floor(r()*하의색들.length),Math.floor(r()*신발색들.length),고름([0,0,0,0,1,1,2,3]),고름([0,0,0,0,0,0,1,2,3,4,5,6])];
+}
+function 씨앗난수(seed){ let s=seed>>>0; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+function 기본옷(이름){ const r=씨앗난수(해시("옷:"+(이름||"손님"))); r(); return 옷뽑기(r); }   // 옷을 안 보낸(옛 화면) 손님은 이름으로 정해지는 옷
+function 무작위옷(){ return 옷뽑기(Math.random); }
+const 추천옷=[
+  {이름:"올블랙",옷:[1,1,0,5,2,0,3,1,1,0]},
+  {이름:"현장 가는 날",옷:[2,0,1,10,5,0,0,2,0,5]},
+  {이름:"모형 만드는 날",옷:[0,5,2,7,6,1,5,0,2,0]},
+  {이름:"편한 손님",옷:[1,2,3,6,4,2,5,0,0,0]},
+  {이름:"미팅 정장",옷:[0,1,1,4,4,0,3,2,0,0]},
+  {이름:"스케치 산책",옷:[3,6,0,1,9,3,9,5,0,4]}
+];
+const 사람폭=48, 사람높이=84, 사람중심=24, 사람발=80;    // 사람 한 장 캔버스 크기(버퍼 px)와 그 안의 발 위치
+const 눈색="#2a2d3c", 볼색="rgba(233,116,108,.36)", 윤곽색="#232a40";
+
+function 사람몸(g,o,방향,자세,f,눈감음){                    // g=2D 문맥(원점=발 가운데, 1=버퍼 1px). 방향 down|up|right, 자세 "서"|"앉", f=걷기 장면 0~3 (-1=가만히)
+  const 피=피부색들[o[0]], 머=머리색들[o[2]], 머리=o[1], 상의=o[3], 하의=o[5], 안경=o[8], 모자=o[9];
+  const 상=상의색들[o[4]], 상s=어둡게(상,.2), 상d=어둡게(상,.38), 상l=밝게(상,.28);
+  const 하=하의색들[o[6]], 하s=어둡게(하,.22), 하l=밝게(하,.2);
+  const 신=신발색들[o[7]], 신s=어둡게(신,.32);
+  const R=(x,y,w,h,col)=>{ if(w>0&&h>0){ g.fillStyle=col; g.fillRect(x,y,w,h); } };
+  const 앞=방향==="down", 뒤=방향==="up", 앉=자세==="앉";
+  const 몸=앉?1:(f===0||f===2?-1:0);                       // 한 발 들 때 1px 올라가고, 앉으면 1px 내려간다
+  const hip=-17+몸, top=-37+몸, hy=-59+몸;                 // 골반선 · 어깨선 · 머리 윗선
+  const 밝은옷=o[4]===0||o[4]===1, 흰옷="#f5f2eb";
+  const 치마류=상의===9||하의===3||하의===4, 긴치마=하의===4&&상의!==9;
+  const 치마색=상의===9?상:하, 치마s=상의===9?상s:하s, 치마l=상의===9?상l:하l;
+  const 줄색=밝은옷?"#2f3d63":상, 형광="#dbe64a", 형광s="#b6c22f", 반사="#f1f3f4";
+  const 앞치마="#c9ad82", 앞치마s="#a98d63", 가죽="#7a5334", 이너=밝은옷?"#2f3d63":흰옷;
+  const 몸색=상의===6?흰옷:상, 몸s=어둡게(몸색,.2);
+  const 소매색=상의===6?흰옷:상의===8?(밝은옷?"#565b67":"#f1ebdd"):상, 소매s=어둡게(소매색,.2);
+  const 반팔=상의===0||상의===9;
+  const H=머리===7?섞기(머.b,피.b,.28):머.b, Hs=머리===7?섞기(머.s,피.b,.2):머.s, Hl=머.l, 끈="#e3b65a";
+  const 모자색=모자===1?"#e3b65a":모자===2?"#2f3d63":모자===3?"#2f3d63":모자===4?"#2e3039":모자===5?"#f6f4ee":"#2e3039";
+  const 모자s=어둡게(모자색,.2), 모자l=밝게(모자색,.25);
+  const 줄무늬=(x,w,y0,길이)=>{ for(let y=y0+3;y<y0+길이-1;y+=4) R(x,y,w,2,줄색); };
+
+  if(앞||뒤){
+    /* ---------- 앞·뒤 ---------- */
+    const 들왼=!앉&&f===0?3:0, 들오=!앉&&f===2?3:0;
+    if(앞&&머리===3) R(-13,hy+3,26,29,Hs);                                   // 긴 머리: 어깨 뒤로 넘어간 부분
+    if(앞&&머리===8){ R(-16,hy+7,4,15,H); R(12,hy+7,4,15,H); R(-16,hy+7,4,2,끈); R(12,hy+7,4,2,끈); R(-15,hy+21,2,2,Hs); R(13,hy+21,2,2,Hs); }
+    if(!앉){
+      const L=-4-들왼, Rr=-4-들오;                                           // 두 발의 신발 윗선
+      if(치마류){
+        const 끝=긴치마?-7:hip+10;
+        R(-7,hip+2,5,L-hip-2,피.b); R(2,hip+2,5,Rr-hip-2,피.b); R(-7,hip+2,1,L-hip-2,피.s); R(6,hip+2,1,Rr-hip-2,피.s);
+        R(-8,hip,16,3,치마색); R(-9,hip+3,18,4,치마색); R(-10,hip+7,20,끝-hip-7,치마색);
+        R(-8,hip,2,3,치마l); R(8,hip+3,1,4,치마s); R(8,hip+7,2,끝-hip-7,치마s); R(-10,끝-1,20,1,치마s);
+        if(긴치마){ R(-4,hip+5,1,끝-hip-6,치마s); R(3,hip+5,1,끝-hip-6,치마s); }
+      } else if(하의===2){
+        R(-7,hip+7,5,L-hip-7,피.b); R(2,hip+7,5,Rr-hip-7,피.b); R(-7,hip+7,1,L-hip-7,피.s); R(6,hip+7,1,Rr-hip-7,피.s);
+        R(-8,hip,16,3,하); R(-8,hip+3,7,5,하); R(1,hip+3,7,5,하); R(-8,hip+7,7,1,하s); R(1,hip+7,7,1,하s); R(6,hip,2,7,하s); R(-8,hip,1,7,하l);
+      } else if(하의===1){
+        R(-9,hip,18,3,하); R(-9,hip+3,9,L-hip-3,하); R(0,hip+3,9,Rr-hip-3,하); R(-1,hip+4,1,Math.min(L,Rr)-hip-4,하s); R(7,hip,2,Rr-hip,하s); R(-9,hip,1,L-hip,하l);
+      } else {
+        R(-8,hip,16,3,하); R(-8,hip+3,7,L-hip-3,하); R(1,hip+3,7,Rr-hip-3,하); R(6,hip,2,Rr-hip,하s); R(-8,hip,1,L-hip,하l); R(-2,hip+3,1,L-hip-3,하s);
+      }
+      if(앞){ R(-9,L,8,4,신); R(-9,L+3,8,1,신s); R(1,Rr,8,4,신); R(1,Rr+3,8,1,신s); R(-8,L,3,1,밝게(신,.3)); R(2,Rr,3,1,밝게(신,.3)); }
+      else  { R(-8,L,7,4,신); R(-8,L+3,7,1,신s); R(1,Rr,7,4,신); R(1,Rr+3,7,1,신s); }
+    } else if(앞){
+      // 앉은 앞모습: 허벅지 윗면(밝게) + 정강이 + 신발
+      const 살다리=치마류||하의===2, k=hip+6, n=-3-k;                          // k=무릎선, n=정강이 길이
+      if(살다리){ R(-7,k,5,n,피.b); R(2,k,5,n,피.b); R(-7,k,1,n,피.s); R(6,k,1,n,피.s); }
+      else if(하의===1){ R(-9,k,8,n,하); R(1,k,8,n,하); R(-2,k,1,n,하s); R(8,k,1,n,하s); }
+      else { R(-8,k,6,n,하); R(2,k,6,n,하); R(-3,k,1,n,하s); R(7,k,1,n,하s); }
+      if(치마류){ R(-10,hip,20,긴치마?n+5:7,치마색); R(-10,hip,20,2,치마l); R(-10,긴치마?k+n-2:k,20,1,치마s); }
+      else { R(-9,hip,8,6,하l); R(1,hip,8,6,하l); R(-9,k-1,8,1,하); R(1,k-1,8,1,하); }
+      R(-9,-3,8,3,신); R(1,-3,8,3,신); R(-9,-1,8,1,신s); R(1,-1,8,1,신s);
+    } else {
+      R(-8,hip,16,6,치마류?치마색:하);                                        // 앉은 뒷모습: 엉덩이만 (나머지는 의자가 가림)
+    }
+    // 몸통
+    R(-7,top,14,20,몸색); R(5,top,2,20,몸s); R(-7,top+18,14,2,몸s);
+    if(상의===6) 줄무늬(-7,14,top,20);
+    if(상의===9){ R(-7,top+13,14,1,상s); if(!앉){ R(-8,top+20,16,1,상); } }
+    if(앞){
+      if(상의===0||상의===6||상의===9) R(-2,top,4,1,피.s);
+      if(상의===1){ R(-3,top,6,1,상s); R(-3,top+4,1,13,상l); R(2,top+4,1,13,상l); }
+      if(상의===2){ R(-1,top,2,2,피.s); R(-5,top,4,2,상l); R(1,top,4,2,상l); R(0,top+2,1,16,상s); R(0,top+5,1,1,"#ffffff"); R(0,top+10,1,1,"#ffffff"); R(0,top+15,1,1,"#ffffff"); }
+      if(상의===3){ R(-6,top-1,12,3,상s); R(-4,top-1,8,1,상d); R(-2,top+2,1,5,흰옷); R(1,top+2,1,5,흰옷); R(-5,top+11,10,1,상s); R(-5,top+12,1,5,상s); R(4,top+12,1,5,상s); }
+      if(상의===4){ R(-2,top,4,18,이너); R(-4,top,2,7,상l); R(2,top,2,7,상l); R(-2,top+7,1,11,상s); R(1,top+7,1,11,상s); R(-1,top,2,1,피.s); R(3,top+12,1,1,상d); }
+      if(상의===5){ R(-5,top-2,10,3,상); R(-5,top,10,1,상s); R(-5,top-2,10,1,상l); }
+      if(상의===7){ R(-1,top,2,1,피.s); R(-5,top,1,3,가죽); R(4,top,1,3,가죽); R(-5,top+3,10,17,앞치마); R(-5,top+3,10,1,밝게(앞치마,.25)); R(3,top+4,2,16,앞치마s); R(-3,top+10,6,1,가죽); R(-3,top+11,6,4,앞치마s);
+                    if(!앉){ R(-7,top+20,14,7,앞치마); R(5,top+20,2,7,앞치마s); R(-7,top+26,14,1,앞치마s); } }
+      if(상의===8){ R(0,top,1,20,상d); R(-7,top+5,14,1,상s); R(-7,top+10,14,1,상s); R(-7,top+15,14,1,상s); R(-1,top,2,1,피.s); }
+      if(상의===10){ R(-7,top,6,19,형광); R(1,top,6,19,형광); R(5,top,2,19,형광s); R(-6,top+2,2,16,반사); R(4,top+2,2,16,반사); R(-7,top+12,6,2,반사); R(1,top+12,6,2,반사); R(-1,top,2,1,피.s); }
+    } else {
+      if(상의===1) R(-3,top,6,1,상s);
+      if(상의===2){ R(-4,top,8,2,상l); R(-7,top+5,14,1,상s); }
+      if(상의===3){ R(-7,top-1,14,7,상s); R(-6,top+6,12,1,상s); R(-4,top+7,8,1,상s); R(-5,top-1,10,1,상d); }
+      if(상의===4){ R(-4,top,8,2,상l); R(0,top+3,1,17,상s); }
+      if(상의===5){ R(-5,top-2,10,3,상); R(-5,top,10,1,상s); }
+      if(상의===7){ R(-5,top,2,9,가죽); R(3,top,2,9,가죽); R(-7,top+11,14,1,가죽); R(-2,top+11,4,3,앞치마); }
+      if(상의===8){ R(-7,top+5,14,1,상s); R(-7,top+10,14,1,상s); R(-7,top+15,14,1,상s); }
+      if(상의===10){ R(-7,top,14,19,형광); R(5,top,2,19,형광s); R(-5,top+2,2,16,반사); R(3,top+2,2,16,반사); R(-7,top+12,14,2,반사); }
+    }
+    // 팔 (걸을 때 다리와 엇갈려 흔든다. 앉으면 손을 무릎 쪽으로)
+    const 흔=!앉&&f===0?1:!앉&&f===2?-1:0;
+    const 팔=(x,dy,오른)=>{ const y0=top+1+dy, 길=앉?12:15;
+      if(반팔){ R(x,y0,3,6,소매색); R(x,y0+5,3,1,소매s); R(x,y0+6,3,길-6,피.b); if(오른) R(x+2,y0+6,1,길-6,피.s); }
+      else { R(x,y0,3,길,소매색); if(상의===6) 줄무늬(x,3,y0-1,길); R(x,y0+길-1,3,1,소매s); if(오른) R(x+2,y0,1,길-1,소매s); }
+      if(앉&&앞) R(x<0?x+1:x-1,y0+길,3,3,피.b); else R(x,y0+길,3,4,피.b); };
+    팔(-10,흔,false); 팔(7,-흔,true);
+    // 머리통
+    R(-9,hy,18,1,피.b); R(-11,hy+1,22,1,피.b); R(-12,hy+2,24,16,피.b); R(-11,hy+18,22,2,피.b); R(-10,hy+20,20,1,피.b); R(-8,hy+21,16,1,피.s);
+    R(-13,hy+10,1,4,피.s); R(12,hy+10,1,4,피.s);
+    if(앞){
+      if(눈감음){ R(-8,hy+12,3,1,눈색); R(5,hy+12,3,1,눈색); }
+      else { R(-7,hy+10,2,4,눈색); R(5,hy+10,2,4,눈색); R(-7,hy+10,1,1,"#ffffff"); R(5,hy+10,1,1,"#ffffff"); }
+      R(-10,hy+15,3,2,볼색); R(7,hy+15,3,2,볼색); R(-1,hy+17,2,1,피.d);
+      // 앞머리
+      const 정수리=()=>{ R(-9,hy-3,18,1,H); R(-11,hy-2,22,1,H); R(-12,hy-1,24,6,H); R(-7,hy-1,7,1,Hl); };
+      if(머리===0){ 정수리(); R(-12,hy+5,24,2,H); R(-12,hy+7,2,4,H); R(10,hy+7,2,4,H); R(-10,hy+7,20,1,피.s); }
+      if(머리===1){ 정수리(); R(-12,hy+5,24,1,H); R(-12,hy+6,12,3,H); R(0,hy+6,12,1,H); R(-12,hy+9,3,3,H); R(10,hy+6,2,5,H); R(0,hy-2,1,8,Hs); R(-9,hy+9,9,1,피.s); }
+      if(머리===2){ 정수리(); R(-12,hy+5,24,3,H); R(-13,hy+2,3,19,H); R(10,hy+2,3,19,H); R(-13,hy+20,2,1,Hs); R(11,hy+20,2,1,Hs); R(-10,hy+8,20,1,피.s); }
+      if(머리===3){ 정수리(); R(-12,hy+5,24,1,H); R(-12,hy+6,11,3,H); R(-1,hy+6,13,1,H); R(-13,hy+2,3,26,H); R(10,hy+2,3,26,H); R(-1,hy-2,1,8,Hs); R(-9,hy+9,8,1,피.s); }
+      if(머리===4){ 정수리(); R(-12,hy+5,24,2,H); R(-12,hy+7,2,4,H); R(10,hy+7,2,3,H); R(12,hy+2,3,3,끈); R(13,hy+5,3,9,H); R(14,hy+14,2,3,Hs); R(-10,hy+7,20,1,피.s); }
+      if(머리===5){ R(-4,hy-9,8,1,H); R(-5,hy-8,10,5,H); R(-3,hy-8,3,1,Hl); 정수리(); R(-12,hy+5,10,2,H); R(2,hy+5,10,2,H); R(-12,hy+7,2,4,H); R(10,hy+7,2,4,H); }
+      if(머리===6){ R(-6,hy-8,4,1,H); R(2,hy-8,5,1,H); R(-8,hy-7,16,1,H); R(-11,hy-6,22,2,H); R(-13,hy-4,26,3,H); R(-14,hy-1,28,8,H); R(-15,hy+1,1,4,H); R(14,hy+2,1,4,H);
+                    R(-14,hy+7,3,5,H); R(11,hy+7,3,5,H); R(-13,hy+12,2,1,H); R(11,hy+12,2,1,H);
+                    R(-11,hy+7,4,2,H); R(-5,hy+7,4,1,H); R(1,hy+7,5,2,H); R(8,hy+7,3,1,H);
+                    R(-8,hy-4,2,1,Hl); R(-2,hy-6,2,1,Hl); R(5,hy-3,2,1,Hl); R(-11,hy+1,2,1,Hl); R(9,hy+2,2,1,Hl); R(-4,hy,2,1,Hl); R(3,hy+3,2,1,Hl); R(-9,hy+4,1,1,Hs); R(7,hy-1,1,1,Hs); R(0,hy-2,1,1,Hs); }
+      if(머리===7){ R(-9,hy-1,18,1,H); R(-11,hy,22,1,H); R(-12,hy+1,24,4,H); R(-12,hy+5,2,3,H); R(10,hy+5,2,3,H); }
+      if(머리===8){ 정수리(); R(-12,hy+5,24,3,H); R(-12,hy+8,2,3,H); R(10,hy+8,2,3,H); R(-10,hy+8,20,1,피.s); }
+      if(머리===9) R(-6,hy+2,5,1,밝게(피.b,.4));
+      // 안경
+      if(안경===1){ R(-9,hy+9,6,1,눈색); R(-9,hy+14,6,1,눈색); R(-10,hy+10,1,4,눈색); R(-3,hy+10,1,4,눈색); R(3,hy+9,6,1,눈색); R(3,hy+14,6,1,눈색); R(2,hy+10,1,4,눈색); R(9,hy+10,1,4,눈색); R(-2,hy+11,4,1,눈색); R(-12,hy+11,2,1,눈색); R(10,hy+11,2,1,눈색); R(-9,hy+10,6,1,"rgba(255,255,255,.28)"); R(3,hy+10,6,1,"rgba(255,255,255,.28)"); }
+      if(안경===2){ R(-10,hy+8,8,2,"#1f2029"); R(-10,hy+10,1,5,"#1f2029"); R(-3,hy+10,1,5,"#1f2029"); R(-10,hy+14,8,1,"#1f2029"); R(2,hy+8,8,2,"#1f2029"); R(2,hy+10,1,5,"#1f2029"); R(9,hy+10,1,5,"#1f2029"); R(2,hy+14,8,1,"#1f2029"); R(-2,hy+10,4,1,"#1f2029"); R(-12,hy+10,2,1,"#1f2029"); R(10,hy+10,2,1,"#1f2029"); }
+      if(안경===3){ R(-10,hy+9,8,6,"#23262f"); R(2,hy+9,8,6,"#23262f"); R(-2,hy+10,4,1,"#23262f"); R(-12,hy+10,2,1,"#23262f"); R(10,hy+10,2,1,"#23262f"); R(-9,hy+10,3,1,"#6a7186"); R(3,hy+10,3,1,"#6a7186"); }
+    } else {
+      // 뒷머리
+      const 뒤통수=(끝)=>{ R(-9,hy-3,18,1,H); R(-11,hy-2,22,1,H); R(-12,hy-1,24,끝+1,H); R(-7,hy-1,7,1,Hl); };
+      if(머리===0||머리===1){ 뒤통수(18); R(-10,hy+17,20,1,Hs); R(-11,hy+18,22,1,H); }
+      if(머리===2){ 뒤통수(21); R(-13,hy+2,26,19,H); R(-13,hy+20,26,1,Hs); }
+      if(머리===3){ 뒤통수(18); R(-13,hy+2,26,31,H); R(-13,hy+32,26,1,Hs); R(-6,hy+12,1,19,Hs); R(0,hy+10,1,21,Hs); R(6,hy+12,1,19,Hs); }
+      if(머리===4){ 뒤통수(18); R(-2,hy+7,4,2,끈); R(-3,hy+9,6,15,H); R(-2,hy+24,4,3,H); R(-3,hy+9,1,15,Hs); R(2,hy+9,1,15,Hs); }
+      if(머리===5){ R(-4,hy-9,8,1,H); R(-5,hy-8,10,6,H); R(-3,hy-8,3,1,Hl); 뒤통수(17); R(-10,hy+17,20,1,Hs); }
+      if(머리===6){ R(-6,hy-8,4,1,H); R(2,hy-8,5,1,H); R(-8,hy-7,16,1,H); R(-11,hy-6,22,2,H); R(-13,hy-4,26,3,H); R(-14,hy-1,28,18,H); R(-15,hy+1,1,4,H); R(14,hy+2,1,4,H); R(-13,hy+17,26,2,H); R(-11,hy+19,22,1,H);
+                    R(-8,hy-4,2,1,Hl); R(-2,hy-6,2,1,Hl); R(5,hy-3,2,1,Hl); R(-11,hy+2,2,1,Hl); R(8,hy+4,2,1,Hl); R(-4,hy+6,2,1,Hl); R(3,hy+10,2,1,Hl); R(-9,hy+12,2,1,Hl); R(7,hy+14,2,1,Hl); R(-2,hy+1,1,1,Hs); R(5,hy+8,1,1,Hs); R(-7,hy+8,1,1,Hs); R(-11,hy+19,22,1,Hs); }
+      if(머리===7){ R(-9,hy-1,18,1,H); R(-11,hy,22,1,H); R(-12,hy+1,24,14,H); R(-10,hy+15,20,1,H); }
+      if(머리===8){ 뒤통수(18); R(0,hy,1,17,Hs); R(-16,hy+7,5,15,H); R(11,hy+7,5,15,H); R(-16,hy+7,5,2,끈); R(11,hy+7,5,2,끈); R(-15,hy+21,3,2,Hs); R(12,hy+21,3,2,Hs); }
+    }
+    // 모자 (앞·뒤 같은 꼴, 챙만 다름)
+    if(모자===1||모자===2){ R(-9,hy-5,18,1,모자색); R(-11,hy-4,22,1,모자색); R(-12,hy-3,24,7,모자색); R(-13,hy+4,26,3,모자s); R(-13,hy+4,26,1,모자l); for(let x=-9;x<=9;x+=4) R(x,hy-3,1,7,모자s); }
+    if(모자===3){ R(-9,hy-5,18,1,모자색); R(-11,hy-4,22,1,모자색); R(-12,hy-3,24,8,모자색); R(-7,hy-4,6,1,모자l); if(앞){ R(-12,hy+5,24,2,모자s); R(-10,hy+7,20,1,어둡게(모자색,.4)); R(-2,hy-1,4,3,"#e3b65a"); } else { R(-3,hy+3,6,2,H); R(-3,hy+5,6,1,모자s); } }
+    if(모자===4){ R(0,hy-8,2,2,모자색); R(-9,hy-6,20,1,모자색); R(-12,hy-5,26,4,모자색); R(-12,hy-1,24,3,모자색); R(-9,hy-5,8,1,모자l); R(-12,hy+2,24,1,모자s); }
+    if(모자===5){ R(-8,hy-7,16,1,모자색); R(-11,hy-6,22,2,모자색); R(-13,hy-4,26,8,모자색); R(-14,hy+4,28,2,어둡게(모자색,.16)); R(9,hy-4,4,8,어둡게(모자색,.1)); R(-1,hy-7,2,10,밝게(모자색,.6)); R(-2,hy-7,1,10,어둡게(모자색,.1)); if(앞) R(-3,hy,6,2,"#e3b65a"); }
+    if(모자===6){ R(-11,hy-4,22,2,"#2e3039"); R(-13,hy-2,3,8,"#2e3039"); R(10,hy-2,3,8,"#2e3039"); R(-15,hy+6,4,9,"#2e3039"); R(11,hy+6,4,9,"#2e3039"); R(-15,hy+8,1,5,"#e3b65a"); R(14,hy+8,1,5,"#e3b65a"); R(-9,hy-4,6,1,"#565b67"); }
+    if(뒤&&상의===3) { R(-6,top-2,12,2,상s); }                                 // 후드가 뒷목을 덮음
+    return;
+  }
+
+  /* ---------- 옆 (오른쪽을 본다 — 왼쪽은 찍을 때 좌우를 뒤집는다) ---------- */
+  const 살다리=치마류||하의===2, 통=하의===1?1:0;
+  if(머리===3) R(-14,hy+4,11,31,Hs);
+  if(앉){
+    // 앉은 옆모습: 허벅지는 앞으로, 정강이는 아래로
+    const n=-3-hip-5;
+    if(살다리){ R(5,hip+5,5,n,피.b); R(5,hip+5,1,n,피.s); }
+    else R(5-통,hip+5,5+통*2,n,하);
+    if(치마류){ R(-5,hip-1,긴치마?16:15,긴치마?-4-hip:7,치마색); R(-5,hip-1,15,1,치마l); }
+    else { R(-4,hip-1,14+통,6,하); R(-4,hip-1,14+통,1,하l); R(-4,hip+4,14+통,1,하s); if(하의===2) R(9,hip-1,1,6,하s); }
+    R(5,-3,9,3,신); R(5,-1,9,1,신s);
+  } else {
+    const 벌=f===0||f===2, 모=f===1||f===3;
+    const 다리=(dx,들,col,cols,먼)=>{                                         // dx=발이 나간 거리, 들=발 들린 높이, 먼=몸 뒤쪽 다리(어둡게)
+      const L=-4-들, x0=-3;
+      if(살다리){ R(x0+1+Math.round(dx/2),hip+6,5,L-hip-6,먼?피.s:피.b); R(x0+1+dx,hip+12,5,L-hip-12,먼?피.s:피.b); }
+      else { R(x0-통,hip,6+통*2,9,col); R(x0-통+dx,hip+8,6+통*2,L-hip-8,col); R(x0-통+dx,hip+8,1,L-hip-8,cols); }
+      R(x0+dx-1,L,10,4,먼?신s:신); R(x0+dx-1,L+3,10,1,어둡게(신,.45)); };
+    if(벌){ 다리(f===0?-4:4,f===0?1:0,하s,어둡게(하,.35),true); 다리(f===0?4:-4,f===0?0:1,하,하s,false); }
+    else if(모){ 다리(0,3,하s,어둡게(하,.35),true); 다리(0,0,하,하s,false); }
+    else { 다리(-1,0,하s,어둡게(하,.35),true); 다리(1,0,하,하s,false); }
+    if(치마류){ const 끝=긴치마?-7:hip+10; R(-5,hip,10,3,치마색); R(-6,hip+3,12,4,치마색); R(-7,hip+7,14,끝-hip-7,치마색); R(-7,끝-1,14,1,치마s); R(-7,hip+7,2,끝-hip-8,치마s); }
+    else if(하의===2){ R(-4,hip,8,8,하); R(-4,hip+7,8,1,하s); }
+  }
+  // 몸통
+  R(-5,top,10,20,몸색); R(-5,top,2,20,몸s); R(-5,top+18,10,2,몸s);
+  if(상의===6) 줄무늬(-5,10,top,20);
+  if(상의===0||상의===6||상의===9) R(2,top,3,1,피.s);
+  if(상의===1) R(0,top,5,1,상s);
+  if(상의===2){ R(1,top,4,2,상l); R(4,top+2,1,16,상s); }
+  if(상의===3){ R(-9,top-1,6,7,상s); R(-8,top+6,4,1,상s); R(-3,top-1,6,2,상s); R(3,top+2,1,5,흰옷); R(-1,top+12,6,1,상s); R(-1,top+12,1,5,상s); }
+  if(상의===4){ R(3,top,2,18,이너); R(1,top,2,7,상l); R(2,top+7,1,11,상s); }
+  if(상의===5){ R(-4,top-2,9,3,상); R(-4,top,9,1,상s); R(-4,top-2,9,1,상l); }
+  if(상의===7){ R(1,top+3,4,17,앞치마); R(1,top,1,3,가죽); R(-5,top+11,6,1,가죽); if(!앉){ R(-2,top+20,7,7,앞치마); R(-2,top+26,7,1,앞치마s); } }
+  if(상의===8){ R(-5,top+5,10,1,상s); R(-5,top+10,10,1,상s); R(-5,top+15,10,1,상s); R(4,top,1,20,상d); }
+  if(상의===9){ R(-5,top+13,10,1,상s); }
+  if(상의===10){ R(-5,top,10,19,형광); R(-5,top,2,19,형광s); R(0,top+2,2,16,반사); R(-5,top+12,10,2,반사); R(4,top,1,19,상); }
+  // 팔 (몸 앞에 한 팔)
+  if(앉){
+    R(-2,top+2,4,10,소매색); R(-2,top+2,1,10,소매s);
+    if(반팔){ R(-2,top+8,4,4,피.b); R(-1,top+12,8,3,피.b); } else { R(-1,top+12,7,3,소매색); R(-1,top+14,7,1,소매s); if(상의===6) 줄무늬(-2,4,top+1,11); }
+    R(6,top+12,3,3,피.b);
+  } else {
+    const dx=f===0?3:f===2?-3:0, y0=top+1;
+    R(-2,y0,4,8,소매색); R(-2,y0,1,8,소매s);
+    const x1=-2+Math.round(dx/2), x2=-2+dx;
+    if(반팔){ R(-2,y0+5,4,1,소매s); R(-2,y0+6,4,2,피.b); R(x1,y0+8,4,7,피.b); R(x1,y0+8,1,7,피.s); }
+    else { R(x1,y0+8,4,7,소매색); R(x1,y0+8,1,7,소매s); R(x1,y0+14,4,1,소매s); if(상의===6){ 줄무늬(-2,4,y0-1,9); R(x1,y0+10,4,2,줄색); } }
+    R(x2,y0+15,4,4,피.b);
+  }
+  // 머리통 (얼굴은 오른쪽)
+  R(-8,hy,17,1,피.b); R(-10,hy+1,20,1,피.b); R(-11,hy+2,22,16,피.b); R(-10,hy+18,21,2,피.b); R(-8,hy+20,17,1,피.b); R(-6,hy+21,13,1,피.s);
+  R(11,hy+12,1,3,피.b); R(-3,hy+10,3,4,피.s);
+  if(눈감음) R(5,hy+12,3,1,눈색); else { R(5,hy+10,2,4,눈색); R(5,hy+10,1,1,"#ffffff"); }
+  R(7,hy+15,3,2,볼색); R(8,hy+17,2,1,피.d);
+  const 옆정수리=()=>{ R(-8,hy-3,17,1,H); R(-10,hy-2,20,1,H); R(-12,hy-1,23,6,H); R(-12,hy+5,10,13,H); R(-11,hy+18,7,1,H); R(-6,hy-1,7,1,Hl); };
+  if(머리===0){ 옆정수리(); R(-2,hy+5,13,2,H); R(-2,hy+7,3,3,H); }
+  if(머리===1){ 옆정수리(); R(-2,hy+5,13,1,H); R(-2,hy+6,9,3,H); R(-2,hy+9,3,2,H); }
+  if(머리===2){ 옆정수리(); R(-12,hy+5,13,17,H); R(-2,hy+5,13,3,H); R(1,hy+8,2,13,H); R(-12,hy+21,13,1,Hs); }
+  if(머리===3){ 옆정수리(); R(-13,hy+5,12,29,H); R(-2,hy+5,13,1,H); R(-2,hy+6,9,3,H); R(-13,hy+33,12,1,Hs); R(-8,hy+12,1,20,Hs); }
+  if(머리===4){ 옆정수리(); R(-2,hy+5,13,2,H); R(-2,hy+7,3,3,H); R(-14,hy+4,3,3,끈); R(-17,hy+4,4,6,H); R(-18,hy+9,4,12,H); R(-17,hy+21,3,2,Hs); }
+  if(머리===5){ R(-9,hy-9,8,1,H); R(-10,hy-8,10,5,H); R(-8,hy-8,3,1,Hl); 옆정수리(); R(-2,hy+5,13,2,H); R(-2,hy+7,3,3,H); }
+  if(머리===6){ R(-6,hy-8,4,1,H); R(1,hy-8,5,1,H); R(-8,hy-7,15,1,H); R(-11,hy-6,21,2,H); R(-13,hy-4,25,3,H); R(-14,hy-1,26,8,H); R(-15,hy+1,1,4,H); R(-14,hy+7,12,11,H); R(-13,hy+18,10,2,H);
+                R(-2,hy+7,5,2,H); R(4,hy+7,4,1,H); R(-7,hy-4,2,1,Hl); R(-1,hy-6,2,1,Hl); R(5,hy-3,2,1,Hl); R(-11,hy+2,2,1,Hl); R(-5,hy+1,2,1,Hl); R(-9,hy+10,2,1,Hl); R(-12,hy+14,1,1,Hs); R(1,hy,1,1,Hs); R(-13,hy+19,10,1,Hs); }
+  if(머리===7){ R(-8,hy-1,17,1,H); R(-10,hy,20,1,H); R(-12,hy+1,23,4,H); R(-12,hy+5,9,10,H); R(-2,hy+5,2,3,H); }
+  if(머리===8){ 옆정수리(); R(-2,hy+5,13,3,H); R(-7,hy+7,6,15,H); R(-7,hy+7,6,2,끈); R(-6,hy+21,4,2,Hs); }
+  if(머리===9) R(-4,hy+2,5,1,밝게(피.b,.4));
+  if(안경===1){ R(4,hy+9,6,1,눈색); R(4,hy+14,6,1,눈색); R(3,hy+10,1,4,눈색); R(10,hy+10,1,4,눈색); R(-3,hy+11,6,1,눈색); R(4,hy+10,6,1,"rgba(255,255,255,.28)"); }
+  if(안경===2){ R(3,hy+8,8,2,"#1f2029"); R(3,hy+10,1,5,"#1f2029"); R(10,hy+10,1,5,"#1f2029"); R(3,hy+14,8,1,"#1f2029"); R(-3,hy+10,6,1,"#1f2029"); }
+  if(안경===3){ R(3,hy+9,8,6,"#23262f"); R(-3,hy+10,6,1,"#23262f"); R(4,hy+10,3,1,"#6a7186"); }
+  if(모자===1||모자===2){ R(-8,hy-5,17,1,모자색); R(-10,hy-4,20,1,모자색); R(-12,hy-3,23,7,모자색); R(-13,hy+4,25,3,모자s); R(-13,hy+4,25,1,모자l); for(let x=-9;x<=8;x+=4) R(x,hy-3,1,7,모자s); }
+  if(모자===3){ R(-8,hy-5,17,1,모자색); R(-10,hy-4,20,1,모자색); R(-12,hy-3,23,8,모자색); R(-6,hy-4,6,1,모자l); R(8,hy+3,9,2,모자s); R(8,hy+5,8,1,어둡게(모자색,.4)); }
+  if(모자===4){ R(-3,hy-8,2,2,모자색); R(-11,hy-6,20,1,모자색); R(-14,hy-5,26,4,모자색); R(-12,hy-1,23,3,모자색); R(-10,hy-5,8,1,모자l); R(-12,hy+2,23,1,모자s); }
+  if(모자===5){ R(-7,hy-7,15,1,모자색); R(-10,hy-6,20,2,모자색); R(-12,hy-4,24,8,모자색); R(-13,hy+4,29,2,어둡게(모자색,.16)); R(-12,hy-4,3,8,어둡게(모자색,.1)); R(-2,hy-7,2,3,밝게(모자색,.6)); R(3,hy,5,2,"#e3b65a"); }
+  if(모자===6){ R(-4,hy-5,5,2,"#2e3039"); R(-5,hy-3,3,9,"#2e3039"); R(-6,hy+5,7,10,"#2e3039"); R(-5,hy+7,5,6,"#565b67"); R(-4,hy+8,1,4,"#e3b65a"); }
+}
+/* 윤곽을 두른 사람 한 장 (기억해 두고 다시 씀) */
+const 사람기억=new Map();
+const 임시판=document.createElement("canvas"); 임시판.width=사람폭; 임시판.height=사람높이; const 임시ctx=임시판.getContext("2d");
+function 사람판(o,방향,자세,f,눈감음){
+  const 본=방향==="left"?"right":방향, key=o.join(".")+"|"+본+"|"+자세+"|"+f+"|"+(눈감음?1:0);
+  let cv=사람기억.get(key);
+  if(!cv){
+    if(사람기억.size>700) 사람기억.clear();
+    임시ctx.setTransform(1,0,0,1,0,0); 임시ctx.clearRect(0,0,사람폭,사람높이); 임시ctx.setTransform(1,0,0,1,사람중심,사람발);
+    사람몸(임시ctx,o,본,자세,f,눈감음);
+    cv=document.createElement("canvas"); cv.width=사람폭; cv.height=사람높이; const g=cv.getContext("2d");
+    g.drawImage(임시판,-1,0); g.drawImage(임시판,1,0); g.drawImage(임시판,0,-1); g.drawImage(임시판,0,1);
+    g.globalCompositeOperation="source-in"; g.fillStyle=윤곽색; g.fillRect(0,0,사람폭,사람높이);
+    g.globalCompositeOperation="source-over"; g.drawImage(임시판,0,0);
+    사람기억.set(key,cv);
+  }
+  return cv;
+}
+function 사람찍기(cv,x,y,뒤집기){                         // (x,y)=발 가운데(논리 좌표). 버퍼 격자에 맞춰 찍는다
+  const X=Math.round(x*선명), Y=Math.round(y*선명);
+  c.save(); c.setTransform(1,0,0,1,0,0); c.imageSmoothingEnabled=false;
+  if(뒤집기){ c.translate(X,0); c.scale(-1,1); c.drawImage(cv,-사람중심,Y-사람발); } else c.drawImage(cv,X-사람중심,Y-사람발);
+  c.restore();
+}
+function 걸음장면(p){ return p.걷는중?((Math.floor(p.걸음/(Math.PI/2))%4)+4)%4:-1; }
+function 눈깜빡(씨){ return ((performance.now()/1000+(씨||0))%4.6)<0.13; }
+function 사람그리기(p){                                    // p = {x,y,방향,걸음,걷는중,앉음,옷,씨}
+  const 옷=p.옷||기본옷(p.이름);
+  if(!p.앉음) 그늘(p.x,p.y+0.5,6.5,2,0.22);
+  사람찍기(사람판(옷,p.방향,p.앉음?"앉":"서",p.앉음?-1:걸음장면(p),눈깜빡(p.씨)),p.x,p.y,p.방향==="left");
+}
+
+/* ===================== 4-나. 방 (벽 · 창 · 바닥 · 빛) =====================
+   밝은 디자인 사무실: 흰 벽 + 밝은 참나무 헤링본 바닥 + 큰 창. 스크린 뒤만 나무 살 벽으로 따뜻하게.
+   벽·바닥·깔개처럼 안 움직이는 것은 배경판에 한 번만 그리고, 창밖·액자·스크린·시계만 매 프레임 다시 그린다. */
+const 색={
+  흰:"#fbfaf6", 흰s:"#e6e2d9", 흰d:"#cdc8bc",
+  자작:"#ecd6ab", 자작l:"#f8e9c8", 자작s:"#d3b685", 자작d:"#ab8c5f",
+  살:"#e3c596", 살l:"#f0d9b0", 살골:"#b8915e",
+  철:"#2c303b", 철l:"#4b5162",
+  금:"#e3b65a", 금l:"#f5d886", 금s:"#bd8d30",
+  남:"#2f3d63", 남l:"#465a8c", 남s:"#222c49",
+  잎:"#4b9462", 잎l:"#7fbf82", 잎s:"#35724b", 잎d:"#285a3b",
+  매트:"#3f9173", 매트l:"#66b093",
+  토분:"#cc7d55", 토분s:"#a85f3d", 토분l:"#e09a72",
+  천:"#dadddd", 천l:"#eef0ef", 천s:"#bfc4c6", 천d:"#a3a9ae"
+};
+function 바닥그리기(){
+  const x0=방.x, y0=벽끝, w=방.w, h=방.y+방.h-벽끝;
+  사각(x0,y0,w,h,"#e8d2a8");
+  // 헤링본 쪽마루: 5×20 쪽을 가로·세로로 엇갈려 깐다 (쪽마다 톤이 조금씩 다름)
+  c.save(); c.beginPath(); c.rect(x0,y0,w,h); c.clip();
+  const u=4, n=4, 톤=["#ebd6ad","#e7d0a6","#e9d3aa","#e5cea3","#edd9b1","#e8d2a8"], 이음="rgba(146,104,56,.17)";
+  for(let j=-n;j<h/u+1;j++) for(let i=-n;i<w/u+1;i++){
+    const k=(((i-j)%(2*n))+2*n)%(2*n), X=x0+i*u, Y=y0+j*u;
+    if(k===0){ 사각(X,Y,n*u,u,톤[Math.floor(뒤섞기(i*73+j*151+7)*톤.length)]); 가로(X,Y+u-0.5,n*u,이음); 세로(X+n*u-0.5,Y,u,이음); 가로(X+3,Y+1.5,n*u-7,"rgba(255,250,235,.13)"); }
+    else if(k===2*n-1){ 사각(X,Y,u,n*u,톤[Math.floor(뒤섞기(i*59+j*113+3)*톤.length)]); 가로(X,Y+n*u-0.5,u,이음); 세로(X+u-0.5,Y,n*u,이음); 세로(X+1.5,Y+3,n*u-7,"rgba(255,250,235,.11)"); }
+  }
+  c.restore();
+  const sg=c.createLinearGradient(0,y0,0,y0+9); sg.addColorStop(0,"rgba(96,66,34,.22)"); sg.addColorStop(1,"rgba(96,66,34,0)");
+  c.fillStyle=sg; c.fillRect(x0,y0,w,9);                                      // 벽 밑 그늘
+  [[x0,1],[x0+w-5,-1]].forEach(([gx,방향])=>{ const eg=c.createLinearGradient(gx,0,gx+5,0); eg.addColorStop(방향>0?0:1,"rgba(96,66,34,.13)"); eg.addColorStop(방향>0?1:0,"rgba(96,66,34,0)"); c.fillStyle=eg; c.fillRect(gx,y0,5,h); });   // 양옆 벽 밑 그늘
+  // 상담 테이블 깔개 (청회색 — 밝은 나무 바닥·자작 가구와 보색으로 차분하게)
+  깔개(174,138,132,80,"#cdd9e2","#b4c5d3","#e3ebf0");
+  // 손님 소파 깔개 (연한 세이지)
+  깔개(344,198,104,54,"#d3dfcd","#b3c6ac","#e6eee2");
+  // 입구 매트
+  둥근(226,247,28,11,1,"rgba(52,40,30,.16)"); 둥근(227,247.5,26,9.5,1,"#3d4763"); 사각(229,249,22,6.5,"#4a557a");
+  for(let i=0;i<22;i+=2) 세로(229+i,249,6.5,"rgba(20,26,44,.28)");
+  가로(227,247.5,26,"#5d6a92");
+}
+function 깔개(x,y,w,h,바탕,줄,밝,줄무늬){
+  둥근(x+1,y+1.5,w,h,1.5,"rgba(52,40,30,.13)");
+  둥근(x,y,w,h,1.5,바탕);
+  if(줄무늬){ for(let i=6;i<w-4;i+=8) 사각(x+i,y+1,2,h-2,줄); for(let i=10;i<w-4;i+=8) 세로(x+i+0.5,y+1,h-2,밝); }
+  else {
+    for(let yy=y+2;yy<y+h-2;yy+=2) for(let xx=x+2+((yy-y)%4===0?0:1);xx<x+w-2;xx+=2) 사각(xx,yy,0.5,0.5,"rgba(255,255,255,.2)");   // 짜임
+    사각(x+4,y+3.5,w-8,0.5,줄); 사각(x+4,y+h-4,w-8,0.5,줄); 사각(x+4,y+3.5,0.5,h-7,줄); 사각(x+w-4.5,y+3.5,0.5,h-7,줄);              // 안쪽 테두리 선
+    사각(x+6,y+5.5,w-12,0.5,밝); 사각(x+6,y+h-6,w-12,0.5,밝);
+  }
+  for(let i=1;i<w-1;i+=2){ 사각(x+i,y-1,0.5,1,줄무늬?줄:줄); 사각(x+i,y+h,0.5,1,줄무늬?줄:줄); }                                    // 술
 }
 function 벽그리기(){
-  const g=c.createLinearGradient(0,방.y,0,벽끝); g.addColorStop(0,"#7d6b5a"); g.addColorStop(1,"#6a5848");
+  const g=c.createLinearGradient(0,방.y,0,벽끝); g.addColorStop(0,"#fcfbf8"); g.addColorStop(1,"#f0ede6");
   c.fillStyle=g; c.fillRect(방.x,방.y,방.w,벽높이);
-  // 벽돌 결(징두리 위) — 줄마다 엇갈리고 벽돌마다 톤이 조금씩 다르게
-  const 벽돌h=6, 벽돌w=22, 벽돌밑=벽끝-15; let br=0;
-  for(let y=방.y+1;y<벽돌밑;y+=벽돌h,br++){
-    const off=(br%2)*(벽돌w/2);
-    for(let x=방.x-off;x<방.x+방.w;x+=벽돌w){ const x0=Math.max(방.x,x), ww=Math.min(x+벽돌w-1,방.x+방.w)-x0; if(ww<=0) continue;
-      const v=뒤섞기(br*61+Math.round(x));
-      사각(x0,y,ww,벽돌h-1, v>0.66?"rgba(255,230,195,.055)":v<0.33?"rgba(30,18,8,.07)":"rgba(0,0,0,0)");
-      if(x>방.x) 사각(x,y,0.5,벽돌h-1,"rgba(40,26,14,.22)");                 // 세로 줄눈
-    }
-    사각(방.x,y+벽돌h-1,방.w,0.5,"rgba(40,26,14,.22)");                      // 가로 줄눈 그림자
-    사각(방.x,y+벽돌h-0.5,방.w,0.5,"rgba(255,235,200,.05)");                 // 줄눈 아래 하이라이트
+  const lg=c.createLinearGradient(방.x,0,방.x+170,0); lg.addColorStop(0,"rgba(255,255,255,.7)"); lg.addColorStop(1,"rgba(255,255,255,0)");
+  c.fillStyle=lg; c.fillRect(방.x,방.y,170,벽높이);                                    // 창 쪽 벽이 더 밝다
+  const rg=c.createLinearGradient(방.x+방.w-90,0,방.x+방.w,0); rg.addColorStop(0,"rgba(120,130,160,0)"); rg.addColorStop(1,"rgba(120,130,160,.10)");
+  c.fillStyle=rg; c.fillRect(방.x+방.w-90,방.y,90,벽높이);                              // 먼 쪽은 살짝 그늘
+  // 스크린 뒤 나무 살 벽
+  for(let x=살벽.x;x<살벽.x+살벽.w;x+=2){ 사각(x,방.y,1.5,벽높이,색.살); 세로(x,방.y,벽높이,색.살l); 세로(x+1.5,방.y,벽높이,색.살골); }
+  세로(살벽.x-0.5,방.y,벽높이,"#a98455"); 세로(살벽.x+살벽.w,방.y,벽높이,"#a98455");
+  const tg=c.createLinearGradient(0,방.y,0,방.y+12); tg.addColorStop(0,"rgba(60,66,96,.16)"); tg.addColorStop(1,"rgba(60,66,96,0)");
+  c.fillStyle=tg; c.fillRect(방.x,방.y,방.w,12);                                        // 천장 그늘
+  // 걸레받이 (살 벽은 바닥까지 내려오므로 뺀다)
+  [[방.x,살벽.x-방.x],[살벽.x+살벽.w,방.x+방.w-살벽.x-살벽.w]].forEach(([x,w])=>{ 사각(x,벽끝-3.5,w,3.5,"#fefdfb"); 가로(x,벽끝-3.5,w,"#d9d4c9"); 가로(x,벽끝-0.5,w,"#c4bdaf"); });
+  사각(살벽.x,벽끝-1,살벽.w,1,"#a98455");
+  // 액자 조명 레일 + 조명 머리 (벽1·2 위, 벽3·4·5 위)
+  [[98,88],[294,134]].forEach(([x,w])=>{ 사각(x,24.5,w,1,색.철); 가로(x,24.5,w,색.철l); });
+  자리순서.filter(k=>자리[k].종류==="벽").forEach(k=>{ const r=자리[k].영역, cx=r.x+r.w/2;
+    덩이(cx,r.y+r.h/2,r.w/2+9,r.h/2+8,"rgba(255,253,244,.55)"); 덩이(cx,r.y+r.h/2-2,r.w/2+4,r.h/2+3,"rgba(255,255,250,.6)");   // 벽에 떨어진 빛
+    사각(cx-1.5,25.5,3,2.5,색.철); 사각(cx-1,28,2,0.5,"#fff0c4"); });
+}
+function 테두리그리기(){                                    // 방을 잘라 본 벽 단면(흰 폼보드 모형처럼) + 아래쪽 문 자리
+  const t=4, x=방.x, y=방.y, w=방.w, h=방.h, 먹="#2a3046", 판="#ffffff";
+  사각(x-t,y-t,w+2*t,t,판); 사각(x-t,y,t,h+t,판); 사각(x+w,y,t,h+t,판);
+  사각(x,y+h,입구.x-14-x,t,판); 사각(입구.x+14,y+h,x+w-입구.x-14,t,판);
+  // 먹선
+  가로(x-t,y-t,w+2*t,먹); 세로(x-t,y-t,h+2*t,먹); 세로(x+w+t-0.5,y-t,h+2*t,먹);
+  가로(x-t,y+h+t-0.5,입구.x-14-x+t,먹); 가로(입구.x+14,y+h+t-0.5,x+w+t-입구.x-14,먹);
+  세로(x-0.5,y,h,먹); 세로(x+w,y,h,먹); 가로(x,y-0.5,w,"#c9cdd6");
+  가로(x,y+h,입구.x-14-x,먹); 가로(입구.x+14,y+h,x+w-입구.x-14,먹);
+  세로(입구.x-14.5,y+h,t,먹); 세로(입구.x+14,y+h,t,먹);
+  // 열린 유리문 두 짝 (평면도 기호처럼 바깥으로 열림)
+  사각(입구.x-14,y+h+0.5,1,7,"#9fc7dc"); 사각(입구.x+13,y+h+0.5,1,7,"#9fc7dc"); 세로(입구.x-14,y+h+0.5,7,먹); 세로(입구.x+13.5,y+h+0.5,7,먹);
+  for(let i=1;i<7;i++){ const dx=Math.round(Math.sqrt(49-i*i)*2)/2; 사각(입구.x-13+dx-0.5,y+h+i,0.5,0.5,"#8b93a8"); 사각(입구.x+13-dx,y+h+i,0.5,0.5,"#8b93a8"); }
+}
+function 배경만들기(){                                      // 안 움직이는 그림을 배경판에 한 번만
+  const 원래=c; c=배경ctx; c.setTransform(선명,0,0,선명,0,0); c.clearRect(0,0,폭,높이);
+  벽그리기(); 바닥그리기(); 테두리그리기();
+  c=원래; 배경됨=true;
+}
+/* ---------- 창 (창밖은 방문자 시계를 따라 낮·노을·밤) ---------- */
+const 구름들=[[0,9,1],[34,17,0.8],[70,6,1.2]];
+function 창문그리기(때,t){
+  const {x,y,w,h}=창문, 밤=때==="밤", 노을=때==="노을";
+  c.save(); c.beginPath(); c.rect(x,y,w,h); c.clip();
+  const g=c.createLinearGradient(0,y,0,y+h);
+  if(밤){ g.addColorStop(0,"#161f47"); g.addColorStop(0.6,"#2a2f60"); g.addColorStop(1,"#474672"); }
+  else if(노을){ g.addColorStop(0,"#7f8fd0"); g.addColorStop(0.45,"#f3a98a"); g.addColorStop(1,"#fde2ae"); }
+  else { g.addColorStop(0,"#79c0f1"); g.addColorStop(0.7,"#c4e6fb"); g.addColorStop(1,"#e7f5fd"); }
+  c.fillStyle=g; c.fillRect(x,y,w,h);
+  if(밤){
+    [[8,7],[15,14],[24,5],[31,11],[44,7],[50,15],[58,9],[64,5],[38,17],[20,20],[55,21],[68,14]].forEach((s,i)=>{ const tw=0.5+0.5*Math.abs(Math.sin(t/0.7+i*1.3)); 사각(x+s[0],y+s[1],0.5,0.5,"rgba(255,255,255,"+(0.3+tw*0.6).toFixed(2)+")"); });
+    덩이(x+w-14,y+11,7,7,"rgba(255,246,210,.14)"); 덩이(x+w-14,y+11,4.5,4.5,"#f6eec4"); 덩이(x+w-12,y+9.5,3.5,3.5,"#1c2551");
+  } else {
+    if(노을) { 덩이(x+w-18,y+h-17,9,9,"rgba(255,236,190,.35)"); 덩이(x+w-18,y+h-17,5,5,"#fff1c9"); }
+    else { 덩이(x+14,y+10,9,9,"rgba(255,255,255,.22)"); 덩이(x+14,y+10,4.5,4.5,"#fffbe8"); }
+    const 흰=노을?"#ffe9d6":"#ffffff", 그=노을?"#f7c9b0":"#e3f1fb";
+    구름들.forEach((k,i)=>{ const cx=x-14+((k[0]+t*1.1*(0.6+i*0.25))%(w+28)), cy=y+k[1], s=k[2];
+      덩이(cx,cy+1,8*s,2.2*s,그); 덩이(cx-3*s,cy-0.5,3.6*s,2.6*s,흰); 덩이(cx+2*s,cy-1.2,4.4*s,3.2*s,흰); 덩이(cx+6*s,cy,3*s,2*s,흰); 사각(cx-7*s,cy+0.5,14*s,1.2,흰); });
   }
-  const tg=c.createLinearGradient(0,방.y,0,방.y+10); tg.addColorStop(0,"rgba(0,0,0,.18)"); tg.addColorStop(1,"rgba(0,0,0,0)");
-  c.fillStyle=tg; c.fillRect(방.x,방.y,방.w,10);                            // 천장 그늘
-  // 징두리(나무 판넬) + 몰딩
-  사각(방.x,벽끝-14,방.w,14,"#4e3b2b"); 사각(방.x,벽끝-14,방.w,1,"#5e4833");
-  for(let i=7;i<방.w;i+=14){ 사각(방.x+i,벽끝-12,1,10,"rgba(0,0,0,.20)"); 사각(방.x+i+1,벽끝-12,0.5,10,"rgba(255,235,200,.06)"); }
-  사각(방.x,벽끝-15,방.w,2,"#8d6c4c"); 사각(방.x,벽끝-15,방.w,0.5,"#a5825c");
-  사각(방.x,벽끝-2,방.w,2,"#2c2016");
-  사각(방.x-2,방.y-2,방.w+4,2,"#0d1222"); 사각(방.x-2,방.y,2,방.h,"#0d1222"); 사각(방.x+방.w,방.y,2,방.h,"#0d1222"); 사각(방.x-2,방.y+방.h,방.w+4,2,"#0d1222");
+  // 먼 건물 → 가까운 건물 → 가로수
+  const 먼=밤?"#1d2346":노을?"#c08f9a":"#b3d0e8", 가=밤?"#141936":노을?"#9a6f86":"#93b7d8", 불=밤?"#ffd98a":노을?"#ffe6b0":"#dcecf8";
+  [[2,28,9,22],[13,23,7,27],[22,31,10,19],[35,20,8,30],[45,27,11,23],[58,32,8,18],[66,25,6,25]].forEach((b,bi)=>{ 사각(x+b[0],y+b[1],b[2],b[3],bi%2?먼:가); 가로(x+b[0],y+b[1],b[2],밤?"#262d58":"rgba(255,255,255,.35)");
+    for(let wy=b[1]+2.5;wy<b[1]+b[3]-9;wy+=3) for(let wx=b[0]+1.5;wx<b[0]+b[2]-1.5;wx+=2.5){ if(뒤섞기(bi*31+Math.round(wx*3)+Math.round(wy))>(밤?0.5:0.35)) 사각(x+wx,y+wy,1,1,불); } });
+  const 숲=밤?"#16233a":노을?"#6f8f6c":"#7dbb86", 숲l=밤?"#1d2d48":노을?"#8fa97c":"#a2d3a0";
+  for(let i=0;i<9;i++){ const tx=x+3+i*8.5+뒤섞기(i*5)*3; 덩이(tx,y+h-5,5,4.5,숲); 덩이(tx-1.5,y+h-6.5,2.5,2.2,숲l); }
+  사각(x,y+h-3,w,3,숲);
+  // 유리 반사
+  c.fillStyle="rgba(255,255,255,"+(밤?0.05:0.16)+")"; c.beginPath(); c.moveTo(x+8,y); c.lineTo(x+20,y); c.lineTo(x+6,y+h); c.lineTo(x-6,y+h); c.closePath(); c.fill();
+  c.beginPath(); c.moveTo(x+44,y); c.lineTo(x+49,y); c.lineTo(x+35,y+h); c.lineTo(x+30,y+h); c.closePath(); c.fill();
+  c.restore();
+  // 롤 블라인드(조금 내려옴)
+  사각(x,y,w,5,"#f6f3ec"); 가로(x,y+4.5,w,"#cfc9bc"); 사각(x,y+5,w,1,"rgba(40,50,80,.18)"); 사각(x+w-9,y+5,0.5,6,"#d9d4c9"); 사각(x+w-9.5,y+11,1.5,1.5,"#bdb7ab");
+  // 검은 철 창틀 + 창살
+  사각(x-1.5,y-1.5,w+3,1.5,색.철); 사각(x-1.5,y+h,w+3,1.5,색.철); 사각(x-1.5,y-1.5,1.5,h+3,색.철); 사각(x+w,y-1.5,1.5,h+3,색.철);
+  사각(x+w/3-0.5,y,1,h,색.철); 사각(x+2*w/3-0.5,y,1,h,색.철); 사각(x,y+h*0.42,w,1,색.철);
+  가로(x-1.5,y-1.5,w+3,색.철l); 세로(x-1.5,y-1.5,h+3,색.철l);
+  // 창턱
+  사각(x-3,y+h+1.5,w+6,2.5,"#fefdfb"); 가로(x-3,y+h+4,w+6,"#cfc9bc"); 사각(x-2,y+h+4.5,w+4,1,"rgba(60,50,40,.12)");
 }
-function 창문그리기(){
-  const {x,y,w,h}=창문;
-  사각(x-3,y-3,w+6,h+6,"#241a12"); 사각(x-3,y-3,w+6,1,"#3a2a1a");           // 창틀 바깥(위 하이라이트)
-  // 달밤 하늘: 짙은 남색 → 보랏빛 → 지평선 옅은 청보라
-  const g=c.createLinearGradient(x,y,x,y+h);
-  g.addColorStop(0,"#1b2448"); g.addColorStop(0.55,"#2b2f5e"); g.addColorStop(0.82,"#3b3a63"); g.addColorStop(1,"#4a4668");
-  c.fillStyle=g; c.fillRect(x+2,y+2,w-4,h-4);
-  // 반짝이는 별
-  const 별=[[10,8],[16,14],[24,6],[31,12],[44,7],[50,15],[58,9],[64,5],[38,16],[20,20],[55,20]];
-  const tt=performance.now()/700;
-  별.forEach((s,i)=>{ const tw=0.5+0.5*Math.abs(Math.sin(tt+i*1.3)); c.fillStyle="rgba(255,255,255,"+(0.3+tw*0.55).toFixed(2)+")"; c.fillRect(x+s[0],y+s[1],0.5,0.5); });
-  // 달(오른쪽 위) + 은은한 달무리 + 초승 음영
-  const mx=x+w-15, my=y+11;
-  c.fillStyle="rgba(255,246,210,.16)"; c.beginPath(); c.arc(mx,my,8,0,Math.PI*2); c.fill();
-  c.fillStyle="#f6eec4"; c.beginPath(); c.arc(mx,my,4.5,0,Math.PI*2); c.fill();
-  c.fillStyle=g; c.beginPath(); c.arc(mx+2.2,my-1.5,4,0,Math.PI*2); c.fill();
-  c.fillStyle="rgba(205,196,158,.55)"; c.beginPath(); c.arc(mx-1.6,my+1,0.8,0,Math.PI*2); c.fill();
-  // 먼 건물 실루엣 + 따뜻한 창 불빛
-  const 건물=[[3,30,10,14],[14,24,8,20],[25,33,11,11],[39,22,9,22],[51,29,12,15],[61,34,9,10]];
-  건물.forEach((b,bi)=>{ 사각(x+b[0],y+b[1],b[2],b[3],"#171c38"); 사각(x+b[0],y+b[1],b[2],0.5,"#20264a");
-    for(let wy=b[1]+2;wy<b[1]+b[3]-1;wy+=3) for(let wx=b[0]+1.5;wx<b[0]+b[2]-1.5;wx+=2.5){ if(뒤섞기(bi*31+Math.round(wx*3)+Math.round(wy))>0.52) 사각(x+wx,y+wy,1,1,뒤섞기(bi*7+Math.round(wx)+Math.round(wy))>0.5?"#ffd98a":"#e3b65a"); } });
-  사각(x+2,y+h-6,w-4,4,"rgba(150,160,205,.12)");                            // 지평선 안개
-  // 유리 대각 반사
-  c.save(); c.globalAlpha=0.09; c.fillStyle="#ffffff"; c.beginPath(); c.moveTo(x+7,y+2); c.lineTo(x+21,y+2); c.lineTo(x+9,y+h-2); c.lineTo(x+3,y+h-2); c.closePath(); c.fill(); c.restore();
-  // 창틀(나무): 입체 테두리 + 십자 창살
-  const 틀="#5a3a22", 틀밝="#7a5232";
-  사각(x,y,w,2,틀); 사각(x,y,w,0.5,틀밝); 사각(x,y+h-2,w,2,틀); 사각(x,y,2,h,틀); 사각(x,y,0.5,h,틀밝); 사각(x+w-2,y,2,h,틀);
-  사각(x+w/2-1,y,2,h,틀); 사각(x+w/2-1,y,0.5,h,틀밝); 사각(x,y+h/2-1,w,2,틀); 사각(x,y+h/2-1,w,0.5,틀밝);
-  사각(x-4,y+h,w+8,4,"#6b4a30"); 사각(x-4,y+h,w+8,1,"#8a5f3c"); 사각(x-4,y+h+3,w+8,1,"#3a2616");  // 창턱
-}
-function 빛살(){
-  const {x,y,w,h}=창문, 아래끝=방.y+방.h;
-  c.save(); c.beginPath(); c.moveTo(x+4,y+h+4); c.lineTo(x+w-4,y+h+4); c.lineTo(x+w+34,아래끝); c.lineTo(x-20,아래끝); c.closePath(); c.clip();
-  const g=c.createLinearGradient(0,y+h,0,아래끝); g.addColorStop(0,"rgba(255,224,160,.22)"); g.addColorStop(1,"rgba(255,224,160,0)");
-  c.fillStyle=g; c.fillRect(방.x,y,방.w,아래끝-y); c.restore();
-}
-function 천장등(x,벽y){
-  const 줄=76;
-  사각(x-1,벽y,1,줄,"#2a2a2a");   // x 는 벽3·벽4 사이 틈(줄이 액자를 가리지 않게)
-  c.fillStyle="#caa24a"; c.beginPath(); c.moveTo(x-10,벽y+줄); c.lineTo(x+10,벽y+줄); c.lineTo(x+6,벽y+줄+8); c.lineTo(x-6,벽y+줄+8); c.closePath(); c.fill();
-  사각(x-9,벽y+줄-1,18,2,"#dcb868"); 사각(x-3,벽y+줄+8,6,2,"#fff6d8");
-}
-function 등불빛(){
-  c.fillStyle="rgba(255,214,130,.16)"; c.beginPath(); c.ellipse(240,160,98,46,0,0,Math.PI*2); c.fill();
+function 햇살(때){                                         // 창으로 들어와 바닥에 떨어진 빛 (밤에는 없음)
+  if(때==="밤") return;
+  const {x,w}=창문, 색1=때==="노을"?"255,206,140":"255,250,226", y1=124, y2=202, 밀림=0.86;
+  const g=c.createLinearGradient(0,y1,0,y2); g.addColorStop(0,"rgba("+색1+",.5)"); g.addColorStop(1,"rgba("+색1+",.12)");
+  c.fillStyle=g;
+  for(let i=0;i<3;i++){ const a=x+1+i*w/3+10, b=x+(i+1)*w/3-1+10;
+    [[y1,y1+30],[y1+34,y2]].forEach(([p,q])=>{ c.beginPath(); c.moveTo(a+(p-96)*밀림,p); c.lineTo(b+(p-96)*밀림,p); c.lineTo(b+(q-96)*밀림,q); c.lineTo(a+(q-96)*밀림,q); c.closePath(); c.fill(); }); }
 }
 function 시계그리기(){
   const {x,y}=시계;
-  c.fillStyle="#2a2420"; c.beginPath(); c.arc(x,y,7,0,Math.PI*2); c.fill();
-  c.fillStyle="#f0ece0"; c.beginPath(); c.arc(x,y,6,0,Math.PI*2); c.fill();
+  덩이(x+0.5,y+1,7.5,7.5,"rgba(60,50,40,.14)"); 덩이(x,y,7.5,7.5,색.철); 덩이(x,y,6.5,6.5,"#fdfcf9");
+  for(let i=0;i<12;i+=3){ const a=i/12*Math.PI*2; 사각(x+Math.sin(a)*5.2-0.25,y-Math.cos(a)*5.2-0.25,0.5,0.5,색.철); }
   const d=new Date(), 시=(d.getHours()%12+d.getMinutes()/60)/12*Math.PI*2, 분=d.getMinutes()/60*Math.PI*2;
-  c.strokeStyle="#2a2420"; c.lineWidth=1;
-  c.beginPath(); c.moveTo(x,y); c.lineTo(x+Math.sin(시)*3,y-Math.cos(시)*3); c.stroke();
-  c.beginPath(); c.moveTo(x,y); c.lineTo(x+Math.sin(분)*4.5,y-Math.cos(분)*4.5); c.stroke();
-  사각(x,y-1,1,1,"#c25a5a");
+  const 바늘=(a,길,col)=>{ for(let k=0;k<=길*2;k++) 사각(x+Math.sin(a)*k/2-0.25,y-Math.cos(a)*k/2-0.25,0.5,0.5,col); };
+  바늘(시,3.2,색.철); 바늘(분,5,색.철); 사각(x-0.5,y-0.5,1,1,색.금s);
 }
+/* ---------- 액자 · 스크린 ---------- */
 function 그림채우기(img,안){
   const iw=img.naturalWidth, ih=img.naturalHeight; if(!iw||!ih) return;
-  사각(안.x,안.y,안.w,안.h,"#e3dac2");                        // 밝은 바탕(매트) — 어둡거나 비율이 다른 그림도 액자 안에서 비어 보이지 않게
+  사각(안.x,안.y,안.w,안.h,"#fdfcf8");                        // 흰 여백(매트) — 비율이 다른 그림은 여백 위에 떠 보이게
   const s=Math.min(안.w/iw,안.h/ih), dw=Math.max(1,iw*s), dh=Math.max(1,ih*s);   // 꽉 채우지 않고 전체가 보이게(원본 비율 유지, 잘림 없음)
   const dx=안.x+(안.w-dw)/2, dy=안.y+(안.h-dh)/2;
-  c.drawImage(img,0,0,iw,ih,Math.round(dx),Math.round(dy),Math.round(dw),Math.round(dh));
+  c.drawImage(img,0,0,iw,ih,Math.round(dx*선명)/선명,Math.round(dy*선명)/선명,Math.round(dw*선명)/선명,Math.round(dh*선명)/선명);
   const 밝기=img.__밝기;
   if(typeof 밝기==="number"&&밝기<110){                       // 어두운 그림(예: 벽3) — 살짝 밝혀서 보이게
     const a=Math.min(0.42,Math.max(0.08,(100-밝기)/180));
@@ -524,29 +998,23 @@ function 그림채우기(img,안){
   }
 }
 function 작은건물(cx,바닥y){
-  사각(cx-8,바닥y-2,16,2,"#9a9488");
-  사각(cx-7,바닥y-10,14,8,"#d6d0c2"); 사각(cx-7,바닥y-10,14,1,"#efe9dc");
-  사각(cx-3,바닥y-16,8,6,"#c2bbab"); 사각(cx-3,바닥y-16,8,1,"#e2dccd");
-  for(let i=0;i<3;i++) 사각(cx-5+i*4,바닥y-8,2,2,"#6e6a62");
-  사각(cx-1,바닥y-14,2,2,"#6e6a62");
+  사각(cx-8,바닥y-2,16,2,"#b9b3a6");
+  사각(cx-7,바닥y-10,14,8,"#fbfaf6"); 가로(cx-7,바닥y-10,14,"#ffffff"); 세로(cx+6.5,바닥y-10,8,"#d9d5cc");
+  사각(cx-3,바닥y-16,8,6,"#f1eee7"); 가로(cx-3,바닥y-16,8,"#ffffff");
+  for(let i=0;i<3;i++) 사각(cx-5+i*4,바닥y-8,2,2,"#b7c7d4");
+  사각(cx-1,바닥y-14,2,2,"#b7c7d4");
 }
-function 액자그리기(s){
-  const r=s.영역, 항목=지금항목(s.이름), 그림=썸네일(s.이름);
-  사각(r.x+r.w/2-0.5,r.y-4,1,4,"#2a2a2a"); 사각(r.x+r.w/2-1,r.y-4,2,1,"#6a6a6a");       // 걸이 못
-  사각(r.x+2,r.y+3,r.w,r.h,"rgba(0,0,0,.28)");                                            // 바닥 그림자
-  사각(r.x,r.y,r.w,r.h,"#2f2114");                                                        // 어두운 목재 테
-  사각(r.x,r.y,r.w,1,"#5c4731"); 사각(r.x,r.y,0.5,r.h,"#4a3826");
-  사각(r.x,r.y+r.h-0.5,r.w,0.5,"#1c1309"); 사각(r.x+r.w-0.5,r.y,0.5,r.h,"#1c1309");
-  사각(r.x+1.5,r.y+1.5,r.w-3,r.h-3,"#b9892f");                                            // 금 테
-  사각(r.x+1.5,r.y+1.5,r.w-3,0.5,"#e3b65a"); 사각(r.x+1.5,r.y+1.5,0.5,r.h-3,"#e3b65a");
-  사각(r.x+1.5,r.y+r.h-2,r.w-3,0.5,"#8a6420"); 사각(r.x+r.w-2,r.y+1.5,0.5,r.h-3,"#8a6420");
-  사각(r.x+3,r.y+3,r.w-6,r.h-6,"#efe6d2");                                                // 매트
-  사각(r.x+3,r.y+3,r.w-6,0.5,"#ffffff"); 사각(r.x+3,r.y+3,0.5,r.h-6,"rgba(255,255,255,.6)");
+const 액자테=[["#2c303b","#4b5162","#1b1e27"],["#c9a26b","#e2c08d","#a17e4c"],["#fbfaf6","#ffffff","#cbc6ba"]];
+function 액자그리기(s,번){
+  const r=s.영역, 항목=지금항목(s.이름), 그림=썸네일(s.이름), 테=액자테[번%3];
+  사각(r.x+1,r.y+2,r.w,r.h,"rgba(60,52,44,.2)"); 사각(r.x+0.5,r.y+1,r.w,r.h,"rgba(60,52,44,.12)");   // 벽에 떨어진 그림자
+  사각(r.x,r.y,r.w,r.h,테[0]); 가로(r.x,r.y,r.w,테[1]); 세로(r.x,r.y,r.h,테[1]); 가로(r.x,r.y+r.h-0.5,r.w,테[2]); 세로(r.x+r.w-0.5,r.y,r.h,테[2]);
+  사각(r.x+1.5,r.y+1.5,r.w-3,r.h-3,"#fdfcf8");                                                        // 흰 여백(매트)
+  가로(r.x+1.5,r.y+1.5,r.w-3,"rgba(40,40,50,.18)"); 세로(r.x+1.5,r.y+1.5,r.h-3,"rgba(40,40,50,.12)");
   const 안={x:r.x+4,y:r.y+4,w:r.w-8,h:r.h-8};
-  사각(안.x-0.5,안.y-0.5,안.w+1,0.5,"rgba(0,0,0,.25)"); 사각(안.x-0.5,안.y-0.5,0.5,안.h+1,"rgba(0,0,0,.2)");  // 매트 안쪽 그림자
   if(그림) 그림채우기(그림,안);
-  else if(항목&&모형인가(항목.파일)){ 사각(안.x,안.y,안.w,안.h,"#e2ddd0"); 작은건물(안.x+안.w/2,안.y+안.h-3); }
-  else { 사각(안.x,안.y,안.w,안.h,"#ddd4c0"); for(let y=안.y;y<안.y+안.h;y+=3) for(let x=안.x;x<안.x+안.w;x+=3) if(((x-안.x)+(y-안.y))%6===0) 사각(x,y,1,1,"#c9bfa8"); }
+  else if(항목&&모형인가(항목.파일)){ 사각(안.x,안.y,안.w,안.h,"#eef1f3"); 작은건물(안.x+안.w/2,안.y+안.h-3); }
+  else { 사각(안.x,안.y,안.w,안.h,"#f3f1ec"); for(let yy=안.y+2;yy<안.y+안.h-1;yy+=4) for(let xx=안.x+2;xx<안.x+안.w-1;xx+=4) 사각(xx,yy,0.5,0.5,"#cfcabd"); }   // 빈 자리: 모눈 점
 }
 function 공유중비디오(){
   if(통신.화면&&내화면비디오.readyState>=2&&내화면비디오.videoWidth) return 내화면비디오;
@@ -555,333 +1023,367 @@ function 공유중비디오(){
 }
 function 스크린그리기(){
   const r=스크린.영역;
-  사각(r.x-4,r.y-4,r.w+8,6,"#23232a"); 사각(r.x-4,r.y-4,r.w+8,1,"#3a3a44");
-  사각(r.x+2,r.y+4,r.w,r.h,"rgba(0,0,0,.25)");
-  사각(r.x,r.y+2,r.w,r.h,"#f2f0ea"); 사각(r.x,r.y+2,r.w,1,"#d8d5cc"); 사각(r.x,r.y+2,1,r.h,"#d8d5cc");
-  const 안={x:r.x+3,y:r.y+5,w:r.w-6,h:r.h-6};
-  const v=공유중비디오();
-  if(v){
-    사각(안.x,안.y,안.w,안.h,"#101014");
-    const s=Math.min(안.w/v.videoWidth,안.h/v.videoHeight), dw=v.videoWidth*s, dh=v.videoHeight*s;
-    c.drawImage(v,Math.round(안.x+(안.w-dw)/2),Math.round(안.y+(안.h-dh)/2),Math.round(dw),Math.round(dh));
-    사각(r.x+r.w-6,r.y+r.h-2,3,2,"#7fc47f");
-  } else if(썸네일("스크린")){
-    사각(안.x,안.y,안.w,안.h,"#101014");                     // 공유 화면이 없으면 걸어 둔 발표판(gallery.json "스크린")
-    const img=썸네일("스크린"), s=Math.min(안.w/img.naturalWidth,안.h/img.naturalHeight), dw=img.naturalWidth*s, dh=img.naturalHeight*s;
-    c.drawImage(img,Math.round(안.x+(안.w-dw)/2),Math.round(안.y+(안.h-dh)/2),Math.round(dw),Math.round(dh));
-  } else {
-    사각(안.x,안.y,안.w,안.h,"#e8e6df");
-    const cx=안.x+안.w/2, cy=안.y+안.h/2;
-    c.strokeStyle="#c9c4b4"; c.lineWidth=2;
-    c.strokeRect(cx-13,cy-9,14,14); c.strokeRect(cx-3,cy-5,14,14);
+  사각(r.x+1,r.y+2.5,r.w,r.h,"rgba(50,36,20,.3)"); 사각(r.x+0.5,r.y+1,r.w,r.h,"rgba(50,36,20,.2)");
+  둥근(r.x,r.y,r.w,r.h,1,"#20232c"); 가로(r.x+1,r.y,r.w-2,"#3d4252");
+  const 안={x:r.x+2,y:r.y+2,w:r.w-4,h:r.h-4.5};
+  const v=공유중비디오(), 넣기=(src,sw,sh)=>{ 사각(안.x,안.y,안.w,안.h,"#0e1016"); const s=Math.min(안.w/sw,안.h/sh), dw=sw*s, dh=sh*s; c.drawImage(src,Math.round((안.x+(안.w-dw)/2)*선명)/선명,Math.round((안.y+(안.h-dh)/2)*선명)/선명,Math.round(dw*선명)/선명,Math.round(dh*선명)/선명); };
+  if(v){ 넣기(v,v.videoWidth,v.videoHeight); 사각(r.x+r.w-5,r.y+r.h-2,2,1,"#5fd08a"); }
+  else if(썸네일("스크린")){ const img=썸네일("스크린"); 넣기(img,img.naturalWidth,img.naturalHeight); 사각(r.x+r.w-5,r.y+r.h-2,2,1,"#5a6072"); }   // 공유 화면이 없으면 걸어 둔 발표판(gallery.json "스크린")
+  else {
+    사각(안.x,안.y,안.w,안.h,"#eef2f5"); const cx=안.x+안.w/2, cy=안.y+안.h/2;
+    사각(cx-12,cy-8,14,11,"#c5ced8"); 사각(cx-11,cy-7,12,9,"#eef2f5"); 사각(cx-3,cy-3,14,11,"#aab6c4"); 사각(cx-2,cy-2,12,9,"#f8fafb");
+    사각(r.x+r.w-5,r.y+r.h-2,2,1,"#5a6072");
   }
-  사각(r.x-2,r.y+r.h+2,r.w+4,3,"#23232a");
+  c.save(); c.beginPath(); c.rect(안.x,안.y,안.w,안.h); c.clip(); c.fillStyle="rgba(255,255,255,.07)"; c.beginPath(); c.moveTo(안.x+12,안.y); c.lineTo(안.x+26,안.y); c.lineTo(안.x+8,안.y+안.h); c.lineTo(안.x-6,안.y+안.h); c.closePath(); c.fill(); c.restore();
+  // 벽 글씨 (스크린 위 나무 살에 붙인 입체 글자)
+  글자(설정.간판,240.5,35.5,"rgba(255,244,220,.75)",24); 글자(설정.간판,240,35,"#2a3046",24);
 }
-function 책장(x,y){
-  const w=38,h=66;
-  사각(x-2,y+h,w+6,4,"rgba(0,0,0,.22)");
-  사각(x,y,w,h,"#5a3a22"); 사각(x,y,1,h,"#6a4628"); 사각(x+w-1,y,1,h,"#3f2816");
-  사각(x+2,y+2,w-4,h-4,"#3f2a1a");                                   // 어두운 뒷판 → 깊이
-  const 칸=4, 칸높이=(h-8)/칸, 색들=["#c94f4f","#4a90c4","#caa24a","#5a9a5a","#9a6ab0","#d87b3e"];
-  for(let i=0;i<칸;i++){
-    const cy=y+4+i*칸높이; 사각(x+2,cy,w-4,0.5,"rgba(0,0,0,.3)");
-    let bx=x+4;
-    for(let k=0;k<5&&bx<x+w-6;k++){ const col=색들[(i*5+k)%색들.length], bw=3+Math.floor(뒤섞기(i*37+k+1)*3), bh=칸높이-5-Math.floor(뒤섞기(i*53+k)*3), by=cy+칸높이-3-bh;
-      사각(bx,by,bw,bh,col); 사각(bx,by,0.5,bh,"rgba(255,255,255,.2)"); 사각(bx+bw-0.5,by,0.5,bh,"rgba(0,0,0,.22)"); 사각(bx,by,bw,0.5,"rgba(255,255,255,.15)"); bx+=bw+1; }
-    사각(x+2,cy+칸높이-2,w-4,2,"#4a3020"); 사각(x+2,cy+칸높이-2,w-4,0.5,"#6a4a30");
-  }
-  사각(x,y,w,2,"#8a6038"); 사각(x,y,w,0.5,"#a5825c");
+
+/* ===================== 4-다. 가구와 소품 =====================
+   재료를 몇 가지로만: 흰 도장 · 자작 합판 · 참나무 · 검은 철 · 밝은 회색 천 · 초록 식물. 색은 사람(옷)과 벽의 작품이 낸다.
+   빛은 왼쪽 위 창에서 온다 → 윗면·왼쪽이 밝고 오른쪽·아래가 어둡다. */
+const 참="#c79f66", 참l="#e0bd88", 참s="#a07a48", 참d="#7e5d34";
+
+/* ---------- 식물 ---------- */
+function 잎(cx,cy,rx,ry,톤){ 덩이(cx,cy,rx,ry,톤===2?색.잎l:톤===1?색.잎:색.잎s); 덩이(cx-rx*0.28,cy-ry*0.32,rx*0.5,ry*0.42,톤===2?"#a9d9a4":톤===1?색.잎l:색.잎); }
+function 흰화분(x,y,w,h){ 둥근(x-w/2,y-h,w,h,1,색.흰); 사각(x+w/2-2.5,y-h+1,2,h-2,색.흰s); 가로(x-w/2+1,y-h,w-2,"#ffffff"); 사각(x-w/2+1,y-h+0.5,w-2,1,"#5c4835"); }
+function 떡갈(x,y){                                        // 키 큰 떡갈고무나무 (창 옆)
+  그늘(x+1.5,y+0.5,8,2.2,0.18); 흰화분(x,y,11,10);
+  사각(x-0.5,y-31,1,22,"#8a6a48"); 사각(x,y-23,3,0.5,"#8a6a48"); 사각(x-3,y-18,3,0.5,"#8a6a48");
+  [[-5,-18,4,3,0],[5,-22,4.5,3.2,1],[-6,-26,4.5,3.4,1],[4,-29,4,3,0],[-2,-32,4.5,3.4,2],[6,-35,4,3,1],[-6,-37,4.2,3.2,0],[0,-41,4.6,3.5,1],[5,-43,3.4,2.6,2],[-3,-46,3.4,2.6,1]].forEach(l=>잎(x+l[0],y+l[1],l[2],l[3],l[4]));
 }
-function 의자(x,y,방향){
-  사각(x-7,y+2,14,3,"rgba(0,0,0,.22)");
-  c.strokeStyle="#2a2a2a"; c.lineWidth=1;
-  [[-6,0],[6,0],[0,-5],[0,5]].forEach(p=>{ c.beginPath(); c.moveTo(x,y); c.lineTo(x+p[0],y+p[1]*0.4); c.stroke(); });
-  사각(x-2,y-14,4,10,"#3a3a3a"); 사각(x-2,y-14,1,10,"#4a4a4a");
-  const 천="#34415c", 천밝="#46567c", 천어둠="#283349", 테="#2e3b52";
-  const 방석=()=>{ 사각(x-9,y-16,18,4,테); 사각(x-9,y-16,18,1,"#3c4c6c"); 사각(x-9,y-13,18,1,천어둠); };
-  if(방향==="down"){ 방석();
-    사각(x-9,y-30,18,16,천); 사각(x-9,y-30,18,2,천밝); 사각(x-9,y-18,18,2,천어둠);
-    사각(x-7,y-28,0.5,12,"rgba(255,255,255,.08)"); 사각(x-1,y-28,0.5,12,"rgba(0,0,0,.14)"); 사각(x+5,y-28,0.5,12,"rgba(0,0,0,.1)"); }   // 등받이 주름
-  else if(방향==="up"){ 방석();
-    사각(x-9,y-14,18,8,천); 사각(x-9,y-14,18,2,천밝); 사각(x-9,y-8,18,2,천어둠); 사각(x-6,y-12,12,0.5,"rgba(0,0,0,.12)"); }
-  else { const s=방향==="left"?1:-1; 방석();
-    사각(x+s*4,y-30,6,16,천); 사각(x+s*4,y-30,6,2,천밝); 사각(x+s*4+(s<0?5:0),y-28,0.5,14,천어둠); }
+function 몬스테라(x,y){                                    // 라탄 바구니에 든 몬스테라 (소파 옆·구석)
+  그늘(x+1.5,y+0.5,9,2.4,0.18);
+  둥근(x-6.5,y-10,13,10,1.5,"#d7b37d"); for(let i=0;i<4;i++) 가로(x-6.5,y-8.5+i*2.2,13,"#b28955"); for(let i=0;i<6;i++) 세로(x-5+i*2,y-10,10,"rgba(255,244,214,.3)"); 사각(x+4,y-9,2,8,"rgba(120,84,44,.25)");
+  사각(x-5.5,y-10.5,11,1,"#5c4835");
+  [[-3,-14,-7,-19],[2,-14,6,-22],[0,-14,-2,-27],[3,-15,8,-30],[-2,-15,-8,-31],[1,-16,1,-35]].forEach(s=>{ const n=8; for(let i=0;i<=n;i++) 사각(x+s[0]+(s[2]-s[0])*i/n-0.25,y+s[1]+(s[3]-s[1])*i/n,0.5,0.8,색.잎d); });
+  [[-7,-19,5.5,4,1],[6,-22,6,4.4,0],[-2,-27,6,4.6,2],[8,-30,5,3.8,1],[-8,-31,5,3.8,0],[1,-35,5.5,4,1]].forEach(l=>{ 잎(x+l[0],y+l[1],l[2],l[3],l[4]);
+    가로(x+l[0]-l[2]*0.7,y+l[1]+0.5,l[2]*0.55,색.잎d); 가로(x+l[0]+l[2]*0.2,y+l[1]+1.5,l[2]*0.6,색.잎d); 세로(x+l[0],y+l[1]-l[3]*0.6,l[3]*1.2,"rgba(30,70,45,.35)"); });
 }
-function 화분(x,y){
-  사각(x-9,y+2,18,3,"rgba(0,0,0,.22)");
-  c.fillStyle="#b5613a"; c.beginPath(); c.moveTo(x-9,y); c.lineTo(x+9,y); c.lineTo(x+6,y-14); c.lineTo(x-6,y-14); c.closePath(); c.fill();
-  c.fillStyle="rgba(255,220,180,.16)"; c.beginPath(); c.moveTo(x-9,y); c.lineTo(x-5,y); c.lineTo(x-4,y-14); c.lineTo(x-6,y-14); c.closePath(); c.fill();   // 왼쪽 빛
-  c.fillStyle="rgba(0,0,0,.14)";      c.beginPath(); c.moveTo(x+5,y); c.lineTo(x+9,y); c.lineTo(x+6,y-14); c.lineTo(x+4,y-14); c.closePath(); c.fill();   // 오른쪽 그늘
-  사각(x-6,y-16,12,3,"#c97a4e"); 사각(x-6,y-16,12,1,"#e0946a"); 사각(x-5,y-15,10,2,"#2a1d12");
-  for(let i=0;i<4;i++) 사각(x-4+i*2.5,y-14,1,0.5,"#1c1309");
-  const 잎=["#3f6b3f","#4f7f45","#355c33"], 잎밝="#6aa05a";
-  for(let i=0;i<9;i++){ const a=뒤섞기(i*13)*Math.PI*2, ly=y-16-뒤섞기(i*41)*11, lw=4+뒤섞기(i*7)*2, lh=7+뒤섞기(i*17)*3, lx=x+Math.cos(a)*5;
-    c.fillStyle=잎[i%잎.length]; c.beginPath(); c.ellipse(lx,ly,lw,lh,a,0,Math.PI*2); c.fill();
-    c.fillStyle=잎밝; c.beginPath(); c.ellipse(lx-lw*0.2,ly-lh*0.25,lw*0.35,lh*0.4,a,0,Math.PI*2); c.fill(); }
+function 산세(x,y){                                        // 토분에 심은 산세베리아
+  [[-3.5,9],[-2,13],[-0.5,16],[1,12],[2.5,10]].forEach(([dx,h],i)=>{ 사각(x+dx,y-6-h,1.5,h,i%2?색.잎:색.잎s); 세로(x+dx,y-6-h,h,"#d2dc8e"); 사각(x+dx+0.5,y-7-h,0.5,1,색.잎s); });
+  사각(x-4,y-6,8,6,색.토분); 사각(x+2,y-6,2,6,색.토분s); 사각(x-4.5,y-7,9,1.5,색.토분l); 가로(x-4.5,y-5.5,9,색.토분s);
 }
-function 캐비닛(x,y){
-  const w=72,h=18;
-  사각(x+2,y+h+2,w,4,"rgba(0,0,0,.22)");
-  사각(x,y+4,w,h,"#6b4a30"); 사각(x,y+4,w,1,"rgba(0,0,0,.18)");
-  사각(x-2,y,w+4,5,"#8a5f3c"); 사각(x-2,y,w+4,1,"#a3764a"); 사각(x-2,y+4,w+4,1,"#5a3d27");
-  사각(x+4,y+8,w/2-6,h-6,"#5a3d27"); 사각(x+4,y+8,w/2-6,1,"#4a3020"); 사각(x+4,y+9,0.5,h-7,"#6a4a30");
-  사각(x+w/2+2,y+8,w/2-6,h-6,"#5a3d27"); 사각(x+w/2+2,y+8,w/2-6,1,"#4a3020"); 사각(x+w/2+2,y+9,0.5,h-7,"#6a4a30");
-  사각(x+w/2-5,y+13,2,2,"#d8c08a"); 사각(x+w/2-5,y+13,1,1,"#f2e4b2"); 사각(x+w/2+3,y+13,2,2,"#d8c08a"); 사각(x+w/2+3,y+13,1,1,"#f2e4b2");
-  사각(x+6,y-5,16,5,"#e8e0c8"); 사각(x+8,y-9,14,4,"#d8d0b8"); 사각(x+6,y-5,16,1,"#c8c0a8");
-  사각(x+50,y-6,10,6,"#b5613a"); 사각(x+49,y-7,12,2,"#c97a4e");
-  c.fillStyle="#4f7f45"; c.beginPath(); c.ellipse(x+55,y-11,6,5,0,0,Math.PI*2); c.fill();
+function 늘어진잎(x,y,길){ for(let i=0;i<길;i++){ const dx=Math.sin(i*1.3)*1.2; 사각(x+dx,y+i*2,1.5,1.5,i%3?색.잎:색.잎l); 사각(x+dx+(i%2?1.5:-1),y+i*2+0.5,1,1,색.잎s); } }
+
+/* ---------- 창가: 도면함 + 모형 작업대 ---------- */
+function 도면함(x,y){ const w=72;
+  사각(x+1,y+22,w+1,2,"rgba(52,40,30,.16)");
+  사각(x,y+6,w,16.5,색.흰); 세로(x+w-0.5,y+6,16.5,색.흰d);
+  for(let r=0;r<4;r++) for(let k=0;k<2;k++){ const dx=x+1.5+k*35, dy=y+7+r*3.75; 사각(dx,dy,34,3.25,"#f6f3ed"); 가로(dx,dy,34,"#ffffff"); 가로(dx,dy+3.25,34,색.흰d); 사각(dx+13,dy+1.25,8,0.75,색.철); }
+  사각(x+3,y+22.5,3,1,색.철); 사각(x+w-6,y+22.5,3,1,색.철);
+  사각(x-1,y,w+2,6,색.자작); 가로(x-1,y,w+2,색.자작l); 사각(x-1,y+5,w+2,1,색.자작s); 가로(x-1,y+5.5,w+2,색.자작d);
+  // 커팅 매트 위 흰 모형
+  사각(x+3,y+0.5,30,4.5,색.매트); for(let i=0;i<7;i++) 세로(x+5+i*4,y+0.5,4.5,"rgba(255,255,255,.2)"); 가로(x+3,y+2.5,30,"rgba(255,255,255,.2)"); 가로(x+3,y+0.5,30,색.매트l);
+  사각(x+9,y+2,13,2,"rgba(20,60,45,.3)");
+  사각(x+8,y-8,11,10.5,"#fbfaf7"); 사각(x+8,y-8,11,1.5,"#ffffff"); 세로(x+18.5,y-8,10.5,"#d7d3ca"); 사각(x+10,y-5,2,2,"#bfd0dc"); 사각(x+14,y-5,2,2,"#bfd0dc"); 사각(x+10,y-1,2,3,"#bfd0dc"); 사각(x+14,y-1,2,2,"#bfd0dc");
+  사각(x+19,y-4,8,6.5,"#f3f0ea"); 가로(x+19,y-4,8,"#ffffff"); 세로(x+26.5,y-4,6.5,"#d7d3ca"); 사각(x+21,y-2,4,1,"#bfd0dc"); 사각(x+17,y-10,5,2,"#ffffff"); 가로(x+17,y-8,5,"#d7d3ca");
+  사각(x+29.5,y-1,0.5,3,"#8a6a48"); 덩이(x+29.5,y-2,1.8,1.8,색.잎l); 사각(x+5.5,y-0.5,0.5,2.5,"#8a6a48"); 덩이(x+5.5,y-1.5,1.5,1.5,색.잎);
+  사각(x+10,y+4,20,0.5,"#b4bac3"); 사각(x+4,y+3.5,4,1,"#e3b65a");                                   // 쇠자 · 칼
+  // 자재 샘플 더미
+  사각(x+37,y-1,13,2.5,"#d9c6a0"); 가로(x+37,y-1,13,"#eedcba"); 사각(x+38,y-3,11,2,"#9fb89b"); 사각(x+38.5,y-5,10,2,"#2f3d63"); 사각(x+39,y-7,8,2,"#e3b65a"); 가로(x+39,y-7,8,"#f5d886");
+  // 둘둘 만 도면
+  사각(x+52,y-2,9,2.5,"#fdfcf8"); 가로(x+52,y+0.5,9,"#cfcabd"); 사각(x+52,y-2,1,2.5,"#dfe7ee"); 사각(x+53.5,y-4,8,2.5,"#fdfcf8"); 가로(x+53.5,y-1.5,8,"#cfcabd"); 사각(x+60.5,y-4,1,2.5,"#dfe7ee");
+  산세(x+67,y+1);
 }
+
+/* ---------- 이젤 · 좌대 ---------- */
 function 이젤그리기(이름){                         // 바닥에 세운 이젤 — 그림(목탄·포스터 같은 세로 그림)을 올려 둠
   const s=자리[이름], cx=s.발.x, fy=s.발.y, 꼭대기=fy-47;
-  사각(cx-10,fy,20,2,"rgba(0,0,0,.2)");
-  c.strokeStyle="#6b4a30"; c.lineWidth=2;
-  c.beginPath(); c.moveTo(cx,꼭대기+4); c.lineTo(cx,fy-2); c.stroke();                   // 뒷다리
-  c.strokeStyle="#8a5f3c";
-  c.beginPath(); c.moveTo(cx-2,꼭대기); c.lineTo(cx-9,fy); c.moveTo(cx+2,꼭대기); c.lineTo(cx+9,fy); c.stroke();  // 앞다리
+  그늘(cx,fy+0.5,10,2,0.16);
+  사각(cx-0.5,꼭대기+4,1,fy-꼭대기-6,참s);                                                 // 뒷다리
+  for(let i=0;i<=46;i++){ const t=i/46; 사각(cx-2-7*t,꼭대기+i,1.5,1,참); 사각(cx+0.5+7*t,꼭대기+i,1.5,1,참); 사각(cx+1.5+7*t,꼭대기+i,0.5,1,참s); }   // 앞다리(벌어짐)
   const 판={x:cx-12,y:꼭대기+4,w:24,h:31};
-  사각(판.x+2,판.y+2,판.w,판.h,"rgba(0,0,0,.22)");
-  사각(판.x,판.y,판.w,판.h,"#efe6d2"); 사각(판.x,판.y,판.w,1,"#fffaf0");
-  const 그림=썸네일(이름), 안={x:판.x+1,y:판.y+1,w:판.w-2,h:판.h-2};
-  if(그림) 그림채우기(그림,안); else { 사각(안.x,안.y,안.w,안.h,"#f4efe2"); 사각(안.x+5,안.y+8,안.w-10,1,"#c9bfa8"); 사각(안.x+5,안.y+12,안.w-12,1,"#c9bfa8"); }
-  사각(cx-14,판.y+판.h,28,3,"#a3764a"); 사각(cx-14,판.y+판.h,28,1,"#c4935e");          // 받침 선반
-  사각(cx-3,판.y-2,6,3,"#8a5f3c");                                                      // 위 집게
+  사각(판.x+1,판.y+1.5,판.w,판.h,"rgba(52,40,30,.2)");
+  사각(판.x,판.y,판.w,판.h,"#fdfcf8"); 가로(판.x,판.y,판.w,"#ffffff"); 세로(판.x+판.w-0.5,판.y,판.h,"#d8d3c8"); 가로(판.x,판.y+판.h-0.5,판.w,"#d8d3c8");
+  const 그림=썸네일(이름), 안={x:판.x+1.5,y:판.y+1.5,w:판.w-3,h:판.h-3};
+  if(그림) 그림채우기(그림,안); else { 사각(안.x,안.y,안.w,안.h,"#f6f4ef"); 사각(안.x+4,안.y+8,안.w-8,0.5,"#cfcabd"); 사각(안.x+4,안.y+12,안.w-11,0.5,"#cfcabd"); 사각(안.x+4,안.y+16,안.w-9,0.5,"#cfcabd"); }
+  사각(cx-14,판.y+판.h,28,2.5,참); 가로(cx-14,판.y+판.h,28,참l); 가로(cx-14,판.y+판.h+2,28,참d);       // 받침 선반
+  사각(cx-2.5,판.y-2.5,5,3,참); 가로(cx-2.5,판.y-2.5,5,참l);                                         // 위 집게
 }
 function 좌대그리기(이름){
   const r=자리[이름].영역, px=r.x+4, py=r.y+18, pw=22, ph=22;
-  사각(px+2,py+ph,pw,3,"rgba(0,0,0,.22)");
-  사각(px,py+3,pw,ph-3,"#dcd7cc"); 사각(px,py+3,pw,1,"#f4f1ea"); 사각(px+pw-2,py+3,2,ph-3,"#bdb7aa");
-  사각(px-1,py,pw+2,4,"#f0ece4"); 사각(px-1,py+3,pw+2,1,"#c9c3b6");
+  그늘(px+pw/2+1,py+ph+0.5,pw/2+2,2.2,0.18);
+  사각(px,py+3,pw,ph-3,색.흰); 사각(px+pw-3.5,py+3,3.5,ph-3,색.흰s); 세로(px,py+3,ph-3,"#ffffff"); 가로(px,py+ph-0.5,pw,색.흰d);
+  사각(px-1,py,pw+2,3.5,"#ffffff"); 가로(px-1,py+3,pw+2,색.흰d); 가로(px-1,py+3.5,pw+2,"rgba(60,50,40,.1)");
   const 항목=지금항목(이름), 그림=썸네일(이름);
-  if(그림){ const 안={x:px+2,y:py-15,w:pw-4,h:15}; 사각(안.x-1,안.y-1,안.w+2,안.h+2,"#2a2a2a"); 그림채우기(그림,안); }
+  if(그림){ const 안={x:px+2,y:py-16,w:pw-4,h:15.5}; 사각(안.x-1,안.y-1,안.w+2,안.h+2,색.철); 가로(안.x-1,안.y-1,안.w+2,색.철l); 그림채우기(그림,안); 사각(안.x-1,안.y+안.h+1,안.w+2,0.5,"rgba(60,50,40,.25)"); }
   else if(항목) 작은건물(px+pw/2,py);
 }
-const 사람배율=1.35;                             // 형 피드백 "의자보다 사람이 너무 작아" → 서는/앉은 모습 전부 동일 배율로 확대(발 위치=p.x,p.y는 안 건드리고 그 점 중심으로 확대)
-function 앉은사람그리기(p){                     // 의자에 앉은 모습 — 다리를 접고 전체 키를 낮춤(서 있는 모습과 구분)
-  const x=p.x, y=p.y;
-  c.save(); c.translate(x,y); c.scale(사람배율,사람배율); c.translate(-x,-y);
-  c.fillStyle="rgba(0,0,0,.25)"; c.beginPath(); c.ellipse(x,y+1,7,2.2,0,0,Math.PI*2); c.fill();
-  const 피부="#e8c29a", 피부그늘="#c99a6e", 셔츠=p.색||"#3f6b9e", 바지="#28324f", 머리색="#2b2320";
-  const 앞=p.방향==="down", 뒤=p.방향==="up", 좌우=p.방향==="left"||p.방향==="right", 플립=p.방향==="left"?-1:1;
-  c.save(); c.translate(Math.round(x),Math.round(y)); if(좌우) c.scale(플립,1);
-  사각(-4,-2,3,3,바지); 사각(1,-2,3,3,바지);               // 접은 다리(짧게)
-  사각(-4,1,3,1,"#1c1c1c"); 사각(1,1,3,1,"#1c1c1c");       // 발끝
-  사각(-4,-11,8,9,셔츠); 사각(-4,-11,8,2,"rgba(0,0,0,.2)"); 사각(-4,-11,2,9,"rgba(0,0,0,.14)"); 사각(2,-11,2,9,"rgba(255,255,255,.1)");
-  사각(-6,-10,2,6,셔츠); 사각(4,-10,2,6,셔츠); 사각(4,-10,0.5,6,"rgba(255,255,255,.1)");
-  사각(-6,-5,2,2,피부); 사각(4,-5,2,2,피부);
-  사각(-5,-15,10,6,피부); 사각(-5,-15,2,6,피부그늘); 사각(4,-15,1,6,"rgba(255,255,255,.1)"); 사각(-5,-10,10,1,"rgba(0,0,0,.14)");
-  if(앞){ 사각(-3,-13,1.5,1.5,"#1a1a1a"); 사각(1.5,-13,1.5,1.5,"#1a1a1a"); 사각(-1.5,-10,3,0.5,"#b07a52"); }
-  else if(좌우){ 사각(2,-13,1.5,1.5,"#1a1a1a"); 사각(2,-10,2,0.5,"#b07a52"); }
-  사각(-5,-17,10,4,머리색); 사각(-5,-17,10,1,"#413733"); if(뒤) 사각(-5,-14,10,3,머리색);
-  c.restore();
-  c.restore();
+
+/* ---------- 상담 테이블 + 의자 ---------- */
+function 김(x,y,t,씨){ for(let k=0;k<2;k++){ const f=((t*0.45+k*0.5+씨)%1); 사각(x+Math.sin((t+k+씨)*2.4)*0.8-0.25+k*0.8,y-1-f*5,0.5,1,"rgba(255,255,255,"+(0.75*(1-f)).toFixed(2)+")"); } }
+function 잔(x,y,t,씨){ 사각(x-1.5,y-2.5,3,3,"#fdfcf8"); 가로(x-1.5,y+0.5,3,"#cfcabd"); 사각(x+1.5,y-1.5,1,1.5,"#e6e2d9"); 사각(x-1,y-2.5,2,0.5,"#8a5a34"); if(t!=null) 김(x,y-2.5,t,씨||0); }
+function 탁자그리기(t){
+  const {x,y,w,h,키}=탁자;
+  사각(x+1,y+h+키-1,w+1,2.5,"rgba(52,40,30,.2)");                                           // 바닥 그림자
+  사각(x+2,y+h+2,w-4,키-3,"rgba(60,44,30,.2)");                                             // 상판 밑 어둠
+  사각(x+3,y+h+2,2,키-2,색.흰); 세로(x+4.5,y+h+2,키-2,색.흰d); 사각(x+w-5,y+h+2,2,키-2,색.흰); 세로(x+w-3.5,y+h+2,키-2,색.흰d);   // 흰 다리
+  둥근(x-2,y,w+4,h+2,1.5,색.자작s); 둥근(x-2,y,w+4,h,1.5,색.자작);                           // 상판(옆면 두께 + 윗면)
+  가로(x,y,w,색.자작l); 가로(x-1,y+h+1.5,w+2,색.자작d);
+  for(let i=0;i<5;i++){ 가로(x+5+i*17,y+6+(i%2)*9,12,"rgba(160,120,70,.16)"); 가로(x+9+i*16,y+24-(i%3)*4,9,"rgba(160,120,70,.12)"); }   // 나뭇결
+  // 펼친 평면도 + 스케일자 + 연필
+  사각(x+10.5,y+9,28,18,"rgba(60,44,30,.14)"); 사각(x+10,y+8,28,18,"#fdfdfb"); 가로(x+10,y+25.5,28,"#d3d8dd");
+  const 청="#4a78c9"; 사각(x+13,y+11,16,0.5,청); 사각(x+13,y+11,0.5,11,청); 사각(x+13,y+22,22,0.5,청); 사각(x+35,y+15,0.5,7.5,청); 사각(x+29,y+11,0.5,4,청); 사각(x+29,y+15,6.5,0.5,청); 사각(x+21,y+11,0.5,6,청); 사각(x+21,y+17,4,0.5,청); 사각(x+13,y+17,4,0.5,청);
+  사각(x+31,y+12,3,0.5,"#9db4dc"); 사각(x+15,y+19.5,3,1.5,"#dbe6f6"); 사각(x+24,y+19,5,2,"#dbe6f6");
+  사각(x+8,y+27,22,1.5,"#e9ecef"); for(let i=0;i<10;i++) 사각(x+9+i*2,y+27,0.5,0.75,"#7d8796");
+  사각(x+31,y+28,9,0.75,"#e3b65a"); 사각(x+40,y+28,1.5,0.75,"#2c303b");
+  // 자재 색 견본 부채
+  [["#2f3d63",0],["#9fb89b",2.5],["#e3b65a",5],["#e9ddc3",7.5],["#cc7d55",10]].forEach(([col,d],i)=>{ 사각(x+46+d,y+19-i*0.5,3,7,col); 가로(x+46+d,y+19-i*0.5,3,"rgba(255,255,255,.35)"); });
+  // 노트북
+  사각(x+62.5,y+19,17,10,"rgba(60,44,30,.14)"); 사각(x+62,y+18,17,10,"#dfe2e6"); 가로(x+62,y+18,17,"#f3f5f7"); 사각(x+64,y+19.5,13,5,"#c5cad1"); for(let i=0;i<6;i++) 사각(x+64.5+i*2.1,y+20,1.5,0.5,"#eef0f3"); 사각(x+68,y+25.5,5,1.5,"#cfd4da");
+  사각(x+62,y+8,17,10.5,"#2c303b"); 사각(x+63,y+9,15,8.5,"#eaf3fb"); 사각(x+64,y+10,6,0.5,"#4a78c9"); 사각(x+64,y+11.5,9,0.5,"#b9c7d8"); 사각(x+64,y+13,7,0.5,"#b9c7d8"); 사각(x+72,y+10,5,5,"#e3b65a"); 사각(x+73,y+11,3,3,"#f5d886");
+  // 꽃병
+  사각(x+43,y+6.5,5,2,"rgba(60,44,30,.14)"); 사각(x+43.5,y+2,3.5,5.5,"#fdfcf8"); 세로(x+46.5,y+2,5.5,"#d8d3c8"); 사각(x+44,y+1.5,2.5,0.5,"#cfe0ea");
+  사각(x+45,y-3,0.5,5,색.잎s); 사각(x+43.5,y-2,0.5,4,색.잎s); 사각(x+46.5,y-1.5,0.5,3.5,색.잎s);
+  덩이(x+45.2,y-4,1.6,1.6,"#f5d886"); 덩이(x+43.2,y-2.8,1.4,1.4,"#f3a7b6"); 덩이(x+47,y-2.4,1.4,1.4,"#ffffff"); 사각(x+45,y-4.2,0.5,0.5,"#d99a2e"); 사각(x+44.2,y-0.5,1.2,0.8,색.잎l);
+  잔(x+52,y+7,t,0.1); 잔(x+18,y+31.5,t,0.6); 사각(x+82,y+27,4,3,"#fdfcf8"); 가로(x+82,y+30,4,"#cfcabd"); 사각(x+82.5,y+27.5,3,0.5,"#b9c7d8");
 }
-function 사람그리기(p){
-  if(p.앉음){ 앉은사람그리기(p); return; }
-  const 걷는중=p.걷는중, 흔들=Math.sin(p.걸음)*1.2*(걷는중?1:0), 다리흔들=걷는중?Math.sin(p.걸음)*3:0;
-  const x=p.x, y=p.y;
-  c.save(); c.translate(x,y); c.scale(사람배율,사람배율); c.translate(-x,-y);
-  c.fillStyle="rgba(0,0,0,.25)"; c.beginPath(); c.ellipse(x,y+2,7,2.4,0,0,Math.PI*2); c.fill();
-  const 피부="#e8c29a", 피부그늘="#c99a6e", 셔츠=p.색||"#3f6b9e", 바지="#28324f", 머리색="#2b2320";
-  const 앞=p.방향==="down", 뒤=p.방향==="up", 좌우=p.방향==="left"||p.방향==="right", 플립=p.방향==="left"?-1:1;
-  c.save(); c.translate(Math.round(x),Math.round(y+흔들)); if(좌우) c.scale(플립,1);
-  사각(-4,-4+Math.max(0,다리흔들*0.3),3,7-Math.max(0,다리흔들*0.3),바지);
-  사각(1,-4+Math.max(0,-다리흔들*0.3),3,7-Math.max(0,-다리흔들*0.3),바지);
-  사각(-4,-4,3,1,"rgba(255,255,255,.08)");
-  사각(-4,2,3,2,"#1c1c1c"); 사각(1,2,3,2,"#1c1c1c"); 사각(-4,3,3,0.5,"rgba(255,255,255,.12)");
-  사각(-4,-14,8,10,셔츠);
-  사각(-4,-14,8,2,"rgba(0,0,0,.2)"); 사각(-4,-14,2,10,"rgba(0,0,0,.14)"); 사각(2,-14,2,10,"rgba(255,255,255,.1)"); 사각(-0.5,-13,1,9,"rgba(255,255,255,.06)");
-  사각(-6,-13+다리흔들*0.4,2,7,셔츠); 사각(4,-13-다리흔들*0.4,2,7,셔츠); 사각(4,-13-다리흔들*0.4,0.5,7,"rgba(255,255,255,.1)");
-  사각(-6,-7+다리흔들*0.4,2,2,피부); 사각(4,-7-다리흔들*0.4,2,2,피부);
-  사각(-5,-18,10,6,피부); 사각(-5,-18,2,6,피부그늘); 사각(4,-18,1,6,"rgba(255,255,255,.1)"); 사각(-5,-13,10,1,"rgba(0,0,0,.14)");
-  if(앞){ 사각(-3,-16,1.5,1.5,"#1a1a1a"); 사각(1.5,-16,1.5,1.5,"#1a1a1a"); 사각(-0.5,-15,1,1,피부그늘); 사각(-1.5,-13,3,0.5,"#b07a52"); 사각(-4,-15,1,1,"rgba(232,150,120,.4)"); 사각(3,-15,1,1,"rgba(232,150,120,.4)"); }
-  else if(좌우){ 사각(2,-16,1.5,1.5,"#1a1a1a"); 사각(4.5,-15,0.5,1,피부그늘); 사각(2,-13,2,0.5,"#b07a52"); }
-  사각(-5,-20,10,4,머리색); 사각(-5,-20,10,1,"#413733"); 사각(-5,-19,2,5,머리색); 사각(3,-19,2,5,머리색);
-  if(뒤) 사각(-5,-17,10,3,머리색);
-  c.restore();
-  c.restore();
+function 의자(x,y,방향){                                    // 참나무 틀 + 엮은 방석. 등받이가 뚫려 있어 앉은 사람 옷이 가려지지 않는다
+  그늘(x+0.5,y+0.5,8,2,0.15);
+  const 방석=(sx,sy,w)=>{ 사각(sx,sy,w,3.5,"#f4ebd7"); 가로(sx,sy,w,"#fffaf0"); 사각(sx,sy+2.5,w,1,참); 가로(sx,sy+3,w,참s); for(let i=1.5;i<w-1;i+=2) 세로(sx+i,sy+0.5,2,"rgba(170,140,90,.4)"); 세로(sx,sy,3.5,참l); 세로(sx+w-0.5,sy,3.5,참s); };
+  const 다리=(lx,ly,h)=>{ 사각(lx,ly,1.5,h,참); 세로(lx+1,ly,h,참s); };
+  if(방향==="down"){
+    다리(x-7,y-18,12); 다리(x+5.5,y-18,12); 사각(x-0.5,y-16,1.5,8,참); 세로(x+0.5,y-16,8,참s);        // 등받이 기둥·가운데 살
+    사각(x-7.5,y-19.5,15,2.5,참); 가로(x-6.5,y-19.5,13,참l); 가로(x-7.5,y-17.5,15,참d);               // 윗가로대
+    다리(x-7,y-6,6); 다리(x+5.5,y-6,6);                                                              // 앞다리
+    방석(x-7.5,y-9,15);
+  } else if(방향==="up"){
+    다리(x-7,y-5.5,5.5); 다리(x+5.5,y-5.5,5.5);
+    방석(x-7.5,y-9,15);
+  } else { const s=방향==="right"?1:-1;                    // right = 오른쪽을 보고 앉는 의자(등받이는 왼쪽)
+    다리(x-6,y-6,6); 다리(x+4.5,y-6,6);
+    방석(x-7,y-9,14);
+    const bx=s>0?x-7.5:x+6; 다리(bx,y-19,10.5); 사각(bx-(s>0?0.5:0),y-20,2,2.5,참); 가로(bx-(s>0?0.5:0),y-20,2,참l);
+  }
 }
-/* ---------- 맺음·이음 작업대 ----------
-   사람 그림은 사람마다 함수 하나씩. 각자 자기 함수만 고치면 된다(맺음=맥, 이음=리눅스).
-   (옛 이름 비서그리기_맺음 / 비서그리기_이음 → 사람그리기_맺음 / 사람그리기_이음. 형이 「비서 말고」 해서 바꿈)
-   (x,y)=앉은 발끝 기준, 앞(아래)을 본다. t=초(눈 깜빡임 등). 아래 몸은 작업대가 가린다. */
-function 동료몸(x,y,셔츠,피부,머리색,깜빡){                // 둘이 같이 쓰는 앉은 몸 뼈대
-  c.fillStyle="rgba(0,0,0,.22)"; c.beginPath(); c.ellipse(x,y+1,7,2.2,0,0,Math.PI*2); c.fill();
-  c.save(); c.translate(Math.round(x),Math.round(y));
-  사각(-4,-11,8,9,셔츠);
-  사각(-4,-11,8,2,"rgba(0,0,0,.2)"); 사각(-4,-11,2,9,"rgba(0,0,0,.13)"); 사각(2,-11,2,9,"rgba(255,255,255,.12)"); 사각(-0.5,-10,1,8,"rgba(255,255,255,.07)");
-  사각(-6,-10,2,6,셔츠); 사각(4,-10,2,6,셔츠); 사각(4,-10,0.5,6,"rgba(255,255,255,.12)"); 사각(-6,-5,2,2,피부); 사각(4,-5,2,2,피부);
-  사각(-5,-17,10,7,피부);
-  사각(-5,-17,2,7,"rgba(120,80,50,.22)"); 사각(4,-17,1,7,"rgba(255,255,255,.14)"); 사각(-5,-11,10,1,"rgba(0,0,0,.12)");
-  if(!깜빡){ 사각(-3,-14,1.5,1.5,"#1a1a1a"); 사각(1.5,-14,1.5,1.5,"#1a1a1a"); } else { 사각(-3,-13,2,1,"#1a1a1a"); 사각(1.5,-13,2,1,"#1a1a1a"); }
-  사각(-0.5,-13,1,1,"rgba(150,95,60,.5)");                      // 코
-  사각(-1,-11,2,1,"#c98a6a");                                   // 웃는 입
-  사각(-4,-13,1,1,"rgba(232,150,120,.45)"); 사각(3,-13,1,1,"rgba(232,150,120,.45)");  // 볼
-  사각(-5,-19,10,4,머리색); 사각(-5,-19,10,1,"rgba(255,255,255,.1)");
-  c.restore();
+function 의자등(x,y){                                       // 뒤에서 본 등받이 — 앉은 사람 위에 덧그린다(가운데가 뚫려 옷이 보임)
+  const 다리=(lx,ly,h)=>{ 사각(lx,ly,1.5,h,참); 세로(lx+1,ly,h,참s); };
+  다리(x-7,y-17,8.5); 다리(x+5.5,y-17,8.5); 사각(x-0.5,y-15.5,1.5,7,참); 세로(x+0.5,y-15.5,7,참s);
+  사각(x-7.5,y-18.5,15,2.5,참); 가로(x-6.5,y-18.5,13,참l); 가로(x-7.5,y-16.5,15,참d);
 }
-function 사람그리기_맺음(x,y,t){                           // 맺음: 따뜻한 귤색 가디건 · 헤드셋 · 옆 묶음 머리
-  c.save(); c.translate(x,y); c.scale(사람배율,사람배율); c.translate(-x,-y);
-  const 깜빡=(t%4.3)<0.14;
-  동료몸(x,y,"#d9894a","#e8c29a","#2b2320",깜빡);
-  const X=Math.round(x), Y=Math.round(y);
-  사각(X-6,Y-18,2,6,"#2b2320"); 사각(X+5,Y-17,2,4,"#2b2320"); 사각(X+6,Y-14,2,3,"#2b2320");   // 옆머리·묶음
-  사각(X-6,Y-21,12,1,"#3a3a44"); 사각(X-7,Y-17,2,4,"#3a3a44");                                 // 헤드셋 띠·귀
-  사각(X-5,Y-13,1,1,"#3a3a44"); 사각(X-4,Y-12,2,1,"#e3b65a");                                   // 마이크
-  사각(X-7,Y-16,1,2,"#e3b65a");                                                                   // 헤드셋 귀 쿠션 빛
-  사각(X-1,Y-9,2,6,"#f3efe4");                                                                    // 안쪽 흰 셔츠
-  사각(X-2,Y-9,1,6,"#b5702f"); 사각(X+1,Y-9,1,6,"#b5702f");                                      // 가디건 앞섶
-  사각(X-1,Y-8,0.5,0.5,"#6a4420"); 사각(X-1,Y-6,0.5,0.5,"#6a4420");                              // 단추
-  c.restore();
+
+/* ---------- 대표 책상 (대표는 책상 뒤에 앉아 방 쪽을 본다) ---------- */
+const 대표책상={x:37,y:197,w:72};                            // 윗판 y~y+11, 앞판 y+11~y+31
+function 사무의자(x,y){                                     // 뒤에 놓인 밝은 회색 사무 의자(앞을 보고 앉음)
+  그늘(x+0.5,y+0.5,7,2,0.15);
+  사각(x-0.5,y-6,1,6,"#8d939c"); 사각(x-5,y-1,10,1,"#6c727c"); 사각(x-5.5,y-0.5,1.5,1.5,색.철); 사각(x+4,y-0.5,1.5,1.5,색.철);
+  사각(x-6.5,y-9,13,3,"#cfd4d8"); 가로(x-6.5,y-6.5,13,"#a7aeb5");
+  둥근(x-7,y-23,14,15,2,"#dfe3e6"); 둥근(x-6,y-22,12,13,1.5,"#eef0f2"); 세로(x+6.5,y-21,11,"#b4bac1"); for(let i=0;i<5;i++) 가로(x-5,y-20.5+i*2.5,10,"#d3d8dc");
 }
-function 사람그리기_이음(x,y,t){                           // 이음: 청록 셔츠 · 둥근 안경 · 짧은 갈색 머리
-  c.save(); c.translate(x,y); c.scale(사람배율,사람배율); c.translate(-x,-y);
-  const 깜빡=((t+1.9)%5.1)<0.14;
-  동료몸(x,y,"#3f8f8a","#e0b98a","#5a3e2b",깜빡);
-  const X=Math.round(x), Y=Math.round(y);
-  사각(X-5,Y-20,10,2,"#5a3e2b"); 사각(X+3,Y-18,2,2,"#5a3e2b");                                  // 앞머리
-  c.strokeStyle="#1f2a30"; c.lineWidth=1;
-  c.strokeRect(X-4.5,Y-15.5,3,3); c.strokeRect(X+1.5,Y-15.5,3,3); 사각(X-1,Y-14,2,1,"#1f2a30");  // 안경
-  사각(X-4,Y-15.5,1,0.5,"rgba(255,255,255,.5)"); 사각(X+2,Y-15.5,1,0.5,"rgba(255,255,255,.5)");  // 안경 반짝
-  사각(X-3,Y-10,6,1,"#357a76");                                                                   // 셔츠 깃
-  사각(X-1,Y-9,2,5,"#2c5f5c"); 사각(X-1,Y-9,1,5,"#3a7570");                                      // 넥타이 + 빛
-  c.restore();
+function 대표책상그리기(t){
+  const {x,y,w}=대표책상;
+  사각(x+1,y+31,w+1,2.5,"rgba(52,40,30,.18)");
+  사각(x,y+11,w,20,색.흰); 세로(x+w-0.5,y+11,20,색.흰d); 가로(x,y+30.5,w,색.흰d); 사각(x,y+11.5,w,1.5,"rgba(60,50,40,.12)");
+  for(let i=0;i<9;i++){ 사각(x+3+i*2,y+15,1.5,14,참); 세로(x+3+i*2,y+15,14,참l); 세로(x+4.5+i*2,y+15,14,참s); }       // 앞판 왼쪽: 나무 살
+  사각(x+w-27,y+16,23,9,"#f1eee7"); 가로(x+w-27,y+16,23,색.흰d); 가로(x+w-27,y+24.5,23,색.흰d); 세로(x+w-27,y+16,9,색.흰d); 세로(x+w-4.5,y+16,9,색.흰d);   // 팻말 자리(글자는 겹층 .대표팻말)
+  if(배율<1.7&&지금팻말){ const 불={있습니다:"#3fae6a",외출중:"#e3b65a",부재중:"#d5483f"}[지금팻말]; if(불){ 덩이(x+w-15.5,y+20.5,2.5,2.5,불); 사각(x+w-16.5,y+19,1,1,"rgba(255,255,255,.6)"); } }   // 작은 화면: 글자 대신 색 불빛만
+  사각(x-2,y,w+4,11.5,색.자작); 가로(x-2,y,w+4,색.자작l); 사각(x-2,y+10.5,w+4,1,색.자작s); 가로(x-2,y+11,w+4,색.자작d);
+  for(let i=0;i<4;i++){ 가로(x+4+i*18,y+2+(i%2)*2.5,11,"rgba(160,120,70,.16)"); 가로(x+10+i*16,y+8-(i%2),9,"rgba(160,120,70,.12)"); }
+  // 책상 위 (왼쪽부터): 탁상등 · 자판 · 잔 · 모니터(뒷면) · 연필꽂이
+  덩이(x+8,y+5.5,8,3.5,"rgba(255,236,170,.34)");                                                                       // 탁상등: 둥근 갓(금색) + 짧은 대 + 받침, 책상에 떨어진 불빛
+  덩이(x+8,y+7,3.5,1.3,색.철); 사각(x+7.5,y-3,1,10,색.철); 가로(x+7.5,y-3,1,색.철l);
+  덩이(x+8,y-4,6,4.5,색.금); 사각(x+2,y-4,12,2,색.금); 가로(x+2,y-2.5,12,색.금s); 덩이(x+6.5,y-6,2.5,1.5,색.금l); 사각(x+4,y-2,8,0.5,"#fff3c4");
+  사각(x+17,y+5.5,16,3.5,"#eef0f2"); 가로(x+17,y+8.5,16,"#b9bfc7"); for(let i=0;i<7;i++){ 사각(x+18+i*2,y+6,1.2,0.6,"#c5cad1"); 사각(x+18.5+i*2,y+7.2,1.2,0.6,"#c5cad1"); }
+  사각(x+35,y+6,2.5,3,"#eef0f2"); 가로(x+35,y+8.5,2.5,"#b9bfc7");
+  잔(x+41,y+4.5,t,0.3);
+  사각(x+w-25,y+5,10,2,"#c9cdd3"); 가로(x+w-25,y+6.5,10,"#a7aeb5"); 사각(x+w-21.5,y-1,3,6.5,"#aeb4bc"); 세로(x+w-19,y-1,6.5,"#8d939c");
+  둥근(x+w-29,y-18,19,17,1.5,"#d8dce1"); 둥근(x+w-28,y-17,17,15,1,"#eceff2"); 세로(x+w-11,y-16,13,"#b4bac1"); 사각(x+w-20.5,y-10.5,1.5,1.5,"#aeb4bc");
+  사각(x+w-30,y-17,0.5,14,"#9fd0f5"); 덩이(x+w-32,y-9,2.5,5.5,"rgba(150,200,245,.2)");                                   // 화면 빛(대표 쪽)
+  사각(x+w-7,y+1,5,5.5,"#fdfcf8"); 세로(x+w-2.5,y+1,5.5,"#d8d3c8"); 가로(x+w-7,y+6.5,5,"#cfcabd"); 사각(x+w-6.5,y-3.5,0.75,5,"#e3b65a"); 사각(x+w-5,y-4.5,0.75,6,"#cc5248"); 사각(x+w-3.5,y-3,0.75,4.5,"#3f72b8");
 }
-/* 입구 안내 로봇 「안내」 — 맺음·이음과 따로, 늘 서 있음. (x,y)=발끝, t=초 */
-function 안내그리기(x,y,t){
-  c.fillStyle="rgba(0,0,0,.25)"; c.beginPath(); c.ellipse(x,y+2,7,2.4,0,0,Math.PI*2); c.fill();
-  c.save(); c.translate(Math.round(x),Math.round(y));
-  사각(-5,-3,10,4,"#3a3a44"); 사각(-4,-1,2,2,"#1c1c22"); 사각(2,-1,2,2,"#1c1c22");      // 바퀴 받침
-  c.translate(0,Math.round(Math.sin(t*2.2)*0.8));                                       // 살짝 둥실
-  사각(-5,-12,10,9,"#e8e0c8"); 사각(-5,-12,10,1,"#f6f0de"); 사각(-5,-4,10,1,"#c8bfa6");  // 몸
-  for(let i=0;i<8;i++) 사각(-5+i,-12+i,2,2,"#e3b65a");                                  // 안내 띠
-  사각(-7,-11,2,5,"#d0c7ae");
-  if((t%5)<1.2) 사각(5,-16+Math.round(Math.sin(t*14)),2,5,"#d0c7ae"); else 사각(5,-11,2,5,"#d0c7ae");   // 가끔 손 흔듦
-  사각(-6,-21,12,9,"#f3efe4"); 사각(-6,-21,12,1,"#fffaf0"); 사각(-6,-13,12,1,"#c8bfa6");  // 머리
-  사각(-5,-19,10,5,"#22303a");                                                          // 얼굴 화면
-  if((t%3.7)<0.15){ 사각(-3,-17,2,1,"#7fe0c8"); 사각(1,-17,2,1,"#7fe0c8"); } else { 사각(-3,-18,2,2,"#7fe0c8"); 사각(1,-18,2,2,"#7fe0c8"); }
-  사각(-1,-15,2,1,"#7fe0c8"); 사각(-5,-16,1,1,"#e88a8a"); 사각(4,-16,1,1,"#e88a8a");      // 입·볼
-  사각(0,-24,1,3,"#8a8a96"); 사각(-1,-26,3,2,(t%1.6)<0.8?"#e3b65a":"#9a7a3a");            // 안테나 불
-  c.restore();
-}
+
+/* ---------- 맺음 · 이음 작업대 ---------- */
 // 출퇴근 — 서버 /friends (근무중|퇴근). 퇴근이면 사람 대신 빈 의자 + 「퇴근!」 간판
 const 출퇴근={맺음:"근무중",이음:"근무중"};
 function 퇴근함(이름){ return 출퇴근[이름]==="퇴근"; }
-function 빈의자(x,y){ 사각(x-6,y-13,12,11,"#34415c"); 사각(x-6,y-13,12,2,"#425170"); 사각(x-1,y-2,2,3,"#3a3a3a"); }
-function 모니터(mx,y,켜짐,빛쪽){                            // 사람 쪽을 보는 모니터(우리는 뒷면을 봄). 빛쪽=-1 왼쪽/1 오른쪽에 화면 빛
-  사각(mx,y-13,12,10,"#3a3a44"); 사각(mx+1,y-12,10,8,"#454552"); 사각(mx+5,y-3,2,3,"#2a2a32"); 사각(mx+3,y-1,6,1,"#2a2a32");
-  if(켜짐){ 사각(빛쪽<0?mx-1:mx+12,y-12,1,8,"#8fc4f0"); c.fillStyle="rgba(140,190,240,.13)"; c.beginPath(); c.ellipse(mx+6+빛쪽*7,y-8,4,5,0,0,Math.PI*2); c.fill(); }
+const 동료옷={맺음:[1,4,0,4,10,0,0,0,0,6],이음:[2,0,2,2,14,0,3,1,1,0]};   // 맺음: 귤색 가디건·헤드폰·옆 묶음 / 이음: 청록 셔츠·둥근 안경·짧은 갈색 머리
+function 동료그리기(v,t){
+  if(퇴근함(v.이름)){ 사무의자(v.x,v.y-1); return; }
+  사무의자(v.x,v.y-1);
+  const 씨=v.이름==="맺음"?0:1.9;
+  사람찍기(사람판(동료옷[v.이름],"down","앉",-1,눈깜빡(씨)),v.x,v.y,false);
+  const X=Math.round(v.x*선명), Y=Math.round(v.y*선명), P=(x,y,w,h,col)=>{ c.fillStyle=col; c.fillRect(X+x,Y+y,w,h); };
+  c.save(); c.setTransform(1,0,0,1,0,0);
+  if(v.이름==="맺음"){ P(-15,-44,1,5,"#2e3039"); P(-14,-40,5,1,"#2e3039"); P(-10,-41,3,2,"#e3b65a"); }         // 헤드셋 마이크
+  else { P(-1,-34,2,9,"#2c5f5c"); P(-1,-34,1,9,"#3a7570"); P(-2,-35,4,2,"#2c5f5c"); }                            // 넥타이
+  c.restore();
 }
-function 작업대판(d){                                        // 책상 몸통(앞판·윗판·명패 자리)
+function 모니터뒷면(mx,y,켜짐,빛쪽){                         // 사람 쪽을 보는 모니터(우리는 뒷면을 봄). 빛쪽=-1 왼쪽/1 오른쪽에 화면 빛
+  사각(mx+4,y-3,4,3.5,"#aeb4bc"); 사각(mx+2.5,y,7,1,"#c9cdd3");
+  둥근(mx,y-13,12,10.5,1,"#d8dce1"); 둥근(mx+0.5,y-12.5,11,9.5,1,"#eceff2"); 사각(mx+5.5,y-8.5,1,1,"#aeb4bc"); 세로(mx+11.5,y-12,9,"#b4bac1");
+  if(켜짐){ 사각(빛쪽<0?mx-0.5:mx+12,y-12,0.5,8.5,"#9fd0f5"); 덩이(mx+6+빛쪽*8,y-8,2.5,4.5,"rgba(150,200,245,.16)"); }
+}
+function 작업대판(d){                                        // 책상 몸통(자작 윗판 + 흰 앞판 + 명패 자리)
   const {x,y,w}=d;
-  사각(x+1,y+21,w+2,3,"rgba(0,0,0,.22)");
-  사각(x,y+5,w,16,"#6b4a30"); 사각(x,y+5,w,2,"#7a5638");
-  for(let i=5;i<w-3;i+=8) 사각(x+i,y+9,1,11,"rgba(0,0,0,.12)");
-  사각(x+1,y+19,3,3,"#4a3220"); 사각(x+w-4,y+19,3,3,"#4a3220");
-  사각(x-2,y,w+4,6,"#a3764a"); 사각(x-2,y,w+4,1,"#c4935e"); 사각(x-2,y+5,w+4,1,"#5a3d27");
-  사각(x+w/2-10,y+9,20,8,"#7a5a22"); 사각(x+w/2-9,y+10,18,6,"#d9b45e");      // 명패(글자는 겹층 .명패)
+  사각(x+1,y+22,w+1,2.5,"rgba(52,40,30,.18)");
+  사각(x,y+6,w,16,색.흰); 세로(x+w-0.5,y+6,16,색.흰d); 가로(x,y+21.5,w,색.흰d); 사각(x,y+6,w,1.5,"rgba(60,50,40,.12)");
+  사각(x+2,y+22,2,1,색.철); 사각(x+w-4,y+22,2,1,색.철);
+  사각(x-1.5,y,w+3,6.5,색.자작); 가로(x-1.5,y,w+3,색.자작l); 사각(x-1.5,y+5.5,w+3,1,색.자작s); 가로(x-1.5,y+6,w+3,색.자작d);
+  사각(x+w/2-11,y+10,22,8,"#f1eee7"); 가로(x+w/2-11,y+10,22,색.흰d); 가로(x+w/2-11,y+17.5,22,색.흰d); 세로(x+w/2-11,y+10,8,색.흰d); 세로(x+w/2+10.5,y+10,8,색.흰d);   // 명패(글자는 겹층 .명패)
 }
-function 음표(nx,ny,a){ c.globalAlpha=a; 사각(nx,ny,2,2,"#e3b65a"); 사각(nx+1,ny-5,1,5,"#e3b65a"); 사각(nx+2,ny-5,2,1,"#e3b65a"); c.globalAlpha=1; }
+function 음표(nx,ny,a){ c.globalAlpha=a; 사각(nx,ny,2,1.5,색.금s); 사각(nx+1.5,ny-4.5,0.5,5,색.금s); 사각(nx+2,ny-4.5,1.5,1,색.금s); c.globalAlpha=1; }
 function 작업대그리기_맺음(d,t){                             // 맺음: 모니터 · 작은 건반(형이랑 작곡) · 음표 · 작은 화분
   const {x,y}=d, 쉼=퇴근함("맺음");
-  작업대판(d); 모니터(x+1,y,!쉼,1);
-  사각(x+13,y+1,14,3,"#f3efe4"); for(let i=0;i<4;i++) 사각(x+15+i*3,y+1,1,2,"#1a1a22");   // 건반
-  사각(x+28,y-5,6,5,"#b5613a"); 사각(x+27,y-6,8,2,"#c97a4e");                            // 화분
-  c.fillStyle="#4f7f45"; c.beginPath(); c.ellipse(x+31,y-10,4,4,0,0,Math.PI*2); c.fill();
-  c.fillStyle="#3f6b3f"; c.beginPath(); c.ellipse(x+29,y-12,2,3,-0.5,0,Math.PI*2); c.fill();
-  사각(x+31,y-15,1,3,"#5a9a5a");
-  if(!쉼) for(let k=0;k<2;k++){ const f=(t*0.35+k*0.5)%1; 음표(Math.round(x+24+k*6+Math.sin((t+k)*2)*1.5),Math.round(y-22-f*12),1-f); }
+  작업대판(d); 모니터뒷면(x+1,y+1,!쉼,1);
+  사각(x+14,y+1.5,15,3.5,"#fdfcf8"); 가로(x+14,y+5,15,"#cfcabd"); for(let i=0;i<5;i++) 사각(x+15.5+i*2.8,y+1.5,1.2,2,"#2c303b");   // 건반
+  사각(x+30.5,y-3,5,4.5,색.토분); 사각(x+30,y-3.5,6,1.2,색.토분l); 덩이(x+33,y-6.5,3.2,3.2,색.잎); 덩이(x+32,y-7.5,1.6,1.6,색.잎l); 덩이(x+34.5,y-4.5,1.5,1.5,색.잎s);
+  if(!쉼) for(let k=0;k<2;k++){ const f=(t*0.35+k*0.5)%1; 음표(Math.round((x+26+k*6+Math.sin((t+k)*2)*1.5)*2)/2,Math.round((y-22-f*12)*2)/2,1-f); }
 }
 function 작업대그리기_이음(d,t){                             // 이음: 책 더미 · 펼친 공책과 펜(글 쓰는 친구) · 모니터
   const {x,y}=d, 쉼=퇴근함("이음");
   작업대판(d);
-  사각(x+1,y-3,11,3,"#c94f4f"); 사각(x+2,y-6,9,3,"#4a90c4"); 사각(x+1,y-9,10,3,"#caa24a");  // 책 더미
-  사각(x+2,y-2,9,1,"#f3efe4"); 사각(x+3,y-5,7,1,"#f3efe4"); 사각(x+2,y-8,8,1,"#f3efe4");
-  사각(x+11,y+1,13,4,"#f3efe4"); 사각(x+17,y+1,1,4,"#c8c0a8");                              // 펼친 공책
-  사각(x+12,y+2,4,1,"#9aa0b0"); 사각(x+12,y+3,3,1,"#9aa0b0"); 사각(x+19,y+2,4,1,"#9aa0b0");
-  사각(x+21,y+3,5,1,"#2a4a8a"); 사각(x+26,y+3,1,1,"#e3b65a");                              // 펜
-  모니터(x+24,y,!쉼,-1);
+  사각(x+1,y-1.5,11,3,"#2f3d63"); 사각(x+2,y-4.5,9,3,"#e3b65a"); 사각(x+1,y-7.5,10,3,"#9fb89b");
+  가로(x+1,y-1.5,11,"#465a8c"); 가로(x+2,y-4.5,9,"#f5d886"); 가로(x+1,y-7.5,10,"#c2d4bf"); 사각(x+10,y-1,1.5,2,"#fdfcf8"); 사각(x+9,y-4,1.5,2,"#fdfcf8");
+  사각(x+11.5,y+1.5,12,4,"#fdfdfb"); 세로(x+17.5,y+1.5,4,"#cfcabd"); 가로(x+11.5,y+5.5,12,"#cfcabd"); 사각(x+12.5,y+2.5,4,0.5,"#9aa3b3"); 사각(x+12.5,y+3.5,3,0.5,"#9aa3b3"); 사각(x+18.5,y+2.5,4,0.5,"#9aa3b3");
+  사각(x+20,y+4.5,5,0.75,"#2f3d63"); 사각(x+25,y+4.5,1,0.75,색.금);
+  모니터뒷면(x+24,y+1,!쉼,-1);
 }
-function 퇴근간판(d){                                        // 「퇴근!」 — 책상 위에 세운 나무 간판(글자는 겹층 .퇴근판)
+function 퇴근간판(d){                                        // 「퇴근!」 — 책상 위에 세운 간판(글자는 겹층 .퇴근판)
   const {x,y,w}=d, bx=x-1, by=y-33, bw=w+2, bh=23;
-  사각(x+6,y-10,2,10,"#5a3d27"); 사각(x+w-8,y-10,2,10,"#5a3d27");               // 다리
-  사각(bx+1,by+2,bw,bh,"rgba(0,0,0,.25)");
-  사각(bx,by,bw,bh,"#7a4a26"); 사각(bx+1,by+1,bw-2,bh-2,"#ffe9a8"); 사각(bx+1,by+1,bw-2,1,"#fff6d0");
-  [[1,0],[2,0],[0,1],[1,1],[0,2],[0,3],[1,3],[1,4],[2,4]].forEach(([a,b])=>사각(bx+bw-6+a,by-6+b,1,1,"#f3d27a"));   // 초승달
-  사각(bx+3,by-3,1,1,"#fff6d0"); 사각(bx+8,by-5,1,1,"#fff6d0"); 사각(bx+bw-10,by-2,1,1,"#fff6d0");  // 별
+  사각(x+6,y-10,1.5,10,참s); 사각(x+w-7.5,y-10,1.5,10,참s);
+  사각(bx+1,by+1.5,bw,bh,"rgba(52,40,30,.2)");
+  둥근(bx,by,bw,bh,1,"#2f3d63"); 둥근(bx+1,by+1,bw-2,bh-2,1,"#fff6dc"); 가로(bx+2,by+1,bw-4,"#ffffff");
+  [[1,0],[2,0],[0,1],[1,1],[0,2],[0,3],[1,3],[1,4],[2,4]].forEach(([a,b])=>사각(bx+bw-7+a,by-7+b,1,1,색.금));   // 초승달
+  사각(bx+3,by-3,1,1,색.금l); 사각(bx+9,by-5,1,1,색.금l); 사각(bx+bw-12,by-2,1,1,색.금l);
 }
 function 퇴근판위치(d){ return {x:d.x+d.w/2, y:d.y-33+23/2}; }
-function 작업대그리기_주인(d){                                 // 형(LeDeuxions): 모니터 · 둘둘 만 도면 · 삼각자 · 커피
-  const {x,y}=d;
-  작업대판(d); 모니터(x+1,y,지금팻말==="있습니다",1);
-  사각(x+14,y+1,10,3,"#f3efe4"); 사각(x+14,y+1,10,0.5,"#ffffff"); 사각(x+16,y+2,6,0.5,"#9aa8c8");     // 펼친 도면 한 장
-  사각(x+25,y-3,9,2,"#e8e0c8"); 사각(x+24,y-1,10,2,"#d8d0b8"); 사각(x+33,y-3,1,2,"#b8ae94"); 사각(x+33,y-1,1,2,"#a89e84");  // 둘둘 만 도면
-  c.fillStyle="#7fb0d8"; c.beginPath(); c.moveTo(x+27,y+4); c.lineTo(x+33,y+4); c.lineTo(x+27,y); c.closePath(); c.fill();   // 삼각자
-  사각(x+12,y-4,4,4,"#f0ece0"); 사각(x+12,y-4,4,1,"#5a3d27"); 사각(x+16,y-3,1,2,"#f0ece0");             // 커피 잔
+
+/* ---------- 책장(자재·책) ---------- */
+function 책장(x,y){
+  const w=36,h=64;
+  사각(x+1,y+h,w+1,2.5,"rgba(52,40,30,.18)");
+  사각(x,y,w,h,색.자작); 세로(x,y,h,색.자작l); 세로(x+w-0.5,y,h,색.자작d); 가로(x,y,w,색.자작l);
+  사각(x+1.5,y+1.5,w-3,h-3,"#f4efe4");
+  const 칸높이=(h-3)/4, 책색=["#2f3d63","#e3b65a","#fbfaf6","#9fb89b","#565b67","#cc7d55","#93bfe3","#e9ddc3"];
+  for(let i=0;i<4;i++){
+    const cy=y+1.5+i*칸높이; 사각(x+1.5,cy,w-3,2,"rgba(60,50,40,.14)");
+    if(i===0){ 작은건물(x+11,cy+칸높이-1.5); 사각(x+22,cy+칸높이-9,9,7.5,"#fdfcf8"); 가로(x+22,cy+칸높이-9,9,"#fff"); 세로(x+30.5,cy+칸높이-9,7.5,"#d8d3c8"); 사각(x+24,cy+칸높이-6,5,2.5,"#2f3d63"); }
+    else if(i===2){ for(let k=0;k<3;k++){ 사각(x+3+k*7,cy+3.5,6,칸높이-5,"#fdfcf8"); 세로(x+8.5+k*7,cy+3.5,칸높이-5,"#d8d3c8"); 사각(x+4.5+k*7,cy+6,3,4,["#e3b65a","#2f3d63","#9fb89b"][k]); } 산세(x+29,cy+칸높이-1.5); }
+    else { let bx=x+3;
+      for(let k=0;k<9&&bx<x+w-5;k++){ const col=책색[(i*3+k*5)%책색.length], bw=2+Math.floor(뒤섞기(i*37+k+1)*2.5)*0.5, bh=칸높이-4.5-Math.floor(뒤섞기(i*53+k)*3), by=cy+칸높이-1.5-bh;
+        사각(bx,by,bw,bh,col); 세로(bx,by,bh,"rgba(255,255,255,.3)"); 세로(bx+bw-0.5,by,bh,"rgba(0,0,20,.2)"); 사각(bx,by+2,bw,0.5,"rgba(255,255,255,.4)"); bx+=bw+0.5; }
+      if(i===3){ 사각(x+24,cy+칸높이-6.5,9,5,"#d7b37d"); 가로(x+24,cy+칸높이-6.5,9,"#eacb99"); 가로(x+24,cy+칸높이-4,9,"#b28955"); } }
+    사각(x+1.5,cy+칸높이-1.5,w-3,1.5,색.자작); 가로(x+1.5,cy+칸높이-1.5,w-3,색.자작l); 가로(x+1.5,cy+칸높이-0.5,w-3,색.자작d);
+  }
+  흰화분(x+7,y,7,5); 늘어진잎(x+3.5,y-2,5); 덩이(x+7,y-6,3.5,2.5,색.잎); 덩이(x+5.5,y-7,2,1.5,색.잎l); 늘어진잎(x+9.5,y-3,3);
+  사각(x+19,y-9,1.5,9,"#fdfcf8"); 사각(x+21.5,y-12,1.5,12,"#fdfcf8"); 사각(x+24,y-7,1.5,7,"#f1e9d6"); 사각(x+26.5,y-10,1.5,10,"#fdfcf8"); 사각(x+18,y-3.5,11.5,3.5,"#565b67"); 가로(x+18,y-3.5,11.5,"#7d8391");   // 도면통
 }
-function 작업대그리기_친구(d){                                 // 빈 친구 자리: 꺼진 모니터 · 작은 화분 · 「환영」 카드
-  const {x,y}=d;
-  작업대판(d); 모니터(x+1,y,false,1);
-  사각(x+15,y-4,8,5,"#fffaf0"); 사각(x+15,y-4,8,1,"#e3b65a"); 사각(x+17,y-2,4,0.5,"#c98a6a");          // 환영 카드
-  사각(x+27,y-4,6,4,"#b5613a"); 사각(x+26,y-5,8,1.5,"#c97a4e");
-  c.fillStyle="#4f7f45"; c.beginPath(); c.ellipse(x+30,y-8,3.5,3,0,0,Math.PI*2); c.fill();
+
+/* ---------- 손님 소파 · 낮은 탁자 · 스탠드 ---------- */
+function 소파그리기(){
+  const x=소파.x, y=소파.y, L=x-29;
+  사각(L+2,y,56,2,"rgba(52,40,30,.2)");
+  사각(L+3,y-1,2,1.5,참s); 사각(L+53,y-1,2,1.5,참s);
+  둥근(L+3,y-25,52,15,2,색.천); 가로(L+5,y-25,48,색.천l); 사각(L+3,y-12,52,2,색.천s); 세로(L+28.5,y-23,11,색.천s);          // 등받이
+  사각(L+5,y-12,48,6,색.천l); 가로(L+5,y-12,48,"#f8f9f8"); 세로(L+28.5,y-12,6,색.천s); 가로(L+5,y-6.5,48,색.천s);            // 방석 윗면
+  사각(L+5,y-6,48,5,색.천); 가로(L+5,y-1.5,48,색.천d); 세로(L+28.5,y-6,5,색.천s);                                            // 방석 앞면
+  둥근(L,y-18,6,17,2,색.천); 가로(L+1,y-18,4,색.천l); 세로(L+5.5,y-16,14,색.천s); 가로(L+1,y-1.5,4,색.천d);                  // 팔걸이
+  둥근(L+52,y-18,6,17,2,색.천); 가로(L+53,y-18,4,색.천l); 세로(L+57.5,y-16,14,색.천d); 가로(L+53,y-1.5,4,색.천d);
+  둥근(L+7,y-21,9,9,2,색.금); 가로(L+8.5,y-21,6,색.금l); 사각(L+14,y-19,1.5,6,색.금s);                                       // 쿠션 둘
+  둥근(L+42,y-21,9,9,2,색.남); 가로(L+43.5,y-21,6,색.남l); 사각(L+49,y-19,1.5,6,색.남s);
 }
-function 단상그리기(){                                         // 가운데 작품 갤러리 단상 — 낮게 올린 무대, 금 테두리, 작품마다 조명 웅덩이
-  const {x,y,w,h}=단상, 앞=7;
-  사각(x+3,y+h+앞,w,3,"rgba(0,0,0,.22)"); 사각(x+w,y+4,3,h+앞,"rgba(0,0,0,.14)");                  // 바닥 그림자
-  const tg=c.createLinearGradient(0,y,0,y+h); tg.addColorStop(0,"#6a4630"); tg.addColorStop(1,"#80573a");
-  c.fillStyle=tg; c.fillRect(x,y,w,h);                                                            // 윗면(짙은 호두나무 — 작품이 도드라지게)
-  for(let yy=y+3;yy<y+h;yy+=6){ 사각(x+2,yy,w-4,0.5,"rgba(30,16,6,.28)"); 사각(x+2,yy+0.5,w-4,0.5,"rgba(255,225,180,.06)"); for(let xx=x+((yy-y)%12?14:4);xx<x+w-4;xx+=24) 사각(xx,yy-5.5,0.5,5.5,"rgba(30,16,6,.22)"); }
-  사각(x,y,w,1.5,"#9a6a44"); 사각(x,y,1,h,"#8a5f3c"); 사각(x+w-1,y,1,h,"#4a3020");                      // 윗면 테
-  사각(x+3,y+3,w-6,0.5,"#e3b65a"); 사각(x+3,y+h-3.5,w-6,0.5,"#e3b65a"); 사각(x+3,y+3,0.5,h-6.5,"#e3b65a"); 사각(x+w-3.5,y+3,0.5,h-6.5,"#e3b65a");  // 금 선
-  사각(x,y+h,w,앞,"#5a3d27"); 사각(x,y+h,w,1,"#c4935e"); 사각(x,y+h+1,w,0.5,"#e3b65a");                   // 앞면 + 금 몰딩
-  for(let i=12;i<w;i+=24) 사각(x+i,y+h+2,0.5,앞-2,"rgba(0,0,0,.25)");
-  사각(x+w/2-26,y+h+1.5,52,앞-2.5,"#3f2a1a");                                                        // 이름판 자리(글자는 겹층 .단상표)
-  사각(x+w/2-18,y+h+앞,36,3,"#8a5f3c"); 사각(x+w/2-18,y+h+앞,36,0.5,"#b8884f");                       // 가운데 계단 한 칸
-  c.fillStyle="rgba(255,226,150,.2)";
-  [[175,186],[208,168],[272,168],[305,186]].forEach(([cx,cy])=>{ c.beginPath(); c.ellipse(cx,cy,17,6,0,0,Math.PI*2); c.fill(); });
+function 낮은탁자(x,y,t){
+  그늘(x+1,y+0.5,12,2.5,0.18);
+  사각(x-8,y-6,1,6,색.철); 사각(x+7,y-6,1,6,색.철); 사각(x-0.5,y-5,1,5,색.철l);
+  덩이(x,y-6,12.5,4,색.자작s); 덩이(x,y-7,12.5,4,색.자작); 덩이(x-2,y-8,7,1.5,색.자작l);
+  사각(x-7,y-8.5,7,3.5,"#fdfcf8"); 가로(x-7,y-5,7,"#cfcabd"); 사각(x-6,y-7.5,4,1,"#2f3d63"); 사각(x-6,y-6,3,0.5,"#b9c7d8");                  // 잡지
+  잔(x+4,y-6,t,0.8); 사각(x+7,y-8,2.5,1.5,"#f3a7b6"); 사각(x+7.5,y-8.5,1.5,0.5,"#fbd3da");                                                   // 차 · 다과
 }
-function 작은탁자(x,y){                                         // 왼쪽 라운지 탁자 (손님 4자리)
-  const w=60,h=22;
-  사각(x,y+h+8,w,3,"rgba(0,0,0,.22)");
-  사각(x+4,y+h,3,8,"#4a3220"); 사각(x+w-7,y+h,3,8,"#4a3220");
-  사각(x,y+h,w,6,"#6b4a30"); 사각(x,y+h,w,1.5,"rgba(0,0,0,.22)"); 사각(x,y+h+1.5,w,1,"#7a5638");
-  사각(x-2,y,w+4,h,"#8a5f3c"); 사각(x-2,y,w+4,2,"#a3764a"); 사각(x-2,y,w+4,0.5,"#b8884f"); 사각(x-2,y+h-1,w+4,1,"#5a3d27");
-  for(let i=0;i<4;i++) 사각(x+5+i*14,y+6,10,0.5,"rgba(90,58,28,.2)");
-  사각(x+20,y+7,16,11,"#eee8d8"); 사각(x+20,y+7,8,11,"#e2dccb"); 사각(x+28,y+7,0.5,11,"#b0a890"); 사각(x+22,y+9,4,3,"#9aa8c8"); 사각(x+30,y+9,5,1,"#b0a890");  // 펼친 작품집
-  사각(x+6,y+12,5,5,"#f0ece0"); 사각(x+7,y+11,3,1,"#8a6a4a");                                         // 찻잔
-  사각(x+47,y+11,5,5,"#f0ece0"); 사각(x+48,y+10,3,1,"#8a6a4a");
+function 스탠드(x,y){
+  그늘(x+0.5,y+0.5,5,1.6,0.16);
+  덩이(x,y-0.5,4,1.4,색.철); 사각(x-0.5,y-36,1,35.5,색.철); 가로(x-0.5,y-36,1,색.철l);
+  덩이(x,y-37,13,10,"rgba(255,232,160,.16)"); 덩이(x,y-37,9,7,"rgba(255,236,170,.2)");                                                        // 불빛
+  사각(x-5,y-44,10,8,"#fff8e6"); 사각(x-6,y-40,12,4,"#fff8e6"); 가로(x-5,y-44,10,"#ffffff"); 사각(x+3.5,y-43,1.5,7,"#f1e2bb"); 가로(x-6,y-36.5,12,"#e3cf9a");
 }
-function 비네트(){
-  const g=c.createRadialGradient(폭/2,높이/2,80,폭/2,높이/2,300);
-  g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(0,0,0,.35)"); c.fillStyle=g; c.fillRect(0,0,폭,높이);
+
+/* ---------- 입구: 옷걸이 + 거울 · 환영 간판 · 안내 로봇 ---------- */
+const 걸린옷=[["#2f3d63",17],["#e3b65a",13],["#fbfaf6",15],["#9fb89b",12],["#e58b4d",14],["#565b67",16]];
+function 옷걸이그리기(){
+  const x=옷걸이.x, y=옷걸이.y;
+  사각(x-1,y,35,2,"rgba(52,40,30,.16)");
+  사각(x,y-35,1,35,색.철); 사각(x+31,y-35,1,35,색.철); 사각(x-1,y-35.5,34,1.5,색.철); 가로(x-1,y-35.5,34,색.철l);
+  사각(x-2,y-1,5,1.5,색.철); 사각(x+29,y-1,5,1.5,색.철);
+  사각(x+1,y-6,30,1.5,색.자작); 가로(x+1,y-6,30,색.자작l); 가로(x+1,y-4.5,30,색.자작d);                                                       // 아래 선반
+  사각(x+4,y-8.5,5,2.5,"#fbfaf6"); 가로(x+4,y-6.5,5,"#cbc6ba"); 사각(x+11,y-8.5,5,2.5,"#7a5333"); 사각(x+21,y-9,4,3,"#d7b37d"); 가로(x+21,y-9,4,"#eacb99");   // 신발 · 바구니
+  걸린옷.forEach(([col,길],i)=>{ const gx=x+2.5+i*4.8;
+    사각(gx+1.5,y-34,0.5,2,"#8d939c");                                                                                                         // 옷걸이 고리
+    사각(gx,y-32,4,길,col); 사각(gx+0.5,y-32.5,3,0.5,col); 세로(gx,y-32,길,밝게(col,.3)); 세로(gx+3.5,y-32,길,어둡게(col,.25)); 가로(gx,y-32+길-0.5,4,어둡게(col,.25)); });
+  // 전신 거울
+  const mx=x+37;
+  그늘(mx+5.5,y+0.5,7,1.8,0.16);
+  사각(mx+1,y-3,1,3,참s); 사각(mx+9,y-3,1,3,참s);
+  둥근(mx,y-37,11,35,2,참); 가로(mx+1.5,y-37,8,참l); 세로(mx+10.5,y-35,31,참s);
+  둥근(mx+1.5,y-35.5,8,32,1.5,"#dcecf3"); 사각(mx+1.5,y-20,8,16,"#cfe3ec");
+  c.save(); c.beginPath(); c.rect(mx+1.5,y-35.5,8,32); c.clip(); c.fillStyle="rgba(255,255,255,.7)"; c.beginPath(); c.moveTo(mx+2,y-26); c.lineTo(mx+7,y-35.5); c.lineTo(mx+9,y-35.5); c.lineTo(mx+2,y-21); c.closePath(); c.fill();
+  c.fillStyle="rgba(255,255,255,.4)"; c.beginPath(); c.moveTo(mx+5,y-4); c.lineTo(mx+9.5,y-14); c.lineTo(mx+9.5,y-11); c.lineTo(mx+7,y-4); c.closePath(); c.fill(); c.restore();
 }
+function 환영판그리기(){
+  const x=환영판.x, y=환영판.y;
+  그늘(x+0.5,y+0.5,16,2,0.16);
+  사각(x-16.5,y-2,1.5,2.5,참s); 사각(x+15,y-2,1.5,2.5,참s);
+  둥근(x-17,y-31,34,29.5,1,참); 가로(x-16,y-31,32,참l); 세로(x+16.5,y-30,27,참s); 가로(x-16,y-2,32,참d);
+  사각(x-15.5,y-29.5,31,26.5,"#fdfcf8"); 가로(x-15.5,y-29.5,31,"rgba(60,50,40,.18)");
+  덩이(x,y-23.5,3,3,색.금); 덩이(x-0.8,y-24.3,1.3,1.3,색.금l); 사각(x-1,y-22.5,2,0.5,"#2a3046"); 사각(x-1.5,y-23,0.5,0.5,"#2a3046"); 사각(x+1,y-23,0.5,0.5,"#2a3046"); 사각(x-1.5,y-24.5,0.5,0.5,"#2a3046"); 사각(x+1,y-24.5,0.5,0.5,"#2a3046");   // 웃는 얼굴
+  글자(설정.환영글[0]||"",x,y-13,"#2a3046"); 글자(설정.환영글[1]||"",x,y-5.5,"#96690a");
+}
+/* 입구 안내 로봇 「안내」 — 맺음·이음과 따로, 늘 서 있음. (x,y)=발끝, t=초 */
+function 안내그리기(x,y,t){
+  그늘(x,y+0.5,7,2.2,0.2);
+  const 둥실=Math.round(Math.sin(t*2.2)*1.6)/2, X=Math.round(x*2)/2, Y=Math.round(y*2)/2+둥실;
+  사각(X-5,Y-3-둥실,10,3.5,색.철); 사각(X-4,Y-1-둥실,2,1.5,"#14161c"); 사각(X+2,Y-1-둥실,2,1.5,"#14161c");                  // 바퀴 받침
+  둥근(X-5.5,Y-13,11,10.5,1.5,"#fbfaf6"); 세로(X+5,Y-12,8.5,색.흰d); 가로(X-4.5,Y-13,9,"#ffffff"); 가로(X-4.5,Y-3,9,색.흰d);       // 몸
+  for(let i=0;i<8;i++) 사각(X-5+i,Y-12.5+i,2.5,1.5,색.금);                                                                 // 안내 띠
+  사각(X-7.5,Y-11.5,2,5.5,색.흰s);
+  if((t%5)<1.2) 사각(X+5.5,Y-17+Math.round(Math.sin(t*14)),2,5.5,색.흰s); else 사각(X+5.5,Y-11.5,2,5.5,색.흰s);              // 가끔 손 흔듦
+  둥근(X-7,Y-23.5,14,10.5,2,"#fbfaf6"); 가로(X-5,Y-23.5,10,"#ffffff"); 세로(X+6.5,Y-21.5,6.5,색.흰d); 가로(X-5,Y-13.5,10,색.흰d);   // 머리
+  둥근(X-5.5,Y-21.5,11,6.5,1,"#1f2c3a");                                                                                    // 얼굴 화면
+  if((t%3.7)<0.15){ 사각(X-3.5,Y-18.5,2,0.5,"#7fe6cc"); 사각(X+1.5,Y-18.5,2,0.5,"#7fe6cc"); } else { 사각(X-3.5,Y-20,2,2,"#7fe6cc"); 사각(X+1.5,Y-20,2,2,"#7fe6cc"); }
+  사각(X-1,Y-17,2,0.5,"#7fe6cc"); 사각(X-1.5,Y-17.5,0.5,0.5,"#7fe6cc"); 사각(X+1,Y-17.5,0.5,0.5,"#7fe6cc"); 사각(X-5,Y-17.5,1,1,"#f39a9a"); 사각(X+4,Y-17.5,1,1,"#f39a9a");
+  사각(X-0.25,Y-26.5,0.5,3,"#8d939c"); 사각(X-1,Y-28,2,2,(t%1.6)<0.8?색.금:색.금s);                                         // 안테나 불
+}
+
+/* ---------- 대표 모습 ---------- */
+let 주인와있음=false;                                        // 연결된 사람 가운데 주인이 있는가 (통신에서 갱신)
+// 대표 자리의 앉은 모습: 팻말이 「있습니다」일 때만. 주인이 직접 방에 들어와 있으면(입장한 주인 본인 · 연결된 주인) 그 사람이 따로 보이므로 그리지 않는다
+function 대표보임(){ return 설정.대표모습&&지금팻말==="있습니다"&&!주인와있음&&!(주인열쇠&&통신.peer)&&!(나.앉음&&나.앉은자리===주인석); }
+const 대표옷=옷정리(설정.대표옷)||[1,1,0,5,2,0,3,1,1,0];
+
+/* ---------- 놓인 순서(바닥 y 순서로 뒤→앞). 막음=[x,y,w,h] 는 못 지나가는 바닥 ---------- */
+const 초=()=>performance.now()/1000;
 const 가구=[
-  {그리기:()=>캐비닛(34,98), 막음:[32,96,76,26], 바닥y:120},
-  {그리기:()=>책장(22,128), 막음:[20,128,40,68], 바닥y:194},
-  // 왼쪽 라운지: 작은 탁자 + 손님 의자 4개
-  {그리기:()=>작은탁자(76,168), 막음:[74,166,64,34], 바닥y:198},
-  {그리기:()=>의자(92,166,"down"), 막음:[84,158,16,10], 바닥y:166},
-  {그리기:()=>의자(120,166,"down"), 막음:[112,158,16,10], 바닥y:166},
-  {그리기:()=>의자(92,216,"up"), 막음:[84,208,16,12], 바닥y:218},
-  {그리기:()=>의자(120,216,"up"), 막음:[112,208,16,12], 바닥y:218},
-  // 가운데 단상 위 작품 (단상 자체는 바닥과 함께 그림 — 단상표 아래 단상그리기)
-  {그리기:()=>좌대그리기("좌대1"), 막음:[162,164,26,24], 바닥y:188},
-  {그리기:()=>좌대그리기("좌대2"), 막음:[292,164,26,24], 바닥y:188},
-  {그리기:()=>이젤그리기("이젤1"), 막음:[196,154,24,14], 바닥y:168},
-  {그리기:()=>이젤그리기("이젤2"), 막음:[260,154,24,14], 바닥y:168},
-  {그리기:()=>화분(448,246), 막음:[438,236,20,16], 바닥y:252},
-  {그리기:()=>안내그리기(안내봇.x,안내봇.y,performance.now()/1000), 막음:[203,238,14,10], 바닥y:246},
-  // 크루 책상 4개(똑같은 크기): 의자·사람(책상 뒤, 바닥y=d.y+3) → 책상(d.y+21) → 퇴근이면 간판
-  ...책상들.flatMap(d=>[
-    {그리기:()=>{ const t=performance.now()/1000;
-      if(d.이름==="맺음"&&!퇴근함("맺음")) 사람그리기_맺음(동료들[0].x,동료들[0].y,t);
-      else if(d.이름==="이음"&&!퇴근함("이음")) 사람그리기_이음(동료들[1].x,동료들[1].y,t);
-      else { const v=동료들.find(v=>v.책상===d); 빈의자(v?v.x:d.x+18,d.y+3); } }, 바닥y:d.y+3},
-    {그리기:()=>{ const t=performance.now()/1000;
-      if(d.이름==="맺음") 작업대그리기_맺음(d,t); else if(d.이름==="이음") 작업대그리기_이음(d,t); else if(d.종류==="주인") 작업대그리기_주인(d); else 작업대그리기_친구(d);
-      if(d.종류==="동료"&&퇴근함(d.이름)) 퇴근간판(d); }, 막음:[d.x-3,d.y-14,d.w+6,38], 바닥y:d.y+21}
-  ])
+  {그리기:()=>도면함(24,98), 막음:[24,98,74,24], 바닥y:121},
+  {그리기:()=>떡갈(110,123), 막음:[104,114,12,10], 바닥y:123},
+  {그리기:()=>책장(426,100), 막음:[424,100,40,66], 바닥y:164},
+  {그리기:()=>좌대그리기("좌대1"), 막음:[147,126,26,24], 바닥y:150},
+  {그리기:()=>좌대그리기("좌대2"), 막음:[307,126,26,24], 바닥y:150},
+  {그리기:()=>이젤그리기("이젤1"), 막음:[32,156,24,14], 바닥y:170},
+  {그리기:()=>이젤그리기("이젤2"), 막음:[72,156,24,14], 바닥y:170},
+  {그리기:()=>탁자그리기(초()), 막음:[192,152,96,44], 바닥y:탁자.y+탁자.h+탁자.키},
+  // 맺음·이음: 사람(작업대 뒤) → 작업대 → 퇴근이면 간판. 막음은 둘을 한 덩어리로(사이 틈에 끼지 않게)
+  {그리기:()=>동료그리기(동료들[0],초()), 바닥y:156},
+  {그리기:()=>동료그리기(동료들[1],초()), 바닥y:156},
+  {그리기:()=>{ 작업대그리기_맺음(작업대들[0],초()); if(퇴근함("맺음")) 퇴근간판(작업대들[0]); }, 막음:[340,134,84,40], 바닥y:174},
+  {그리기:()=>{ 작업대그리기_이음(작업대들[1],초()); if(퇴근함("이음")) 퇴근간판(작업대들[1]); }, 바닥y:174},
+  // 대표 자리: 의자 → (앉은 모습) → 책상
+  {그리기:()=>사무의자(주인석.자리.x,주인석.자리.y-1), 막음:[52,190,20,6], 바닥y:주인석.자리.y-1},
+  {그리기:()=>{ if(대표보임()) 사람찍기(사람판(대표옷,"down","앉",-1,눈깜빡(0.7)),주인석.자리.x,주인석.자리.y,false); }, 바닥y:주인석.자리.y+3.9},
+  {그리기:()=>대표책상그리기(초()), 막음:[34,196,78,32], 바닥y:228},
+  {그리기:()=>옷걸이그리기(), 막음:[122,228,52,10], 바닥y:옷걸이.y},
+  {그리기:()=>안내그리기(안내봇.x,안내봇.y,초()), 막음:[203,238,14,10], 바닥y:안내봇.y},
+  {그리기:()=>환영판그리기(), 막음:[256,242,36,8], 바닥y:환영판.y},
+  {그리기:()=>소파그리기(), 막음:[366,210,60,18], 바닥y:소파.y},
+  {그리기:()=>낮은탁자(396,248,초()), 막음:[386,240,20,8], 바닥y:248},
+  {그리기:()=>스탠드(354,227), 막음:[350,222,8,8], 바닥y:227},
+  {그리기:()=>몬스테라(448,248), 막음:[438,238,20,14], 바닥y:248}
 ];
+// 의자: 놓인 자리 = 좌석 좌표. 「위를 보는」 의자는 등받이를 사람 위에 한 번 더 그린다
+좌석.forEach(s=>{
+  if(s.소파||s.주인) return;
+  const {x,y}=s.자리;
+  가구.push({그리기:()=>의자(x,y,s.방향), 막음:[x-8,y-(s.방향==="down"?10:8),16,10], 바닥y:y-(s.방향==="down"?0.5:0)});
+  if(s.방향==="up") 가구.push({그리기:()=>의자등(x,y), 바닥y:y+4.5});
+});
 
 /* ===================== 5. 길찾기 ===================== */
 const 칸=4, 열=폭/칸, 행=Math.ceil(높이/칸);
@@ -925,14 +1427,21 @@ function 경로찾기(x0,y0,x1,y1){
 }
 
 /* ===================== 6. 사람(나·남) ===================== */
-const 나={x:입구.x,y:입구.y,방향:"up",걸음:0,걷는중:false,경로:[],상호작용:null,이름:"",색:"#3f6b9e",말풍선:null,말풍선끝:0,앉음:false,앉은자리:null};
+const 나={x:입구.x,y:입구.y,방향:"up",걸음:0,걷는중:false,경로:[],상호작용:null,이름:"",옷:null,씨:Math.random()*5,말풍선:null,말풍선끝:0,앉음:false,앉은자리:null};
+// 내 옷: 이 브라우저에 저장된다. 처음 온 손님은 무작위 한 벌, 주인 열쇠가 있으면 대표 옷으로 시작
+function 내옷읽기(){ const s=저장소읽기("사무실.옷"); if(!s) return null; try{ return 옷정리(JSON.parse(s)); }catch(_){ return null; } }
+function 내옷정하기(o,알리기){ 나.옷=o; 저장소쓰기("사무실.옷",JSON.stringify(o)); if(알리기) 옷알리기(); }
 const 키=new Set();
 let 근처=null, 키이동중=false;
 function 좌표(e){ const r=보기.getBoundingClientRect(); return {x:(e.clientX-r.left)/배율+카메라.x,y:(e.clientY-r.top)/배율+카메라.y}; }
 function 안에(p,r){ return p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h; }
 function 상호작용맞춤(p){ return 상호작용들.find(o=>안에(p,o.영역))||null; }
+function 일어서기(){                                      // 앉은 자리 옆(걸어와 섰던 곳)으로 나와 선다 — 의자·탁자에 낀 채로 서지 않게
+  if(!나.앉음) return; const s=나.앉은자리; 나.앉음=false; 나.앉은자리=null;
+  if(s){ 나.x=s.서는곳.x; 나.y=s.서는곳.y; }
+}
 function 가기(x,y,obj){
-  if(나.앉음){ 나.앉음=false; 나.앉은자리=null; }           // 뭘 누르든 먼저 일어선다
+  일어서기();                                              // 뭘 누르든 먼저 일어선다
   나.상호작용=obj;
   if(obj&&Math.hypot(나.x-obj.서는곳.x,나.y-obj.서는곳.y)<12){ 나.경로=[]; 열기(obj); 나.상호작용=null; return; }
   나.경로=경로찾기(나.x,나.y,x,y)||[];
@@ -946,6 +1455,8 @@ function 가기(x,y,obj){
   if(o&&o.종류==="동료"){ 채팅열기(true); 가기(o.서는곳.x,o.서는곳.y,null); return; }
   if(o&&o.종류==="예약"&&주인열쇠){ 팻말창열기(); return; }        // 주인이 자기 책상을 누르면 → 내 팻말
   if(o&&o.종류==="예약"){ 예약열기(); 가기(o.서는곳.x,o.서는곳.y,null); return; }
+  if(o&&o.종류==="상담판"){ 예약열기(); 가기(o.서는곳.x,o.서는곳.y,null); return; }
+  if(o&&o.종류==="의자"&&o.주인&&!주인열쇠){ const d=특별자리[0]; 예약열기(); 가기(d.서는곳.x,d.서는곳.y,null); return; }   // 손님이 대표 자리를 누르면 → 상담 예약
   if(o&&o.종류==="안내"){ 안내메뉴열기(); 가기(o.서는곳.x,o.서는곳.y,null); return; }
   if(o) 가기(o.서는곳.x,o.서는곳.y,o); else 가기(p.x,p.y,null);
 });
@@ -953,7 +1464,7 @@ function 입력중(){ const a=document.activeElement; return a&&(a.tagName==="IN
 document.addEventListener("keydown",e=>{
   if(입력중()){ if(e.key==="Escape"){ if(채팅.hidden===false&&document.activeElement===채팅입력){ 채팅닫기(); } e.target.blur(); } return; }
   const k=e.key;
-  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d","W","A","S","D"].includes(k)){ if(창열림()||편집중) return; 키.add(k.toLowerCase()); 나.경로=[]; 나.상호작용=null; 나.앉음=false; 나.앉은자리=null; e.preventDefault(); return; }
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d","W","A","S","D"].includes(k)){ if(창열림()||편집중) return; 키.add(k.toLowerCase()); 나.경로=[]; 나.상호작용=null; 일어서기(); e.preventDefault(); return; }
   if(k==="Enter"||k===" "){ if(창열림()) return; if(근처){ 열기(근처); e.preventDefault(); } return; }
   if(k==="t"||k==="T"){ if(!창열림()){ 채팅열기(); e.preventDefault(); } return; }
   if(k==="e"||k==="E"){ if(편집가능&&!창열림()) 편집토글(); return; }
@@ -991,10 +1502,15 @@ function 아이디(방,자리번호){ return 설정.접두+"-"+방+"-"+자리번
 function 자리번호(id){ return parseInt(id.split("-").pop(),10); }
 function 마이크켜짐(){ const t=통신.마이크&&통신.마이크.getAudioTracks()[0]; return !!(t&&t.enabled); }
 function 방송(m){ 통신.연결.forEach(e=>{ if(e.conn&&e.conn.open){ try{ e.conn.send(m); }catch(_){} } }); }
+function 방향정리(d,기본){ return d==="up"||d==="down"||d==="left"||d==="right"?d:기본; }
+function 자리수(v,끝,기본){ v=+v; return Number.isFinite(v)?Math.max(0,Math.min(끝,v)):기본; }   // 남이 보낸 좌표: 숫자가 아니거나 방 밖이면 버린다
+function 주인확인(){ 주인와있음=[...통신.연결.values()].some(e=>e.사람&&e.사람.주인); }
+let 옷알림시한=0;
+function 옷알리기(){ clearTimeout(옷알림시한); 옷알림시한=setTimeout(()=>{ if(통신.peer) 방송({t:"fit",o:나.옷}); },250); }   // 옷장에서 연달아 눌러도 한 번만 보냄
 
 function 입장(이름,방){
   if(typeof Peer==="undefined"){ 상태("통신 라이브러리(peerjs.min.js)를 불러오지 못했습니다","오류"); return; }
-  통신.이름=이름; 통신.방=방; 통신.들어가는중=true; 나.이름=이름; 나.색=색고르기(이름);
+  통신.이름=이름; 통신.방=방; 통신.들어가는중=true; 나.이름=이름;
   상태("서버에 연결하는 중…"); 자리시도(0);
 }
 function 자리시도(n){
@@ -1031,7 +1547,7 @@ function 연결준비(conn,내가시작){
       else { try{conn.close();}catch(_){} return; }
     } else if(기존) 기존.conn=conn;
     else 통신.연결.set(id,{conn,사람:null,통화:{},마지막:performance.now()});
-    try{ conn.send({t:"hi",n:통신.이름,c:나.색,x:나.x,y:나.y,d:나.방향,mic:마이크켜짐(),scr:!!통신.화면}); }catch(_){}
+    try{ conn.send({t:"hi",n:통신.이름,o:나.옷,s:나.앉음?1:0,own:주인열쇠?1:0,x:나.x,y:나.y,d:나.방향,mic:마이크켜짐(),scr:!!통신.화면}); }catch(_){}   // o=옷(숫자 10개), s=앉음, own=주인(자리의 앉은 모습을 숨기는 데만 씀)
     if(통신.마이크) 통화걸기(id,"audio",통신.마이크);
     if(통신.화면) 통화걸기(id,"screen",통신.화면);
     갱신상태();
@@ -1044,8 +1560,11 @@ function 메시지(id,m,conn){
   const e=통신.연결.get(id); if(!e||e.conn!==conn||!m||typeof m!=="object") return;
   e.마지막=performance.now();
   switch(m.t){
-    case "hi": e.사람={이름:String(m.n||"손님").slice(0,16),색:색고르기(String(m.n||"손님")),x:+m.x||입구.x,y:+m.y||입구.y,목표:null,방향:m.d||"down",걸음:0,걷는중:false,움직임:false,mic:!!m.mic,scr:!!m.scr,말풍선:null,말풍선끝:0}; 채팅알림(e.사람.이름+" 입장"); 갱신상태(); break;
-    case "p": if(e.사람){ e.사람.목표={x:+m.x,y:+m.y}; e.사람.방향=m.d||e.사람.방향; e.사람.움직임=!!m.m; } break;
+    case "hi": { const 이름=String(m.n||"손님").slice(0,16);
+      e.사람={이름,옷:옷정리(m.o)||기본옷(이름),씨:(해시(id)%50)/10,주인:!!m.own,앉음:!!m.s,x:자리수(m.x,폭,입구.x),y:자리수(m.y,높이,입구.y),목표:null,방향:방향정리(m.d,"down"),걸음:0,걷는중:false,움직임:false,mic:!!m.mic,scr:!!m.scr,말풍선:null,말풍선끝:0};
+      주인확인(); 채팅알림(이름+" 입장"); 갱신상태(); break; }
+    case "p": if(e.사람){ e.사람.목표={x:자리수(m.x,폭,e.사람.x),y:자리수(m.y,높이,e.사람.y)}; e.사람.방향=방향정리(m.d,e.사람.방향); e.사람.움직임=!!m.m; e.사람.앉음=!!m.s; } break;
+    case "fit": if(e.사람){ const o=옷정리(m.o); if(o) e.사람.옷=o; } break;                    // 옷을 갈아입음
     case "mic": if(e.사람) e.사람.mic=!!m.on; 갱신상태(); break;
     case "scr": if(e.사람) e.사람.scr=!!m.on; if(!m.on&&공유화면&&공유화면.id===id) 화면지우기(); 갱신상태(); break;
     case "say": if(e.사람){ const s=String(m.s||"").slice(0,200); e.사람.말풍선=s; e.사람.말풍선끝=performance.now()+7000; 채팅기록추가(e.사람.이름,s); } break;
@@ -1062,7 +1581,7 @@ function 떠남(id,conn){
   const 이름표=겹층.querySelector('[data-id="'+id+'"]'); if(이름표) 이름표.remove();
   const 풍선=겹층.querySelector('[data-bubble="'+id+'"]'); if(풍선) 풍선.remove();
   if(e.사람) 채팅알림(e.사람.이름+" 퇴장");
-  통신.연결.delete(id); 갱신상태();
+  통신.연결.delete(id); 주인확인(); 갱신상태();
 }
 function ICE감시(call,id){
   setTimeout(()=>{ const pc=call.peerConnection; if(!pc) return;
@@ -1175,11 +1694,16 @@ function 나가기(){
 window.addEventListener("pagehide",()=>{ if(통신.peer){ 방송({t:"bye"}); try{통신.peer.destroy();}catch(_){} } });
 
 /* ===================== 8. 화면 조립·HUD ===================== */
-const 상태el=document.getElementById("상태"), 안내=document.getElementById("안내");
-const 버튼={입장:document.getElementById("버튼-입장"),마이크:document.getElementById("버튼-마이크"),화면:document.getElementById("버튼-화면"),채팅:document.getElementById("버튼-채팅"),나가기:document.getElementById("버튼-나가기"),편집:document.getElementById("버튼-편집"),JSON:document.getElementById("버튼-JSON")};
-const 창입장=document.getElementById("창-입장"), 창작품=document.getElementById("창-작품"), 창편집=document.getElementById("창-편집"), 창JSON=document.getElementById("창-JSON"), 창화면=document.getElementById("창-화면"), 창예약=document.getElementById("창-예약"), 창팻말=document.getElementById("창-팻말");
+const 상태el=document.getElementById("상태"), 안내=document.getElementById("안내글"), 간판글=document.getElementById("간판글");
+const 버튼={입장:document.getElementById("버튼-입장"),마이크:document.getElementById("버튼-마이크"),화면:document.getElementById("버튼-화면"),채팅:document.getElementById("버튼-채팅"),나가기:document.getElementById("버튼-나가기"),편집:document.getElementById("버튼-편집"),JSON:document.getElementById("버튼-JSON"),옷:document.getElementById("버튼-옷")};
+const 창입장=document.getElementById("창-입장"), 창작품=document.getElementById("창-작품"), 창편집=document.getElementById("창-편집"), 창JSON=document.getElementById("창-JSON"), 창화면=document.getElementById("창-화면"), 창예약=document.getElementById("창-예약"), 창팻말=document.getElementById("창-팻말"), 창옷=document.getElementById("창-옷");
 const 큰화면=document.getElementById("큰화면"), 채팅=document.getElementById("채팅"), 채팅입력=document.getElementById("채팅입력"), 채팅기록=document.getElementById("채팅기록");
 const 터치=matchMedia("(pointer:coarse)").matches;
+// 단추·창 제목 앞의 작은 그림: 12×12 픽셀 그림(사각형만으로 된 SVG) — 기기마다 모양이 다른 이모지 대신 방과 같은 픽셀 결로
+const 그림길={입장:"M6 1h5v1h-5zM10 2h1v1h-1zM4 3h1v1h-1zM10 3h1v1h-1zM5 4h1v1h-1zM10 4h1v1h-1zM0 5h6v1h-6zM10 5h1v1h-1zM0 6h6v1h-6zM10 6h1v1h-1zM5 7h1v1h-1zM10 7h1v1h-1zM4 8h1v1h-1zM10 8h1v1h-1zM10 9h1v1h-1zM6 10h5v1h-5z",나가기:"M1 1h5v1h-5zM1 2h1v1h-1zM1 3h1v1h-1zM7 3h1v1h-1zM1 4h1v1h-1zM8 4h1v1h-1zM1 5h1v1h-1zM5 5h6v1h-6zM1 6h1v1h-1zM5 6h6v1h-6zM1 7h1v1h-1zM8 7h1v1h-1zM1 8h1v1h-1zM7 8h1v1h-1zM1 9h1v1h-1zM1 10h5v1h-5z",마이크:"M4 0h4v1h-4zM4 1h4v1h-4zM4 2h4v1h-4zM4 3h4v1h-4zM2 4h1v1h-1zM4 4h4v1h-4zM9 4h1v1h-1zM2 5h1v1h-1zM4 5h4v1h-4zM9 5h1v1h-1zM2 6h1v1h-1zM9 6h1v1h-1zM3 7h6v1h-6zM5 8h2v1h-2zM5 9h2v1h-2zM3 10h6v1h-6z",화면:"M0 1h12v1h-12zM0 2h1v1h-1zM11 2h1v1h-1zM0 3h1v1h-1zM11 3h1v1h-1zM0 4h1v1h-1zM11 4h1v1h-1zM0 5h1v1h-1zM11 5h1v1h-1zM0 6h1v1h-1zM11 6h1v1h-1zM0 7h12v1h-12zM5 8h2v1h-2zM5 9h2v1h-2zM3 10h6v1h-6z",채팅:"M1 1h10v1h-10zM0 2h12v1h-12zM0 3h12v1h-12zM0 4h2v1h-2zM4 4h1v1h-1zM7 4h1v1h-1zM10 4h2v1h-2zM0 5h2v1h-2zM4 5h1v1h-1zM7 5h1v1h-1zM10 5h2v1h-2zM0 6h12v1h-12zM1 7h10v1h-10zM3 8h3v1h-3zM3 9h2v1h-2zM3 10h1v1h-1z",옷:"M2 0h2v1h-2zM8 0h2v1h-2zM1 1h4v1h-4zM7 1h4v1h-4zM0 2h12v1h-12zM0 3h12v1h-12zM0 4h2v1h-2zM3 4h6v1h-6zM10 4h2v1h-2zM3 5h6v1h-6zM3 6h6v1h-6zM3 7h6v1h-6zM3 8h6v1h-6zM3 9h6v1h-6zM3 10h6v1h-6z",예약:"M2 1h1v1h-1zM9 1h1v1h-1zM1 2h10v1h-10zM1 3h10v1h-10zM1 4h1v1h-1zM10 4h1v1h-1zM1 5h1v1h-1zM3 5h2v1h-2zM6 5h2v1h-2zM10 5h1v1h-1zM1 6h1v1h-1zM10 6h1v1h-1zM1 7h1v1h-1zM3 7h2v1h-2zM6 7h2v1h-2zM10 7h1v1h-1zM1 8h1v1h-1zM10 8h1v1h-1zM1 9h10v1h-10z",팻말:"M0 2h1v1h-1zM5 2h2v1h-2zM11 2h1v1h-1zM0 3h2v1h-2zM4 3h4v1h-4zM10 3h2v1h-2zM0 4h12v1h-12zM0 5h12v1h-12zM0 6h12v1h-12zM1 7h10v1h-10zM1 8h10v1h-10z",편집:"M9 0h2v1h-2zM8 1h4v1h-4zM7 2h4v1h-4zM6 3h4v1h-4zM5 4h4v1h-4zM4 5h4v1h-4zM3 6h4v1h-4zM2 7h4v1h-4zM1 8h4v1h-4zM1 9h3v1h-3zM1 10h1v1h-1z",목록:"M1 1h2v1h-2zM4 1h7v1h-7zM1 2h2v1h-2zM4 2h7v1h-7zM1 4h2v1h-2zM4 4h7v1h-7zM1 5h2v1h-2zM4 5h7v1h-7zM1 7h2v1h-2zM4 7h7v1h-7zM1 8h2v1h-2zM4 8h7v1h-7z",작품:"M0 0h12v1h-12zM0 1h1v1h-1zM11 1h1v1h-1zM0 2h1v1h-1zM7 2h2v1h-2zM11 2h1v1h-1zM0 3h1v1h-1zM7 3h2v1h-2zM11 3h1v1h-1zM0 4h1v1h-1zM11 4h1v1h-1zM0 5h1v1h-1zM4 5h1v1h-1zM11 5h1v1h-1zM0 6h1v1h-1zM3 6h3v1h-3zM8 6h1v1h-1zM11 6h1v1h-1zM0 7h1v1h-1zM2 7h5v1h-5zM8 7h2v1h-2zM11 7h1v1h-1zM0 8h1v1h-1zM2 8h8v1h-8zM11 8h1v1h-1zM0 9h1v1h-1zM11 9h1v1h-1zM0 10h12v1h-12z",알림판:"M1 1h10v1h-10zM1 2h1v1h-1zM10 2h1v1h-1zM1 3h1v1h-1zM3 3h6v1h-6zM10 3h1v1h-1zM1 4h1v1h-1zM10 4h1v1h-1zM1 5h10v1h-10zM5 6h2v1h-2zM5 7h2v1h-2zM5 8h2v1h-2zM5 9h2v1h-2zM4 10h4v1h-4z"};
+function 아이콘(이름){ const NS="http://www.w3.org/2000/svg", s=document.createElementNS(NS,"svg"), p=document.createElementNS(NS,"path"); s.setAttribute("viewBox","0 0 12 12"); s.setAttribute("class","그림"); s.setAttribute("aria-hidden","true"); p.setAttribute("d",그림길[이름]||""); s.appendChild(p); return s; }
+document.querySelectorAll("[data-그림]").forEach(el=>el.insertBefore(아이콘(el.dataset.그림),el.firstChild));
+function 단추글(b,글){ const s=b.querySelector(".글"); if(!s) b.textContent=글; else if(s.textContent!==글) s.textContent=글; }   // 그림은 두고 글자만 바꾼다
 let 상태시한=0;
 function 상태(글,종류){ 상태el.textContent=글; 상태el.dataset.종류=종류||""; clearTimeout(상태시한); if(종류==="오류") 상태시한=setTimeout(갱신상태,9000); }
 function 갱신상태(){
@@ -1196,15 +1720,34 @@ function 버튼갱신(){
   const 들어옴=!!통신.peer;
   버튼.입장.hidden=들어옴; 버튼.마이크.hidden=!들어옴; 버튼.나가기.hidden=!들어옴;
   버튼.화면.hidden=!들어옴||!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
-  버튼.마이크.textContent=마이크켜짐()?"마이크 끄기":"마이크 켜기"; 버튼.마이크.classList.toggle("켜짐",마이크켜짐());
-  버튼.화면.textContent=통신.화면?"공유 중지":"화면 공유"; 버튼.화면.classList.toggle("켜짐",!!통신.화면);
-  버튼.편집.hidden=!편집가능; 버튼.편집.textContent=편집중?"편집 끝":"작품 편집"; 버튼.편집.classList.toggle("켜짐",편집중);
+  단추글(버튼.마이크,마이크켜짐()?"마이크 끄기":"마이크 켜기"); 버튼.마이크.classList.toggle("켜짐",마이크켜짐());
+  단추글(버튼.화면,통신.화면?"공유 중지":"화면 공유"); 버튼.화면.classList.toggle("켜짐",!!통신.화면);
+  버튼.편집.hidden=!편집가능; 단추글(버튼.편집,편집중?"편집 끝":"작품 편집"); 버튼.편집.classList.toggle("켜짐",편집중);
   버튼.JSON.hidden=!편집중;
-  안내.textContent=편집중?"액자·이젤·좌대·스크린을 누르면 작품을 넣습니다 · 끝나면 JSON 보기 → 복사해서 gallery.json으로 올립니다":(터치?"바닥을 누르면 걸어갑니다 · 액자·이젤·좌대를 누르면 봅니다 · 가운데 단상=작품 갤러리 · 맺음·이음 책상=채팅 · LeDeuxions 책상=상담 예약":"클릭 또는 방향키로 이동 · 액자·이젤·좌대·스크린 클릭 · Enter 보기 · T 채팅 · 입구 안내 로봇에게 물어보세요");
+  안내문갱신(true);
 }
-function 창열림(){ return !창팻말.hidden||!창예약.hidden||!창입장.hidden||!창작품.hidden||!창편집.hidden||!창JSON.hidden||!창화면.hidden; }
-function 창모두닫기(){ 창팻말.hidden=true; 창예약.hidden=true; 창입장.hidden=true; 창작품.hidden=true; 창편집.hidden=true; 창JSON.hidden=true; if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; } 작품내용비우기(); }
-[창입장,창작품,창편집,창JSON,창화면,창예약,창팻말].forEach(w=>w.addEventListener("pointerdown",e=>{ if(e.target===w) 창모두닫기(); }));
+// 아래 한 줄 안내: 지금 가까이 있는 것으로 할 수 있는 일을 알려 준다 (가까운 게 없으면 걷는 법)
+let 안내문=null;
+function 안내문짓기(){
+  if(편집중) return "액자·이젤·좌대·스크린을 누르면 작품을 넣습니다. 끝나면 JSON 보기에서 복사해 gallery.json 으로 올립니다.";
+  const o=근처, 키="Enter";
+  if(나.앉음&&!창열림()) return 터치?"앉아 있습니다. 바닥을 누르면 일어섭니다.":"앉아 있습니다. 걸으면 일어섭니다.";
+  if(!o||창열림()) return 터치?(innerHeight>innerWidth?"바닥을 누르면 걸어갑니다. 가로로 돌리면 방이 커집니다.":"바닥을 누르면 걸어갑니다. 작품·의자·사람을 눌러 보세요."):"바닥을 클릭하거나 방향키로 걸어 다니세요. 가까이 가면 할 수 있는 일이 여기에 나옵니다.";
+  const 하기=(무엇,일)=>무엇+": "+(터치?"누르면 ":키+" 로 ")+일;
+  if(o.종류==="의자") return o.주인&&!주인열쇠?하기("대표 자리","상담 예약"):하기(o.소파?"손님 소파":o.주인?"내 자리":"상담 테이블 의자","앉기");
+  if(o.종류==="동료") return 하기(o.이름,"채팅");
+  if(o.종류==="예약") return 주인열쇠?하기("내 책상","팻말 바꾸기"):하기("대표 책상","상담 예약");
+  if(o.종류==="상담판") return 하기("환영 간판","상담 예약");
+  if(o.종류==="안내") return 하기("안내 로봇","메뉴 열기");
+  if(o.종류==="옷장") return 하기("옷걸이","옷 갈아입기");
+  if(o.종류==="스크린") return 공유중비디오()?하기("공유 화면","크게 보기"):항목들("스크린").length?하기((지금항목("스크린").제목||"발표 화면"),"크게 보기"):"입장해서 화면을 공유하면 이 스크린에 보입니다.";
+  const 항목=지금항목(o.이름);
+  return 항목?하기(항목.제목||o.이름,"크게 보기"):"아직 비어 있는 자리입니다.";
+}
+function 안내문갱신(강제){ const 글=안내문짓기(); if(강제||글!==안내문){ 안내문=글; 안내.textContent=글; } }
+function 창열림(){ return !창옷.hidden||!창팻말.hidden||!창예약.hidden||!창입장.hidden||!창작품.hidden||!창편집.hidden||!창JSON.hidden||!창화면.hidden; }
+function 창모두닫기(){ 창옷.hidden=true; 창팻말.hidden=true; 창예약.hidden=true; 창입장.hidden=true; 창작품.hidden=true; 창편집.hidden=true; 창JSON.hidden=true; if(!창화면.hidden){ 큰화면.srcObject=null; 창화면.hidden=true; } 작품내용비우기(); }
+[창입장,창작품,창편집,창JSON,창화면,창예약,창팻말,창옷].forEach(w=>w.addEventListener("pointerdown",e=>{ if(e.target===w) 창모두닫기(); }));
 
 // --- 입장 창
 버튼.입장.addEventListener("click",()=>{
@@ -1238,11 +1781,12 @@ let 주인열쇠=null;
 const 채팅이름=document.getElementById("채팅이름"), 채팅보내기=document.getElementById("채팅보내기");
 const 챗={끝:null,본:new Set(),내것:new Set(),미읽음:0,시한:0,보내는중:false,마지막보냄:0};
 if(주인열쇠){ 채팅이름.hidden=true; 채팅입력.placeholder="👑 LeDeuxions 로 말하기"; } else 채팅이름.value=저장소읽기("사무실.이름")||"";
-function 배지(){ 버튼.채팅.textContent="채팅"; if(챗.미읽음&&채팅.hidden){ const b=document.createElement("span"); b.className="배지"; b.textContent=String(Math.min(99,챗.미읽음)); 버튼.채팅.appendChild(b); } }
+function 배지(){ const 옛=버튼.채팅.querySelector(".배지"); if(옛) 옛.remove(); if(챗.미읽음&&채팅.hidden){ const b=document.createElement("span"); b.className="배지"; b.textContent=String(Math.min(99,챗.미읽음)); 버튼.채팅.appendChild(b); } }
 버튼.채팅.addEventListener("click",()=>{ if(채팅.hidden) 채팅열기(true); else 채팅닫기(); });
 document.getElementById("채팅접기").addEventListener("click",채팅닫기);
-function 채팅열기(포커스){ 채팅.hidden=false; 챗.미읽음=0; 배지(); 저장소쓰기("사무실.채팅닫힘",null); 채팅기록.scrollTop=채팅기록.scrollHeight; if(포커스&&!터치) 채팅입력.focus(); 채팅예약(200); }
-function 채팅닫기(){ 채팅.hidden=true; 채팅입력.blur(); 저장소쓰기("사무실.채팅닫힘","1"); 배지(); }
+function 채팅자리(){ document.body.classList.toggle("채팅열림",!채팅.hidden); 크기(); }      // 넓은 화면에서는 채팅이 오른쪽 기둥으로 붙고 방이 그만큼 비켜 준다(접으면 방이 다시 커짐)
+function 채팅열기(포커스){ const 닫혀있었음=채팅.hidden; 채팅.hidden=false; 챗.미읽음=0; 배지(); 저장소쓰기("사무실.채팅닫힘",null); 저장소쓰기("사무실.채팅펼침","1"); if(닫혀있었음) 채팅자리(); 채팅기록.scrollTop=채팅기록.scrollHeight; if(포커스&&!터치) 채팅입력.focus(); 채팅예약(200); }
+function 채팅닫기(){ if(채팅.hidden) return; 채팅.hidden=true; 채팅입력.blur(); 저장소쓰기("사무실.채팅닫힘","1"); 저장소쓰기("사무실.채팅펼침",null); 배지(); 채팅자리(); }
 채팅입력.addEventListener("keydown",e=>{
   if(e.key==="Enter"&&!e.isComposing){ e.preventDefault(); 채팅보내기실행(); }
   if(e.key==="Escape"){ 채팅닫기(); }
@@ -1254,6 +1798,7 @@ async function 채팅보내기실행(){
   const 이름=(채팅이름.value.trim()||나.이름||"손님").slice(0,16);
   if(!주인열쇠) 저장소쓰기("사무실.이름",이름);
   if(!나.이름) 나.이름=주인열쇠?"LeDeuxions":이름;              // 내 머리 위 이름표·말풍선이 보이게
+  if(설정.미리보기){ const id="미리"+Date.now(); 챗.내것.add(id); 채팅입력.value=""; 챗.마지막보냄=Date.now(); 채팅글추가({id,이름,글:s,종류:"손님",때:Date.now()},true); 채팅알림("미리보기라 이 글은 서버에 남지 않습니다"); return; }
   챗.보내는중=true; 채팅보내기.disabled=true; 챗.마지막보냄=Date.now();
   try{
     const h={"Content-Type":"application/json"}; if(주인열쇠) h["X-Owner-Key"]=주인열쇠;
@@ -1290,6 +1835,7 @@ function 풍선띄우기(m){
   for(const e of 통신.연결.values()){ if(e.사람&&e.사람.이름===m.이름){ e.사람.말풍선=글; e.사람.말풍선끝=끝; return; } }
 }
 async function 채팅불러오기(){
+  if(설정.미리보기) return;                                 // 미리보기에서는 서버를 부르지 않는다
   try{
     const r=await fetch(설정.API+"/chat"+(챗.끝!=null?"?since="+챗.끝:""),{cache:"no-store"});
     if(!r.ok) return; const j=await r.json();
@@ -1304,31 +1850,31 @@ function 채팅예약(ms){
 }
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) 채팅예약(100); else clearTimeout(챗.시한); });
 // 맺음·이음 인사 (서버에 남기지 않음 — 이 화면에만). 팻말(있습니다/외출중/부재중)에 맞춰 말이 바뀜. 퇴근한 친구는 인사 안 함
-function 동료말(이름,글,늦게){
+function 동료말(이름,글,늦게,짧게){                     // 글=채팅 창에 남는 말, 짧게=머리 위 말풍선(방을 가리지 않게 짧은 말)
   setTimeout(()=>{ const d=document.createElement("div"); d.className="인사 비서"; const b=document.createElement("b"); b.textContent=이름; d.appendChild(b); d.appendChild(document.createTextNode(글)); 채팅기록.appendChild(d); 기록끝정리();
-    동료풍선(이름,글,performance.now()+(늦게?9000:5000)); if(채팅.hidden){ 챗.미읽음++; 배지(); } },늦게||0);
+    동료풍선(이름,짧게||글,performance.now()+4400); if(채팅.hidden){ 챗.미읽음++; 배지(); } },늦게||0);
 }
 function 동료풍선(이름,글,끝){ 동료들.forEach(v=>고정풍선.delete("동료:"+v.이름)); 고정풍선.set("동료:"+이름,{글,끝}); }   // 둘이 붙어 앉아 있어서 말풍선은 한 번에 하나만
 async function 출퇴근불러오기(){
-  if(팻말보내는중) return;
+  if(팻말보내는중||설정.미리보기) return;
   try{ const r=await fetch(설정.API+"/friends",{cache:"no-store"}); if(r.ok){ const j=await r.json(); ["맺음","이음"].forEach(k=>{ if(j[k]==="퇴근"||j[k]==="근무중") 출퇴근[k]=j[k]; }); } }catch(_){}
 }
 let 지금팻말=null;
-async function 팻말불러오기(){ if(팻말보내는중) return 지금팻말; try{ const r=await fetch(설정.API+"/status",{cache:"no-store"}); if(r.ok) 지금팻말=(await r.json()).팻말||지금팻말; }catch(_){} return 지금팻말; }
+async function 팻말불러오기(){ if(팻말보내는중||설정.미리보기) return 지금팻말; try{ const r=await fetch(설정.API+"/status",{cache:"no-store"}); if(r.ok) 지금팻말=(await r.json()).팻말||지금팻말; }catch(_){} return 지금팻말; }
 async function 동료인사(){
   const 팻말=await 팻말불러오기();
   const 있는=["맺음","이음"].filter(k=>!퇴근함(k));
   if(!있는.length){ 채팅알림("맺음·이음은 퇴근했어요 🌙 채팅에 남기면 내일 볼게요."); return; }
   if(주인열쇠){
     const 형말={맺음:"형, 어서 와요 🙂 손님 채팅은 여기 다 모여요.",이음:"형 왔어요? 저도 있어요! 오늘도 같이 지켜요."};
-    있는.forEach((k,i)=>동료말(k,형말[k],i?5000:0)); return;
+    있는.forEach((k,i)=>동료말(k,형말[k],i?5000:0,i?"저도 있어요!":"형, 어서 와요 🙂")); return;
   }
   const 말={있습니다:"대표님 지금 계세요. 채팅으로 편하게 말 걸어 보세요 🙂",
             외출중:"대표님은 잠깐 외출 중이에요. 채팅에 남겨 주시면 전해 드릴게요 🙂",
             부재중:"지금은 대표님이 안 계세요. 채팅에 남겨 주시면 꼭 전해 드릴게요 🙂"}[팻말]||"채팅에 남겨 주시면 대표님께 전해 드릴게요 🙂";
   const 첫=있는[0];
-  동료말(첫,"어서 오세요! 르듀종 사무실입니다. 저는 "+첫+"이에요. "+말);
-  if(있는[1]) 동료말(있는[1],"저는 "+있는[1]+"이에요. 둘러보시다가 궁금한 건 물어보세요!",5000);
+  동료말(첫,"어서 오세요! 르듀종 사무실입니다. 저는 "+첫+"이에요. "+말,0,"어서 오세요! "+첫+"이에요 🙂");            // 말풍선은 차례로(맺음 → 이음 → 안내 로봇) — 작은 화면에서 방을 덮지 않게
+  if(있는[1]) 동료말(있는[1],"저는 "+있는[1]+"이에요. 둘러보시다가 궁금한 건 물어보세요!",4600,"저는 "+있는[1]+"이에요 🙂");
 }
 function 채팅기록추가(이름,글){ const d=document.createElement("div"); const b=document.createElement("b"); b.textContent=이름; d.appendChild(b); d.appendChild(document.createTextNode(글)); 채팅기록.appendChild(d); 기록끝정리(); }  // 옛 P2P "say" 받기용
 function 채팅알림(글){ const d=document.createElement("div"); d.className="알림"; d.textContent=글; 채팅기록.appendChild(d); while(채팅기록.children.length>60) 채팅기록.firstChild.remove(); 채팅기록.scrollTop=채팅기록.scrollHeight; }
@@ -1360,7 +1906,7 @@ function 팻말창그리기(){
   ["맺음","이음"].forEach(k=>줄("팻말-"+k,[["근무중","🟢 출근"],["퇴근","🌙 퇴근"]],출퇴근[k],값=>출퇴근바꾸기(k,값)));
 }
 function 팻말반영(){                                                  // 방 안 팻말·안내 로봇 단추·열린 창을 새 값으로
-  if(안내봇상태.팻말단추) 안내봇상태.팻말단추.textContent="🪧 대표님 지금: "+(지금팻말||"확인 중…");
+  if(안내봇상태.팻말단추) 단추글(안내봇상태.팻말단추,"대표님 지금: "+(지금팻말||"확인 중…"));
   if(!창팻말.hidden) 팻말창그리기();
 }
 function 팻말창열기(){ if(!주인열쇠) return; 창모두닫기(); 안내메뉴닫기(); 팻말알림.textContent=""; 팻말창그리기(); 창팻말.hidden=false;
@@ -1403,6 +1949,7 @@ document.getElementById("예약완료닫기").addEventListener("click",()=>{ 창
   }
   if(!종류) return 틀림("어떤 상담인지 골라 주세요");
   if(!예약칸("예약동의").checked) return 틀림("연락처 수집에 동의해 주셔야 접수돼요");
+  if(설정.미리보기) return 틀림("미리보기에서는 보내지 않습니다. 실제 사이트에서 접수됩니다.");
   틀림(""); 예약보내기.disabled=true; 예약보내기.textContent="보내는 중…";
   try{
     const r=await fetch(설정.API+"/reservations",{method:"POST",headers:{"Content-Type":"application/json"},
@@ -1418,12 +1965,13 @@ document.getElementById("예약완료닫기").addEventListener("click",()=>{ 창
 const 안내봇상태={메뉴:null,열림:false,닫음:false};
 function 안내메뉴만들기(){
   const m=document.createElement("div"); m.className="안내메뉴"; m.hidden=true; m.setAttribute("role","menu");
-  const 단추=(글,일)=>{ const b=document.createElement("button"); b.type="button"; b.textContent=글; b.setAttribute("role","menuitem");
+  const 단추=(그림이름,글,일)=>{ const b=document.createElement("button"); b.type="button"; b.appendChild(아이콘(그림이름)); const t=document.createElement("span"); t.className="글"; t.textContent=글; b.appendChild(t); b.setAttribute("role","menuitem");
     b.addEventListener("pointerdown",e=>e.stopPropagation()); b.addEventListener("click",e=>{ e.stopPropagation(); 일(b); }); m.appendChild(b); return b; };
-  단추("💬 채팅하기",()=>{ 안내메뉴닫기(); 채팅열기(true); });
-  단추("📅 상담 예약",()=>{ 예약열기(); });
-  단추("🖼️ 작품 둘러보기",()=>{ 안내메뉴닫기(); const k=자리순서.find(k=>항목들(k).length); if(k) 작품열기(k,0); else 안내말("아직 걸린 작품이 없어요. 곧 채워 둘게요!"); });
-  안내봇상태.팻말단추=단추("🪧 대표님 지금: …",async b=>{ const 팻=await 팻말불러오기(); b.textContent="🪧 대표님 지금: "+(팻||"알 수 없음");
+  단추("채팅","채팅하기",()=>{ 안내메뉴닫기(); 채팅열기(true); });
+  단추("예약","상담 예약",()=>{ 예약열기(); });
+  단추("옷","옷 갈아입기",()=>{ 옷장열기(); });
+  단추("작품","작품 둘러보기",()=>{ 안내메뉴닫기(); const k=자리순서.find(k=>항목들(k).length); if(k) 작품열기(k,0); else 안내말("아직 걸린 작품이 없어요. 곧 채워 둘게요!"); });
+  안내봇상태.팻말단추=단추("알림판","대표님 지금: …",async b=>{ const 팻=await 팻말불러오기(); 단추글(b,"대표님 지금: "+(팻||"알 수 없음"));
     안내말({있습니다:"대표님 지금 계세요! 채팅으로 말 걸어 보세요 🙂",외출중:"대표님은 잠깐 외출 중이에요. 채팅이나 상담 예약을 남겨 주세요 🙂",부재중:"지금은 대표님이 안 계세요. 상담 예약을 남기시면 연락드려요 🙂"}[팻]||"채팅이나 상담 예약을 남겨 주세요 🙂"); });
   겹층.appendChild(m); 안내봇상태.메뉴=m;
 }
@@ -1431,26 +1979,32 @@ function 안내말(글){ 안내메뉴닫기(); 고정풍선.set("안내",{글,�
 function 안내메뉴열기(){
   if(!안내봇상태.메뉴) 안내메뉴만들기();
   고정풍선.delete("안내"); 안내봇상태.열림=true; 안내봇상태.메뉴.hidden=false;
-  안내봇상태.팻말단추.textContent="🪧 대표님 지금: "+(지금팻말||"확인 중…");
-  팻말불러오기().then(팻=>{ if(팻) 안내봇상태.팻말단추.textContent="🪧 대표님 지금: "+팻; });
+  단추글(안내봇상태.팻말단추,"대표님 지금: "+(지금팻말||"확인 중…"));
+  팻말불러오기().then(팻=>{ if(팻) 단추글(안내봇상태.팻말단추,"대표님 지금: "+팻); });
 }
 function 안내메뉴닫기(){ if(안내봇상태.열림){ 안내봇상태.열림=false; 안내봇상태.닫음=true; } if(안내봇상태.메뉴) 안내봇상태.메뉴.hidden=true; }
 function 안내갱신(){
   const d=Math.hypot(나.x-안내봇.x,나.y-안내봇.y);
   if(d>34){ if(안내봇상태.열림) 안내메뉴닫기(); 안내봇상태.닫음=false; }
   else if(d<22&&!안내봇상태.열림&&!안내봇상태.닫음&&!창열림()&&!편집중) 안내메뉴열기();
-  if(안내봇상태.열림&&안내봇상태.메뉴){ 풍선맞춤(안내봇상태.메뉴,(안내봇.x-카메라.x)*배율); 안내봇상태.메뉴.style.top=((안내봇.y-28-카메라.y)*배율)+"px"; }
-  고정풍선그리기("안내",안내봇.x,안내봇.y-28);
+  if(안내봇상태.열림&&안내봇상태.메뉴){ 풍선맞춤(안내봇상태.메뉴,(안내봇.x-카메라.x)*배율); 안내봇상태.메뉴.style.top=((안내봇.y-31-카메라.y)*배율-6)+"px"; }
+  고정풍선그리기("안내",안내봇.x,안내봇.y-31);
 }
 
 // --- 열기(상호작용)
 function 앉기(좌){                                  // 의자로 걸어온 뒤 호출됨 — 앉은 자세로 전환
   나.앉음=true; 나.앉은자리=좌; 나.x=좌.자리.x; 나.y=좌.자리.y; 나.방향=좌.방향; 나.걷는중=false; 나.경로=[];
 }
+function 자리찼나(좌){ for(const e of 통신.연결.values()){ const p=e.사람; if(p&&p.앉음&&Math.hypot(p.x-좌.자리.x,p.y-좌.자리.y)<5) return true; } return false; }
 function 열기(o){
-  if(o.종류==="의자"){ 앉기(o); return; }
+  if(o.종류==="의자"){
+    if(o.주인&&!주인열쇠){ 예약열기(); return; }                       // 대표 자리는 주인만 앉는다 — 손님에게는 상담 예약
+    if(자리찼나(o)){ 상태("이미 다른 분이 앉아 있습니다","오류"); return; }
+    앉기(o); return; }
   if(o.종류==="동료"){ 채팅열기(true); return; }
-  if(o.종류==="예약"){ 예약열기(); return; }
+  if(o.종류==="예약"){ if(주인열쇠) 팻말창열기(); else 예약열기(); return; }
+  if(o.종류==="상담판"){ 예약열기(); return; }
+  if(o.종류==="옷장"){ 옷장열기(); return; }
   if(o.종류==="안내"){ 안내메뉴열기(); return; }
   if(o.종류==="스크린"){
     const v=공유중비디오();
@@ -1482,7 +2036,11 @@ function 작품열기(이름,번호){
     const b=document.createElement("b"); b.textContent=항목.제목||이름; 작품설명.appendChild(b);
     if(항목.날짜){ const s=document.createElement("span"); s.className="날짜"; s.textContent=항목.날짜; 작품설명.appendChild(s); }
     if(목록.length>1){ const s=document.createElement("span"); s.className="날짜"; s.textContent=(번호+1)+"/"+목록.length; 작품설명.appendChild(s); }
-    if(항목.메모){ const m=document.createElement("span"); m.className="메모"; m.textContent=항목.메모; 작품설명.appendChild(m); }
+    if(항목.메모){                                                      // 메모가 주소(http…)면 새 창으로 여는 고리로, 아니면 그냥 글로
+      const 주소=/^https?:\/\/\S+$/i.test(String(항목.메모).trim());
+      const m=document.createElement(주소?"a":"span"); m.className="메모";
+      if(주소){ m.href=String(항목.메모).trim(); m.target="_blank"; m.rel="noopener noreferrer"; m.textContent="이 작품 이야기 읽기 (새 창)"; } else m.textContent=항목.메모;
+      작품설명.appendChild(m); }
   }
   창작품.hidden=false;
 }
@@ -1548,12 +2106,66 @@ document.getElementById("JSON내려받기").addEventListener("click",()=>{
 document.getElementById("JSON초안지우기").addEventListener("click",()=>{ 저장소쓰기("사무실.갤러리.초안",null); 창JSON.hidden=true; location.reload(); });
 document.getElementById("JSON닫기").addEventListener("click",()=>{ 창JSON.hidden=true; });
 
+// --- 옷장 (옷 갈아입기). 고르는 즉시 입고(저장·전송), 닫기만 하면 된다
+const 옷미리=document.getElementById("옷미리"), 옷미리ctx=옷미리.getContext("2d");
+const 옷항목=[                                              // 창에 나오는 순서. 쪽 0=옷(왼쪽), 1=머리·피부·소품(오른쪽). 좁은 화면에서는 옷 → 나머지 순으로 한 줄. 키=옷 배열에서의 자리
+  {쪽:0,키:3,이름:"상의",글:상의이름},
+  {쪽:0,키:4,이름:"상의 색",색:상의색들,이름들:상의색이름},
+  {쪽:0,키:5,이름:"하의",글:하의이름},
+  {쪽:0,키:6,이름:"하의 색",색:하의색들,이름들:하의색이름},
+  {쪽:0,키:7,이름:"신발",색:신발색들,이름들:신발색이름},
+  {쪽:1,키:1,이름:"머리 모양",글:머리모양이름},
+  {쪽:1,키:2,이름:"머리 색",색:머리색들.map(m=>m.b),이름들:머리색이름},
+  {쪽:1,키:0,이름:"피부",색:피부색들.map(p=>p.b),이름들:["밝은 톤","살구 톤","중간 톤","갈색 톤","짙은 갈색 톤","아주 짙은 톤"]},
+  {쪽:1,키:8,이름:"안경",글:안경이름},
+  {쪽:1,키:9,이름:"모자",글:모자이름}
+];
+const 옷방향들=["down","right","up","left"], 옷단추들=[], 추천그림들=[];
+let 옷방향번호=0, 옷장됨=false;
+function 옷장만들기(){
+  옷장됨=true;
+  const 고르기=document.getElementById("옷고르기"), 쪽들=[0,1].map(()=>{ const d=document.createElement("div"); d.className="옷쪽"; 고르기.appendChild(d); return d; });
+  옷항목.forEach(h=>{
+    const 묶음=document.createElement("div"); 묶음.className="옷묶음";
+    const b=document.createElement("b"); b.textContent=h.이름; b.id="옷묶음-"+h.키; 묶음.appendChild(b);
+    const 줄=document.createElement("div"); 줄.className="옷단추들"; 줄.setAttribute("role","group"); 줄.setAttribute("aria-labelledby",b.id);
+    (h.색||h.글).forEach((v,i)=>{ const 단=document.createElement("button"); 단.type="button";
+      if(h.색){ 단.className="색단추"; 단.style.background=v; 단.textContent=h.이름들[i]; 단.title=h.이름들[i]; } else 단.textContent=v;
+      단.addEventListener("click",()=>{ const o=나.옷.slice(); o[h.키]=i; 옷바꾸기(o); });
+      줄.appendChild(단); 옷단추들.push({단,키:h.키,값:i}); });
+    묶음.appendChild(줄); 쪽들[h.쪽].appendChild(묶음);
+  });
+  const 추천el=document.getElementById("옷추천");
+  추천옷.forEach(a=>{ const 단=document.createElement("button"); 단.type="button"; const cv=document.createElement("canvas"); cv.width=48; cv.height=72;
+    단.appendChild(cv); 단.appendChild(document.createTextNode(a.이름));
+    단.addEventListener("click",()=>옷바꾸기(나.옷.slice(0,3).concat(a.옷.slice(3))));          // 추천 옷은 옷만 바꾼다(피부·머리는 그대로)
+    추천el.appendChild(단); 추천그림들.push({cv,옷:a.옷}); });
+}
+function 옷바꾸기(o){ o=옷정리(o); if(!o) return; 내옷정하기(o,true); 옷장그리기(); }
+function 옷장그리기(){
+  옷단추들.forEach(({단,키,값})=>단.setAttribute("aria-pressed",String(나.옷[키]===값)));
+  추천그림들.forEach(({cv,옷})=>{ const g=cv.getContext("2d"); g.imageSmoothingEnabled=false; g.clearRect(0,0,48,72); g.drawImage(사람판(나.옷.slice(0,3).concat(옷.slice(3)),"down","서",-1,false),0,-10); });
+  if(주인열쇠){ document.getElementById("옷코드줄").hidden=false; document.getElementById("옷코드").textContent="["+나.옷.join(",")+"]"; }
+}
+function 옷미리그리기(now){                               // 옷장이 열려 있는 동안 매 프레임: 제자리걸음하는 내 모습
+  const g=옷미리ctx, 방향=옷방향들[옷방향번호], cv=사람판(나.옷,방향,"서",Math.floor(now/190)%4,눈깜빡(나.씨));
+  g.imageSmoothingEnabled=false; g.clearRect(0,0,48,72);
+  g.fillStyle="rgba(52,40,30,.2)"; g.fillRect(17,69,14,2); g.fillRect(19,68,10,1); g.fillRect(19,71,10,1);
+  if(방향==="left"){ g.save(); g.translate(48,0); g.scale(-1,1); g.drawImage(cv,0,-10); g.restore(); } else g.drawImage(cv,0,-10);
+}
+function 옷장열기(){ 창모두닫기(); 안내메뉴닫기(); if(!옷장됨) 옷장만들기(); 옷방향번호=0; 옷장그리기(); 창옷.hidden=false; }
+버튼.옷.addEventListener("click",옷장열기);
+document.getElementById("옷돌리기").addEventListener("click",()=>{ 옷방향번호=(옷방향번호+1)%옷방향들.length; });
+document.getElementById("옷무작위").addEventListener("click",()=>옷바꾸기(무작위옷()));
+document.getElementById("옷닫기").addEventListener("click",()=>{ 창옷.hidden=true; });
+
 // --- 겹층(이름표·말풍선)
+const 이름표높이=33.5;                                        // 발끝에서 머리 위 이름표까지(논리 px) — 사람 키 31.5 + 여유
 function 이름표(id,p,나인가){
   let el=겹층.querySelector('[data-id="'+id+'"]');
   if(!el){ el=document.createElement("div"); el.className="이름표"+(나인가?" 나":""); el.dataset.id=id; 겹층.appendChild(el); }
   if(el.textContent!==p.이름) el.textContent=p.이름;
-  el.style.left=((p.x-카메라.x)*배율)+"px"; el.style.top=((p.y-24-카메라.y)*배율)+"px";
+  el.style.left=((p.x-카메라.x)*배율)+"px"; el.style.top=((p.y-이름표높이-카메라.y)*배율)+"px";
   el.dataset.mic=p.mic?"on":"off"; el.dataset.scr=p.scr?"on":"off";
   el.classList.toggle("말함",!!말하는중.get(나인가?"나":id));
   let 풍선=겹층.querySelector('[data-bubble="'+id+'"]');
@@ -1561,11 +2173,20 @@ function 이름표(id,p,나인가){
   if(p.말풍선&&now<p.말풍선끝){
     if(!풍선){ 풍선=document.createElement("div"); 풍선.className="말풍선"; 풍선.dataset.bubble=id; 겹층.appendChild(풍선); }
     if(풍선.textContent!==p.말풍선) 풍선.textContent=p.말풍선;
-    풍선맞춤(풍선,(p.x-카메라.x)*배율); 풍선.style.top=((p.y-24-카메라.y)*배율-el.offsetHeight-4)+"px";
+    풍선맞춤(풍선,(p.x-카메라.x)*배율); 풍선.style.top=((p.y-이름표높이-카메라.y)*배율-el.offsetHeight-7)+"px";
   } else if(풍선) 풍선.remove();
 }
-const 명패들=책상들.map(d=>{ const el=document.createElement("div"); el.className="명패"+(d.종류==="빈"?" 빈":""); el.textContent=d.이름; 겹층.appendChild(el); return el; });
-const 단상표el=document.createElement("div"); 단상표el.className="단상표"; 단상표el.textContent="작품 갤러리"; 겹층.appendChild(단상표el);
+const 주인표el=document.createElement("div"); 주인표el.className="이름표 주인표"; 주인표el.textContent="LeDeuxions"; 겹층.appendChild(주인표el);
+function 주인표위치(){                                     // 대표 자리 이름표: 앉은 모습이 있으면 머리 위, 없으면 빈 의자 위. 내가 그 자리에 앉아 있으면 내 이름표와 겹치니 숨긴다
+  주인표el.hidden=(나.앉음&&나.앉은자리===주인석)||주인와있음;          // 주인이 직접 들어와 있으면 그 사람 이름표가 따로 있으니 자리 이름표는 숨긴다
+  주인표el.style.left=((주인석.자리.x-카메라.x)*배율)+"px"; 주인표el.style.top=((주인석.자리.y-(대표보임()?이름표높이:26)-카메라.y)*배율)+"px"; }
+const 명패들=작업대들.map(d=>{ const el=document.createElement("div"); el.className="명패"; el.textContent=d.이름; 겹층.appendChild(el); return el; });
+const 재실표=document.getElementById("재실표");
+const 팻말글={있습니다:"재실",외출중:"외출중",부재중:"부재중"};
+function 팻말표시(el,값,앞){                                  // 「■ 재실」 — 색 네모(초록·노랑·빨강) + 글자. 값이 바뀔 때만 다시 만든다
+  const 키=값+"|"+앞; if(el.dataset.키===키) return; el.dataset.키=키; el.textContent=앞;
+  const i=document.createElement("i"); i.className="불"; i.dataset.값=값; el.appendChild(i); el.appendChild(document.createTextNode(팻말글[값]));
+}
 const 대표팻말el=document.createElement("div"); 대표팻말el.className="대표팻말"+(주인열쇠?" 주인":""); 대표팻말el.hidden=true; 겹층.appendChild(대표팻말el);
 if(주인열쇠){ 대표팻말el.addEventListener("pointerdown",e=>e.stopPropagation()); 대표팻말el.addEventListener("click",e=>{ e.stopPropagation(); 팻말창열기(); }); 대표팻말el.title="눌러서 팻말 바꾸기"; }
 const 퇴근판들=작업대들.map(d=>{ const el=document.createElement("div"); el.className="퇴근판"; el.textContent="퇴근!"; el.hidden=true; 겹층.appendChild(el); return el; });
@@ -1578,24 +2199,24 @@ function 고정풍선그리기(키,x,y){
   if(f&&performance.now()<f.끝){
     if(!el){ el=document.createElement("div"); el.className="말풍선"+(키.startsWith("동료:")?" 비서풍선":""); el.dataset.bubble=키; 겹층.appendChild(el); }
     if(el.textContent!==f.글) el.textContent=f.글;
-    풍선맞춤(el,(x-카메라.x)*배율); el.style.top=((y-카메라.y)*배율-4)+"px";
+    풍선맞춤(el,(x-카메라.x)*배율); el.style.top=((y-카메라.y)*배율-7)+"px";
   } else { if(el) el.remove(); if(f) 고정풍선.delete(키); }
 }
 function 겹층갱신(){
   if(통신.peer||나.이름) 이름표("나",{이름:나.이름||"나",x:나.x,y:나.y,mic:마이크켜짐(),scr:!!통신.화면,말풍선:나.말풍선,말풍선끝:나.말풍선끝},true);
   통신.연결.forEach((e,id)=>{ if(e.사람) 이름표(id,e.사람,false); });
   if(편집중) 자리표위치();
-  const 글크기=Math.max(8,Math.min(20,Math.round(배율*7.5)))+"px";      // 책상 4개가 붙어 있어 명패 글자는 배율 따라(폰에서 옆 명패와 안 겹치게)
-  책상들.forEach((d,i)=>{ const 명=명패들[i]; 명.style.left=((d.x+d.w/2-카메라.x)*배율)+"px"; 명.style.top=((d.y+13-카메라.y)*배율)+"px"; 명.style.fontSize=글크기; });
-  단상표el.style.left=((단상.x+단상.w/2-카메라.x)*배율)+"px"; 단상표el.style.top=((단상.y+단상.h+3.6-카메라.y)*배율)+"px"; 단상표el.style.fontSize=Math.max(8,Math.round(배율*4.6))+"px";
-  { const 글=팻말이름[지금팻말]; 대표팻말el.hidden=!글; if(글){ if(대표팻말el.textContent!==글) 대표팻말el.textContent=글;
-      대표팻말el.style.left=((주인책상.x+주인책상.w/2-카메라.x)*배율)+"px"; 대표팻말el.style.top=((주인책상.y-31-카메라.y)*배율)+"px"; 대표팻말el.style.fontSize=글크기; } }
+  주인표위치();
+  { const 글=팻말글[지금팻말]; 대표팻말el.hidden=!글||배율<1.7; 재실표.hidden=!글;                                     // 방 안 책상 팻말 + 왼쪽 위 이름표 옆(폰에서도 읽히게)
+    if(글){ 팻말표시(재실표,지금팻말,"대표 "); 팻말표시(대표팻말el,지금팻말,"");
+      대표팻말el.style.left=((대표책상.x+대표책상.w-15.5-카메라.x)*배율)+"px"; 대표팻말el.style.top=((대표책상.y+20.5-카메라.y)*배율)+"px"; } }
   작업대들.forEach((d,i)=>{
+    const 명=명패들[i]; 명.hidden=배율<0.7; 명.style.left=((d.x+d.w/2-카메라.x)*배율)+"px"; 명.style.top=((d.y+14-카메라.y)*배율)+"px";
     const 판=퇴근판들[i], 쉼=퇴근함(d.이름); 판.hidden=!쉼;
-    if(쉼){ const p=퇴근판위치(d); 판.style.left=((p.x-카메라.x)*배율)+"px"; 판.style.top=((p.y-카메라.y)*배율)+"px"; 판.style.fontSize=Math.max(11,Math.round(배율*9))+"px"; }
-    const v=동료들[i]; 고정풍선그리기("동료:"+d.이름,v.x,쉼?d.y-40:v.y-22);
+    if(쉼){ const p=퇴근판위치(d); 판.style.left=((p.x-카메라.x)*배율)+"px"; 판.style.top=((p.y-카메라.y)*배율)+"px"; 판.style.fontSize=Math.max(12,Math.round(배율*9/12)*12)+"px"; }
+    const v=동료들[i]; 고정풍선그리기("동료:"+d.이름,v.x,쉼?d.y-40:v.y-33);
   });
-  고정풍선그리기("주인석",주인석.자리.x,주인책상.y-31-(대표팻말el.hidden?0:대표팻말el.offsetHeight/2/배율+1));
+  고정풍선그리기("주인석",주인석.자리.x,주인석.자리.y-(대표보임()?이름표높이:26)-주인표el.offsetHeight/배율-1);
   안내갱신();
 }
 
@@ -1609,41 +2230,67 @@ function 남갱신(dt){
     }
   });
 }
-let 마지막전송=0, 마지막보낸={x:-1,y:-1,d:"",m:false};
+let 마지막전송=0, 마지막보낸={x:-1,y:-1,d:"",m:false,s:false};
 function 위치전송(now){
   if(!통신.peer) return;
-  const m=나.걷는중, 변함=Math.abs(나.x-마지막보낸.x)>0.4||Math.abs(나.y-마지막보낸.y)>0.4||나.방향!==마지막보낸.d||m!==마지막보낸.m;
-  if(!변함) return; if(now-마지막전송<90&&m===마지막보낸.m) return;
-  마지막전송=now; 마지막보낸={x:나.x,y:나.y,d:나.방향,m};
-  방송({t:"p",x:Math.round(나.x*10)/10,y:Math.round(나.y*10)/10,d:나.방향,m});
+  const m=나.걷는중, s=나.앉음, 변함=Math.abs(나.x-마지막보낸.x)>0.4||Math.abs(나.y-마지막보낸.y)>0.4||나.방향!==마지막보낸.d||m!==마지막보낸.m||s!==마지막보낸.s;
+  if(!변함) return; if(now-마지막전송<90&&m===마지막보낸.m&&s===마지막보낸.s) return;
+  마지막전송=now; 마지막보낸={x:나.x,y:나.y,d:나.방향,m,s};
+  방송({t:"p",x:Math.round(나.x*10)/10,y:Math.round(나.y*10)/10,d:나.방향,m,s:s?1:0});       // s=앉음 (옛 화면은 이 값을 그냥 무시한다)
+}
+function 표시그리기(){
+  if(나.경로.length&&!키이동중){                             // 걸어갈 곳: 작은 십자
+    const 끝=나.경로[나.경로.length-1], x=Math.round(끝.x), y=Math.round(끝.y), 벌=Math.floor(performance.now()/320)%2;
+    [[x-0.5,y-3.5-벌,1,2],[x-0.5,y+1.5+벌,1,2],[x-3.5-벌,y-0.5,2,1],[x+1.5+벌,y-0.5,2,1]].forEach(([a,b,w,h])=>{ 사각(a-0.5,b-0.5,w+1,h+1,"#ffffff"); 사각(a,b,w,h,"#2a3046"); });
+  }
+  if(근처&&!편집중&&!(나.앉음&&나.앉은자리===근처)){          // 가까이 있어 Enter 로 열 수 있는 것: 네 모서리 꺾쇠
+    const r=근처.영역, x=r.x-2, y=r.y-2, w=r.w+4, h=r.h+4, L=4;
+    [[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]].forEach(([px,py,sx,sy])=>{
+      const hx=sx>0?px:px-L, hy=sy>0?py:py-1, vx=sx>0?px:px-1, vy=sy>0?py:py-L;
+      사각(hx-0.5,hy-0.5,L+1,2,"#2a3046"); 사각(vx-0.5,vy-0.5,2,L+1,"#2a3046"); 사각(hx,hy,L,1,"#f5d886"); 사각(vx,vy,1,L,"#f5d886"); });
+  }
 }
 function 그리기(){
+  if(!배경됨) 배경만들기();
+  const 때=하늘때(), t=performance.now()/1000;
   c.setTransform(선명,0,0,선명,0,0);   // 매 프레임 논리 좌표→2배 버퍼. 모든 그리기는 480×270 좌표 그대로, 디테일만 2배 촘촘.
-  사각(0,0,폭,높이,"#141a30");
-  벽그리기(); 창문그리기(); 자리순서.filter(k=>자리[k].종류==="벽").forEach(k=>액자그리기(자리[k])); 시계그리기(); 스크린그리기();
-  바닥그리기(); 러그(66,140,82,100); 단상그리기(); 등불빛(); 빛살(); 천장등(244,방.y+2);
+  c.imageSmoothingEnabled=false;
+  c.clearRect(0,0,폭,높이); c.drawImage(배경판,0,0,폭,높이);                                  // 벽·바닥·깔개(미리 그려 둔 것)
+  창문그리기(때,t); 자리순서.filter(k=>자리[k].종류==="벽").forEach((k,i)=>액자그리기(자리[k],i)); 시계그리기(); 스크린그리기();
+  햇살(때);
   const 목록=가구.map(g=>({y:g.바닥y,f:g.그리기}));
-  목록.push({y:나.y+(나.앉음?4:0),f:()=>사람그리기(나)});           // 앉으면 의자(등받이 등)보다 항상 나중에 그려 사람이 가려지지 않게
-  통신.연결.forEach(e=>{ if(e.사람) 목록.push({y:e.사람.y,f:()=>사람그리기(e.사람)}); });
+  목록.push({y:나.y+(나.앉음?4:0),f:()=>사람그리기(나)});           // 앉으면 의자·소파보다 나중에 그려 사람이 가려지지 않게 (뒤에서 본 등받이만 그 위에 덧그림)
+  통신.연결.forEach(e=>{ if(e.사람) 목록.push({y:e.사람.y+(e.사람.앉음?4:0),f:()=>사람그리기(e.사람)}); });
   목록.sort((a,b)=>a.y-b.y).forEach(o=>o.f());
-  if(나.경로.length&&!키이동중){ const 끝=나.경로[나.경로.length-1]; c.strokeStyle="rgba(255,255,255,.5)"; c.lineWidth=1; c.beginPath(); c.arc(끝.x,끝.y,4,0,Math.PI*2); c.stroke(); }
-  if(근처&&!편집중){ const o=근처; c.strokeStyle="rgba(227,182,90,.9)"; c.lineWidth=1; c.strokeRect(Math.round(o.영역.x)-1.5,Math.round(o.영역.y)-1.5,o.영역.w+3,o.영역.h+3); }
-  비네트();
-  vc.imageSmoothingEnabled=false; vc.drawImage(판,카메라.x*선명,카메라.y*선명,보임.w*선명,보임.h*선명,0,0,보기.width,보기.height);
+  표시그리기();
+  vc.imageSmoothingEnabled=false; vc.clearRect(0,0,보기.width,보기.height);
+  vc.drawImage(판,카메라.x*선명,카메라.y*선명,보임.w*선명,보임.h*선명,0,0,보기.width,보기.height);
 }
 let 이전=performance.now();
 function 루프(now){
   const dt=Math.min(0.05,(now-이전)/1000); 이전=now;
-  나갱신(dt); 남갱신(dt); 카메라갱신(false); 위치전송(now); 그리기(); 겹층갱신();
+  나갱신(dt); 남갱신(dt); 카메라갱신(false); 위치전송(now); 그리기(); 겹층갱신(); 안내문갱신(false);
+  if(!창옷.hidden) 옷미리그리기(now);
   requestAnimationFrame(루프);
 }
-크기(); 버튼갱신(); 갱신상태(); 갤러리불러오기().then(()=>{ 자리표갱신(); });
+{ const 저장옷=내옷읽기(); if(저장옷) 나.옷=저장옷; else 내옷정하기(주인열쇠?대표옷.slice():무작위옷(),false); }   // 저장된 옷이 없으면: 주인은 대표 옷, 손님은 무작위 한 벌(다음에 와도 같은 옷이게 바로 저장)
+if(설정.미리보기&&!지금팻말) 지금팻말="있습니다";                 // 미리보기에서는 서버가 없으니 「재실」로 보여 준다
+크기(); 버튼갱신(); 갱신상태(); 갤러리불러오기().then(()=>{ 자리표갱신(); 간판글.textContent=갤러리제목; });
+{ const 준비=ok=>{ if(글꼴됨) return; if(!ok) 방글꼴="sans-serif"; 글꼴됨=true; };                    // 방 안 간판 글씨용 — 준비되면 다음 프레임부터 그려진다
+  if(document.fonts&&document.fonts.load) document.fonts.load("12px Galmuri11","상담").then(f=>준비(f.length>0)).catch(()=>준비(false)); else 준비(false);
+  setTimeout(()=>준비(false),4000); }
 {
-  if(innerHeight>=520&&!저장소읽기("사무실.채팅닫힘")) 채팅.hidden=false;
+  // 채팅을 펼친 채로 시작할지: 지난번에 직접 접었으면(사무실.채팅닫힘) 접고, 직접 펼쳤으면(사무실.채팅펼침) 펼친다. 처음 온 손님은 화면에 맞춘다 —
+  // 세로로 긴 화면(채팅이 방 아래에 붙음)은 펼치고, 넓은 화면(오른쪽 기둥으로 붙음)은 그 때문에 방이 14% 넘게 작아지지 않을 때만 펼친다.
+  // 가로로 누운 작은 화면은 채팅이 방을 덮으므로 늘 접어 두고 단추에 새 글 수만 보인다
+  const 접어둠=!!저장소읽기("사무실.채팅닫힘"), 펴둠=!!저장소읽기("사무실.채팅펼침"), 넓음=innerWidth>=1100, 놓을곳=innerHeight>=520&&(넓음||innerHeight>innerWidth);
+  let 펼침=놓을곳&&!접어둠;
+  if(펼침&&넓음&&!펴둠){ const 넓게=배율; document.body.classList.add("채팅열림"); 크기(); if(배율<넓게*0.86) 펼침=false; document.body.classList.remove("채팅열림"); }
+  채팅.hidden=!펼침; 채팅자리();
   Promise.all([채팅불러오기(),출퇴근불러오기()]).then(()=>{ 동료인사(); 채팅예약(채팅.hidden?8000:3000); });
   setInterval(()=>{ if(!document.hidden){ 출퇴근불러오기(); 팻말불러오기().then(()=>팻말반영()); } },60000);
   if(!주인열쇠){
-    setTimeout(()=>안내말("어서 오세요! 둘러보시고 궁금하면 저한테 오세요 🙂"),900);
+    setTimeout(()=>안내말("궁금한 건 저한테 물어보세요 🙂"),9400);
     // 손님 입장 → 형 텔레그램 (서버가 방문자·IP 30분 1번, 전체 2분 1번, 하루 30번으로 거름)
     if(!navigator.webdriver&&!설정.미리보기){
       let vid=저장소읽기("사무실.방문자");
@@ -1652,6 +2299,8 @@ function 루프(now){
     }
   }
 }
+if(window.ResizeObserver){ let 옛=막대.offsetHeight; new ResizeObserver(()=>{ const h=막대.offsetHeight; if(h!==옛){ 옛=h; 크기(); } }).observe(막대); }   // 단추가 늘어 두 줄이 되거나 안내 글이 길어지면 방·채팅 자리를 다시 잡는다
+if(설정.시험) window.__사무실={그리기,설정,나,통신,가구,자리,좌석,상호작용들,특별자리,자유,경로찾기,열기,가기,옷바꾸기:o=>옷바꾸기(o),기본옷,무작위옷,옷정리,사람기억,출퇴근,팻말:v=>{ 지금팻말=v; },창열림,근처:()=>근처};   // 자동 시험용 창구 (설정.시험 일 때만 열린다)
 requestAnimationFrame(루프);
 })();
 </script>
