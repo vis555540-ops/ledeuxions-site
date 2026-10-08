@@ -77,57 +77,32 @@
 
 # 2026-10-08 — pdf300 영어판 원본(web-projects/pdf300/en/)은 pdf300.com 용이라 링크가 /compress-pdf 처럼 뿌리 주소다.
 #   ledeuxions.com 에서 그 쪽을 열면 링크가 전부 404 였다(서치콘솔 404 검증 실패 원인 중 하나). 같은 이름의 pdf300.com 쪽으로 넘긴다.
-/about
-add-page-numbers-server
-add-page-numbers-to-pdf
-add-watermark-to-pdf
-compress-pdf-high-quality
-compress-pdf
-crop-pdf
-edit-pdf-metadata
-image-to-pdf
-merge-pdf
-office-to-pdf
-password-protect-pdf
-pdf-multiple-pages-per-sheet
-pdf-n-up-server
-pdf-ocr
-pdf-to-image
-pdf-to-text
-redact-pdf
-remove-pdf-metadata
-remove-pdf-password
-repair-pdf
-rotate-pdf
-sign-pdf
-split-pdf
-target-size
-watermark-pdf-server  https://pdf300.com/about
-add-page-numbers-server
-add-page-numbers-to-pdf
-add-watermark-to-pdf
-compress-pdf-high-quality
-compress-pdf
-crop-pdf
-edit-pdf-metadata
-image-to-pdf
-merge-pdf
-office-to-pdf
-password-protect-pdf
-pdf-multiple-pages-per-sheet
-pdf-n-up-server
-pdf-ocr
-pdf-to-image
-pdf-to-text
-redact-pdf
-remove-pdf-metadata
-remove-pdf-password
-repair-pdf
-rotate-pdf
-sign-pdf
-split-pdf
-target-size
-watermark-pdf-server  301
+/about  https://pdf300.com/about  301
+/add-page-numbers-server  https://pdf300.com/add-page-numbers-server  301
+/add-page-numbers-to-pdf  https://pdf300.com/add-page-numbers-to-pdf  301
+/add-watermark-to-pdf  https://pdf300.com/add-watermark-to-pdf  301
+/compress-pdf  https://pdf300.com/compress-pdf  301
+/compress-pdf-high-quality  https://pdf300.com/compress-pdf-high-quality  301
+/crop-pdf  https://pdf300.com/crop-pdf  301
+/edit-pdf-metadata  https://pdf300.com/edit-pdf-metadata  301
+/image-to-pdf  https://pdf300.com/image-to-pdf  301
+/merge-pdf  https://pdf300.com/merge-pdf  301
+/office-to-pdf  https://pdf300.com/office-to-pdf  301
+/password-protect-pdf  https://pdf300.com/password-protect-pdf  301
+/pdf-multiple-pages-per-sheet  https://pdf300.com/pdf-multiple-pages-per-sheet  301
+/pdf-n-up-server  https://pdf300.com/pdf-n-up-server  301
+/pdf-ocr  https://pdf300.com/pdf-ocr  301
+/pdf-to-image  https://pdf300.com/pdf-to-image  301
+/pdf-to-text  https://pdf300.com/pdf-to-text  301
+/redact-pdf  https://pdf300.com/redact-pdf  301
+/remove-pdf-metadata  https://pdf300.com/remove-pdf-metadata  301
+/remove-pdf-password  https://pdf300.com/remove-pdf-password  301
+/repair-pdf  https://pdf300.com/repair-pdf  301
+/rotate-pdf  https://pdf300.com/rotate-pdf  301
+/sign-pdf  https://pdf300.com/sign-pdf  301
+/split-pdf  https://pdf300.com/split-pdf  301
+/target-size  https://pdf300.com/target-size  301
+/watermark-pdf-server  https://pdf300.com/watermark-pdf-server  301
 /guides  https://pdf300.com/guides/  301
 /guides/*  https://pdf300.com/guides/:splat  301
 /de  https://pdf300.com/de/  301
