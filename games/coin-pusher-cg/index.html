@@ -1,0 +1,1653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Coin Pusher: Arcade Dream</title>
+<meta name="description" content="That machine from the arcade. Drop a coin, it piles up, and the deck pushes it over the edge.">
+<meta name="theme-color" content="#0E1218">
+<!-- CrazyGames HTML5 SDK v3 — the only external resource. The game runs without it too. -->
+<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+<style>
+  :root{
+    --bg:#0E1218; --panel:#171E27; --line:#2B3542;
+    --ink:#EAF1F8; --muted:#8FA0B3;
+    --gold:#F2C14E; --gold2:#C99A2E;
+    --red:#E0674F; --blue:#5B9BFF; --green:#3DD68C;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%; margin:0; overflow:hidden; overscroll-behavior:none; background:var(--bg)}
+  body{
+    color:var(--ink);
+    font-family:"DungGeunMo","Galmuri11",ui-monospace,Menlo,Consolas,"Apple SD Gothic Neo","Malgun Gothic",monospace;
+    user-select:none; -webkit-user-select:none; touch-action:manipulation; letter-spacing:0;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    /* 세로(폰): 위에서 아래로 쌓는다 */
+    display:grid;
+    grid-template-columns:100%;
+    grid-template-rows:auto minmax(0,1fr) auto auto auto;
+    grid-template-areas:"head" "game" "skills" "hint" "foot";
+  }
+
+  header{grid-area:head; padding:8px 10px 4px; text-align:center}
+  .stats{display:flex; justify-content:center; align-items:center; gap:12px; font-size:14px; color:var(--muted);
+         font-variant-numeric:tabular-nums; flex-wrap:wrap}
+  .stats b{color:var(--ink); font-size:18px; font-weight:800}
+  .stats .gold b{color:var(--gold)}
+  .stats .dim{color:#6B7787}
+  .langbtn{font:inherit; font-size:11px; font-weight:700; color:#8FA0B3; background:rgba(23,30,39,.88);
+           border:1px solid var(--line); border-radius:0; padding:4px 8px; cursor:pointer}
+  .langbtn:active{color:var(--gold)}
+  .eyes{position:relative; width:min(260px,72vw); max-width:100%; height:12px; margin:8px auto 0;
+        border:1px solid #2C3742; border-radius:7px; background:#151C24; overflow:hidden}
+  .eyes i{display:block; height:100%; width:0%; background:#3FA45B; transition:width .25s, background .35s}
+  .eyes em{position:absolute; inset:0; font-style:normal; font-size:9.5px; line-height:12px;
+           text-align:center; color:#8FA0B3; letter-spacing:1px}
+
+  .wrap{grid-area:game; display:flex; align-items:center; justify-content:center; min-height:0; min-width:0; padding:4px 8px}
+  canvas#cv{
+    image-rendering: pixelated;              /* 도트가 뭉개지지 않게 */
+    image-rendering: crisp-edges;
+    background:#141B24; border:2px solid #3A4756;
+    touch-action:none; display:block; cursor:crosshair;
+  }
+
+  .skills{grid-area:skills; display:flex; gap:5px; flex-wrap:wrap; justify-content:center; padding:4px 10px 0}
+  .skills:empty{padding:0}
+  .skill{font-size:11px; color:#9FD0FF; background:#16202C; border:1px solid #2E4157; padding:3px 7px; letter-spacing:-.01em; cursor:pointer}
+  .skill.off{color:#5A6572; border-color:#232D39; background:#101820}
+  .hint{grid-area:hint; text-align:center; font-size:13px; color:var(--muted); padding:4px 12px 6px; min-height:1.7em; line-height:1.4}
+
+  footer{grid-area:foot; padding:2px 12px 12px; display:flex; gap:10px; align-items:center; justify-content:center}
+  .drop{
+    flex:1; max-width:420px; background:linear-gradient(180deg,var(--gold),var(--gold2));
+    color:#2A1F05; border:0; border-radius:0; padding:15px 12px; box-shadow:3px 3px 0 #7A5E15;
+    font-size:17px; font-weight:800; letter-spacing:-.02em; font-family:inherit; cursor:pointer;
+  }
+  .drop:active{transform:translate(2px,2px); box-shadow:1px 1px 0 #7A5E15}
+  .drop:disabled{filter:grayscale(.7) brightness(.7); box-shadow:none; cursor:default}
+  .drop.shake{max-width:130px; background:linear-gradient(180deg,#7C8CA0,#5B6A7D); color:#0E141B; box-shadow:3px 3px 0 #2E3947}
+  .drop.shake:active{box-shadow:1px 1px 0 #2E3947}
+
+  /* 가로 화면(PC, 폰 가로): 판은 왼쪽, 점수판·버튼은 오른쪽 세로 기둥 */
+  @media (orientation: landscape){
+    body{
+      grid-template-columns:auto minmax(230px,320px);
+      grid-template-rows:auto auto minmax(0,1fr) auto;
+      grid-template-areas:"game head" "game skills" "game hint" "game foot";
+      justify-content:center; column-gap:18px;
+    }
+    header{padding:14px 10px 4px}
+    .stats{gap:10px 14px}
+    .hint{display:flex; align-items:center; justify-content:center}
+    footer{flex-direction:column; padding:6px 12px 16px}
+    .drop{width:100%; max-width:none}
+    .drop.shake{max-width:none; padding:11px 12px; font-size:15px}
+  }
+
+  .fall{position:fixed; inset:0; background:#000; z-index:41; display:block}
+  .fall.hide{display:none}
+
+  /* 대화는 무조건 검은 화면에서만. 게임 화면 위에 겹치지 않는다 */
+  .talk{
+    position:fixed; inset:0; background:#000; z-index:40;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:32px; text-align:center; cursor:pointer;
+  }
+  .talk.hide{display:none}
+  .talk-line{
+    font-size:clamp(17px,4.6vw,23px); line-height:1.9; color:#D8DEE6; white-space:pre-line;
+    max-width:520px; letter-spacing:-.01em; min-height:3em;
+    opacity:0; transition:opacity .55s ease;
+  }
+  .talk-line.on{opacity:1}
+  .choices{display:flex; flex-direction:column; gap:10px; margin-top:26px; width:min(320px,86vw)}
+  .ch{
+    background:#141A22; color:#D8DEE6; border:2px solid #3A4756; border-radius:0;
+    padding:13px 14px; font-size:15px; font-family:inherit; cursor:pointer;
+    box-shadow:3px 3px 0 #0A0E13; text-align:left;
+  }
+  .ch:active{transform:translate(2px,2px); box-shadow:1px 1px 0 #0A0E13}
+  .talk-next{
+    position:absolute; bottom:34px; left:0; right:0; font-size:12.5px; color:#4A525C; letter-spacing:.02em;
+    opacity:0; animation:fadeIn .6s ease 1.4s forwards; pointer-events:none;
+  }
+  .skip{
+    position:absolute; right:16px; bottom:22px; font:inherit; font-size:14px; font-weight:700; color:#D8DEE6;
+    background:#141A22; border:2px solid #3A4756; border-radius:0; padding:11px 16px; cursor:pointer;
+    box-shadow:3px 3px 0 #0A0E13; min-width:44px; min-height:44px;
+  }
+  .skip:active{transform:translate(2px,2px); box-shadow:1px 1px 0 #0A0E13}
+  .skip.hide{display:none}
+  @keyframes fadeIn{to{opacity:1}}
+
+  .over{
+    position:fixed; inset:0; background:rgba(14,18,24,.95); z-index:30;
+    display:flex; align-items:center; justify-content:center; padding:26px; text-align:center;
+  }
+  .over.hide{display:none}
+  .card{max-width:420px}
+  .card h2{font-size:clamp(24px,6.5vw,34px); margin:0 0 10px; letter-spacing:-.03em}
+  .card p{color:var(--muted); font-size:15px; line-height:1.8; margin:0}
+  .big{
+    margin-top:20px; background:var(--blue); color:#06121F; border:0; border-radius:0;
+    padding:15px 30px; box-shadow:3px 3px 0 #1A4480; font-size:18px; font-weight:800; cursor:pointer; font-family:inherit;
+  }
+  .big:active{transform:translate(2px,2px); box-shadow:1px 1px 0 #1A4480}
+  .rank{margin-top:14px; font-size:14px; color:var(--gold); font-weight:700; min-height:20px}
+  .tip{margin-top:18px; font-size:13px; color:#6B7787; line-height:1.75}
+  .credit{margin-top:22px; font-size:11px; color:#3E4A58; letter-spacing:.04em}
+
+  /* 광고가 나가는 동안 게임을 만지지 못하게 덮는다 (CrazyGames 규정) */
+  .adblock{position:fixed; inset:0; background:rgba(0,0,0,.86); z-index:100;
+           display:flex; align-items:center; justify-content:center; color:#8FA0B3; font-size:14px; text-align:center; padding:24px}
+  .adblock.hide{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="stats">
+    <span class="gold"><span id="lblCoins">Coins</span> <b id="left">50</b></span>
+    <span><span id="lblEarned">Earned</span> <b id="earn">0</b><span class="dim"> / <b id="goal">40</b></span></span>
+    <span><span id="lblBest">Best</span> <b id="best">0</b></span>
+    <button class="langbtn" id="langBtn" type="button" aria-label="language">한국어</button>
+  </div>
+  <!-- 사장님 눈치 — 기술·커맨드를 쓸수록 차오르고 가만두면 내려간다 -->
+  <div class="eyes" id="eyesWrap"><i id="eyesBar"></i><em id="eyesTxt">Owner's attention</em></div>
+</header>
+
+<div class="wrap">
+  <canvas id="cv"></canvas>
+</div>
+
+<div class="skills" id="skills"></div>
+<div class="hint" id="hint"></div>
+
+<footer>
+  <button class="drop" id="dropBtn" type="button">Drop a coin</button>
+  <button class="drop shake" id="shakeBtn" type="button">Shake</button>
+</footer>
+
+<canvas id="fall" class="fall hide"></canvas>
+
+<div id="choice" class="talk hide">
+  <div class="talk-line on" id="choiceLine"></div>
+  <div class="choices">
+    <button class="ch" id="chA" type="button"></button>
+    <button class="ch" id="chB" type="button"></button>
+  </div>
+</div>
+
+<div id="talk" class="talk hide">
+  <div class="talk-line" id="talkLine"></div>
+  <div class="talk-next" id="talkNext">tap to continue</div>
+  <button class="skip hide" id="talkSkip" type="button">Skip ▸</button>
+</div>
+
+<div class="over hide" id="over">
+  <div class="card">
+    <h2 id="overTitle">Coin Pusher</h2>
+    <p id="overBody"></p>
+    <div class="rank" id="orank"></div>
+    <button class="big" id="ob" type="button">Again</button>
+    <div class="tip" id="overTip"></div>
+    <div class="credit" id="credit">a LeDeuxions game</div>
+  </div>
+</div>
+
+<div id="adBlock" class="adblock hide"><div id="adText">Ad break — the game resumes right after.</div></div>
+
+<script>
+/* 동전 밀기 — 오락실 코인도저 (CrazyGames 제출판)
+   원작 2026-08-17. 위에서 비스듬히 본 화면 + 평면 물리. 물리는 직접 짠다(외부 라이브러리 없음).
+   이 판본: 외부 호출(애드센스·카운터·순위표 서버) 제거, CrazyGames SDK v3 연동,
+   영어 기본 + 한국어 선택, 가로/세로 레이아웃, 고정 틱(모니터 주사율과 무관한 물리). */
+
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════════
+   0. CrazyGames SDK v3 래퍼
+   SDK가 없거나(file://, 오프라인) 다른 도메인(environment=disabled)이면 전부 조용히 무시된다.
+   ═══════════════════════════════════════════════════════════════ */
+const CG = (() => {
+  const sdk = () => (window.CrazyGames && window.CrazyGames.SDK) || null;
+  let ok = false;
+  async function init(){
+    const s = sdk();
+    if(!s) return false;
+    try{
+      await Promise.race([
+        s.init(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("sdk init timeout")), 4000)),
+      ]);
+      const env = s.environment;
+      ok = (env === "crazygames" || env === "local");
+    }catch(e){ ok = false; }
+    return ok;
+  }
+  const call = (fn) => { if(!ok) return undefined; try{ return fn(sdk()); }catch(e){ return undefined; } };
+  return {
+    init,
+    get ok(){ return ok; },
+    loadingStart: () => call(s => s.game.loadingStart()),
+    loadingStop:  () => call(s => s.game.loadingStop()),
+    gameplayStart:() => call(s => s.game.gameplayStart()),
+    gameplayStop: () => call(s => s.game.gameplayStop()),
+    happytime:    () => call(s => s.game.happytime()),
+    requestAd(type, callbacks){
+      if(!ok) return false;
+      try{ sdk().ad.requestAd(type, callbacks); return true; }catch(e){ return false; }
+    },
+    dataGet: (k) => call(s => s.data.getItem(k)),
+    dataSet: (k, v) => call(s => s.data.setItem(k, String(v))),
+    country: () => call(s => s.user.systemInfo && s.user.systemInfo.countryCode),
+  };
+})();
+
+/* 저장 — CrazyGames data 모듈(로그인 시 기기 간 동기화) + localStorage 폴백. 둘 다 막혀도 게임은 돈다 */
+const store = {
+  get(k){
+    let v = CG.dataGet(k);
+    if(v === null || v === undefined){ try{ v = localStorage.getItem(k); }catch(e){ v = null; } }
+    return v;
+  },
+  set(k, v){
+    CG.dataSet(k, v);
+    try{ localStorage.setItem(k, String(v)); }catch(e){}
+  },
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   1. 말 — 영어 기본, 한국어 선택. 게임 로직은 같고 이 덩어리만 다르다.
+   ═══════════════════════════════════════════════════════════════ */
+const LANGS = {
+  en: {
+    code:"en", tts:"en-US", langBtn:"한국어",
+    coins:"Coins", earned:"Earned", best:"Best",
+    eyesLabel:"Owner's attention", eyesHigh:"Owner is watching", kickedLabel:"Kicked out",
+    dropBtn:"Drop a coin", shakeBtn:"Shake", sec:(n) => n + "s",
+    tapNext:"tap to continue", skip:"Skip ▸",
+    adWait:"Ad break — the game resumes right after.", newBest:"New best!", credit:"a LeDeuxions game",
+    opening: ["You like this game, don't you?", "Go on then. Knock yourself out.", "Hahahaha", "…",
+              "Ten thousand won of coins sits in your hand.",
+              "…", "…It's fine.", "Because I know a technique nobody else does.",
+              "…Center Pierce.", "You push the frontmost coin in the middle, and it goes over."],
+    endLoss: ["The coins are gone.", "The front row still hangs there.", "The floor opens.", "You fall with the coins."],
+    endWake: ["…", "You wake up."],
+    endWin:  ["Hahaha", "I'm happy…", "haha…"],
+    knock:   "Tap. Tap.\n\nSomeone taps you on the shoulder.",
+    look: "Turn around", ignore: "Pretend you didn't hear",
+    thugHit: (n) => "He hits you before you finish turning.\n\nHe sweeps " + n + " coins off the tray\nand leaves you exactly one.",
+    secret: (c, line) => '"Let me tell you a secret."\n\n"' + c + ' coins."\n\n' + line,
+    pay: (c) => "Hand over " + c + " coins", refuse: "Tell him no",
+    memorized: "Got it", nothing: '"…"\n\nHe opens his mouth, thinks better of it, and walks off.',
+    noCoin: "Nothing left to give", turnedAway: "You turn back to the machine", ignored: "You pretend you didn't hear",
+    wasted: "That was money for nothing", nowUsable: (t) => t + " — you can use this anytime now",
+    nothingLeft: "He looks like he has nothing left to tell you",
+    dropHere: "Tap where you want it to drop",
+    dropHereDesk: "Click the deck to drop · Space: drop · ←/→: aim · S: shake",
+    goodTiming: "Good timing",
+    sideLost: (n) => n + " slipped off the side",
+    towerOut: (n) => "A tower comes out — " + n + " coins",
+    towerFell: (n) => "The tower went over! " + n + " coins",
+    manyAtOnce: (n) => n + " stacked coins at once!",
+    starCoin: (n) => "Star coin! " + n,
+    shook: "You shook it", perStage: (n) => n + " coins go in per drop",
+    noCoinsLeft: "No coins left to drop. Wait for the rest to fall",
+    noCoinNow: "No coins", pocketEmpty: "…Your pockets are empty",
+    ownerLooking: "…The owner is looking this way",
+    notYet: "…Not yet", deckEmpty: "…The deck is empty",
+    cast: { center:"…Center Pierce", timing:"…Caught the instant", shake:"…Tremor, inherited",
+            tower:"…The base rang out", wait:"…The price of silence" },
+    grabbed: "…A hand on your shoulder", thump: "Thud, thud — the whole deck jumped",
+    theEnd: "The END",
+    kicked: ["A hand closes on your shoulder.", '"Sticky fingers, you."', '"Out."', "…", "You are pushed out the door."],
+    kickedCanvas: ["Out.", "Sticky fingers."],
+    stageDone: [
+      ['"That was a loan, you know."', '"I\'ll be taking it back."', "Every coin is swept away."],
+      ['"Oh, right."', '"It\'s two coins a drop now."', '"Boss raised the price. Said business was too good."'],
+      ["The coins feel heavier.", "Maybe it's nothing."]
+    ],
+    trust: ["You don't quite believe him.", "Might be worth a try.", "Ah — the owner's son. Short on pocket money, is he."],
+    skills: [
+      ["…Do not touch it for three counts. That silence is what bites the deck.", "Three Seconds of Silence"],
+      ["Do not waste the moment it shakes. The tremor is an opening.", "Inheritance of the Tremor"],
+      ["The instant the deck draws back. That is the only gap there is.", "The Instant's Gap"],
+      ["No tower falls from a blow to its crown. …It is the base.", "Collapse of the Base"],
+      ["Pierce through the center. What slid off the side was never yours.", "Center Pierce"]
+    ],
+    freeSecret: '"Let me tell you a secret. Free of charge."', listen: "Listen", noThanks: "No thanks",
+    secretCmd: '"Hit Shake twice in a row."\n\n"Thud, thud — the whole deck jumps."\n\n"…It\'s not on any skill list."',
+    cmdHint: "Shake twice in a row", ignored2: "…You pretended not to hear",
+    cleared: (n) => `You gathered one hundred and twenty coins.<br>Total collected: <b style="color:var(--gold)">${n}</b>`,
+    babble: ["ba ra ra","mu mu","ni ya","do do","ra ri ru","mwo mwo","ku ku","shi i"],
+    overTitle: "Coin Pusher",
+    overBody: "That machine from the arcade.<br>Drop a coin, it piles up, and the deck pushes the pile forward.<br>Whatever goes over the front edge is yours.",
+    overTip: "The best part is when a whole pile goes over at once.<br>So it pays to wait and let them stack up.",
+    endTitle: "Done",
+    endBody: (s, b) => `Coins <b style="color:var(--gold)">${s}</b> · Best <b>${b}</b>`,
+    thugRegret: "Shouldn't have turned around",
+    clearTitle: "You made it out", retry: "Again",
+  },
+  ko: {
+    code:"ko", tts:"ko-KR", langBtn:"English",
+    coins:"동전", earned:"번 것", best:"최고",
+    eyesLabel:"사장님 눈치", eyesHigh:"사장님이 보고 있다", kickedLabel:"쫓겨났다",
+    dropBtn:"동전 넣기", shakeBtn:"흔들기", sec:(n) => n + "초",
+    tapNext:"눌러서 넘기기", skip:"건너뛰기 ▸",
+    adWait:"광고 후 바로 이어집니다.", newBest:"새 기록!", credit:"a LeDeuxions game",
+    opening: ["너 이 게임 좋아하지?", "실컷 해봐라!", "으하하하하", "…", "만원어치 동전이 손에 쥐어져 있다.",
+              "…", "…괜찮다.", "나에겐, 남들은 모르는 기술이 있으니까.",
+              "…중앙 관통.", "가운데 제일 앞의 한 개를, 밀어서 떨어뜨린다."],
+    endLoss: ["동전이 다 떨어졌다.", "앞줄은 아직 그대로 걸쳐 있다.", "발밑이 열린다.", "동전과 함께 떨어진다."],
+    endWake: ["…", "꿈에서 깼다."],
+    endWin:  ["하하하하", "행복하다…", "하하하…"],
+    knock:   "툭, 툭.\n\n뒤에서 누군가 두드렸다.",
+    look: "돌아본다", ignore: "못 본 체한다",
+    thugHit: (n) => "돌아보자마자 맞았다.\n\n동전 " + n + "개를 쓸어 가고\n하나만 남겨두고 사라졌다.",
+    secret: (c, line) => '"비밀 하나 알려줄게."\n\n"동전 ' + c + '개."\n\n' + line,
+    pay: (c) => "동전 " + c + "개를 준다", refuse: "됐다고 한다",
+    memorized: "외웠다", nothing: "\"…\"\n\n말을 하려다 말고 그냥 가버렸다.",
+    noCoin: "줄 동전이 없다", turnedAway: "돌아앉았다", ignored: "못 본 체했다",
+    wasted: "돈만 날렸다", nowUsable: (t) => t + " — 이제 언제든 된다",
+    nothingLeft: "더 알려줄 게 없다는 얼굴이다",
+    dropHere: "떨어뜨릴 자리를 누르세요",
+    dropHereDesk: "판을 클릭해 떨어뜨리세요 · Space: 넣기 · ←/→: 조준 · S: 흔들기",
+    goodTiming: "좋은 타이밍",
+    sideLost: (n) => "옆으로 " + n + "개 빠졌습니다",
+    towerOut: (n) => "탑이 나왔다 — " + n + "개",
+    towerFell: (n) => "탑이 무너졌다! 동전 " + n + "개",
+    manyAtOnce: (n) => "쌓인 동전 " + n + "개가 한꺼번에!",
+    starCoin: (n) => "별 동전! " + n + "개",
+    shook: "흔들었습니다", perStage: (n) => "동전 " + n + "개씩 들어갑니다",
+    noCoinsLeft: "넣을 동전이 없습니다. 남은 게 떨어지길 기다리세요",
+    noCoinNow: "동전이 없다", pocketEmpty: "…주머니가 비었다",
+    ownerLooking: "…사장이 이쪽을 보고 있다",
+    notYet: "…아직이다", deckEmpty: "…판이 비어 있다",
+    cast: { center:"…중앙 관통", timing:"…찰나를 잡았다", shake:"…진동, 계승",
+            tower:"…밑동이 울렸다", wait:"…침묵의 값" },
+    grabbed: "…어깨를 붙잡혔다", thump: "쿵, 쿵 — 판이 들썩였다",
+    theEnd: "The END",
+    kicked: ["어깨를 붙잡혔다.", "\"손버릇이 고약하네.\"", "\"나가.\"", "…", "문 밖으로 밀려났다."],
+    kickedCanvas: ["나가.", "손버릇이 고약하네"],
+    stageDone: [
+      ['"빌려준 거니까."', '"이건 받아간다?"', "동전이 전부 쓸려 나갔다."],
+      ['"아 맞다."', '"동전 이번에는 두 개 넣어야 한다?"', '"사장님이 너무 잘된다고 값을 올렸대."'],
+      ["동전이 무거워진 것 같다.", "기분 탓인가."]
+    ],
+    trust: ["딱히 신뢰가 가지 않는다.", "해볼 만한 걸?", "오락실 사장님 아들이군. 용돈이 모자랐나 보네."],
+    skills: [
+      ["…셋을 세는 동안 손대지 마라. 그 침묵이 판을 문다.", "삼초의 침묵"],
+      ["흔들린 순간을 놓치지 마라. 흔들림은 기회다.", "진동 계승"],
+      ["밀개가 물러난 그 찰나. 거기가 유일한 틈이다.", "찰나의 틈"],
+      ["위를 쳐서 무너지는 탑은 없다. …밑동이다.", "밑동 붕괴"],
+      ["중앙을 꿰뚫어라. 옆으로 샌 건 처음부터 네 것이 아니었다.", "중앙 관통"]
+    ],
+    freeSecret: '"비밀 하나 알려줄게. 공짜다."', listen: "듣는다", noThanks: "됐다",
+    secretCmd: '"흔들기를 연달아 두 번 눌러봐."\n\n"쿵, 쿵 — 판이 통째로 들썩인다."\n\n"…기술 목록엔 없는 거야."',
+    cmdHint: "흔들기를 연달아 두 번", ignored2: "…못 본 체했다",
+    cleared: (n) => `동전 백이십 개를 모았습니다.<br>모은 동전 <b style="color:var(--gold)">${n}</b>개`,
+    babble: ["바라라","무무","니야","도도","라리루","뭐뭐","쿠쿠","시이"],
+    overTitle: "동전 밀기",
+    overBody: "오락실에 있던 그 기계입니다.<br>동전을 넣으면 쌓이고, 밀개가 앞으로 밀어 떨어뜨립니다.<br>앞으로 떨어진 동전이 내 돈이 됩니다.",
+    overTip: "한 번에 우르르 떨어질 때가 제일 좋습니다.<br>그래서 바로 안 넣고 쌓이길 기다리는 게 낫습니다.",
+    endTitle: "끝",
+    endBody: (s, b) => `동전 <b style="color:var(--gold)">${s}</b>개 · 최고 <b>${b}</b>개`,
+    thugRegret: "괜히 돌아봤다",
+    clearTitle: "끝까지 갔다", retry: "다시",
+  },
+};
+let lang = "en";
+let T = LANGS.en;
+
+/* ═══════════════════════════════════════════════════════════════
+   2. DOM
+   ═══════════════════════════════════════════════════════════════ */
+const cv = document.getElementById("cv");
+const ctx = cv.getContext("2d");
+const leftEl  = document.getElementById("left");
+const earnEl  = document.getElementById("earn");
+const goalEl  = document.getElementById("goal");
+const bestEl  = document.getElementById("best");
+const hintEl  = document.getElementById("hint");
+const dropBtn = document.getElementById("dropBtn");
+const shakeBtn = document.getElementById("shakeBtn");
+const langBtn = document.getElementById("langBtn");
+const over = document.getElementById("over");
+const ob = document.getElementById("ob"), orank = document.getElementById("orank");
+const eyesBar = document.getElementById("eyesBar");
+const eyesTxt = document.getElementById("eyesTxt");
+const talkEl = document.getElementById("talk");
+const talkLine = document.getElementById("talkLine");
+const talkNext = document.getElementById("talkNext");
+const talkSkip = document.getElementById("talkSkip");
+const choiceEl  = document.getElementById("choice");
+const choiceLine= document.getElementById("choiceLine");
+const chA = document.getElementById("chA"), chB = document.getElementById("chB");
+const adBlock = document.getElementById("adBlock");
+const adText = document.getElementById("adText");
+const headerEl = document.querySelector("header");
+const skillsEl = document.getElementById("skills");
+const footerEl = document.querySelector("footer");
+
+const isDesktop = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const hintStart = () => isDesktop ? T.dropHereDesk : T.dropHere;
+
+/* ═══════════════════════════════════════════════════════════════
+   3. 판 크기 (게임 좌표. 화면 크기와 따로 둔다)
+   ═══════════════════════════════════════════════════════════════ */
+const W = 152;          // 판 가로
+const H = 272;          // 판 세로. y가 클수록 앞(떨어지는 쪽)
+const EDGE = H - 5;     // 이 선을 넘으면 떨어진다
+const R = 7;            // 동전 반지름
+const MAX_STACK = 6;    // 탑 최대 높이
+const LIP_FORCE = 0.006;  // 앞 턱을 넘는 데 필요한 힘 (배당률을 정하는 값)
+const SIDE_OPEN = 160;    // 이 앞쪽은 옆이 열려 있다. 여기서 옆으로 빠지면 잃는다
+const RAMP_W = R * 2.4;   // 가이드 판이 닿는 폭
+const RAMP_K = 0.019;     // 안쪽으로 되돌리는 힘. 키우면 덜 빠진다
+
+const BEST_KEY = "gw_dozer_best";
+const LANG_KEY = "gw_dozer_lang";
+let best = 0;
+
+let coins = [], score = 0, earned = 0, credits = 50, dropX = W/2, playing = false;
+let roundActive = false;   // 한 판이 살아 있는 동안만 true. 끝난 판에 늦은 타이머가 끼어들지 못하게
+let secretsSold = 0;       // 뒤에 있는 사람에게서 몇 번 샀는가
+let shakeAt = 0, lastDropAt = 0, tapUsed = 0, nextTapAt = 0, dropCount = 0;
+/* ── 단계 ── 잘될수록 뜯어간다
+   1차 40 채우면 "빌려준 거니까" 하고 다 가져간다
+   2차 동전을 두 개씩 넣어야 한다. 사장이 값을 올렸다
+   3차 동전이 무거워진다. 120 이면 끝 */
+const STAGES = [
+  { goal:40,  per:1, drag:0.93, push:1.18 },
+  { goal:80,  per:2, drag:0.93, push:1.12 },
+  { goal:120, per:2, drag:0.87, push:0.72 },
+];
+let stage = 0;
+/* 실제 기계는 밀개(배리케이드)가 고정이고 판이 앞뒤로 움직인다.
+   판이 앞으로 나올 때 밀개 밑을 지나며 동전이 앞으로 밀려난다. */
+let deckAdvance = 0;
+const PUSH_Y = 34;          // 밀개가 서 있는 자리 (고정)
+let deck = { off: 0, dir: 1, max: 16, speed: 0.5 };   // 판이 밀려나간 정도
+
+/* ── 동전 탑 (히든 보너스) ──
+   조건을 채우면 기계가 미리 쌓아둔 탑을 판에 내보낸다. 밀어서 절벽 너머로 보내면 통째로 쏟아진다 */
+let tower = { x: W/2, y: 112, h: 0, coins: 0, lean: 0, shake: 0, falling: 0 };
+const LEAN_LIMIT = 1.6;
+
+/* ═══════════════════════════════════════════════════════════════
+   4. 화면 맞추기
+   캔버스는 작게(W×H) 두고 CSS로만 키운다. 2배 이상이면 정수배(도트 보존),
+   공간이 좁으면(폰 가로 등) 1~2배 사이 소수배를 허용해 글자가 읽히게 한다.
+   ═══════════════════════════════════════════════════════════════ */
+function fit(){
+  const landscape = window.matchMedia("(orientation: landscape)").matches;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let availW, availH;
+  if(landscape){
+    availW = vw - headerEl.offsetWidth - 18 - 24;
+    availH = vh - 12;
+  }else{
+    availW = vw - 20;
+    availH = vh - (headerEl.offsetHeight + skillsEl.offsetHeight + hintEl.offsetHeight + footerEl.offsetHeight) - 12;
+  }
+  let scale = Math.min(availW / W, availH / H);
+  if(scale >= 2) scale = Math.min(4, Math.floor(scale));
+  else scale = Math.max(1, Math.floor(scale * 10) / 10);
+  cv.width = W; cv.height = H;                 // 실제 픽셀 수는 그대로
+  cv.style.width  = (W * scale) + "px";
+  cv.style.height = (H * scale) + "px";
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+}
+window.addEventListener("resize", fit);
+window.addEventListener("orientationchange", () => setTimeout(fit, 120));
+if(window.visualViewport) window.visualViewport.addEventListener("resize", fit);
+if(window.ResizeObserver){
+  const ro = new ResizeObserver(() => fit());
+  [headerEl, skillsEl, hintEl, footerEl].forEach(el => ro.observe(el));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5. 동전과 물리
+   ═══════════════════════════════════════════════════════════════ */
+function addCoin(x, y, kind, fallTo){
+  coins.push({ x, y, vx:0, vy:0, kind: kind || "coin", stack: 1, fallTo: fallTo || 0 });
+}
+
+/* 처음에 깔려 있는 동전. 빈 판에서 시작하면 재미가 없다 */
+function seed(){
+  coins = [];
+  tower = { x: W/2, y: 112, h: 0, coins: 0, lean: 0, shake: 0, falling: 0 };   // 처음엔 탑이 없다
+  for(let i = 0; i < 58; i++){
+    let x, y, tries = 0;
+    do{
+      x = 14 + Math.random()*(W-28);
+      y = (PUSH_Y + R + 2) + Math.random()*(H - PUSH_Y - 50);
+      tries++;
+    // 탑 둘레는 비워둔다. 안 그러면 탑이 동전에 파묻혀 안 보인다
+    }while(tries < 20 && Math.abs(x - W/2) < R*2.4 && y < 150);
+    addCoin(x, y);
+  }
+  // 특별 동전 두 개 — 이게 떨어지면 크게 준다
+  addCoin(W/2 - 22, H - 74, "star");
+  addCoin(W/2 + 22, H - 54, "star");
+}
+
+/* ── 물리 ──
+   1) 밀개가 닿은 동전을 앞으로 민다
+   2) 겹친 동전끼리 서로 밀어낸다 (여러 번 반복해야 안정된다)
+   3) 마찰로 속도를 죽인다. 안 그러면 영원히 미끄러진다 */
+function step(){
+  // 판이 앞뒤로 움직인다. 앞으로 나올 때만 동전이 밀린다
+  const prevOff = deck.off;
+  deck.off += deck.speed * deck.dir;
+  if(deck.off > deck.max) deck.dir = -1;
+  if(deck.off < 0) deck.dir = 1;
+  const advance = deck.off - prevOff;
+  deckAdvance = advance;
+
+  coolEyes(); checkEyes();
+  updateTower();
+
+  for(const c of coins){
+    // 위에서 떨어지는 중 — 다 내려앉기 전에는 밀거나 겹치지 않는다
+    if(c.fallTo){
+      c.vy += 0.12;                     // 중력
+      c.y += c.vy;
+      // 내려앉는 순간 '좋은 타이밍'의 힘이 실린다 (원작은 착지하며 0으로 지워져 효과가 없었다)
+      if(c.y >= c.fallTo){ c.y = c.fallTo; c.vy = c.landVy || 0; c.landVy = 0; c.fallTo = 0; clink(); }
+      continue;
+    }
+    /* 판 위의 동전은 판과 함께 앞뒤로 같이 움직인다.
+       앞으로 나아가는 힘은 '새로 넣은 동전이 뒤에서 밀어주는 것'에서만 나온다. */
+    c.y += advance * STAGES[stage].push;
+    const dr = STAGES[stage].drag;
+    c.vx *= dr;  c.vy *= dr;          // 운동마찰. 단계가 오르면 동전이 무거워진다
+    // 정지마찰 — 힘이 약하면 아예 안 움직인다. 실제 기계가 그래서 잘 안 떨어진다
+    if(Math.abs(c.vx) < 0.018) c.vx = 0;
+    if(Math.abs(c.vy) < 0.018) c.vy = 0;
+    c.x += c.vx;   c.y += c.vy;
+
+    // 관통 중인 동전은 스스로 밀고 나간다
+    if(c.boost > 0){ c.boost--; c.vy += 0.42; }
+
+    // 앞 턱(lip) — 걸쳐 있다가 뒤에서 밀어야 넘어간다. '아슬아슬하게 걸린 동전'이 여기서 나온다
+    if(c.y > EDGE - R*1.2 && c.y < EDGE){
+      c.vy *= 0.85;
+      if(c.vy < LIP_FORCE) c.vy = 0;    // 미는 힘이 모자라면 턱에 걸린다
+    }
+
+    // 옆벽 — 뒤쪽은 막혀 있고 앞쪽(SIDE_OPEN 아래)은 열려 있다. 열린 데로 빠지면 내 돈이 안 된다
+    const guard = R;
+    if(c.y < SIDE_OPEN){
+      if(c.x < guard){ c.x = guard; c.vx = Math.abs(c.vx) * 0.4; }
+      if(c.x > W - guard){ c.x = W - guard; c.vx = -Math.abs(c.vx) * 0.4; }
+    } else {
+      /* 45도 가이드 판 — 열린 구간 옆의 비스듬한 철판. 옆으로 가던 동전을 안쪽으로 되돌린다.
+         완전히 막지는 않는다. 빠르게 밀린 동전은 여전히 넘어간다 — 그게 긴장이다. */
+      if(c.x < RAMP_W){ c.vx += (RAMP_W - c.x) * RAMP_K; }
+      if(c.x > W - RAMP_W){ c.vx -= (c.x - (W - RAMP_W)) * RAMP_K; }
+    }
+    // 밀개보다 뒤로는 못 간다
+    if(c.y < PUSH_Y + R){ c.y = PUSH_Y + R; }
+  }
+
+  // 겹침 풀기 — 반복할수록 자연스럽지만 무거워진다
+  for(let it = 0; it < 8; it++){
+    for(let i = 0; i < coins.length; i++){
+      for(let j = i+1; j < coins.length; j++){
+        const a = coins[i], b = coins[j];
+        if(a.fallTo || b.fallTo) continue;
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let d2 = dx*dx + dy*dy;
+        const min = R*2;
+        if(d2 < min*min && d2 > 0.0001){
+          const d = Math.sqrt(d2);
+          const push = (min - d) / 2;
+          const ux = dx/d, uy = dy/d;
+          a.x -= ux*push; a.y -= uy*push;
+          b.x += ux*push; b.y += uy*push;
+          // 밀린 만큼 앞으로 가려는 힘이 전달된다
+          const share = push * 0.55;
+          a.vx -= ux*share; a.vy -= uy*share;
+          b.vx += ux*share; b.vy += uy*share;
+        }
+      }
+    }
+  }
+
+  /* ── 탑 쌓기 ── 갈 데가 없으면 위로 올라타 층이 쌓인다. 그 탑이 한꺼번에 무너지는 게 제일 큰 재미다 */
+  for(let i = 0; i < coins.length; i++){
+    const a = coins[i];
+    if(a.stack >= MAX_STACK) continue;
+    for(let j = i+1; j < coins.length; j++){
+      const b = coins[j];
+      if(b.kind !== a.kind) continue;                 // 별 동전은 따로 둔다
+      if(a.stack + b.stack > MAX_STACK) continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy);
+      // 거의 같은 자리에서 서로 못 움직이면 → 위로 올라탄다
+      const stuck = Math.abs(a.vy) < 0.05 && Math.abs(b.vy) < 0.05;
+      if(d < R*0.75 && stuck){
+        a.stack += b.stack;
+        a.y = (a.y + b.y) / 2; a.x = (a.x + b.x) / 2;
+        coins.splice(j, 1);
+        j--;
+      }
+    }
+  }
+
+  // 떨어진 동전 거두기
+  let got = 0, gotStar = 0, lost = 0, fellStack = 0;
+  coins = coins.filter(c => {
+    if(c.y > EDGE){
+      if(c.kind === "star"){ gotStar += c.stack; } else { got += c.stack; }
+      if(c.stack >= 3) fellStack = Math.max(fellStack, c.stack);   // 쌓인 탑이 통째로 떨어졌다
+      return false;
+    }
+    if(c.x < -R || c.x > W + R){ lost++; return false; }   // 옆으로 빠짐 = 손실
+    return true;
+  });
+  if(lost && !got && !gotStar){
+    hintEl.textContent = T.sideLost(lost);
+    thud();
+  }
+  if(got || gotStar){
+    const gain = got + gotStar * 10;
+    credits += gain;                  // 딴 동전이 곧 내 동전이다
+    earned  += gain;                  // 이 판에서 벌어들인 양 (목표 판정)
+    score   += gain;                  // 누적치
+    earnEl.textContent = earned;
+    leftEl.textContent = credits;
+    checkStage();
+    ding(got + gotStar);
+    if(fellStack >= 3) hintEl.textContent = T.manyAtOnce(fellStack);
+    else if(gotStar) hintEl.textContent = T.starCoin(gotStar*10);
+    else if(got >= 3) hintEl.textContent = T.manyAtOnce(got);
+    else hintEl.textContent = "+" + gain;
+  }
+}
+
+/* 도트로 찍는 동전 — 옆에서 본 원기둥. 14 x 7. k=테두리 y=금 l=빛 d=그늘 */
+function pixCoin(x, y, isStar){
+  const P = isStar
+    ? { k:"#1B3A5C", y:"#4E8CD8", l:"#9FD0FF", d:"#25507F" }
+    : { k:"#7A5A10", y:"#E0B040", l:"#FFE9A8", d:"#8C6A18" };
+  const rows = [
+    "..kkkkkkkkkk..",
+    ".kyylllyyyyyk.",
+    "kyyyyyyyyyyyyk",
+    "kdyyyyyyyyyydk",
+    "kddddddddddddk",
+    ".kkddddddddkk.",
+    "..kkkkkkkkkk..",
+  ];
+  const x0 = Math.round(x) - 7, y0 = Math.round(y) - 3;
+  for(let ry = 0; ry < rows.length; ry++){
+    const row = rows[ry];
+    let rx = 0;
+    while(rx < row.length){
+      const ch = row[rx];
+      if(ch === "."){ rx++; continue; }
+      let run = 1;                                   // 같은 색은 이어서 한 번에 (빠르다)
+      while(rx + run < row.length && row[rx + run] === ch) run++;
+      ctx.fillStyle = P[ch];
+      ctx.fillRect(x0 + rx, y0 + ry, run, 1);
+      rx += run;
+    }
+  }
+}
+
+/* ── 탑 ── */
+function updateTower(){
+  if(tower.falling > 0){ tower.falling--; if(tower.falling === 0) collapse(); return; }
+  if(tower.h === 0) return;
+
+  /* 탑도 판 위에 놓인 물건이다. 판이 움직이면 같이 움직이고, 뒤에서 동전이 밀면 앞으로 나아간다.
+     무거워서 아주 조금씩만 밀린다. 40개짜리는 무겁고, 오래 걸리고, 그만큼 크게 준다 */
+  tower.y += deckAdvance;                       // 판과 함께 앞뒤로
+
+  const weight = 1 / (1 + tower.coins / 90);    // 40개면 0.69배. 무겁지만 통째로 밀린다
+  for(const c of coins){
+    if(c.fallTo) continue;
+    if(Math.abs(c.x - tower.x) < R * 3.2 && c.y < tower.y && c.y > tower.y - R * 3){
+      const push = Math.max(0, c.vy) * weight;
+      if(push > 0.002){
+        tower.y += push;
+        tower.shake += push * 0.25;             // 밀릴 때 조금 흔들린다
+        c.vy *= 0.35;                           // 무거운 걸 밀었으니 동전은 힘을 잃는다
+      }
+      if(c.y > tower.y - R*2) c.y = tower.y - R*2;   // 탑을 뚫고 지나가지 못한다
+    }
+  }
+
+  tower.shake *= 0.99;
+  tower.lean = tower.shake;
+
+  // 절벽까지 밀려가면 넘어간다
+  if(tower.y > EDGE - R*1.5){ tower.falling = 26; shakeSound(); }
+}
+
+/* 조건을 채우면 미리 쌓아둔 탑을 판에 내보낸다 */
+function vendTower(nCoins){
+  tower.coins = nCoins;
+  tower.y = PUSH_Y + (EDGE - PUSH_Y) * 0.42;   // 판 중간쯤에 놓인다
+  tower.h = Math.max(6, Math.round(nCoins / 3));   // 40개면 13층쯤
+  tower.lean = 0; tower.shake = 0; tower.falling = 0;
+  hintEl.textContent = T.towerOut(nCoins);
+  ding(3);
+}
+
+/* 탑이 무너진다 — 쌓인 만큼 동전이 앞으로 쏟아진다 */
+function collapse(){
+  const n = tower.coins || tower.h;
+  for(let i = 0; i < n; i++){
+    const c = { x: tower.x + (Math.random()-0.5) * W * 0.8,
+                y: tower.y + 6 + Math.random() * 70,
+                vx: (Math.random()-0.5) * 1.2,
+                vy: 1.2 + Math.random() * 1.6,          // 앞으로 쏟아진다
+                kind: "coin", stack: 1 };
+    coins.push(c);
+  }
+  hintEl.textContent = T.towerFell(n);
+  ding(5);
+  CG.happytime();   // 이 게임에서 제일 큰 순간 — 사이트가 같이 축하한다
+  tower.h = 0; tower.coins = 0; tower.lean = 0; tower.shake = 0;
+}
+
+/* 목표를 채웠나 — 채우면 다음 단계로 넘어간다(그리고 더 힘들어진다) */
+let stageBusy = false;
+function checkStage(){
+  if(stageBusy) return;
+  const st = STAGES[stage];
+  if(earned < st.goal) return;   // '벌어들인' 동전이 목표에 닿아야 한다
+  stageBusy = true;
+  playing = false;
+  setTimeout(() => {
+    requestMidgame();            // 단계 사이 — 자연스러운 쉼. SDK가 3분 간격을 스스로 지킨다
+    const doneStage = stage;
+    talk(() => T.stageDone[doneStage], () => {
+      if(stage === 0){
+        credits = Math.max(0, credits - 50);   // 처음 빌려준 만원어치를 가져간다
+        if(credits < 6) credits = 6;           // 한 판 더 해볼 만큼은 남겨준다
+        leftEl.textContent = credits;
+      }
+      earned = 0; earnEl.textContent = 0;      // 다음 목표는 새로 센다
+      stage++;
+      if(stage >= STAGES.length){
+        clearGame();
+        return;
+      }
+      goalEl.textContent = STAGES[stage].goal;
+      if(stage === 1) setTimeout(() => vendTower(40), 900);   // 1차를 넘으면 40개짜리 탑 하나
+      hintEl.textContent = T.perStage(STAGES[stage].per);
+      stageBusy = false;
+      playing = true;
+    });
+  }, 500);
+}
+
+function clearGame(){
+  roundActive = false;
+  talk(() => T.endWin, () => talk(() => T.endWake, () => {
+    const newBest = score > best;
+    if(newBest){ best = score; store.set(BEST_KEY, best); bestEl.textContent = best; }
+    overMode = "clear"; overScore = score; overNewBest = newBest;
+    renderOver();
+    over.classList.remove("hide");
+    CG.happytime();
+    requestMidgame();
+  }));
+}
+
+/* 배운 것을 화면에 적어둔다 — 외우라고 했지만 잊을 수 있으니 */
+function renderSkills(){
+  const el = skillsEl;
+  if(!el) return;
+  const had = el.childElementCount;
+  el.innerHTML = "";
+  SKILL_META.forEach((k, i) => {
+    if(!learned.has(k.id)) return;
+    const b = document.createElement("span");
+    const left = cooldown[k.id] ? Math.ceil((cooldown[k.id] - performance.now())/1000) : 0;
+    b.className = "skill" + (left > 0 ? " off" : "");
+    b.textContent = left > 0 ? T.skills[i][1] + " " + left : T.skills[i][1];
+    b.title = T.skills[i][0];
+    b.onclick = () => castSkill(k.id);
+    el.appendChild(b);
+  });
+  if(had !== el.childElementCount) fit();
+}
+
+/* ── 그리기 ── */
+function draw(){
+  ctx.clearRect(0, 0, W, H);
+
+  // 바닥 판 — 단색 + 도트 격자
+  ctx.fillStyle = "#1A222C"; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "#212B36";
+  for(let y = 4; y < H; y += 8) for(let x = 4; x < W; x += 8) ctx.fillRect(x, y, 1, 1);
+
+  // 쫓겨나면 판 위에 바로 적는다 (대사가 늦거나 실패해도 보이게)
+  if(kicked){
+    ctx.fillStyle = "rgba(0,0,0,.72)"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#C4453B";
+    ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
+    ctx.fillText(T.kickedCanvas[0], W/2, H/2 - 8);
+    ctx.fillStyle = "#8FA0B3"; ctx.font = "9px monospace";
+    ctx.fillText(T.kickedCanvas[1], W/2, H/2 + 10);
+    ctx.textAlign = "start";
+    return;
+  }
+
+  // 옆이 열린 구간 표시 — 여기로 빠지면 잃는다
+  ctx.fillStyle = "#2A1A18";
+  ctx.fillRect(0, SIDE_OPEN, 2, H - SIDE_OPEN);
+  ctx.fillRect(W-2, SIDE_OPEN, 2, H - SIDE_OPEN);
+  // 45도 가이드 판 — 비스듬히 놓인 철판
+  ctx.fillStyle = "#39434E";
+  for(let y = SIDE_OPEN; y < H; y += 3){
+    const w = Math.max(1, RAMP_W - (y - SIDE_OPEN) * 0.06);
+    ctx.fillRect(2, y, w * 0.18, 1);
+    ctx.fillRect(W - 2 - w * 0.18, y, w * 0.18, 1);
+  }
+
+  // 떨어지는 선 — 점선을 직접 찍는다
+  ctx.fillStyle = "#3A2F14";
+  ctx.fillRect(0, EDGE, W, H - EDGE);
+  ctx.fillStyle = "#C99A2E";
+  for(let x = 0; x < W; x += 4) ctx.fillRect(x, EDGE, 2, 1);
+
+  // 밀개 (고정)
+  const py = PUSH_Y;
+  ctx.fillStyle = "#2E3947"; ctx.fillRect(0, py - 18, W, 18);
+  ctx.fillStyle = "#46566B"; ctx.fillRect(0, py - 4, W, 4);
+  ctx.fillStyle = "#5C7089"; ctx.fillRect(0, py - 18, W, 1);
+
+  // 동전 — 도트로 찍는다. 그라데이션 없이 색 세 개로만
+  const sorted = coins.slice().sort((a,b) => a.y - b.y);
+  for(const c of sorted){
+    const isStar = c.kind === "star";
+    const layers = c.stack || 1;
+    for(let L = 0; L < layers; L++){
+      pixCoin(Math.round(c.x), Math.round(c.y - L*2), isStar);
+    }
+    if(layers >= 3){
+      ctx.fillStyle = "#FFF3D0";
+      ctx.font = "6px monospace"; ctx.textAlign = "center";
+      ctx.fillText(layers, Math.round(c.x), Math.round(c.y - layers*2 - 7));
+    }
+  }
+
+  // 탑 — 동전을 눕혀 원형으로 쌓은 원기둥
+  if(tower.h > 0){
+    const shaking = tower.falling > 0;
+    const lean = shaking ? tower.lean + (26 - tower.falling) * 0.05 : tower.lean;
+    const tw = Math.round(R * 1.9);          // 원기둥 반폭
+    for(let L = 0; L < tower.h; L++){
+      const raw = lean * L * 1.6 + (shaking ? Math.sin(L + tower.falling) * 1.5 : 0);
+      const off = Math.round(Math.max(-R*2.5, Math.min(R*2.5, raw)));
+      const x = Math.round(tower.x + off);
+      const y = Math.round(tower.y - L * 3);
+      // 한 층 = 눕힌 동전들이 둘러선 테. 밝고 어두운 줄을 번갈아 두께를 낸다
+      ctx.fillStyle = (L % 2) ? "#C99A2E" : "#E0B040";
+      ctx.fillRect(x - tw, y - 2, tw*2, 3);
+      ctx.fillStyle = "#8C6A18";
+      ctx.fillRect(x - tw, y + 1, tw*2, 1);
+      ctx.fillStyle = "#FFE9A8";
+      ctx.fillRect(x - tw + 2, y - 2, 3, 1);
+    }
+    // 맨 위 — 가운데가 비어 보이게 (실제로도 도넛처럼 쌓인다)
+    const topOff = Math.round(Math.max(-R*2.5, Math.min(R*2.5, lean * (tower.h-1) * 1.6)));
+    const tx = Math.round(tower.x + topOff), ty = Math.round(tower.y - (tower.h-1) * 3);
+    ctx.fillStyle = "#FFE9A8"; ctx.fillRect(tx - tw, ty - 5, tw*2, 3);
+    ctx.fillStyle = "#2A2213"; ctx.fillRect(tx - 3, ty - 5, 6, 2);
+
+    ctx.fillStyle = tower.lean > LEAN_LIMIT*0.65 ? "#FF8A5C" : "#FFE9A8";
+    ctx.font = "7px monospace"; ctx.textAlign = "center";
+    ctx.fillText(tower.h, tower.x, ty - 9);
+  }
+
+  // 투입구 — 동전이 어디서 떨어지는지 보이게
+  ctx.fillStyle = "#2A3340";
+  ctx.fillRect(0, 0, W, R*2 + 4);
+  ctx.fillStyle = "#1A222C";
+  for(let x = 4; x < W; x += 12) ctx.fillRect(x, 2, 6, 2);
+  if(playing){
+    const dx = Math.round(dropX);
+    ctx.fillStyle = "#F2C14E";
+    ctx.fillRect(dx - 6, 1, 12, R*2 + 2);      // 열린 투입구
+    ctx.fillStyle = "#1A222C";
+    ctx.fillRect(dx - 4, 3, 8, R*2 - 2);
+    ctx.fillStyle = "#C99A2E";
+    ctx.fillRect(dx - 1, R*2 + 5, 2, 3);       // 여기로 떨어진다는 표시
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6. 소리 (파일 없이) — 전부 master 게인을 거친다. 광고 중엔 master를 0으로
+   ═══════════════════════════════════════════════════════════════ */
+let ac = null, master = null, muted = false;
+function actx(){
+  if(!ac){
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain();
+    master.gain.value = muted ? 0 : 1;
+    master.connect(ac.destination);
+  }
+  return ac;
+}
+function out(){ actx(); return master; }
+function setMuted(m){
+  muted = !!m;
+  if(master) master.gain.value = muted ? 0 : 1;
+  if(muted){ try{ window.speechSynthesis && speechSynthesis.cancel(); }catch(e){} }
+}
+// 브라우저 자동재생 정책 — 첫 터치에서 오디오를 깨운다
+document.addEventListener("pointerdown", () => { try{ if(ac && ac.state === "suspended") ac.resume(); }catch(e){} }, { passive: true });
+
+function ding(n){
+  try{
+    const c = actx();
+    for(let i = 0; i < Math.min(n, 5); i++){
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = "triangle";
+      o.frequency.value = 620 + i*130;
+      const t = c.currentTime + i*0.045;
+      g.gain.setValueAtTime(0.07, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.connect(g); g.connect(out());
+      o.start(t); o.stop(t + 0.17);
+    }
+  }catch(e){}
+}
+function thud(){
+  try{
+    const c = actx(), o = c.createOscillator(), g = c.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(180, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(70, c.currentTime + 0.2);
+    g.gain.setValueAtTime(0.05, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.22);
+    o.connect(g); g.connect(out()); o.start(); o.stop(c.currentTime + 0.23);
+  }catch(e){}
+}
+function clink(){
+  try{
+    const c = actx(), o = c.createOscillator(), g = c.createGain();
+    o.type = "square"; o.frequency.value = 320;
+    g.gain.setValueAtTime(0.04, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.09);
+    o.connect(g); g.connect(out()); o.start(); o.stop(c.currentTime + 0.1);
+  }catch(e){}
+}
+function shakeSound(){
+  try{
+    const c = actx();
+    const buf = c.createBuffer(1, c.sampleRate * 0.5, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * (1 - i/d.length) * 0.4;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 900;
+    src.connect(f); f.connect(out()); src.start();
+  }catch(e){}
+}
+/* 뒤에서 툭툭 — 전화가 아니라 사람이 두드린다 */
+function tapSound(){
+  try{
+    const c = actx();
+    for(let i = 0; i < 2; i++){
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = "sine"; o.frequency.value = 150;
+      const t = c.currentTime + i*0.17;
+      g.gain.setValueAtTime(0.09, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+      o.connect(g); g.connect(out()); o.start(t); o.stop(t + 0.11);
+    }
+  }catch(e){}
+}
+/* ── 옹알거림 ── 심즈처럼 말은 안 들리고 소리만 난다. 실제 말을 알아듣게 하면 자막을 읽을 이유가 없어진다 */
+function babble(n){
+  if(muted || !window.speechSynthesis) return;
+  try{
+    speechSynthesis.cancel();
+    for(let i = 0; i < (n || 2); i++){
+      const u = new SpeechSynthesisUtterance(T.babble[Math.floor(Math.random()*T.babble.length)]);
+      u.lang = T.tts; u.rate = 2.6; u.pitch = 0.55; u.volume = 0.35;
+      speechSynthesis.speak(u);
+    }
+  }catch(e){}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   7. 조작 — 터치/마우스/키보드
+   ═══════════════════════════════════════════════════════════════ */
+function canvasX(e){
+  const r = cv.getBoundingClientRect();
+  const px = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+  return Math.max(R, Math.min(W - R, px / r.width * W));
+}
+cv.addEventListener("pointerdown", e => {
+  if(!playing || adBusy) return;
+  dropX = canvasX(e);
+  drop();
+});
+cv.addEventListener("pointermove", e => {
+  if(!playing) return;
+  if(e.pointerType === "mouse" || e.buttons) dropX = canvasX(e);   // 마우스는 올려만 둬도 조준된다
+});
+// 버튼을 누른 뒤 포커스가 남으면 Space 가 버튼으로 가서 동전이 안 들어간다
+document.addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest("button"); if(b) b.blur(); });
+window.addEventListener("keydown", e => {
+  if(adBusy) return;
+  if(e.code === "Space" || e.code === "Enter"){
+    if(e.target && e.target.tagName === "BUTTON") return;    // 버튼에 포커스가 있으면 브라우저가 알아서 누른다
+    if(!talkEl.classList.contains("hide")){ e.preventDefault(); talkEl.dispatchEvent(new PointerEvent("pointerdown")); return; }
+    if(playing){ e.preventDefault(); drop(); }
+  }else if(e.code === "ArrowLeft"){ if(playing){ e.preventDefault(); dropX = Math.max(R, dropX - 6); } }
+  else if(e.code === "ArrowRight"){ if(playing){ e.preventDefault(); dropX = Math.min(W - R, dropX + 6); } }
+  else if(e.code === "KeyS"){ if(playing) doShake(); }
+});
+
+function drop(){
+  const per = STAGES[stage].per;
+  if(!playing || adBusy) return;
+  /* 동전이 모자라면 조용히 무시하지 않는다 — 왜 안 되는지 말해주고, 정말 한 푼도 없으면 판을 끝낸다. */
+  if(credits < per){
+    hintEl.textContent = T.noCoinNow;
+    if(credits <= 0){
+      playing = false;
+      dropBtn.disabled = true; shakeBtn.disabled = true;
+      hintEl.textContent = T.pocketEmpty;
+      setTimeout(gameOver, 900);
+    }
+    return;
+  }
+  credits -= per;
+  leftEl.textContent = credits;
+
+  // 뒤에서 두드린다. 완전 랜덤은 아니고 동전을 어느 정도 쓰면 온다. 자주 오면 게임을 못 하니 가끔만
+  dropCount++;
+  if(nextTapAt === 0) nextTapAt = 22 + Math.floor(Math.random()*8);
+  if(dropCount >= nextTapAt && tapUsed < 2){
+    tapUsed++;
+    nextTapAt = dropCount + 35 + Math.floor(Math.random()*15);
+    setTimeout(knock, 700);
+  }
+
+  /* 타이밍 — 실제 고수들이 쓰는 방법('워터폴').
+     밀개가 뒤로 다 물러났을 때 넣으면 밀개가 앞으로 나오며 힘을 최대로 전한다. */
+  const back = deck.off / deck.max;   // 0 = 판이 다 물러난 때 (지금 넣으면 길게 밀린다)
+  // 위에서 떨어져 밀개 바로 뒤에 앉는다. 낸 만큼 떨어뜨린다. 두 개를 내면 두 개가 들어간다
+  for(let k = 0; k < per; k++){
+    addCoin(dropX + (k - (per-1)/2) * R * 1.6, -R - k*R*2, null, PUSH_Y + R + 1);
+  }
+  const c = coins[coins.length - 1];
+
+  addEyes(-6);            // 돈을 넣고 하면 사장님은 좋아한다
+  lastDropAt = performance.now();
+  const window_ = 0.25;
+  if(back < window_){
+    c.landVy = 0.26;
+    hintEl.textContent = T.goodTiming;
+  }
+
+  if(credits < STAGES[stage].per){
+    dropBtn.disabled = true;
+    hintEl.textContent = T.noCoinsLeft;
+    setTimeout(checkEnd, 3500);
+  }else{
+    dropBtn.disabled = false;
+  }
+}
+dropBtn.onclick = () => drop();
+
+/* 흔들기 — 실제 기계에도 있는 기능. 다만 계속 누르면 게임이 아니게 되므로 쿨다운을 둔다 */
+let shakeReady = true;
+function doShake(){
+  if(!playing || !shakeReady || adBusy) return;
+  // 빨간색 구간일 때는 못 흔든다
+  if(eyes > 75){ hintEl.textContent = T.ownerLooking; return; }
+  // 흔들기 자체는 눈치가 살짝만 오르고 곧 내려간다
+  if(!tryCommand()){ addEyes(4); setTimeout(() => addEyes(-3), 1800); }
+  shakeReady = false;
+  shakeBtn.disabled = true;
+  for(const c of coins){
+    c.vx += (Math.random() - 0.5) * 2.4;
+    c.vy += Math.random() * 0.9;        // 앞으로만 살짝. 뒤로 가면 이상하다
+  }
+  thud();
+  shakeAt = performance.now();
+  hintEl.textContent = T.shook;
+  let n = 2;      // 연달아 두 번 눌러야 손버릇이 나가므로 짧게
+  const t = setInterval(() => {
+    n--; shakeBtn.textContent = n > 0 ? T.sec(n) : T.shakeBtn;
+    if(n <= 0){ clearInterval(t); shakeReady = true; shakeBtn.disabled = !roundActive ? true : false; }
+  }, 1000);
+}
+shakeBtn.onclick = doShake;
+
+function checkEnd(){
+  if(!roundActive || kicked) return;
+  // 더 이상 점수가 오를 가망이 없으면 끝낸다
+  const near = coins.filter(c => c.y > EDGE - 60).length;
+  if(near > 0){ setTimeout(checkEnd, 2500); return; }
+  gameOver();
+}
+
+function gameOver(){
+  if(!roundActive) return;
+  roundActive = false;
+  playing = false;
+  // 끝 대사도 검은 화면에서. 이기든 지든 결국 꿈에서 깬다
+  if(score >= WIN_LINE){
+    talk(() => T.endWin, () => talk(() => T.endWake, showResult));
+  }else{
+    talk(() => T.endLoss, () => fallScene(() => talk(() => T.endWake, showResult)));
+  }
+}
+
+function showResult(){
+  const newBest = score > best;
+  if(newBest){
+    const hadBest = best > 0;
+    best = score;
+    store.set(BEST_KEY, best);
+    bestEl.textContent = best;
+    if(hadBest) CG.happytime();      // 자기 기록을 넘겼다
+  }
+  overMode = "end"; overScore = score; overNewBest = newBest;
+  renderOver();
+  over.classList.remove("hide");
+  requestMidgame();                  // 판이 끝났다 — 광고 자리
+}
+
+/* 결과 카드 — 언어를 바꿔도 다시 그릴 수 있게 상태를 들고 있는다 */
+let overMode = "intro", overScore = 0, overNewBest = false;
+function renderOver(){
+  const h2 = document.getElementById("overTitle"), p = document.getElementById("overBody"), tip = document.getElementById("overTip");
+  if(overMode === "end"){
+    h2.textContent = T.endTitle; p.innerHTML = T.endBody(overScore, best); tip.innerHTML = "";
+    orank.textContent = overNewBest ? T.newBest : "";
+  }else if(overMode === "clear"){
+    h2.textContent = T.clearTitle; p.innerHTML = T.cleared(overScore); tip.innerHTML = "";
+    orank.textContent = overNewBest ? T.newBest : "";
+  }else{
+    h2.textContent = T.overTitle; p.innerHTML = T.overBody; tip.innerHTML = T.overTip;
+    orank.textContent = "";
+  }
+  ob.textContent = T.retry;
+  document.getElementById("credit").textContent = T.credit;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   8. 검은 화면 대화
+   스토리는 조금만. 명시하지 말고 짐작하게. 대화는 무조건 검은 화면에서.
+   lines 는 배열이거나 배열을 돌려주는 함수(언어를 바꾸면 다음 줄부터 바뀐다).
+   opts.auto = 자동으로 넘어가는 ms, opts.skip = 건너뛰기 버튼
+   ═══════════════════════════════════════════════════════════════ */
+talkSkip.addEventListener("pointerdown", e => e.stopPropagation());
+function talk(lines, done, opts){
+  opts = opts || {};
+  const L = () => (typeof lines === "function" ? lines() : lines) || [];
+  let i = 0, timer = null, ended = false;
+  talkEl.classList.remove("hide");
+  talkSkip.classList.toggle("hide", !opts.skip);
+  const show = () => {
+    talkLine.classList.remove("on");
+    setTimeout(() => {
+      if(ended) return;
+      const arr = L();
+      talkLine.textContent = arr[i] || "";
+      talkLine.classList.add("on");
+      babble(1 + Math.floor((arr[i] || "").length / 9));   // 글자 수만큼 옹알거린다
+    }, 260);
+    if(opts.auto){ clearTimeout(timer); timer = setTimeout(next, opts.auto); }
+  };
+  const finish = () => {
+    if(ended) return;
+    ended = true;
+    clearTimeout(timer);
+    talkEl.removeEventListener("pointerdown", next);
+    talkSkip.onclick = null;
+    talkSkip.classList.add("hide");
+    talkEl.classList.add("hide");
+    done && done();
+  };
+  function next(){
+    if(ended) return;
+    if(adBusy){ if(opts.auto){ clearTimeout(timer); timer = setTimeout(next, 500); } return; }
+    i++;
+    if(i >= L().length){ finish(); return; }
+    show();
+  }
+  show();
+  talkEl.addEventListener("pointerdown", next);
+  if(opts.skip) talkSkip.onclick = (e) => { e.stopPropagation(); finish(); };
+}
+
+/* ── 뒤에 있는 사람 ──
+   툭툭 두드린다 → 본 체 할까 못 본 체 할까 → 본 체 하면 방법을 알려주겠다며 코인을 요구한다.
+   스킬은 다섯 개. 한 번 배우면 계속 쓸 수 있다. 손님은 방법을 알려줄 뿐이고, 그다음은 사람이 외워서 하는 것이다 */
+const SKILL_META = [
+  /* 세게 만든 만큼 오래 기다린다 */
+  { id:"wait",   cost:3, cool:15 },
+  { id:"shake",  cost:4, cool:15 },
+  { id:"timing", cost:4, cool:15 },
+  { id:"tower",  cost:5, cool:22 },
+  { id:"center", cost:3, cool:15 },
+];
+const learned = new Set();
+const cooldown = {};        // 스킬마다 다음에 쓸 수 있는 시각
+const skillOf = id => SKILL_META.find(k => k.id === id);
+const skillIdx = id => SKILL_META.findIndex(k => k.id === id);
+const skillTip = id => T.skills[skillIdx(id)][1];
+const skillSay = id => T.skills[skillIdx(id)][0];
+function ready(id){
+  return learned.has(id) && (!cooldown[id] || performance.now() > cooldown[id]);
+}
+
+/* ── 기술 쓰기 (눌러서) ── 누르면 그 자리에서 판 위 동전이 앞으로 밀린다. 쿨다운이 끝나야 다시 쓴다. */
+function castSkill(id){
+  if(!playing || adBusy) return;
+  if(!learned.has(id)) return;
+  if(!ready(id)){ hintEl.textContent = T.notYet; return; }
+  if(!coins.length){ hintEl.textContent = T.deckEmpty; return; }
+
+  if(id === "center"){
+    /* 판 전체를 미는 게 아니다. 한가운데에 있는 것 중 제일 앞의 한 개만 쏜다.
+       한 발이 앞으로 뚫고 나가면서, 지나가는 길에 있는 것들을 차례로 친다. */
+    let pick = null, bestScore = -1;
+    for(const c of coins){
+      const mid = 1 - Math.abs(c.x - W/2) / (W/2);   // 가운데일수록 1
+      const front = c.y / H;                          // 앞일수록 1
+      const sc = mid * 1.2 + front;
+      if(sc > bestScore){ bestScore = sc; pick = c; }
+    }
+    if(pick){
+      const path = coins
+        .filter(c => c !== pick && c.y > pick.y && Math.abs(c.x - pick.x) < R * 2.8)
+        .sort((a, b) => a.y - b.y)
+        .slice(0, 10);            // 타이머를 너무 많이 만들지 않는다 (느린 기계에서 죽는다)
+      path.forEach((c, i) => {
+        setTimeout(() => {
+          c.vy += 3.6 - i * 0.3;
+          c.vx += (c.x - pick.x) * 0.10;
+          if(i < 3) thud();
+        }, 45 * i);                                     // 티 디 딩 — 앞에서부터 번지듯
+      });
+      /* 한 번 세게 튕기면 뛰어넘고, 약하게 하면 안 나간다. 그래서 '계속 미는 힘'을 준다. */
+      pick.vy += 2.2; pick.vx = (W/2 - pick.x) * 0.05;
+      pick.boost = 26;          // 프레임 수. step 에서 매번 조금씩 더 민다
+      thud();
+    }
+    hintEl.textContent = T.cast.center;
+  } else if(id === "timing"){
+    for(const c of coins) c.vy += 4.6;              // 판 위 전부를 대포처럼 쏜다
+    hintEl.textContent = T.cast.timing;
+  } else if(id === "shake"){
+    for(const c of coins){ c.vx += (Math.random()-0.5) * 3.4; c.vy += 3.6; }
+    hintEl.textContent = T.cast.shake;
+  } else if(id === "tower"){
+    if(tower.h > 0) tower.shake += 1.1;
+    for(const c of coins) c.vy += (Math.abs(c.x - tower.x) < R*5) ? 4.4 : 2.6;
+    hintEl.textContent = T.cast.tower;
+  } else if(id === "wait"){
+    for(const c of coins) c.vy += (c.y > EDGE - 80) ? 5.0 : 3.0;
+    hintEl.textContent = T.cast.wait;
+  }
+  useSkill(id);
+}
+
+/* ── 사장님 눈치 ── 기술 계속 쓰면 게이지가 찬다. 초록에서 빨간색. 시간 따라 조금씩 떨어진다 */
+let eyes = 0;                       // 0 ~ 100
+let kicked = false;
+function addEyes(n){
+  eyes = Math.max(0, Math.min(100, eyes + n));
+  if(!eyesBar) return;
+  eyesBar.style.width = eyes + "%";
+  eyesBar.style.background = eyes > 75 ? "#C4453B" : eyes > 45 ? "#D9A441" : "#3FA45B";
+  if(eyesTxt) eyesTxt.textContent = kicked ? T.kickedLabel : (eyes > 75 ? T.eyesHigh : T.eyesLabel);
+}
+
+/* 눈치가 꽉 차면 쫓겨난다 — 검은 화면 The END */
+function checkEyes(){
+  if(kicked || eyes < 99.5 || !playing) return;
+  kicked = true; playing = false; roundActive = false;
+  dropBtn.disabled = true; shakeBtn.disabled = true;
+  /* 여기서 대사가 안 뜨면 조작만 막히고 화면은 그대로라 '동전도 안 들어가고 쫓겨나지도 않는' 상태가 된다.
+     그래서 실패해도 반드시 끝으로 보낸다. */
+  hintEl.textContent = T.grabbed;     // 대사가 늦어도 상태는 바로 보이게
+  if(eyesTxt) eyesTxt.textContent = T.kickedLabel;
+  let shown = false;
+  try { talk(() => T.kicked, () => { shown = true; theEnd(); }); }
+  catch(e){ theEnd(); return; }
+  setTimeout(() => { if(!shown && talkEl.classList.contains("hide")) theEnd(); }, 2500);
+}
+function coolEyes(){ if(eyes > 0) addEyes(-0.03); }   // 가만두면 식는다 (초당 2쯤)
+
+/* ── 손버릇(커맨드) ── 기술 목록에 없는 것. 뒤에 있는 사람이 첫 거래에서 알려준다.
+   흔들기를 3초 안에 두 번 -> 판이 통째로 들썩이고 앞으로 조금 밀린다 */
+let shakeTaps = [];
+function tryCommand(){
+  const now = performance.now();
+  shakeTaps = shakeTaps.filter(t => now - t < 3000);
+  shakeTaps.push(now);
+  if(shakeTaps.length >= 2){
+    shakeTaps = [];
+    // 쿵, 쿵 — 두 번 들렸다 내려앉는다
+    for(const c of coins){ c.vy += 0.9; c.vx += (Math.random()-0.5) * 0.6; }
+    setTimeout(() => { for(const c of coins) c.vy += 0.9; thud(); }, 220);
+    thud();
+    addEyes(50);      // 연속 두 번 쿠쿵은 주인 눈치가 반절 오른다
+    hintEl.textContent = T.thump;
+    return true;
+  }
+  return false;
+}
+
+function useSkill(id){
+  addEyes(12);
+  cooldown[id] = performance.now() + skillOf(id).cool * 1000;
+  renderSkills();
+}
+
+/* 신뢰도 — 자막으로만 알려준다. 숫자는 절대 안 보여준다 */
+const TRUST_P = [0.50, 0.70, 0.96];
+
+function ask(text, aLabel, bLabel, onA, onB){
+  playing = false;                       // 고르는 동안 판은 멈춘다
+  choiceLine.textContent = text;
+  chA.textContent = aLabel; chB.textContent = bLabel;
+  choiceEl.classList.remove("hide");
+  babble(2);
+  const close = (fn) => {
+    choiceEl.classList.add("hide");
+    chA.onclick = chB.onclick = null;
+    if(roundActive && !kicked) playing = true;
+    fn && fn();
+  };
+  chA.onclick = () => close(onA);
+  chB.onclick = () => close(onB);
+}
+
+/* 그냥 The END. 검은 화면. 꿈에서 깨는 것도 없이 그대로 끝난다. 이쪽이 더 허무하다 */
+function theEnd(){
+  roundActive = false; playing = false;
+  const t = talkEl, line = talkLine;
+  t.classList.remove("hide");
+  talkSkip.classList.add("hide");
+  line.style.fontSize = "clamp(30px,9vw,52px)";
+  line.style.letterSpacing = ".08em";
+  line.textContent = "";
+  line.classList.remove("on");
+  setTimeout(() => { line.textContent = T.theEnd; line.classList.add("on"); requestMidgame(); }, 900);
+  // 아무 데나 눌러야 처음으로 돌아간다
+  const back = () => {
+    if(adBusy) return;
+    t.removeEventListener("pointerdown", back);
+    line.style.fontSize = ""; line.style.letterSpacing = "";
+    t.classList.add("hide");
+    overMode = "intro";
+    renderOver();
+    over.classList.remove("hide");
+  };
+  setTimeout(() => t.addEventListener("pointerdown", back), 1600);
+}
+
+function knock(){
+  if(!roundActive || !playing || kicked) return;
+  tapSound();
+  ask(T.knock, T.look, T.ignore,
+      () => {
+        // 가끔은 알려주는 사람이 아니다. 돌아보는 것 자체가 도박이 된다 (2%)
+        if(Math.random() < 0.02){
+          // 다 뺏고 한 개만 남긴다. 남길 게 없으면 그대로 끝난다
+          if(credits <= 1){
+            thud();
+            credits = 0; leftEl.textContent = 0;
+            playing = false;
+            theEnd();
+            return;
+          }
+          const taken = credits - 1;
+          credits = 1; leftEl.textContent = credits;
+          thud();
+          hintEl.textContent = T.thugRegret;
+          ask(T.thugHit(taken), "…", "…", null, null);
+          return;
+        }
+        // 아직 안 배운 것 중에서 하나 (다 배웠으면 그냥 간다)
+        const left = SKILL_META.filter(k => !learned.has(k.id));
+        if(!left.length){
+          hintEl.textContent = T.nothingLeft;
+          return;
+        }
+        /* 첫 거래는 기술이 아니라 '손버릇'을 알려준다. 공짜다. "아, 이 게임엔 커맨드가 따로 있구나"를 여기서 알게 한다.
+           그 뒤부터는 반반이다. */
+        if(secretsSold === 0){
+          ask(T.freeSecret, T.listen, T.noThanks,
+              () => {
+                secretsSold++;
+                ask(T.secretCmd, T.memorized, T.memorized,
+                    () => { hintEl.textContent = T.cmdHint; },
+                    () => { hintEl.textContent = T.cmdHint; });
+              },
+              () => { hintEl.textContent = T.ignored2; });
+          return;
+        }
+        const o = left[Math.floor(Math.random()*left.length)];
+        const ti = Math.floor(Math.random()*TRUST_P.length);
+        ask(T.secret(o.cost, T.trust[ti]),
+            T.pay(o.cost), T.refuse,
+            () => {
+              if(credits >= o.cost){
+                credits -= o.cost; leftEl.textContent = credits;
+                secretsSold++;
+                // 신뢰도만큼만 진짜다. 헛돈일 수도 있다
+                if(Math.random() < TRUST_P[ti]){
+                  learned.add(o.id);
+                  renderSkills();
+                  ask('"' + skillSay(o.id) + '"', T.memorized, T.memorized,
+                      () => { hintEl.textContent = T.nowUsable(skillTip(o.id)); },
+                      () => { hintEl.textContent = T.nowUsable(skillTip(o.id)); });
+                }else{
+                  ask(T.nothing, "…", "…",
+                      () => { hintEl.textContent = T.wasted; },
+                      () => { hintEl.textContent = T.wasted; });
+                }
+              }else{
+                hintEl.textContent = T.noCoin;
+              }
+            },
+            () => { hintEl.textContent = T.turnedAway; });
+      },
+      () => { hintEl.textContent = T.ignored; });
+}
+
+/* 떨어지는 장면 — 동전과 함께 르통통씨가 떨어진다. 그림 파일은 안 쓰고 도형으로 그린다.
+   시간 기준으로 돈다(주사율이 달라도 같은 길이) */
+function fallScene(done){
+  const fc = document.getElementById("fall");
+  const g = fc.getContext("2d");
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = window.innerWidth, h = window.innerHeight;
+  fc.width = w*dpr; fc.height = h*dpr;
+  g.setTransform(dpr,0,0,dpr,0,0);
+  fc.classList.remove("hide");
+
+  const bits = [];
+  for(let i = 0; i < 58; i++){
+    bits.push({ x: Math.random()*w, y: -Math.random()*h*1.2,
+                v: 2 + Math.random()*3.4, r: 6 + Math.random()*7,
+                a: Math.random()*6.28, s: (Math.random()-0.5)*0.14 });
+  }
+  const man = { x: w/2, y: -110, v: 2.2, a: 0, s: 0.035 };
+  let t = 0, prev = performance.now();
+
+  (function anim(now){
+    const df = Math.min((now - prev) / (1000/60), 3); prev = now;   // 60fps 한 프레임 = 1
+    t += df;
+    g.fillStyle = "#000"; g.fillRect(0,0,w,h);
+
+    for(const b of bits){
+      b.y += b.v * df; b.a += b.s * df;
+      if(b.y > h + 40){ b.y = -30; b.x = Math.random()*w; }
+      g.save(); g.translate(b.x, b.y); g.rotate(b.a); g.scale(1, 0.55);
+      g.beginPath(); g.arc(0,0,b.r,0,6.2832);
+      g.fillStyle = "rgba(201,154,46," + (0.35 + Math.random()*0.2).toFixed(2) + ")";
+      g.fill(); g.restore();
+    }
+
+    // 르통통씨 — 비니모자, 둥근 안경, 마른 몸
+    man.y += man.v * df; man.v += 0.02 * df; man.a += man.s * df;
+    g.save(); g.translate(man.x, man.y); g.rotate(man.a);
+    g.strokeStyle = "#C9D2DC"; g.lineWidth = 3; g.lineCap = "round";
+    g.beginPath(); g.arc(0,-30,17,0,6.2832); g.stroke();          // 머리
+    g.beginPath(); g.arc(0,-34,17.5,Math.PI,0); g.stroke();       // 비니
+    g.beginPath(); g.arc(-6,-28,5.5,0,6.2832); g.stroke();        // 안경
+    g.beginPath(); g.arc(7,-28,5.5,0,6.2832); g.stroke();
+    g.beginPath(); g.moveTo(1.5,-28); g.lineTo(-0.5,-28); g.stroke();
+    g.beginPath(); g.moveTo(0,-13); g.lineTo(0,26); g.stroke();   // 몸
+    g.beginPath(); g.moveTo(0,-6); g.lineTo(-22,-22); g.stroke(); // 팔
+    g.beginPath(); g.moveTo(0,-6); g.lineTo(23,-19); g.stroke();
+    g.beginPath(); g.moveTo(0,26); g.lineTo(-15,52); g.stroke();  // 다리
+    g.beginPath(); g.moveTo(0,26); g.lineTo(16,50); g.stroke();
+    g.restore();
+
+    // 서서히 어두워진다
+    if(t > 100){
+      g.fillStyle = "rgba(0,0,0," + Math.min(1, (t-100)/70) + ")";
+      g.fillRect(0,0,w,h);
+    }
+    if(t < 180) requestAnimationFrame(anim);
+    else { fc.classList.add("hide"); done && done(); }
+  })(performance.now());
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   9. 광고 — CrazyGames 규정: 요청~종료 사이 조작 차단, 실제 재생(adStarted)부터 음소거
+   ═══════════════════════════════════════════════════════════════ */
+let adBusy = false;
+function requestMidgame(){
+  if(!CG.ok || adBusy) return;
+  adBusy = true;
+  adBlock.classList.remove("hide");
+  let started = false, guard = null;
+  const finish = () => {
+    if(!adBusy) return;
+    clearTimeout(guard);
+    adBusy = false;
+    setMuted(false);
+    adBlock.classList.add("hide");
+    try{ if(ac && ac.state === "suspended") ac.resume(); }catch(e){}
+  };
+  // 광고가 아예 시작하지 않으면(콜백 누락 등) 8초 뒤 풀어준다. 시작했다면 끝날 때까지 기다린다
+  guard = setTimeout(() => { if(!started) finish(); }, 8000);
+  const sent = CG.requestAd("midgame", {
+    adStarted:  () => { started = true; clearTimeout(guard); setMuted(true); },
+    adFinished: () => finish(),
+    adError:    () => finish(),
+  });
+  if(!sent) finish();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   10. 언어
+   ═══════════════════════════════════════════════════════════════ */
+function detectLang(){
+  const nav = ((navigator.languages && navigator.languages[0]) || navigator.language || "").toLowerCase();
+  if(nav.indexOf("ko") === 0) return "ko";
+  return "en";
+}
+function setLang(l){
+  lang = LANGS[l] ? l : "en";
+  T = LANGS[lang];
+  document.documentElement.lang = lang;
+  document.getElementById("lblCoins").textContent = T.coins;
+  document.getElementById("lblEarned").textContent = T.earned;
+  document.getElementById("lblBest").textContent = T.best;
+  langBtn.textContent = T.langBtn;
+  dropBtn.textContent = T.dropBtn;
+  if(shakeReady) shakeBtn.textContent = T.shakeBtn;
+  talkNext.textContent = T.tapNext;
+  talkSkip.textContent = T.skip;
+  adText.textContent = T.adWait;
+  addEyes(0);
+  if(playing) hintEl.textContent = hintStart();
+  renderSkills();
+  renderOver();
+  fit();
+}
+langBtn.onclick = () => {
+  setLang(lang === "en" ? "ko" : "en");
+  store.set(LANG_KEY, lang);
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   11. 진행
+   ═══════════════════════════════════════════════════════════════ */
+const WIN_LINE = 120;   // 이만큼 넘으면 대박 쪽 결말
+
+ob.onclick = () => {
+  if(adBusy) return;
+  over.classList.add("hide");
+  startRound();
+};
+
+function startRound(){
+  score = 0; earned = 0; credits = 50; stage = 0; stageBusy = false;
+  roundActive = true; playing = true;
+  earnEl.textContent = 0;
+  goalEl.textContent = STAGES[0].goal;
+  leftEl.textContent = credits;
+  dropBtn.disabled = false;
+  hintEl.textContent = hintStart();
+  shakeReady = true; shakeBtn.disabled = false; shakeBtn.textContent = T.shakeBtn;
+  shakeAt = lastDropAt = 0; tapUsed = 0; nextTapAt = 0; dropCount = 0;
+  learned.clear();
+  /* 꿈이니까 처음부터 하나는 알고 있다 — '나는 남들은 모르는 기술이 있다'
+     가운데로 넣기를 준다. 옆으로 새는 게 이 게임에서 제일 크게 잃는 길이라서다. */
+  learned.add("center");
+  secretsSold = 0;
+  eyes = 0; kicked = false; addEyes(0);
+  renderSkills();
+  seed();
+}
+
+/* 고정 틱 — 물리는 1초에 60번만 돈다. 144Hz 모니터에서도 같은 속도 (CrazyGames 요구사항) */
+const STEP = 1000 / 60;
+let acc = 0, last = 0, wasActive = false;
+function loop(now){
+  if(!last) last = now;
+  acc += Math.min(now - last, 100); last = now;    // 탭을 떠났다 와도 몰아서 돌지 않는다
+  const active = playing && !adBusy;
+  if(active !== wasActive){
+    wasActive = active;
+    if(active) CG.gameplayStart(); else CG.gameplayStop();
+  }
+  while(acc >= STEP){
+    if(playing && !adBusy) step();
+    acc -= STEP;
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
+/* 시작 — SDK 준비 → 저장값 읽기 → 바로 이야기(건너뛰기 가능) → 플레이 */
+(async function boot(){
+  fit(); seed(); draw();                           // 첫 화면부터 판이 보인다
+  await CG.init();                                 // 없으면 즉시 false
+  CG.loadingStart();
+  best = Number(store.get(BEST_KEY) || 0) || 0;
+  bestEl.textContent = best;
+  setLang(store.get(LANG_KEY) || detectLang());
+  CG.loadingStop();
+  requestAnimationFrame(loop);
+  setInterval(renderSkills, 500);                  // 남은 시간 보이게
+  talk(() => T.opening, startRound, { auto: 1600, skip: true });
+})();
+</script>
+</body>
+</html>
