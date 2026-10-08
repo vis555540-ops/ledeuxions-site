@@ -74,3 +74,75 @@
 /meeting   /회의실/   302
 /seal  https://xn--hq1bj5lj7efxh.store/korean-name-seal.html  302
 /seal/  https://xn--hq1bj5lj7efxh.store/korean-name-seal.html  302
+
+# 2026-10-08 — pdf300 영어판 원본(web-projects/pdf300/en/)은 pdf300.com 용이라 링크가 /compress-pdf 처럼 뿌리 주소다.
+#   ledeuxions.com 에서 그 쪽을 열면 링크가 전부 404 였다(서치콘솔 404 검증 실패 원인 중 하나). 같은 이름의 pdf300.com 쪽으로 넘긴다.
+/about
+add-page-numbers-server
+add-page-numbers-to-pdf
+add-watermark-to-pdf
+compress-pdf-high-quality
+compress-pdf
+crop-pdf
+edit-pdf-metadata
+image-to-pdf
+merge-pdf
+office-to-pdf
+password-protect-pdf
+pdf-multiple-pages-per-sheet
+pdf-n-up-server
+pdf-ocr
+pdf-to-image
+pdf-to-text
+redact-pdf
+remove-pdf-metadata
+remove-pdf-password
+repair-pdf
+rotate-pdf
+sign-pdf
+split-pdf
+target-size
+watermark-pdf-server  https://pdf300.com/about
+add-page-numbers-server
+add-page-numbers-to-pdf
+add-watermark-to-pdf
+compress-pdf-high-quality
+compress-pdf
+crop-pdf
+edit-pdf-metadata
+image-to-pdf
+merge-pdf
+office-to-pdf
+password-protect-pdf
+pdf-multiple-pages-per-sheet
+pdf-n-up-server
+pdf-ocr
+pdf-to-image
+pdf-to-text
+redact-pdf
+remove-pdf-metadata
+remove-pdf-password
+repair-pdf
+rotate-pdf
+sign-pdf
+split-pdf
+target-size
+watermark-pdf-server  301
+/guides  https://pdf300.com/guides/  301
+/guides/*  https://pdf300.com/guides/:splat  301
+/de  https://pdf300.com/de/  301
+/de/*  https://pdf300.com/de/:splat  301
+/es  https://pdf300.com/es/  301
+/es/*  https://pdf300.com/es/:splat  301
+/ja  https://pdf300.com/ja/  301
+/ja/*  https://pdf300.com/ja/:splat  301
+/pt  https://pdf300.com/pt/  301
+/pt/*  https://pdf300.com/pt/:splat  301
+
+# 2026-10-08 — 게임별 랭킹 주소(옛 링크)는 없고 랭킹은 한 곳에 모여 있다.
+/web-projects/game-world/jump/ranking/*   /web-projects/game-world/ranking/  301
+/web-projects/game-world/snake/ranking/*  /web-projects/game-world/ranking/  301
+/web-projects/game-world/simon/ranking/*  /web-projects/game-world/ranking/  301
+/web-projects/game-world/jump/ranking     /web-projects/game-world/ranking/  301
+/web-projects/game-world/snake/ranking    /web-projects/game-world/ranking/  301
+/web-projects/game-world/simon/ranking    /web-projects/game-world/ranking/  301

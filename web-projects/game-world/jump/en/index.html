@@ -114,9 +114,9 @@
     fitDPR(); window.addEventListener('resize', fitDPR);
     ctx.imageSmoothingEnabled = false;                     // 픽셀아트 선명하게
     // 곰돌이 3프레임 (형이 픽셀 그림판으로 직접 그림)
-    const bearIdle = new Image();   bearIdle.src = 'bear_idle.png';     // 공중/하강
-    const bearUp = new Image();     bearUp.src = 'bear_up.png';         // 튕겨오름(팔 쫙)
-    const bearSquash = new Image(); bearSquash.src = 'bear_squash.png'; // 고무줄에 눌림
+    const bearIdle = new Image();   bearIdle.src = '../bear_idle.png';     // 공중/하강
+    const bearUp = new Image();     bearUp.src = '../bear_up.png';         // 튕겨오름(팔 쫙)
+    const bearSquash = new Image(); bearSquash.src = '../bear_squash.png'; // 고무줄에 눌림
 
     const G = 0.32;                 // 중력(단위/프레임²) — 천천히 떨어지게 완화(형 요청)
     const STRETCH_SPRING = 1.85;    // 고무줄 탄성 — 작을수록 깊고 길게 늘어남(형 요청: 쭉쭉+저점 체류시간↑=타이밍 여유)
