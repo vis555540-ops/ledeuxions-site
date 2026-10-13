@@ -12,6 +12,7 @@
   var LINKS = [
     { href: '/',             icon: '🏠', label: '홈' },
     { href: '/글/',          icon: '✍️', label: '글·칼럼' },
+    { href: '/magazine/',    icon: '📰', label: '매거진' },
     { href: '/web-projects/', icon: '🛠', label: '도구' },
     { href: '/work/',        icon: '🖼', label: '작품' },
     { href: '/games/',       icon: '🎮', label: '게임' },
