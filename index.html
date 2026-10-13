@@ -92,6 +92,53 @@
 .qlist .arrow{order:2}
 .band.top{padding-block:40px 56px}
 }
+/* 게임(좌) + 매거진(우) 양옆 배치 (2026-10-13). 760 이하에선 게임 → 매거진 순으로 쌓임.
+   매거진 칸 내용은 /magazine/ 대문과 손으로 맞춘다(자동 연동 아님): 이번 주의 작가 최신 1편, 마지막 겨울 연재 최신 2편, 칼럼 2편. */
+.home-split{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:32px;align-items:start}
+.mag{padding-block:34px 18px}
+.mag-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.mag-head h2{font-family:var(--font-heading);font-weight:600;font-size:clamp(28px,3.4vw,38px);margin:0;letter-spacing:-.01em}
+.mag-head .sub{font-size:13.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent);word-break:keep-all}
+.mag-head .all{margin-left:auto;font-size:14px;border-bottom:1px solid var(--color-accent);padding-bottom:2px;white-space:nowrap}
+.gcard.big.mag-feature{flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px 16px;padding:18px}
+.gcard.big.mag-feature img{width:96px;height:80px;object-fit:cover;border-radius:8px;flex:none}
+.gcard.big.mag-feature .txt{flex:1 1 140px;min-width:0}
+.gcard.big.mag-feature .n{font-size:20px;margin-top:4px;word-break:keep-all}
+.gcard.big.mag-feature .d{display:block;font-size:13.5px}
+.gcard.big.mag-feature .go{margin-top:0;flex-basis:100%;text-align:center}
+.mag-sub{display:flex;align-items:baseline;gap:10px;margin:18px 0 8px}
+.mag-sub h3{font-family:var(--font-heading);font-weight:600;font-size:15px;margin:0;word-break:keep-all}
+.mag-sub .all{margin-left:auto;font-size:13px;border-bottom:1px solid var(--color-accent);padding-bottom:2px;white-space:nowrap}
+.mag-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--color-divider)}
+.mag-list li{border-bottom:1px solid var(--color-divider)}
+.mag-list a{display:block;padding:13px 2px;color:var(--color-text)}
+.mag-list a:hover{background:color-mix(in srgb,var(--color-accent) 6%,transparent)}
+.mag-list .t{display:block;font-family:var(--font-heading);font-weight:600;font-size:16px;line-height:1.35;word-break:keep-all}
+.mag-list .d{display:block;margin-top:4px;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 58%,transparent);word-break:keep-all}
+/* 두 칸이 나란한데 칸이 좁은 폭(761~1000): 게임 칸은 폰 배치를 빌려 쓰고, 매거진 머리·카드는 줄을 나눈다 */
+@media (max-width:1100px){
+.mag-head .sub{order:3;flex-basis:100%}
+}
+@media (min-width:761px) and (max-width:1000px){
+.home-split{gap:24px}
+.play-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+.play .gcard.big{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:14px;padding:18px}
+.play .gcard.big .e{font-size:44px}
+.play .gcard.big .txt{flex:1;min-width:0}
+.play .gcard.big .go{margin-top:6px;flex-basis:100%;text-align:center}
+.mini{gap:10px}
+.mini .gcard{padding:12px 4px}
+.wgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.play-head .sub,.world-head .sub{flex-basis:100%;order:3}
+}
+@media (max-width:760px){
+.home-split{grid-template-columns:minmax(0,1fr);gap:0}
+.mag{padding-block:22px 12px}
+.mag-head{margin-bottom:14px}
+.mag-head .sub{order:3;flex-basis:100%}
+.gcard.big.mag-feature{padding:16px}
+.gcard.big.mag-feature img{width:84px;height:68px}
+}
 </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 </head>
@@ -108,7 +155,8 @@
 </nav>
 </header>
 <main>
-<section class="wrap play" aria-labelledby="play-title">
+<div class="wrap home-split">
+<section class="play" aria-labelledby="play-title">
 <div class="play-head">
 <h2 id="play-title">게임</h2>
 <span class="sub">설치·가입 없이 누르면 바로 시작합니다.</span>
@@ -164,6 +212,39 @@
 <li><a href="/contact/">✉️ 연락</a></li>
 </ul></nav>
 </section>
+<section class="mag" aria-labelledby="mag-title">
+<div class="mag-head">
+<h2 id="mag-title">매거진</h2>
+<span class="sub">연재 「이번 주의 작가」와 칼럼.</span>
+<a class="all" href="/magazine/">매거진 보기 →</a>
+</div>
+<a class="mag-feature gcard big" href="/artists/el-lissitzky/">
+<img src="/artists/img/el-lissitzky-red-wedge.jpg" alt="붉은 삼각형이 흰 원을 뚫고 들어가는 석판 포스터" width="96" height="80" loading="lazy">
+<span class="txt">
+<span class="tag">이번 주의 작가</span>
+<span class="n">엘 리시츠키 (1890–1941)</span>
+<span class="d">1편 · 그림을 구조로 그린 사람</span>
+</span>
+<span class="go">읽기 →</span>
+</a>
+<div class="mag-sub">
+<h3>르듀종의 건축과 미술 — 마지막 겨울 연재</h3>
+<a class="all" href="/글/#lastwinter">전체 보기 →</a>
+</div>
+<ul class="mag-list">
+<li><a href="/글/예배당-왜-커다랗게-지을-수-밖에-없을까-1/"><span class="t">예배당 왜 커다랗게 지을 수 밖에 없을까? 우리가 몰랐던 진실 - 1</span><span class="d">더 복잡한 교회내 사회적, 심리적 요인이 작용합니다</span></a></li>
+<li><a href="/글/지하-예배당은-되도록-피해주세요/"><span class="t">지하 예배당은 되도록 피해주세요</span><span class="d">지하층이 꼭 필요한지 고민해 볼 필요가 있습니다</span></a></li>
+</ul>
+<div class="mag-sub">
+<h3>칼럼</h3>
+<a class="all" href="/글/">전체 보기 →</a>
+</div>
+<ul class="mag-list">
+<li><a href="/글/pdf-용량-정확히-맞추기/"><span class="t">PDF를 정확히 300KB로 맞춰야 할 때</span><span class="d">입찰·제출 서류 용량 제한을 압축 반복 없이 넘기는 법 · 2026</span></a></li>
+<li><a href="/글/근린생활시설-건축과-대지-사업성-1부/"><span class="t">건축가 입장에서 보는 근린생활시설 건축과 대지, 사업성과의 관계 — 1부</span><span class="d">땅과 건물과 돈이 어떻게 얽히는가</span></a></li>
+</ul>
+</section>
+</div><!-- /.home-split -->
 <section class="wrap quick" aria-labelledby="quick-title">
 <h2 id="quick-title">자주 쓰는 도구</h2>
 <ul class="qlist">
