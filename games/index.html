@@ -46,6 +46,30 @@ a.g.out .gn::after{content:' ↗';font-size:.7em;color:var(--dim)}
 .flag{display:inline-block;margin-left:6px;font-size:.7rem;color:#141b24;background:#8bd3ff;border-radius:99px;padding:1px 8px;vertical-align:2px}
 .adbox{margin:26px 0 8px;min-height:90px;overflow:hidden}
 footer{margin-top:34px;text-align:center;color:#5d6b7c;font-size:.78rem;line-height:1.7}
+/* 우리가 만든 게임 (2026-10-15) — 바깥 가게(CrazyGames·Google Play)에 올린 것 */
+.ours{margin:0 0 34px;padding:18px 16px 16px;border:1px solid var(--hot);border-radius:16px;
+  background:linear-gradient(180deg,rgba(255,209,102,.08),rgba(255,209,102,0) 70%)}
+.ours h2{margin:0 0 4px;font-size:1.2rem}
+.ours .lead{margin:0 0 14px;color:var(--dim);font-size:.85rem;line-height:1.5;word-break:keep-all}
+.ogrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.og{display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--card);
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:transform .12s ease,border-color .12s ease}
+a.og:hover{border-color:var(--hot)}
+a.og:active{transform:scale(.98)}
+.og img{display:block;width:100%;aspect-ratio:1/1;height:auto;object-fit:cover;background:#0f141b}
+.og .ob{padding:12px 13px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
+.og .on{margin:0;font-size:1.05rem;font-weight:700;word-break:keep-all}
+.og .od{margin:0;color:var(--dim);font-size:.84rem;line-height:1.45;word-break:keep-all}
+.og .where{margin-top:auto;padding-top:8px;font-size:.76rem;color:var(--hot);font-weight:600}
+.og.soon{opacity:.9}
+.og.soon img{filter:saturate(.75)}
+.og.soon .where{color:#8bd3ff}
+@media (max-width:600px){
+  .ogrid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .og{flex-direction:row}
+  .og img{width:104px;flex:none;aspect-ratio:1/1}
+  .og .ob{padding:10px 12px}
+}
 </style>
 </head>
 <body>
@@ -55,6 +79,42 @@ footer{margin-top:34px;text-align:center;color:#5d6b7c;font-size:.78rem;line-hei
   <h1><span class="ld">L.D</span> 게임 나라</h1>
   <p class="sub">설치 안 해도 됩니다. 누르면 바로 시작합니다.</p>
 </header>
+
+<section class="ours" id="ours" aria-labelledby="ours-title">
+  <h2 id="ours-title">⭐ 우리가 만든 게임</h2>
+  <p class="lead">L.D 가 처음부터 직접 만들어 바깥 게임 가게에 올린 게임입니다. 새 창으로 열립니다.</p>
+  <div class="ogrid">
+
+    <a class="og" href="https://www.crazygames.com/game/wobble-brawl" target="_blank" rel="noopener">
+      <img src="/assets/ourgames/wobble-brawl.webp" alt="Wobble Brawl — 빨간 막대 인간이 망치를 휘두르는 장면" width="400" height="400" loading="lazy">
+      <span class="ob">
+        <span class="on">Wobble Brawl</span>
+        <span class="od">흐느적거리는 막대 인간끼리 치고받는 물리 격투. 넘어져도 웃깁니다.</span>
+        <span class="where">CrazyGames에서 하기 ↗</span>
+      </span>
+    </a>
+
+    <a class="og" href="https://play.google.com/store/apps/details?id=com.ledeuxions.sheepdog" target="_blank" rel="noopener">
+      <img src="/assets/ourgames/sheepdog.webp" alt="양몰이 — 강아지가 양을 우리로 모는 픽셀 그림" width="400" height="400" loading="lazy">
+      <span class="ob">
+        <span class="on">양몰이 — 달빛 목장</span>
+        <span class="od">톡 누르면 강아지가 달려가 양 떼를 우리로 몹니다. 마당에서 키우기도 해요.</span>
+        <span class="where">Google Play에서 받기 ↗</span>
+      </span>
+    </a>
+
+    <div class="og soon" aria-label="버텨라 — 곧 공개">
+      <img src="/assets/ourgames/stay-standing.webp" alt="버텨라 — 보강한 집은 버티고 안 한 집은 무너지는 그림" width="400" height="400" loading="lazy">
+      <span class="ob">
+        <span class="on">버텨라! <small style="font-weight:400;color:var(--dim)">Stay Standing!</small></span>
+        <span class="od">지진이 오기 전에 집에 보강재를 대는 퍼즐. 건축가가 직접 판을 짰습니다.</span>
+        <span class="where">곧 공개 · CrazyGames 심사 중</span>
+      </span>
+    </div>
+
+  </div>
+  <p class="od" style="margin:10px 2px 0;color:#7d8b9a;font-size:.76rem">양몰이는 <a href="/sheepdog/" style="color:#b9c6d4">웹에서도 바로</a> 할 수 있어요.</p>
+</section>
 
 <div class="grid">
 
