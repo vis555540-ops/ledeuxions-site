@@ -35,6 +35,8 @@
   .phrase{min-height:88px;border:0;border-radius:16px;background:var(--card);color:var(--txt);font-size:var(--big);font-weight:800;padding:12px;line-height:1.25;box-shadow:0 2px 0 #0006;transition:transform .06s}
   .phrase:active{transform:scale(.96);background:#24405f}
   .phrase.wide{grid-column:1/-1}
+  .fbfoot{grid-column:1/-1;margin:56px 0 8px;text-align:center;font-size:14px}
+  .fbfoot a{color:var(--mut);padding:8px}
   /* 조이스틱 화면: 위에는 묶음 이름 + 방금 한 말만 크게 (말 칸은 아래 호 띠에) */
   main.joyv{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:4px 12px}
   .jt{font-size:clamp(30px,9vw,44px);font-weight:900;color:#8ec5ff;line-height:1.1}
@@ -81,9 +83,10 @@
 <div id="inkBig" role="dialog" aria-label="크게 보기 (누르면 닫힘)"><img alt="쓴 글씨"></div>
 
 <!-- 2026-10-02 형 그림 ②: 아래 왼쪽 조이스틱 + 둘레 호 띠(칸=말). 위 네모 판 없앰. ⚙ 3초 = 설정 -->
-<script src="joystick.js?v=12" data-gear="corner"></script>
+<script src="joystick.js?v=13" data-gear="corner"></script>
 <!-- 2026-10-02 형: 아무 데나 2초 꾹 = 긴급 알람 (빨간 화면·사이렌·「도와주세요」, 멈춤 톡으로 끔) -->
 <script src="emergency.js?v=12"></script>
+<script src="feedback.js?v=13"></script>
 
 <script>
 // ── 문구 세트 v0.1 (이음 작성: 위관로·석션·신앙 반영, 8카테고리 89문구. 나중에 서버 동기화='빌드업 통로') ──
@@ -138,6 +141,11 @@ function renderGrid(){
     b.onclick=()=>speak(p); // 누르면 바로 말함
     grid.appendChild(b);
   });
+  // 의견 보내기: 말 버튼들 맨 아래, 한참 띄워서 작게 (실수로 안 눌리게)
+  const fb=document.createElement('p'); fb.className='fbfoot';
+  fb.innerHTML='<a data-fb="눌러서 말하기" href="mailto:vis555540@gmail.com">의견 보내기 (메일)</a>';
+  if(window.malhaeFbHref) fb.firstChild.href=malhaeFbHref('눌러서 말하기');
+  grid.appendChild(fb);
 }
 // ── 손으로 글쓰기 (2026-10-02) ──
 (function(){

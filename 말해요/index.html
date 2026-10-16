@@ -46,6 +46,12 @@
   ol.steps li{margin:6px 0}
   hr{border:0; border-top:1px solid var(--rule); margin:52px 0 24px}
   .foot{color:var(--muted); font-size:.92rem}
+  .fb{background:var(--card); border:2px solid var(--key); border-radius:18px; padding:4px 20px 18px; margin:44px 0 0}
+  .fb h2{margin-top:20px}
+  .fb .promise{font-weight:700; font-size:1.05rem}
+  .fbbtn{display:block; text-align:center; text-decoration:none; background:var(--key); color:var(--bg); font-weight:800; font-size:1.25rem; border-radius:14px; padding:18px 16px; margin:6px 0 14px}
+  .fbbtn:hover, .fbbtn:focus-visible{filter:brightness(1.1); text-decoration:underline}
+  .fbnote{color:var(--muted); font-size:.92rem; line-height:1.7; margin:0}
   @media (min-width:760px){ .cards{grid-template-columns:repeat(3,1fr)} .card p{min-height:7.5em} }
 </style>
 </head>
@@ -91,17 +97,23 @@
   </ol>
   <p>목소리는 휴대폰에 들어 있는 음성을 씁니다. 저장한 말은 그 기기에만 남고 저희에게 보내지지 않습니다. 단, 「눌러서 말하기」의 손글씨를 글자로 바꿀 때는 인터넷이 연결되어 있으면 구글 필기 인식을 사용합니다.</p>
 
-  <h2>필요한 게 있으면 말씀해 주세요</h2>
-  <p>써 보시고 불편한 점이나 「이런 말이 버튼에 있었으면」, 「이런 기능이 있었으면」 하는 게 있으면 <a href="/contact/">의견 보내기</a>로 남겨 주세요. 필요하신 대로 고쳐 드립니다.</p>
+  <section class="fb" id="feedback" aria-labelledby="fbh">
+    <h2 id="fbh">필요한 게 있으면 말씀해 주세요</h2>
+    <p>써 보시고 불편한 점이나 「이런 말이 버튼에 있었으면」, 「이런 기능이 있었으면」 하는 게 있으면 알려 주세요.</p>
+    <p class="promise">보내 주신 의견은 직접 읽고 고칩니다.</p>
+    <a class="fbbtn" data-fb="말해요 안내" href="mailto:vis555540@gmail.com?subject=%5B%EB%A7%90%ED%95%B4%EC%9A%94%20%EC%9D%98%EA%B2%AC%5D%20%EB%A7%90%ED%95%B4%EC%9A%94%20%EC%95%88%EB%82%B4&body=%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94.%20%EB%A7%90%ED%95%B4%EC%9A%94%EC%97%90%20%EC%9D%98%EA%B2%AC%EC%9D%84%20%EB%B3%B4%EB%83%85%EB%8B%88%EB%8B%A4.%0D%0A%0D%0A1.%20%EC%96%B4%EB%96%A4%20%EB%B6%84%EC%9D%B4%20%EC%93%B0%EC%8B%9C%EB%82%98%EC%9A%94%3F%20%28%EA%B4%80%EA%B3%84%C2%B7%EC%83%81%ED%99%A9%20%E2%80%94%20%EC%9D%B4%EB%A6%84%EC%9D%80%20%EC%95%88%20%EC%A0%81%EC%9C%BC%EC%85%94%EB%8F%84%20%EB%90%A9%EB%8B%88%EB%8B%A4%29%0D%0A%0D%0A%0D%0A2.%20%EB%B6%88%ED%8E%B8%ED%95%9C%20%EC%A0%90%0D%0A%0D%0A%0D%0A3.%20%EC%9E%88%EC%97%88%EC%9C%BC%EB%A9%B4%20%ED%95%98%EB%8A%94%20%EB%A7%90%C2%B7%EA%B8%B0%EB%8A%A5%0D%0A%0D%0A%0D%0A4.%20%EC%93%B0%EC%8B%9C%EB%8A%94%20%EA%B8%B0%EA%B8%B0%20%28%ED%8F%B0%C2%B7%ED%83%9C%EB%B8%94%EB%A6%BF%C2%B7PC%29%0D%0A%0D%0A">의견 보내기</a>
+    <p class="fbnote">누르면 쓰시는 메일 앱이 열리고, 물어볼 것 몇 가지가 미리 적혀 있습니다. 보내기 전에 고치거나 지우실 수 있고, 직접 보내기 전에는 아무것도 전송되지 않습니다. 메일 앱이 안 열리면 <a href="mailto:vis555540@gmail.com">vis555540@gmail.com</a> 으로 보내 주세요.</p>
+  </section>
 
   <hr>
   <p class="foot">
     무료이고, 앞으로도 광고를 넣지 않습니다.<br>
     소스는 공개되어 있습니다 — <a href="https://github.com/vis555540-ops/malhae">github.com/vis555540-ops/malhae</a><br>
-    LeDeuxions 가족이 만들었습니다. <a href="/contact/">의견 보내기</a>
+    LeDeuxions 가족이 만들었습니다. <a href="#feedback">의견 보내기</a>
   </p>
 
 </div>
+<script src="/web-projects/malhae/feedback.js?v=1"></script>
 <script src="/count.js" defer></script>
 <script src="/assets/remote-nav.js" defer></script>
 </body>

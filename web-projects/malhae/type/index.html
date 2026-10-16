@@ -167,6 +167,12 @@
     <button id="shareBtn">주소 만들기</button>
   </div>
 
+  <p class="note" style="margin-top:18px">
+    <b style="color:var(--on)">의견 보내기</b><br>
+    불편한 점이나 있었으면 하는 말이 있으면 알려 주세요. 메일 앱이 열립니다.<br>
+    <a data-fb="써서 말하기" href="mailto:vis555540@gmail.com" style="color:var(--on)">의견 보내기 (메일)</a>
+  </p>
+
   <button class="mini" id="closeBtn" style="width:100%;padding:14px;margin-top:6px">닫기</button>
 </dialog>
 
@@ -411,6 +417,7 @@ if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 </script>
+  <script src="../feedback.js?v=1"></script>
   <script src="/count.js" defer></script>
 </body>
 </html>
