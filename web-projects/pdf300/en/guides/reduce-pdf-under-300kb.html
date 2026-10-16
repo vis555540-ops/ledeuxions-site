@@ -744,7 +744,7 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
 <h2>Step 4: Let a tool search for the size</h2>
 <p>Trying settings by hand is slow. <a href="/target-size">Compress to target size</a> does the search for you: you type the limit and it finds the highest resolution that fits. Internally it starts at JPG quality 75 and looks for the best resolution between 30 and 200 dpi, and only lowers JPG quality if even 30 dpi is too big. That order is deliberate: dropping resolution a little costs less legibility than heavy JPG artifacts around every letter.</p>
 <p>Type a number slightly below the real limit — 290 KB for a 300 KB portal. Websites disagree about whether a kilobyte is 1,000 or 1,024 bytes, and a file of 301 KB by one count is 294 KB by the other.</p>
-<p>If you prefer to keep everything on your own computer, the browser-based <a href="/compress-pdf">Compress</a> tool does the same kind of re-encoding with fixed levels. Start at High (1024 px wide, quality 60), check the size, and adjust the max width if needed.</p>
+<p>Target size runs in your browser by default too, so nothing here requires an upload. If you'd rather pick a fixed level instead of typing a number, <a href="/compress-pdf">Compress</a> does the same kind of re-encoding with preset steps — start at High (1024 px wide, quality 60), check the size, and adjust the max width if needed.</p>
 
 <h2>Step 5: Check the result like the reader will</h2>
 <p>Open the compressed file and zoom to 100 percent, then to 150 percent, on the page with the smallest text. Check the things that matter to the receiver:</p>
