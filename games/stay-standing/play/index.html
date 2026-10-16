@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="canonical" href="https://ledeuxions.com/games/stay-standing/">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Stay Standing!</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --ink:#2b2118; --paper:#fff8ec; --accent:#e4572e; --ok:#3a9d5d; --wood:#c98a4b; --panel:rgba(255,248,236,.94); }
+  html,body { margin:0; height:100%; background:#1f2a33; overflow:hidden; user-select:none; -webkit-user-select:none;
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); }
+  #stage { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; overflow:hidden;
+    background:linear-gradient(180deg,#8fc3dc 0,#cfe6ef 58%,#b98c5a 58%,#a77a4b 100%); }
+  .ground { position:absolute; left:0; right:0; top:522px; height:12px; background:#6f8b4a; }
+  .head { position:absolute; left:0; right:0; top:70px; text-align:center; color:#fff; }
+  .head h1 { margin:0; font-size:84px; font-weight:900; letter-spacing:-1px; text-shadow:0 4px 0 rgba(0,0,0,.3); }
+  .head p { margin:8px 0 0; font-size:24px; font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,.4); }
+  .play { position:absolute; left:50%; top:270px; transform:translateX(-50%); border:0; border-radius:26px; padding:20px 64px; font:inherit; font-weight:900; font-size:40px;
+    color:#fff; background:var(--accent); cursor:pointer; box-shadow:0 7px 0 #9c3418; text-align:center; }
+  .play small { display:block; font-size:18px; font-weight:700; opacity:.9; margin-top:2px; }
+  .play:active { transform:translate(-50%,4px); box-shadow:0 3px 0 #9c3418; }
+  .chs { position:absolute; left:60px; right:60px; top:560px; display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+  .ch { position:relative; border:0; border-radius:22px; background:var(--panel); padding:18px 18px 16px; text-align:left; font:inherit; color:var(--ink); cursor:pointer;
+    box-shadow:0 5px 0 rgba(0,0,0,.25); display:flex; flex-direction:column; gap:6px; min-height:270px; box-sizing:border-box; }
+  .ch:hover:not(.locked) { transform:translateY(-3px); box-shadow:0 8px 0 rgba(0,0,0,.25); }
+  .ch .top { display:flex; align-items:center; gap:10px; }
+  .ch .num { width:42px; height:42px; border-radius:50%; background:var(--ink); color:#fff; font-weight:900; font-size:22px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .ch .dim { margin-left:auto; font-weight:900; font-size:18px; padding:4px 10px; border-radius:10px; background:#f3e3c6; }
+  .ch .dim.d3 { background:#d7e7f0; }
+  .ch svg { width:100%; height:90px; }
+  .ch h3 { margin:0; font-size:25px; font-weight:900; letter-spacing:-.3px; }
+  .ch .sub { font-size:15px; font-weight:600; opacity:.7; }
+  .ch .st { font-size:20px; font-weight:800; color:#b07d12; }
+  .ch .st b { color:#f2b134; }
+  .ch .bar { height:8px; border-radius:4px; background:#e6dccb; overflow:hidden; }
+  .ch .bar i { display:block; height:100%; background:var(--ok); }
+  .ch.locked { cursor:default; background:rgba(235,228,216,.85); }
+  .ch.locked > *:not(.lock) { opacity:.38; }
+  .ch .lock { position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center; padding:0 18px; }
+  .ch.locked .lock { display:flex; }
+  .lock .ic { font-size:46px; }
+  .lock .why { word-break:keep-all; font-size:16px; font-weight:800; line-height:1.35; background:rgba(255,248,236,.95); border-radius:12px; padding:8px 12px; }
+  .ch.next { outline:4px solid #ffd27a; }
+  .ch .adv { font-size:13px; font-weight:900; letter-spacing:.5px; text-transform:uppercase; color:#fff; background:#5f7a91; border-radius:8px; padding:3px 8px; }
+  .loading { position:absolute; left:0; right:0; top:300px; text-align:center; color:#fff; font-size:30px; font-weight:800; text-shadow:0 2px 4px rgba(0,0,0,.4); display:none; }
+  body.boot .play, body.boot .chs { display:none; } body.boot .loading { display:block; }
+  #rotate { display:none; position:fixed; inset:0; z-index:9; background:#1f2a33; color:#fff; align-items:center; justify-content:center; flex-direction:column; gap:14px; font-size:22px; font-weight:800; text-align:center; padding:30px; }
+  #rotate .ic { font-size:64px; }
+  @media (orientation:portrait) and (max-width:900px) { #rotate { display:flex; } }
+  .arrow { position:absolute; top:665px; font-size:28px; color:#fff; font-weight:900; text-shadow:0 1px 3px rgba(0,0,0,.5); pointer-events:none; }
+</style>
+</head>
+<body class="boot">
+<div id="stage">
+  <div class="ground"></div>
+  <div class="head"><h1 id="title"></h1><p id="sub"></p></div>
+  <div class="loading" id="loading">…</div>
+  <button class="play" id="play"></button>
+  <div class="chs" id="chs"></div>
+</div>
+<div id="rotate"><span class="ic">↻</span><span id="rotTxt">Rotate your phone to landscape</span></div>
+<script src="cg.js"></script>
+<script src="progress.js"></script>
+<script>
+(function () {
+  const KO = (navigator.language || '').toLowerCase().startsWith('ko');
+  const L = (o) => (KO ? o.ko : o.en);
+  const FORCE = new URLSearchParams(location.search).get('unlock') === 'all';
+  const $ = (id) => document.getElementById(id);
+  const H = QRHUB;
+  const TX = {
+    title: { en: 'Stay Standing!', ko: '버텨라!' },
+    sub: { en: 'Brace old buildings on a budget — then hit them with an earthquake.', ko: '정해진 돈으로 낡은 집을 보강하고, 지진을 버텨 보세요.' },
+    adv: { en: 'Advanced', ko: '고급' }, rot: { en: 'Rotate your phone to landscape', ko: '휴대폰을 가로로 돌려 주세요' },
+    play: { en: 'Play', ko: '시작하기' }, cont: { en: 'Continue', ko: '이어하기' },
+    lv: { en: 'Level', ko: '단계' },
+    lock3: { en: 'Clear all 10 Easy levels of ①<br>(2D wooden house)', ko: '① 2D 나무집 쉬움 10판을<br>다 깨면 열림' },
+    lock4: { en: 'Clear all 10 Easy levels of ②<br>+ 5 levels of ③', ko: '② 쉬움 10판 다 깨기<br>+ ③에서 5판 깨기' },
+    easy: { en: 'Easy', ko: '쉬움' }, hard: { en: 'Hard', ko: '어려움' }, hardLocked: { en: 'Hard 🔒 clear all Easy', ko: '어려움 🔒 쉬움을 다 깨면' },
+    levels: { en: 'levels', ko: '단계' }, cleared: { en: 'cleared', ko: '깸' },
+  };
+  const ICON = {
+    wood: '<svg viewBox="0 0 200 90"><path d="M60 38 L100 12 L140 38" fill="none" stroke="#8a5a2b" stroke-width="6" stroke-linejoin="round"/><rect x="66" y="38" width="68" height="46" fill="none" stroke="#8a5a2b" stroke-width="6"/><line x1="68" y1="82" x2="132" y2="40" stroke="#e0a35c" stroke-width="6"/><rect x="40" y="84" width="120" height="5" fill="#7a6a5a"/></svg>',
+    rc: '<svg viewBox="0 0 200 90"><rect x="62" y="6" width="76" height="78" fill="#d6d3cc" stroke="#7d7a73" stroke-width="5"/><line x1="62" y1="32" x2="138" y2="32" stroke="#7d7a73" stroke-width="5"/><line x1="62" y1="58" x2="138" y2="58" stroke="#7d7a73" stroke-width="5"/><path d="M64 82 L136 60 M64 60 L136 82" stroke="#5f7a91" stroke-width="4"/><rect x="40" y="84" width="120" height="5" fill="#7a6a5a"/></svg>',
+  };
+  const ICON3 = (k) => ICON[k].replace('<svg ', '<svg style="transform:perspective(300px) rotateY(-24deg)" ');
+  const url = (game, n) => `${game}/index.html?level=${n}` + (FORCE ? '&unlock=all' : '');
+  // 장 안에서 아직 안 깬 첫 판 (다 깼으면 첫 판)
+  function firstOpen(c) { for (let n = c.from; n <= c.to; n++) if (!H.cleared(c.game, n)) return n; return c.from; }
+  // 이어하기: 마지막에 한 판. 이미 깼으면 그다음 판 (열린 장 안에서)
+  function continueTarget(S) {
+    const last = H.get('qr-hub-last', null);
+    if (!last) return null;
+    const chOf = (g, n) => S.find((c) => c.game === g && ((n >= c.from && n <= c.to) || (n >= c.hard[0] && n <= c.hard[1])));
+    const inHard = (c, n) => n >= c.hard[0];
+    let { game, level } = last, c = chOf(game, level);
+    if (!c || !c.open) return null;
+    if (H.cleared(game, level)) {
+      const n2 = level + 1, c2 = chOf(game, n2);
+      if (c2 && c2.open && (!inHard(c2, n2) || c2.hardOpen) && inHard(c2, n2) === inHard(c, level)) { level = n2; c = c2; }
+      else { const nx = S.find((x) => x.open && x.done < x.count); if (nx) return { game: nx.game, level: firstOpen(nx), ch: nx }; }
+    }
+    return { game, level, ch: c };
+  }
+  function render() {
+    document.documentElement.lang = KO ? 'ko' : 'en';
+    document.title = L(TX.title);
+    $('title').textContent = L(TX.title); $('sub').textContent = L(TX.sub);
+    const S = H.summary(FORCE);
+    const ct = continueTarget(S);
+    const nx = S.find((x) => x.open && x.done < x.count);
+    const tgt = ct || (nx ? { game: nx.game, level: firstOpen(nx), ch: nx } : { game: '2d', level: 1, ch: S[0] });
+    $('play').innerHTML = `▶ ${ct ? L(TX.cont) : L(TX.play)}<small>${tgt.ch.id === 1 || tgt.ch.id === 2 ? '2D' : '3D'} · ${L(tgt.ch.name)} · ${L(TX.lv)} ${tgt.level}</small>`;
+    $('play').onclick = () => { CG.go(url(tgt.game, tgt.level)); };
+    const box = $('chs'); box.innerHTML = '';
+    S.forEach((c, i) => {
+      const b = document.createElement('button');
+      const d3 = c.game === '3d', rc = c.id === 2 || c.id === 4;
+      b.className = 'ch' + (c.open ? '' : ' locked') + (c.id === tgt.ch.id ? ' next' : '');
+      b.dataset.ch = c.id;
+      b.innerHTML = `<div class="top"><span class="num">${'①②③④'[i]}</span>${d3 ? `<span class="adv">${L(TX.adv)}</span>` : ''}<span class="dim ${d3 ? 'd3' : ''}">${d3 ? '3D' : '2D'}</span></div>` +
+        (d3 ? ICON3(rc ? 'rc' : 'wood') : ICON[rc ? 'rc' : 'wood']) +
+        `<h3>${L(c.name)}</h3><div class="sub">${L(TX.easy)} ${c.done}/${c.count} ${L(TX.cleared)} · ` +
+        (c.hardOpen ? `${L(TX.hard)} ${c.hardDone}/${c.count}` : L(TX.hardLocked)) + `</div>` +
+        `<div class="st"><b>★</b> ${c.stars + c.hardStars} / ${c.total * 2}</div><div class="bar"><i style="width:${(100 * (c.stars + c.hardStars) / (c.total * 2)).toFixed(1)}%"></i></div>` +
+        `<div class="lock"><span class="ic">🔒</span><span class="why">${c.id === 3 ? L(TX.lock3) : c.id === 4 ? L(TX.lock4) : ''}</span></div>`;
+      b.onclick = () => { if (c.open) CG.go(url(c.game, firstOpen(c))); };
+      box.appendChild(b);
+    });
+  }
+  function fit() {
+    const W = innerWidth, Ht = innerHeight, s = Math.min(W / 1600, Ht / 900);
+    $('stage').style.transform = `translate(${(W - 1600 * s) / 2}px, ${(Ht - 900 * s) / 2}px) scale(${s})`;
+  }
+  addEventListener('resize', fit);
+  $('rotTxt').textContent = L(TX.rot);
+  // CrazyGames: 첫 방문(저장 없음)은 메뉴 없이 곧바로 첫 판으로. 재방문은 이 허브(이어하기)
+  CG.init(2500); CG.loadingStart();
+  const show = () => { document.body.classList.remove('boot'); render(); CG.loadingStop(); };
+  const toFirst = () => { CG.loadingStop(); location.replace('2d/index.html?level=1&first=1'); };
+  if (!FORCE && !CG.hasLocalSave()) {
+    fit(); document.documentElement.lang = KO ? 'ko' : 'en'; $('title').textContent = L(TX.title);
+    CG.onReady(() => { CG.hydrate(); if (CG.hasLocalSave()) show(); else toFirst(); });
+  } else {
+    fit(); show();
+    CG.onReady(() => { if (CG.hydrate()) render(); });
+  }
+  addEventListener('pageshow', (e) => { if (e.persisted) render(); }); // 뒤로가기로 돌아와도 별 새로 셈
+})();
+</script>
+</body>
+</html>

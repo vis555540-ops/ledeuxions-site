@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="canonical" href="https://ledeuxions.com/games/stay-standing/">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Stay Standing! 3D</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --ink:#2b2118; --paper:#fff8ec; --accent:#e4572e; --ok:#3a9d5d; --panel:rgba(255,248,236,.94); }
+  html,body { margin:0; height:100%; background:#cfe1ea; overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none;
+    font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); }
+  canvas#c { position:fixed; inset:0; width:100%; height:100%; display:block; }
+  .hud { position:fixed; left:0; right:0; top:0; display:flex; align-items:flex-start; gap:12px; padding:12px 16px; pointer-events:none; }
+  .hud > * { pointer-events:auto; }
+  .brand { font-weight:800; font-size:20px; letter-spacing:-.3px; text-shadow:0 1px 0 rgba(255,255,255,.6); }
+  .brand small { display:block; font-weight:600; font-size:13px; opacity:.65; }
+  .brand { max-width:34vw; } .brand small { font-size:12.5px; line-height:1.3; margin-top:2px; }
+  .levels { display:flex; flex-direction:column; gap:4px; margin-left:auto; }
+  .lv { border:0; border-radius:9px; min-width:30px; height:28px; padding:0 8px; font:inherit; font-weight:800; font-size:15px; background:var(--panel); color:var(--ink); cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,.15); }
+  .lv.on { background:var(--ink); color:#fff; }
+  .lvrow.mode { justify-content:flex-end; } .lv.modebtn { font-size:13px; } .lv.hard:not(.on) { background:#ffe2d6; }
+  .chap { font-size:11px; font-weight:800; opacity:.7; align-self:center; margin:0 2px 0 6px; white-space:nowrap; }
+  .lvrow { display:flex; gap:4px; justify-content:flex-end; } .lv .st { color:#f2b134; font-size:10px; letter-spacing:-1px; margin-left:2px; }
+  .stars { font-size:34px; letter-spacing:4px; color:#d8d0c2; margin:-2px 0 4px; } .stars .on { color:#f2b134; }
+  .small.go2 { background:var(--ok); color:#fff; }
+  .money { background:var(--panel); border-radius:14px; padding:6px 14px; font-weight:800; font-size:22px; text-align:right; box-shadow:0 2px 0 rgba(0,0,0,.15); transition:background .2s; }
+  .money small { font-size:12px; font-weight:600; opacity:.6; display:block; margin-bottom:-2px; }
+  .money.bad { background:#ffb3a3; }
+  .iconbtn.menu { width:auto; padding:0 12px; display:flex; align-items:center; font-size:15px; font-weight:800; color:var(--ink); text-decoration:none; flex:0 0 auto; }
+  #rHubMsg { font-size:20px; font-weight:900; color:var(--ok); margin:8px 0 0; display:none; }
+  .iconbtn.rebar { width:auto; padding:0 12px; font-size:14px; font-weight:800; color:var(--ink); flex:0 0 auto; }
+  .iconbtn.rebar.on { background:#5f7a91; color:#fff; }
+  .iconbtn { border:0; background:var(--panel); border-radius:12px; width:42px; height:42px; font-size:20px; cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,.15); }
+  .bar { position:fixed; left:0; right:0; bottom:0; display:flex; align-items:flex-end; gap:10px; padding:10px 16px 14px; flex-wrap:nowrap; pointer-events:none;
+    background:linear-gradient(180deg, rgba(43,33,24,0) 0, rgba(43,33,24,.45) 55%); }
+  .bar > * { pointer-events:auto; }
+  .tool { border:0; border-radius:14px; width:96px; height:78px; background:var(--panel); cursor:pointer; font:inherit; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; box-shadow:0 3px 0 rgba(0,0,0,.25); flex:0 0 auto; }
+  .tool svg { width:40px; height:30px; }
+  .tool .nm { font-size:13px; font-weight:700; line-height:1.1; text-align:center; }
+  .tool .cs { font-size:12px; font-weight:700; color:#7a5a3a; }
+  .tool.on { background:#ffd27a; transform:translateY(-4px); box-shadow:0 7px 0 rgba(0,0,0,.25); }
+  .tool:disabled { opacity:.45; }
+  .sp { flex:1; }
+  .small { border:0; border-radius:12px; height:52px; padding:0 14px; font:inherit; font-weight:700; font-size:15px; background:var(--panel); cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); flex:0 0 auto; }
+  .go { border:0; border-radius:18px; height:74px; padding:0 26px; font:inherit; font-weight:900; font-size:24px; color:#fff; background:var(--accent); cursor:pointer;
+    box-shadow:0 4px 0 #9e3416; flex:0 0 auto; }
+  .go:disabled { opacity:.5; }
+  .hint { position:fixed; left:0; right:0; bottom:104px; text-align:center; font-weight:700; font-size:17px; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.7); pointer-events:none; padding:0 16px; }
+  .count { position:fixed; left:0; right:0; top:14vh; text-align:center; font-size:min(30vh,200px); font-weight:900; color:#fff; -webkit-text-stroke:6px var(--ink); paint-order:stroke fill; pointer-events:none; opacity:0; line-height:1; }
+  .count.pop { animation:pop .9s ease-out; }
+  @keyframes pop { 0% { transform:scale(1.6); opacity:0; } 15% { transform:scale(1); opacity:1; } 80% { opacity:1; } 100% { transform:scale(.9); opacity:0; } }
+  .banner { position:fixed; left:0; right:0; top:70px; text-align:center; font-size:26px; font-weight:900; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.6); pointer-events:none; }
+  .banner .calm { background:rgba(58,157,93,.92); padding:6px 16px; border-radius:12px; text-shadow:none; font-size:22px; }
+  .meter { width:min(320px,60vw); height:10px; margin:8px auto 0; background:rgba(0,0,0,.35); border-radius:6px; overflow:hidden; }
+  .meter i { display:block; height:100%; width:0; background:linear-gradient(90deg,#ffd27a,#e4572e); }
+  .overlay { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(31,42,51,.35); z-index:5; }
+  .overlay.hide { display:none; }
+  .card { background:var(--paper); border-radius:24px; padding:26px 34px; width:min(560px,86vw); box-shadow:0 12px 40px rgba(0,0,0,.35); text-align:center; }
+  .card h1 { margin:0 0 6px; font-size:32px; letter-spacing:-.5px; }
+  .card h2 { margin:0 0 8px; font-size:30px; }
+  .card p { margin:6px 0; font-size:17px; line-height:1.45; }
+  .card .tip { background:#ffe9b8; border-radius:12px; padding:10px 14px; font-weight:700; margin:14px 0 6px; }
+  #result { background:none; align-items:flex-start; padding-top:64px; pointer-events:none; }
+  #result .card { pointer-events:auto; width:min(520px,80vw); padding:16px 24px; }
+  #result h2 { font-size:26px; margin-bottom:2px; } #result .tip { margin:10px 0 2px; font-size:15px; }
+  .card .row { display:flex; gap:10px; justify-content:center; margin-top:16px; }
+  .card .start { font-size:15px; opacity:.6; margin-top:14px; }
+  h2.win { color:var(--ok); } h2.lose { color:#b3261e; }
+  #rotate { display:none; }
+  @media (orientation:portrait) and (max-width:820px) {
+    #rotate { display:flex; position:fixed; inset:0; z-index:9; background:#1f2a33; color:#fff; align-items:center; justify-content:center; font-size:22px; font-weight:800; text-align:center; padding:30px; }
+  }
+  @media (pointer:coarse) { .lv { height:34px; min-width:34px; } .iconbtn { width:46px; height:46px; } }
+  @media (max-height:520px) {
+    .tool { width:78px; height:62px; } .tool svg { width:30px; height:22px; } .tool .nm { font-size:11px; }
+    .go { height:58px; font-size:19px; padding:0 18px; } .small { height:44px; font-size:13px; padding:0 10px; }
+    .hint { bottom:80px; font-size:15px; } .brand { font-size:16px; } .money { font-size:18px; }
+  }
+</style>
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.js", "three/addons/": "./lib/" } }
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud">
+  <a class="iconbtn menu" id="menuBtn" href="../index.html">← Menu</a>
+  <div class="brand"><span id="lvName"></span><small id="lvLesson"></small></div>
+  <div class="levels" id="levels"></div>
+  <div class="money" id="money"><small id="moneyLbl">Left</small>$300</div>
+  <button class="iconbtn rebar" id="rebarBtn" title="Show rebar (R)" style="display:none">철근</button>
+  <button class="iconbtn" id="mute" title="Sound">🔊</button>
+</div>
+<div class="banner" id="banner"></div>
+<div class="count" id="count"></div>
+<div class="hint" id="hint"></div>
+<div class="bar" id="bar">
+  <button class="tool wood" data-tool="brace"><svg viewBox="0 0 40 30"><rect x="4" y="3" width="32" height="24" fill="none" stroke="#8a5a2b" stroke-width="3"/><line x1="5" y1="26" x2="35" y2="4" stroke="#e0a35c" stroke-width="4"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="tool wood" data-tool="ply"><svg viewBox="0 0 40 30"><rect x="4" y="3" width="32" height="24" fill="#e9c98d" stroke="#8a5a2b" stroke-width="3"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="tool wood" data-tool="plate"><svg viewBox="0 0 40 30"><rect x="4" y="3" width="32" height="24" fill="none" stroke="#8a5a2b" stroke-width="3" opacity=".4"/><rect x="2" y="1" width="12" height="12" rx="2" fill="#8d969e"/><circle cx="6" cy="5" r="1.4" fill="#333"/><circle cx="10" cy="9" r="1.4" fill="#333"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="tool wood" data-tool="post"><svg viewBox="0 0 40 30"><rect x="4" y="3" width="32" height="24" fill="none" stroke="#8a5a2b" stroke-width="3" opacity=".4"/><rect x="18" y="3" width="5" height="24" fill="#c98a4b"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="tool rc" data-tool="steelx"><svg viewBox="0 0 40 30"><rect x="4" y="3" width="32" height="24" fill="none" stroke="#5f7a91" stroke-width="3"/><path d="M5 26 L35 4 M5 4 L35 26" stroke="#5f7a91" stroke-width="3"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="tool rc" data-tool="rcwall"><svg viewBox="0 0 40 30"><rect x="4" y="3" width="32" height="24" fill="#d6d3cc" stroke="#7d7a73" stroke-width="3"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="tool rc" data-tool="jacket"><svg viewBox="0 0 40 30"><rect x="14" y="2" width="12" height="26" fill="#d2cec6" stroke="#7d7a73" stroke-width="2"/><rect x="17" y="2" width="6" height="26" fill="#b8b4ac"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="tool rc" data-tool="frp"><svg viewBox="0 0 40 30"><rect x="16" y="2" width="8" height="26" fill="#b8b4ac"/><path d="M15 6h10M15 11h10M15 16h10M15 21h10M15 26h10" stroke="#222" stroke-width="2.5"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="tool rc" data-tool="wing"><svg viewBox="0 0 40 30"><rect x="16" y="2" width="8" height="26" fill="#b8b4ac"/><rect x="6" y="2" width="10" height="26" fill="#c7c3bb"/><rect x="24" y="2" width="10" height="26" fill="#c7c3bb"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="tool" data-tool="remove"><svg viewBox="0 0 40 30"><path d="M10 6 L30 24 M30 6 L10 24" stroke="#b3261e" stroke-width="4" stroke-linecap="round"/></svg><span class="nm"></span><span class="cs"></span></button>
+  <button class="small" id="undo">↶ Undo</button>
+  <span class="sp"></span>
+  <button class="go" id="go">Earthquake!</button>
+</div>
+<div class="overlay" id="intro"><div class="card">
+  <h1 id="iTitle">Stay Standing!</h1>
+  <p id="iLine">Brace the wooden hut, then shake it. Drag to look around.</p>
+  <p class="start" id="iStart">Click anywhere to start</p>
+</div></div>
+<div class="overlay hide" id="result"><div class="card">
+  <h2 id="rTitle"></h2>
+  <div class="stars" id="rStars"></div>
+  <p id="rLine"></p>
+  <p class="tip" id="rTip"></p>
+  <div id="rHubMsg"></div>
+  <div class="row"><button class="small" id="again">Rebuild</button><button class="small" id="clear">Clear all</button><button class="small go2" id="next">Next</button><button class="small go2" id="toHub" style="display:none"></button></div>
+</div></div>
+<div id="rotate">↻ Rotate your phone to landscape</div>
+<script src="../cg.js"></script>
+<script src="../progress.js"></script>
+<script type="module" src="./game.js"></script>
+</body>
+</html>

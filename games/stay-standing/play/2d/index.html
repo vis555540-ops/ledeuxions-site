@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="canonical" href="https://ledeuxions.com/games/stay-standing/">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Stay Standing!</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --ink:#2b2118; --paper:#fff8ec; --accent:#e4572e; --ok:#3a9d5d; --wood:#c98a4b; --panel:rgba(255,248,236,.94); }
+  html,body { margin:0; height:100%; background:#1f2a33; overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none;
+    font-family: "Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); }
+  #stage { position:absolute; left:0; top:0; width:1600px; height:900px; transform-origin:0 0; overflow:hidden; }
+  canvas { position:absolute; left:0; top:0; width:1600px; height:900px; }
+  .hud { position:absolute; left:0; right:0; top:0; height:72px; display:flex; align-items:center; gap:18px; padding:0 22px; box-sizing:border-box; pointer-events:none; }
+  .hud > * { pointer-events:auto; }
+  .brand { font-weight:800; font-size:22px; letter-spacing:-.3px; }
+  .brand small { display:block; font-weight:600; font-size:15px; opacity:.65; }
+  .levels { display:flex; gap:8px; margin-left:auto; }
+  .lv { border:0; border-radius:12px; padding:8px 14px; font:inherit; font-weight:700; font-size:16px; background:var(--panel); color:var(--ink); cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,.15); }
+  .lv.on { background:var(--ink); color:#fff; }
+  .lv:disabled { opacity:.4; cursor:default; }
+  .lv .st { color:#f2b134; letter-spacing:-2px; margin-left:4px; }
+  #eng { position:absolute; right:22px; top:84px; width:470px; background:var(--panel); border-radius:20px; padding:18px 22px; box-shadow:0 8px 30px rgba(0,0,0,.25); display:none; font-size:16px; }
+  #eng.show { display:block; }
+  #eng h3 { margin:0 0 10px; font-size:20px; }
+  #eng .verdict { font-size:20px; font-weight:700; margin-bottom:8px; }
+  #eng .verdict.bad { color:#b3261e; }
+  #eng .verdict b { font-size:26px; }
+  #eng .sub { font-size:14px; opacity:.8; margin:4px 0 8px; line-height:1.4; }
+  #eng .cmp div { display:grid; grid-template-columns:90px 1fr 90px; align-items:center; gap:8px; margin:6px 0; font-size:15px; }
+  #eng .cmp i { display:block; height:14px; border-radius:7px; background:#e4572e; min-width:3px; }
+  #eng .cmp i.ref { background:#3a9d5d; }
+  #eng .cmp b { text-align:right; }
+  #eng .drifts { display:flex; gap:14px; flex-wrap:wrap; font-size:15px; }
+  #eng .legend { display:flex; gap:14px; font-size:14px; margin:10px 0; }
+  #eng .legend .ten { color:#2f6fd6; font-weight:700; } #eng .legend .com { color:#e0412b; font-weight:700; }
+  #eng .note { font-size:12.5px; opacity:.7; line-height:1.4; margin-bottom:10px; }
+  #eng .small { height:46px; }
+  #picker .card { width:1100px; max-height:760px; overflow:auto; position:relative; }
+  #pickClose { position:absolute; right:18px; top:18px; min-width:60px; }
+  #pickGrid { display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; margin:16px 0; }
+  #pickGrid .lv { display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 6px; min-height:92px; }
+  #pickGrid .lv b { font-size:26px; }
+  #pickGrid .lv.rc:not(.on) { background:#e4e2dd; }
+  #pickGrid .lv .nm { font-size:12px; font-weight:600; opacity:.75; line-height:1.15; }
+  #pickGrid .lv .st { margin:0; letter-spacing:0; }
+  #pickGrid .modes { grid-column:1 / -1; display:flex; gap:12px; justify-content:center; }
+  #pickGrid .modes .lv { min-height:0; padding:10px 34px; font-size:24px; font-weight:900; flex-direction:row; }
+  #pickGrid .lv.hard:not(.on) { box-shadow:inset 0 0 0 3px #b3261e33; }
+  #pickGrid .lockmsg { grid-column:1 / -1; text-align:center; font-weight:800; opacity:.75; }
+  .money { background:var(--panel); border-radius:14px; padding:8px 16px; font-weight:800; font-size:24px; min-width:150px; text-align:right; box-shadow:0 2px 0 rgba(0,0,0,.15); transition:background .2s; }
+  .money.bad { background:#ffb3a3; }
+  .money small { font-size:13px; font-weight:600; opacity:.6; display:block; margin-bottom:-3px; }
+  .iconbtn.menu { width:auto; padding:0 14px; display:flex; white-space:nowrap; align-items:center; font-size:17px; font-weight:800; color:var(--ink); text-decoration:none; }
+  #rHubMsg { font-size:24px; font-weight:900; color:var(--ok); margin:0 0 12px; display:none; }
+  .iconbtn.on { background:#ffd27a; }
+  .iconbtn { border:0; background:var(--panel); border-radius:12px; width:44px; height:44px; font-size:22px; cursor:pointer; box-shadow:0 2px 0 rgba(0,0,0,.15); }
+  .bar { position:absolute; left:0; right:0; bottom:0; height:124px; display:flex; align-items:center; gap:12px; padding:0 22px; box-sizing:border-box;
+    background:linear-gradient(180deg, rgba(43,33,24,0) 0, rgba(43,33,24,.55) 40%); }
+  .tool { position:relative; border:0; border-radius:16px; width:118px; height:96px; background:var(--panel); cursor:pointer; font:inherit; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+  .tool svg { width:46px; height:40px; }
+  .tool .nm { font-size:14px; font-weight:700; line-height:1.1; text-align:center; }
+  .tool .cs { font-size:13px; font-weight:700; color:#7a5a3a; }
+  .tool.on { background:#ffd27a; transform:translateY(-4px); box-shadow:0 7px 0 rgba(0,0,0,.25); }
+  .tool:disabled { opacity:.45; }
+  .sp { flex:1; }
+  .small { border:0; border-radius:14px; height:60px; padding:0 16px; font:inherit; font-weight:700; font-size:16px; background:var(--panel); cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,.25); }
+  .go { border:0; border-radius:20px; height:86px; padding:0 30px; font:inherit; font-weight:900; font-size:26px; color:#fff; background:var(--accent); cursor:pointer;
+    box-shadow:0 5px 0 #9c3418; }
+  .go:active { transform:translateY(3px); box-shadow:0 2px 0 #9c3418; }
+  .go:disabled { opacity:.5; }
+  .hint { position:absolute; left:0; right:0; bottom:132px; text-align:center; font-weight:700; font-size:19px; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.6); pointer-events:none; }
+  .count { position:absolute; left:0; right:0; top:150px; text-align:center; font-size:190px; font-weight:900; color:#fff; -webkit-text-stroke:6px var(--ink); paint-order:stroke fill; pointer-events:none; opacity:0; }
+  .count.pop { animation:pop .9s ease-out; }
+  @keyframes pop { 0% { transform:scale(1.6); opacity:0 } 15% { transform:scale(1); opacity:1 } 80% { opacity:1 } 100% { opacity:.0; transform:scale(.9) } }
+  .banner { position:absolute; left:0; right:0; top:110px; text-align:center; font-size:30px; font-weight:900; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.6); pointer-events:none; }
+  .modal { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(20,15,10,.35); }
+  .modal.show { display:flex; }
+  .card { background:var(--paper); border-radius:26px; padding:30px 40px; width:640px; box-shadow:0 12px 40px rgba(0,0,0,.35); text-align:center; }
+  .card h2 { margin:0 0 6px; font-size:46px; font-weight:900; }
+  .stars { font-size:64px; letter-spacing:6px; color:#d9cbb4; line-height:1.1; }
+  .stars b { color:#f2b134; }
+  .stats { display:flex; justify-content:center; gap:30px; font-size:20px; margin:10px 0 14px; }
+  .stats div b { display:block; font-size:30px; }
+  .tip { background:#f3e3c6; border-radius:14px; padding:14px 18px; font-size:19px; font-weight:600; line-height:1.4; margin-bottom:18px; text-align:left; }
+  .tip:before { content:"💡 "; }
+  .card .row { display:flex; gap:12px; justify-content:center; }
+  .title { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(30,25,20,.45); color:#fff; cursor:pointer; }
+  .title h1 { font-size:76px; margin:0; font-weight:900; text-shadow:0 4px 0 rgba(0,0,0,.35); letter-spacing:-1px; }
+  .title p { font-size:24px; margin:10px 0 0; font-weight:600; opacity:.95; max-width:900px; text-align:center; line-height:1.45; }
+  /* CrazyGames 판: 첫 판 안내 · 폰(작은 화면)에서 손가락 크기 단추 · 세로면 돌려 달라는 안내 */
+  .go.pulse { animation:gopulse 1s ease-in-out infinite; }
+  @keyframes gopulse { 0%,100% { transform:scale(1); box-shadow:0 5px 0 #9c3418, 0 0 0 0 rgba(255,210,122,.9); } 50% { transform:scale(1.08); box-shadow:0 5px 0 #9c3418, 0 0 0 18px rgba(255,210,122,0); } }
+  .tool.pulse { animation:toolpulse 1s ease-in-out infinite; }
+  @keyframes toolpulse { 0%,100% { box-shadow:0 3px 0 rgba(0,0,0,.25), 0 0 0 0 rgba(255,210,122,.95); } 50% { box-shadow:0 3px 0 rgba(0,0,0,.25), 0 0 0 14px rgba(255,210,122,0); } }
+  .brand { min-width:0; overflow:hidden; } .brand small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  body.compact .hud { height:128px; gap:14px; }
+  body.compact .iconbtn { width:108px; height:108px; font-size:48px; border-radius:22px; flex:0 0 auto; }
+  body.compact .iconbtn.menu { width:auto; font-size:30px; padding:0 22px; }
+  #levels .lv { white-space:nowrap; }
+  body.compact .brand { font-size:28px; } body.compact .brand small { font-size:20px; }
+  body.compact .lv { font-size:30px; padding:20px 24px; border-radius:18px; }
+  body.compact #levels .lv { height:108px; padding:0 26px; }
+  body.compact .money { font-size:40px; min-width:200px; padding:10px 20px; flex:0 0 auto; } body.compact .money small { font-size:20px; }
+  body.compact .bar { height:196px; gap:12px; }
+  body.compact #tools { gap:10px !important; }
+  body.compact .tool { width:136px; height:150px; border-radius:22px; }
+  body.compact .tool svg { width:72px; height:62px; } body.compact .tool .nm { font-size:21px; } body.compact .tool .cs { font-size:19px; }
+  body.compact .small { height:110px; font-size:28px; padding:0 22px; border-radius:20px; min-width:110px; }
+  body.compact .go { height:150px; font-size:40px; padding:0 34px; border-radius:26px; }
+  body.compact .hint { bottom:206px; font-size:30px; }
+  body.compact .banner { top:150px; font-size:40px; }
+  body.compact .card { width:980px; padding:30px 46px; } body.compact .card h2 { font-size:62px; } body.compact .stars { font-size:80px; }
+  body.compact .stats { font-size:26px; } body.compact .stats div b { font-size:38px; } body.compact .tip { font-size:25px; margin-bottom:20px; }
+  body.compact #rHubMsg { font-size:32px; }
+  body.compact #picker .card { width:1340px; max-height:860px; } body.compact #pickGrid .lv { min-height:132px; } body.compact #pickGrid .lv b { font-size:38px; }
+  body.compact #pickGrid .lv .nm { font-size:18px; } body.compact #pickGrid .modes .lv { font-size:34px; padding:18px 50px; }
+  body.compact #eng { width:640px; font-size:22px; } body.compact #eng .sub, body.compact #eng .note { font-size:18px; }
+  #rotate { display:none; position:fixed; inset:0; z-index:9; background:#1f2a33; color:#fff; align-items:center; justify-content:center; flex-direction:column; gap:14px; font-size:22px; font-weight:800; text-align:center; padding:30px; }
+  #rotate .ic { font-size:64px; }
+  @media (orientation:portrait) and (max-width:900px) { #rotate { display:flex; } }
+  .title .tap { margin-top:34px; background:var(--accent); padding:16px 36px; border-radius:20px; font-size:28px; font-weight:900; box-shadow:0 5px 0 #9c3418; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv"></canvas>
+  <div class="hud">
+    <a class="iconbtn menu" id="menuBtn" href="../index.html"></a>
+    <div class="brand" id="brand"></div>
+    <div class="levels" id="levels"></div>
+    <div class="money" id="money"></div>
+    <button class="iconbtn menu" id="rebarBtn" style="display:none" title="R"></button>
+    <button class="iconbtn" id="snd" title="sound">🔊</button>
+  </div>
+  <div class="hint" id="hint"></div>
+  <div class="banner" id="banner"></div>
+  <div class="count" id="count"></div>
+  <div class="bar" id="bar">
+    <div id="tools" style="display:flex;gap:10px"></div>
+    <div class="sp"></div>
+    <button class="small" id="undo"></button>
+    <button class="small" id="reset"></button>
+    <button class="go" id="go"></button>
+  </div>
+  <div class="modal" id="result"><div class="card">
+    <h2 id="rTitle"></h2>
+    <div class="stars" id="rStars"></div>
+    <div class="stats" id="rStats"></div>
+    <div class="tip" id="rTip"></div>
+    <div id="rHubMsg"></div>
+    <div class="row">
+      <button class="small" id="rEng"></button>
+      <button class="small" id="rRetry"></button>
+      <button class="go" id="rNext"></button>
+      <button class="go" id="rHub" style="display:none;background:var(--ok);box-shadow:0 5px 0 #23683c"></button>
+      <button class="small" id="rMenu" style="display:none"></button>
+    </div>
+  </div></div>
+  <div id="eng"><div id="engBody"></div></div>
+  <div class="modal" id="picker"><div class="card">
+    <h2 id="pickTitle" style="font-size:34px"></h2>
+    <div id="pickGrid"></div>
+    <button class="small" id="pickClose">✕</button>
+  </div></div>
+  <div class="title" id="title">
+    <h1 id="tTitle"></h1>
+    <p id="tSub"></p>
+    <div class="tap" id="tTap"></div>
+  </div>
+</div>
+<div id="rotate"><span class="ic">↻</span><span id="rotTxt">Rotate your phone to landscape</span></div>
+<script src="../cg.js"></script>
+<script src="../progress.js"></script>
+<script src="materials.js"></script>
+<script src="physics.js"></script>
+<script src="levels.js"></script>
+<script src="sound.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
