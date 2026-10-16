@@ -40,6 +40,9 @@
   .badge{display:inline-block;background:#eef4fb;color:#235;border-radius:6px;padding:2px 8px;font-size:.78rem;margin-right:6px}
   .hide{display:none}
   .bar{height:8px;background:#e3e6ea;border-radius:6px;overflow:hidden;margin-top:10px}
+  .sizes{margin-top:10px;font-size:.88rem;color:var(--mut)}.sizes a{color:#0060b0}
+  .modes{display:flex;gap:16px;flex-wrap:wrap}
+  label.mode{display:inline-flex;align-items:center;gap:6px;font-weight:500;margin:6px 0}
   .bar>i{display:block;height:100%;width:0;background:var(--primary);transition:width .3s}
 </style>
 <style id="guide-css">
@@ -59,10 +62,10 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>📄 Compress PDF to Target Size</h1>
-  <div class="sub">Shrink any PDF to the <b>exact size you need</b> (e.g. 5MB, 300KB). Great for email attachments and upload limits. <span class="badge">No sign-up</span><span class="badge">Deleted right after</span></div>
+  <h1>Compress PDF to Target Size</h1>
+  <div class="sub">Shrink any PDF to the <b>exact size you need</b> (e.g. 5MB, 300KB). Great for email attachments and upload limits. <span class="badge">No upload in browser mode</span><span class="badge">No sign-up</span><span class="badge">No daily limit</span></div>
 
-  <div class="card" id="toolCard">
+  <div class="card" id="toolCard" data-mb="5">
     <label>1) PDF file</label>
     <div class="drop" id="drop">Drop a PDF here, or click to choose</div>
     <input type="file" id="file" accept="application/pdf" class="hide">
@@ -78,7 +81,16 @@
         <select id="targetUnit"><option value="MB">MB</option><option value="KB">KB</option></select>
       </div>
     </div>
-    <div class="muted">e.g. 5MB / 300KB. We fit it just under that, as sharp as possible. Free, 10 files/day.</div>
+    <div class="muted">e.g. 5MB / 300KB. We fit it just under that, as sharp as possible. 1 KB is counted as 1,000 bytes, so the file also passes sites that count 1,024.</div>
+    <div class="sizes" aria-label="Common sizes">Common limits: <a href="/compress-pdf-to-100kb">100 KB</a> · <a href="/compress-pdf-to-200kb">200 KB</a> · <a href="/compress-pdf-to-300kb">300 KB</a> · <a href="/compress-pdf-to-500kb">500 KB</a> · <a href="/compress-pdf-to-1mb">1 MB</a></div>
+
+    <label>3) Where to compress</label>
+    <div class="modes">
+      <label class="mode"><input type="radio" name="tsMode" value="browser" checked> In your browser <span class="badge">recommended</span></label>
+      <label class="mode"><input type="radio" name="tsMode" value="server"> On our server</label>
+    </div>
+    <label class="mode" id="grayWrap"><input type="checkbox" id="gray"> Black &amp; white (smaller, good for text scans)</label>
+    <div class="muted" id="modeNote"></div>
 
     <button class="btn accent" id="runBtn" disabled>Compress</button>
     <div class="bar hide" id="barWrap"><i id="bar"></i></div>
@@ -92,7 +104,7 @@
 <p>Upload forms rarely ask for "a smaller file". They ask for a number: 300 KB for many public-sector and visa portals, 1 MB or 2 MB for job applications, 5 MB or 10 MB for tender submissions, 20–25 MB for most email services. Guessing a compression level, checking the size, and trying again wastes time. This tool takes the number and does the searching for you.</p>
 
 <h2>How it works</h2>
-<p>The file is sent to our server. Each page is redrawn as a JPG image at a chosen resolution, and the pages are assembled into a new PDF with the same page size as the original. The server starts with a JPG quality of 75 and searches resolutions between 30 and 200 dpi, keeping the highest resolution whose result still fits under your target. If even 30 dpi is too large, it lowers the JPG quality in steps (65, 55, 45, 35) until it fits.</p>
+<p>Each page is redrawn as a JPG image at a chosen resolution, and the pages are assembled into a new PDF with the same page size as the original. In <b>browser mode</b> (the default) this happens on your own device: the tool starts at JPG quality 72, estimates the resolution that should fit, and refines it (between 30 and 200 dpi) until it finds the highest one under your target. If even 30 dpi is too large, it lowers the JPG quality (50, 35, 22) and searches again. <b>Server mode</b> does the same on our server, starting at quality 75 and stepping down through 65, 55, 45 and 35.</p>
 <p>If the file still cannot reach the target at the lowest settings, you get the smallest version it could make, and the result message says it is slightly over. That usually means the document has too many pages for the limit — see the tips below.</p>
 
 <h2>Step by step</h2>
@@ -107,90 +119,21 @@
 <p>The output is always image-based, so text in it cannot be selected. That is normally fine for scans of IDs, certificates and signed forms. For a text-heavy document where you only need a modest reduction, <a href="/compress-pdf-high-quality">high-quality compression</a> keeps the text layer.</p>
 
 <h2>Privacy</h2>
-<p>This tool runs on our server, not in your browser. The file is processed in memory and returned in the same request; it is not written to a folder or kept. Free use is limited to 10 files per day, counted by an anonymous key stored in your browser.</p>
+<p>In browser mode the file never leaves your device and there is no limit. In server mode the file is processed in memory and returned in the same request; it is not written to a folder or kept. Server use is limited to 10 files per day, counted by an anonymous key stored in your browser.</p>
 
 <h2>Common problems</h2>
 <p><b>"Slightly over" message.</b> The document has too many pages, or very large pages, for the limit. Cut pages, or split the upload if the portal allows several files.</p>
 <p><b>The portal still rejects it.</b> Check that it is really a size problem. Some portals also reject files with passwords, unusual characters in the file name, or PDF versions they do not expect. A plain name like <i>passport_scan.pdf</i> avoids the second problem.</p>
-<p><b>Daily limit reached.</b> Try again the next day, or use the <a href="/compress-pdf">browser compressor</a>, which has no limit.</p>
+<p><b>Daily limit reached.</b> That only applies to server mode. Switch to browser mode, which has no limit.</p>
 
 <h2>More questions</h2>
-<div class="qa"><b>Is the result exactly the size I typed?</b><p>It is the sharpest version at or under your target. It is usually a little under, because resolution is searched in steps.</p></div><div class="qa"><b>What is the largest file I can send?</b><p>100 MB per file.</p></div><div class="qa"><b>Why is the text no longer selectable?</b><p>Every page is redrawn as an image to control the size precisely. That is the trade-off for hitting a number.</p></div><div class="qa"><b>Should I type MB or KB?</b><p>Whichever the form uses. 1 MB is treated as 1,024 KB here.</p></div><div class="qa"><b>Is anything saved on your server?</b><p>No. The file is processed in memory and discarded after the response is sent.</p></div>
-<div class="related"><h2>Related guides</h2><ul><li><a href="/guides/reduce-pdf-under-300kb">How to reduce a PDF to under 300 KB without making it unreadable</a></li><li><a href="/guides/pdf-vs-image-for-online-forms">PDF vs image: which should you upload to an online form?</a></li></ul></div>
+<div class="qa"><b>Is the result exactly the size I typed?</b><p>It is the sharpest version at or under your target. It is usually a little under, because resolution is searched in steps.</p></div><div class="qa"><b>What is the largest file I can send?</b><p>100 MB per file.</p></div><div class="qa"><b>Why is the text no longer selectable?</b><p>Every page is redrawn as an image to control the size precisely. That is the trade-off for hitting a number.</p></div><div class="qa"><b>Should I type MB or KB?</b><p>Whichever the form uses. In browser mode 1 KB is 1,000 bytes and 1 MB is 1,000,000 bytes, so the result is under the limit whichever way the site counts.</p></div><div class="qa"><b>Is anything saved on your server?</b><p>In browser mode nothing is sent at all. In server mode the file is processed in memory and discarded after the response is sent.</p></div>
+<div class="related"><h2>Compress to a common size</h2><ul><li><a href="/compress-pdf-to-100kb">Compress PDF to 100 KB</a></li><li><a href="/compress-pdf-to-200kb">Compress PDF to 200 KB</a></li><li><a href="/compress-pdf-to-300kb">Compress PDF to 300 KB</a></li><li><a href="/compress-pdf-to-500kb">Compress PDF to 500 KB</a></li><li><a href="/compress-pdf-to-1mb">Compress PDF to 1 MB</a></li></ul><h2>Related guides</h2><ul><li><a href="/guides/reduce-pdf-under-300kb">How to reduce a PDF to under 300 KB without making it unreadable</a></li><li><a href="/guides/pdf-vs-image-for-online-forms">PDF vs image: which should you upload to an online form?</a></li></ul></div>
 </section>
 <p class="muted"><a href="/">All PDF tools</a> · <a href="/guides/">Guides</a> · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/privacy">Privacy</a></p>
 </div>
 
-<script>
-const API = 'https://api.ledeuxions.com';
-const $ = id => document.getElementById(id);
-let apiKey = localStorage.getItem('ld_apikey') || '';
-let theFile = null;
-
-function show(el, msg, kind){ el.className = 'status show ' + (kind||'info'); el.textContent = msg; }
-
-async function ensureKey(){
-  if (apiKey) return;
-  try{
-    const email = 'anon-' + Date.now().toString(36) + Math.random().toString(36).slice(2,8) + '@pdf300.ledeuxions.com';
-    const r = await fetch(API + '/signup', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email})});
-    const j = await r.json();
-    if (j.apiKey){ apiKey = j.apiKey; localStorage.setItem('ld_apikey', apiKey); }
-  }catch(e){}
-}
-ensureKey();
-
-$('drop').onclick = ()=> $('file').click();
-$('drop').ondragover = e=>{e.preventDefault();$('drop').classList.add('over');};
-$('drop').ondragleave = ()=> $('drop').classList.remove('over');
-$('drop').ondrop = e=>{e.preventDefault();$('drop').classList.remove('over'); if(e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]);};
-$('file').onchange = e=>{ if(e.target.files[0]) pickFile(e.target.files[0]); };
-function pickFile(f){
-  if (f.type !== 'application/pdf'){ show($('runStatus'),'PDF files only','err'); return; }
-  theFile = f;
-  $('fileInfo').textContent = 'Selected: ' + f.name + '  (' + (f.size/1024/1024).toFixed(2) + 'MB)';
-  $('drop').textContent = '✅ ' + f.name;
-  $('runBtn').disabled = false;
-}
-
-$('runBtn').onclick = async () => {
-  if (!theFile) return;
-  let val = parseFloat($('targetVal').value);
-  const unit = $('targetUnit').value;
-  if (!val || val<=0){ show($('runStatus'),'Enter a target size','err'); return; }
-  const targetKb = Math.round(unit==='MB' ? val*1024 : val);
-
-  $('runBtn').disabled = true;
-  $('barWrap').classList.remove('hide'); $('bar').style.width='30%';
-  show($('runStatus'),'Compressing… (fitting your target)','info');
-
-  await ensureKey();
-  const fd = new FormData();
-  fd.append('file', theFile);
-  fd.append('target_kb', String(targetKb));
-  try{
-    const r = await fetch(API + '/v1/pdf-compress', {method:'POST', headers:{'X-API-Key': apiKey}, body: fd});
-    $('bar').style.width='80%';
-    if (!r.ok){
-      let msg; try{ msg=(await r.json()).error; }catch(_){ msg='HTTP '+r.status; }
-      if (r.status===429) msg='Daily free limit (10) reached — try again tomorrow!';
-      throw new Error(msg);
-    }
-    const resultKb = r.headers.get('X-Result-KB');
-    const hit = r.headers.get('X-Hit-Target');
-    const blob = await r.blob();
-    $('bar').style.width='100%';
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const base = theFile.name.replace(/\.pdf$/i,'');
-    a.href=url; a.download = base + '_' + (unit==='MB'?val+'MB':targetKb+'KB') + '.pdf'; a.click();
-    setTimeout(()=>URL.revokeObjectURL(url), 8000);
-    const note = (hit==='1') ? 'target met' : 'slightly over (max compression)';
-    show($('runStatus'),'✅ Done! Result '+ (resultKb||'?') +'KB ('+note+') — downloaded','ok');
-  }catch(e){ show($('runStatus'),'Error: '+e.message,'err'); }
-  finally{ $('runBtn').disabled=false; setTimeout(()=>{$('barWrap').classList.add('hide');$('bar').style.width='0';},1200); }
-};
-</script>
+<script src="/target-size.js" defer></script>
   <script src="/count.js" defer></script>
 <nav class="more-tools" style="max-width:640px;margin:28px auto 8px;padding:0 16px;font-size:.92rem;line-height:1.9"><h2>More PDF tools</h2><p><a href="add-page-numbers-server">Add Page Numbers on the Server</a> · <a href="add-page-numbers-to-pdf">Add Page Numbers to PDF</a> · <a href="add-watermark-to-pdf">Add Watermark to PDF</a> · <a href="compress-pdf">Compress PDF</a> · <a href="compress-pdf-high-quality">High-Quality PDF Compression</a> · <a href="crop-pdf">Crop PDF</a> · <a href="edit-pdf-metadata">Edit PDF Metadata</a> · <a href="image-to-pdf">Image to PDF</a> · <a href="merge-pdf">Merge PDF</a> · <a href="office-to-pdf">Word, Excel, PowerPoint to PDF</a> · <a href="password-protect-pdf">Password Protect a PDF</a> · <a href="pdf-multiple-pages-per-sheet">PDF 2 or 4 Pages Per Sheet</a> · <a href="pdf-n-up-server">N-up PDF on the Server</a> · <a href="pdf-ocr">PDF OCR</a> · <a href="pdf-to-image">PDF to Image</a> · <a href="pdf-to-text">PDF to Text</a> · <a href="redact-pdf">Redact PDF</a> · <a href="remove-pdf-metadata">Remove PDF Metadata</a> · <a href="remove-pdf-password">Remove a PDF Password</a> · <a href="repair-pdf">Repair a Broken PDF</a> · <a href="rotate-pdf">Rotate PDF</a> · <a href="sign-pdf">Sign a PDF</a> · <a href="split-pdf">Split PDF</a> · <a href="watermark-pdf-server">Watermark a PDF on the Server</a></p></nav>
 </body>

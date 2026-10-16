@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compress PDF to 1 MB — Free, Private, Exact Size | PDF300</title>
+<link rel="canonical" href="https://pdf300.com/compress-pdf-to-1mb">
+<meta name="description" content="Compress a PDF to under 1 MB without uploading it. Measured page counts for 1 MB, verified 1 MB limits (Passport Seva abroad, ICEGATE e-SANCHIT), fixes and FAQ.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pdf300.com/compress-pdf-to-1mb">
+<meta property="og:title" content="Compress PDF to 1 MB — PDF300">
+<meta property="og:description" content="Compress a PDF to under 1 MB without uploading it. Measured page counts for 1 MB, verified 1 MB limits (Passport Seva abroad, ICEGATE e-SANCHIT), fixes and FAQ.">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is 1 MB here 1,000 KB or 1,024 KB?", "acceptedAnswer": {"@type": "Answer", "text": "We aim for under 1,000,000 bytes, so the file passes portals that count either way."}}, {"@type": "Question", "name": "How many pages fit in 1 MB?", "acceptedAnswer": {"@type": "Answer", "text": "About 13 black-and-white pages at the e-SANCHIT standard, or 6\u201310 mixed scans at around 100 dpi in our tests."}}, {"@type": "Question", "name": "My file is 1.2 MB of text. Should I use this?", "acceptedAnswer": {"@type": "Answer", "text": "Probably not \u2014 rasterising text makes it bigger per page. Use high-quality compression, which keeps the text."}}, {"@type": "Question", "name": "Does anything get uploaded?", "acceptedAnswer": {"@type": "Answer", "text": "Not in browser mode, which is the default. Server mode sends the file to our server, processes it in memory and does not keep it."}}]}</script>
+<style>
+  :root{--primary:#0078d7;--accent:#ff8c00;--bg:#f5f6f8;--card:#fff;--line:#e3e6ea;--mut:#667;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:#1a1d21;line-height:1.5}
+  .wrap{max-width:640px;margin:0 auto;padding:20px 16px 60px}
+  h1{font-size:1.5rem;margin:.2em 0}
+  .sub{color:var(--mut);font-size:.92rem;margin-bottom:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  label{display:block;font-weight:600;font-size:.9rem;margin:14px 0 6px}
+  input[type=number],select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:1rem}
+  .drop{border:2px dashed #b9c2cc;border-radius:10px;padding:26px;text-align:center;color:var(--mut);cursor:pointer;transition:.15s}
+  .drop:hover,.drop.over{border-color:var(--primary);background:#f0f7ff;color:var(--primary)}
+  .row{display:flex;gap:10px;align-items:flex-end}
+  .row>div{flex:1}
+  .btn{width:100%;padding:13px;border:0;border-radius:8px;background:var(--primary);color:#fff;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:18px}
+  .btn:disabled{background:#aeb6bf;cursor:not-allowed}
+  .btn.accent{background:var(--accent)}
+  .status{margin-top:14px;padding:12px;border-radius:8px;font-size:.92rem;display:none}
+  .status.show{display:block}
+  .status.ok{background:#e7f6ec;color:#1a7f3c}
+  .status.err{background:#fdecec;color:#c0392b}
+  .status.info{background:#eef4fb;color:#235}
+  .muted{color:var(--mut);font-size:.82rem;margin-top:8px}
+  .badge{display:inline-block;background:#eef4fb;color:#235;border-radius:6px;padding:2px 8px;font-size:.78rem;margin-right:6px}
+  .hide{display:none}
+  .bar{height:8px;background:#e3e6ea;border-radius:6px;overflow:hidden;margin-top:10px}
+  .sizes{margin-top:10px;font-size:.88rem;color:var(--mut)}.sizes a{color:#0060b0}
+  .modes{display:flex;gap:16px;flex-wrap:wrap}
+  label.mode{display:inline-flex;align-items:center;gap:6px;font-weight:500;margin:6px 0}
+  .bar>i{display:block;height:100%;width:0;background:var(--primary);transition:width .3s}
+</style>
+<style id="guide-css">
+.tg .guide{margin-top:44px;padding-top:8px;border-top:1px solid #e3e6ea}
+.tg p,.tg ul li{line-height:1.75;color:#333}
+.tg ul{padding-left:20px;margin:0 0 16px}
+.tg ul li{margin-bottom:8px}
+.tg p b,.tg li b{color:#1a1d21}
+.tg a{color:#0060b0}
+.tg .go{color:#14110F}
+.tg .note{font-size:.9rem;color:#667}
+.tg .related{margin-top:28px;padding:16px 18px;border:1px solid #e3e6ea;border-radius:10px}
+.tg .related h2{margin-top:0}
+.tg .meta{font-size:.85rem;color:#667;margin:-8px 0 26px}
+.footer-links a{margin-right:12px}
+.tg h2{font-size:1.15rem;margin:30px 0 10px}.tg ol{padding-left:20px;line-height:1.75}.tg ol li{margin-bottom:10px}.tg ol b{display:block}.tg .qa{border-top:1px solid #e3e6ea;padding:14px 0}.tg .qa b{display:block;margin-bottom:4px}.tg .qa p{margin:0}</style>
+<style>
+.tg table{width:100%;border-collapse:collapse;font-size:.88rem;margin:6px 0 8px}
+.tg th,.tg td{border-bottom:1px solid #e3e6ea;padding:7px 6px;text-align:left;vertical-align:top}
+.tg th{background:#f0f3f6;font-weight:600}
+.tablewrap{overflow-x:auto}
+.crumb{font-size:.85rem;color:#667;margin-bottom:6px}.crumb a{color:#0060b0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumb"><a href="/">PDF300</a> › <a href="/target-size">Target size</a> › 1 MB</div>
+  <h1>Compress PDF to 1 MB</h1>
+  <div class="sub">1 MB is the usual limit for supporting documents on passport and customs portals, and a sensible size for email. It holds about a dozen black-and-white pages or a handful of colour scans at good quality. <span class="badge">No upload in browser mode</span><span class="badge">No sign-up</span><span class="badge">No daily limit</span></div>
+
+  <div class="card" id="toolCard" data-mb="1">
+    <label>1) PDF file</label>
+    <div class="drop" id="drop">Drop a PDF here, or click to choose</div>
+    <input type="file" id="file" accept="application/pdf" class="hide">
+    <div class="muted" id="fileInfo"></div>
+    <div class="row">
+      <div><label>2) Target size</label><input type="number" id="targetVal" value="1" min="1" step="0.1"></div>
+      <div style="flex:.6"><label>Unit</label><select id="targetUnit"><option value="KB">KB</option><option value="MB" selected>MB</option></select></div>
+    </div>
+    <div class="muted">Preset to 1 MB. Change it if your form says otherwise. 1 KB = 1,000 bytes here, so the file also passes sites that count 1,024.</div>
+    <label>3) Where to compress</label>
+    <div class="modes">
+      <label class="mode"><input type="radio" name="tsMode" value="browser" checked> In your browser <span class="badge">recommended</span></label>
+      <label class="mode"><input type="radio" name="tsMode" value="server"> On our server</label>
+    </div>
+    <label class="mode" id="grayWrap"><input type="checkbox" id="gray"> Black &amp; white (smaller, good for text scans)</label>
+    <div class="muted" id="modeNote"></div>
+    <button class="btn accent" id="runBtn" disabled>Compress to 1 MB</button>
+    <div class="bar hide" id="barWrap"><i id="bar"></i></div>
+    <div class="status" id="runStatus"></div>
+  </div>
+  <div class="muted">⚠️ Output is an image-based PDF (text is not selectable). Other sizes: <a href="/compress-pdf-to-100kb">100 KB</a> · <a href="/compress-pdf-to-200kb">200 KB</a> · <a href="/compress-pdf-to-300kb">300 KB</a> · <a href="/compress-pdf-to-500kb">500 KB</a> · <a href="/target-size">any size</a></div>
+
+<section class="guide tg">
+<h2>What fits in 1 MB</h2>
+<p>1 MB is roughly 1,000 KB to spread over the pages. In our tests three colour pages kept 169 dpi, six pages about 98 dpi and ten pages about 103 dpi at JPG quality 50. India's customs procedure gives a matching rule of thumb: at 75 KB per black-and-white page, “the maximum permissible file-size is 1 MB … would allow the submitter to upload a supporting document which is up to 13 pages long” (<a href="https://jawaharcustoms.gov.in/pdf/PN-2017/eSANCHIT_Step_by_Step_Procedure_updated.pdf" rel="nofollow noopener" target="_blank">e-SANCHIT procedure</a>).</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Pages</th><th>Test file</th><th>Result</th><th>Resolution reached</th><th>Readability</th></tr></thead>
+<tbody><tr><td>1</td><td>ID-style scan, 1.0 MB</td><td>851 KB</td><td>200 dpi · q80</td><td>sharp, prints well</td></tr><tr><td>2</td><td>photo pages, 1.4 MB</td><td>812 KB</td><td>200 dpi · q72</td><td>sharp, prints well</td></tr><tr><td>3</td><td>colour text scan, 2.5 MB</td><td>969 KB</td><td>169 dpi · q72</td><td>sharp, prints well</td></tr><tr><td>6</td><td>grey text scan, 6.1 MB</td><td>883 KB</td><td>98 dpi · q80</td><td>normal text readable</td></tr><tr><td>10</td><td>mixed scan, 5.0 MB</td><td>968 KB</td><td>103 dpi · q50</td><td>clear on screen</td></tr></tbody></table></div>
+<p class="note">Measured on 16 October 2026 with this tool in browser mode on our own test PDFs (synthetic A4 scans with paper noise, which is harder to compress than a clean office scan). Your numbers will differ; cleaner scans get higher resolution. “q” is the JPG quality the tool settled on. Readability labels are a rough guide: 100 dpi and up is clear on screen, 70–100 dpi keeps normal-size text readable, below 50 dpi only large text survives.</p>
+
+<h2>Where you will see a 1 MB limit</h2>
+<ul><li><b>Passport Seva at Indian Embassies and Consulates.</b> The applicant-portal SOP says: maximum size allowed 1 MB, the total of all uploaded documents not more than 1 MB, PDF format (<a href="https://indianembassybrussels.gov.in/pdf/SOP_applicant_portalsdjkjijk.pdf" rel="nofollow noopener" target="_blank">SOP for document uploading, Embassy of India, Brussels</a>). Note the total: three documents must share 1 MB.</li>
+<li><b>ICEGATE e-SANCHIT (Indian customs).</b> Maximum 1 MB per file, scanned at not less than 200 dpi in black and white, about 75 KB per A4 page (<a href="https://jawaharcustoms.gov.in/pdf/PN-2017/eSANCHIT_Step_by_Step_Procedure_updated.pdf" rel="nofollow noopener" target="_blank">step-by-step procedure</a>).</li></ul>
+
+<h2>If it won’t go below 1 MB, try this</h2>
+<ol><li><b>Watch for total limits.</b>When a portal caps the total (like Passport Seva abroad), divide: three documents means about 330 KB each. Use the <a href="/target-size?kb=330">target-size tool at 330 KB</a>.</li>
+<li><b>Split long files.</b>e-SANCHIT says to split documents over 1 MB into two or more files. <a href="/split-pdf">Split PDF</a> by page range.</li>
+<li><b>Text PDFs with big images.</b>Try <a href="/compress-pdf-high-quality">high-quality compression</a> first; it keeps text selectable.</li>
+<li><b>For email, aim lower.</b>1 MB attaches anywhere, but a phone on a weak connection will thank you for 500 KB.</li></ol>
+
+<h2>Questions</h2>
+<div class="qa"><b>Is 1 MB here 1,000 KB or 1,024 KB?</b><p>We aim for under 1,000,000 bytes, so the file passes portals that count either way.</p></div><div class="qa"><b>How many pages fit in 1 MB?</b><p>About 13 black-and-white pages at the e-SANCHIT standard, or 6–10 mixed scans at around 100 dpi in our tests.</p></div><div class="qa"><b>My file is 1.2 MB of text. Should I use this?</b><p>Probably not — rasterising text makes it bigger per page. Use high-quality compression, which keeps the text.</p></div><div class="qa"><b>Does anything get uploaded?</b><p>Not in browser mode, which is the default. Server mode sends the file to our server, processes it in memory and does not keep it.</p></div>
+
+<div class="related"><h2>Compress to another size</h2><p><a href="/compress-pdf-to-100kb">100 KB</a> · <a href="/compress-pdf-to-200kb">200 KB</a> · <a href="/compress-pdf-to-300kb">300 KB</a> · <a href="/compress-pdf-to-500kb">500 KB</a> · <a href="/target-size">Any exact size</a></p>
+<h2>Related guides</h2><ul><li><a href="/guides/reduce-pdf-under-300kb">How to reduce a PDF to under 300 KB without making it unreadable</a></li><li><a href="/guides/why-scanned-pdfs-are-large">Why scanned PDFs are so large, and how to fix it</a></li><li><a href="/guides/pdf-vs-image-for-online-forms">PDF vs image: which should you upload to an online form?</a></li></ul></div>
+</section>
+<p class="muted"><a href="/">All PDF tools</a> · <a href="/guides/">Guides</a> · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/privacy">Privacy</a> · © 2017–2026 LeDeuxions</p>
+</div>
+<script src="/target-size.js" defer></script>
+<script src="/count.js" defer></script>
+</body>
+</html>

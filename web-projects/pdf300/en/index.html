@@ -29,11 +29,11 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="../../../assets/css/claude-design.css">
-<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script>if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';</script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js" defer></script>
+<script>document.addEventListener('DOMContentLoaded', function () { if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'; });</script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
 <style>
     /* ============================================================
        PDF300 — Dark premium theme (overrides claude-design.css vars)
@@ -98,6 +98,7 @@
         letter-spacing: -0.04em;
         margin: 6px 0 var(--space-4);
     }
+    .app-hero h1 .h1-sub { display:block; font-size: clamp(1.05rem, 2.6vw, 1.45rem); font-weight: 600; letter-spacing: 0; line-height: 1.35; margin-top: 10px; font-style: normal; }
     .app-hero h1 em {
         font-style: normal;
         background: var(--grad);
@@ -710,7 +711,7 @@
 <!-- Hero (visible on home) -->
 <header class="app-hero container-narrow" id="hero">
     <div class="eyebrow" style="margin-bottom:14px;">PDF Toolkit · 14 + 10 tools</div>
-    <h1>PDF <em>300</em></h1>
+    <h1>PDF <em>300</em><span class="h1-sub">Compress PDF to 300 KB — or any size — free in your browser</span></h1>
     <p class="lead">Too big to email. Five files that should be one. A scan you cannot select the text in.<br>Fix it here — <strong>most of it happens inside your browser, so the file never leaves your computer.</strong></p>
         <ul class="trust-row" aria-label="Why PDF300"><li>🔒 Browser tools never upload</li><li>✅ No sign-up</li><li>🚫 No watermark</li><li>♾️ Browser tools unlimited</li></ul>
     <nav class="lang-switch" aria-label="Language"><a href="./" hreflang="en" lang="en" title="English" aria-current="page">EN</a><a href="ja/" hreflang="ja" lang="ja" title="日本語">JA</a><a href="es/" hreflang="es" lang="es" title="Español">ES</a><a href="pt/" hreflang="pt" lang="pt" title="Português">PT</a><a href="de/" hreflang="de" lang="de" title="Deutsch">DE</a></nav>
@@ -1925,7 +1926,7 @@
 <section id="all-tool-pages" style="margin-top:48px">
   <h2>Every PDF300 tool, one page each</h2>
   <p>Each tool also has its own page with a short how-to and answers to common questions.</p>
-  <ul style="columns:2 220px;padding-left:18px;line-height:1.9"><li><a href="add-page-numbers-server">Add Page Numbers on the Server</a></li><li><a href="add-page-numbers-to-pdf">Add Page Numbers to PDF</a></li><li><a href="add-watermark-to-pdf">Add Watermark to PDF</a></li><li><a href="compress-pdf">Compress PDF</a></li><li><a href="compress-pdf-high-quality">High-Quality PDF Compression</a></li><li><a href="crop-pdf">Crop PDF</a></li><li><a href="edit-pdf-metadata">Edit PDF Metadata</a></li><li><a href="image-to-pdf">Image to PDF</a></li><li><a href="merge-pdf">Merge PDF</a></li><li><a href="office-to-pdf">Word, Excel, PowerPoint to PDF</a></li><li><a href="password-protect-pdf">Password Protect a PDF</a></li><li><a href="pdf-multiple-pages-per-sheet">PDF 2 or 4 Pages Per Sheet</a></li><li><a href="pdf-n-up-server">N-up PDF on the Server</a></li><li><a href="pdf-ocr">PDF OCR</a></li><li><a href="pdf-to-image">PDF to Image</a></li><li><a href="pdf-to-text">PDF to Text</a></li><li><a href="redact-pdf">Redact PDF</a></li><li><a href="remove-pdf-metadata">Remove PDF Metadata</a></li><li><a href="remove-pdf-password">Remove a PDF Password</a></li><li><a href="repair-pdf">Repair a Broken PDF</a></li><li><a href="rotate-pdf">Rotate PDF</a></li><li><a href="sign-pdf">Sign a PDF</a></li><li><a href="split-pdf">Split PDF</a></li><li><a href="target-size">Compress PDF to Target Size (Exact MB/KB)</a></li><li><a href="watermark-pdf-server">Watermark a PDF on the Server</a></li></ul>
+  <ul style="columns:2 220px;padding-left:18px;line-height:1.9"><li><a href="add-page-numbers-server">Add Page Numbers on the Server</a></li><li><a href="add-page-numbers-to-pdf">Add Page Numbers to PDF</a></li><li><a href="add-watermark-to-pdf">Add Watermark to PDF</a></li><li><a href="compress-pdf">Compress PDF</a></li><li><a href="compress-pdf-high-quality">High-Quality PDF Compression</a></li><li><a href="crop-pdf">Crop PDF</a></li><li><a href="edit-pdf-metadata">Edit PDF Metadata</a></li><li><a href="image-to-pdf">Image to PDF</a></li><li><a href="merge-pdf">Merge PDF</a></li><li><a href="office-to-pdf">Word, Excel, PowerPoint to PDF</a></li><li><a href="password-protect-pdf">Password Protect a PDF</a></li><li><a href="pdf-multiple-pages-per-sheet">PDF 2 or 4 Pages Per Sheet</a></li><li><a href="pdf-n-up-server">N-up PDF on the Server</a></li><li><a href="pdf-ocr">PDF OCR</a></li><li><a href="pdf-to-image">PDF to Image</a></li><li><a href="pdf-to-text">PDF to Text</a></li><li><a href="redact-pdf">Redact PDF</a></li><li><a href="remove-pdf-metadata">Remove PDF Metadata</a></li><li><a href="remove-pdf-password">Remove a PDF Password</a></li><li><a href="repair-pdf">Repair a Broken PDF</a></li><li><a href="rotate-pdf">Rotate PDF</a></li><li><a href="sign-pdf">Sign a PDF</a></li><li><a href="split-pdf">Split PDF</a></li><li><a href="target-size">Compress PDF to Target Size (Exact MB/KB)</a></li><li><a href="compress-pdf-to-100kb">Compress PDF to 100 KB</a></li><li><a href="compress-pdf-to-200kb">Compress PDF to 200 KB</a></li><li><a href="compress-pdf-to-300kb">Compress PDF to 300 KB</a></li><li><a href="compress-pdf-to-500kb">Compress PDF to 500 KB</a></li><li><a href="compress-pdf-to-1mb">Compress PDF to 1 MB</a></li><li><a href="watermark-pdf-server">Watermark a PDF on the Server</a></li></ul>
   <p>Other languages: <a href="ja/" hreflang="ja">日本語</a> · <a href="es/" hreflang="es">Español</a> · <a href="pt/" hreflang="pt">Português</a> · <a href="de/" hreflang="de">Deutsch</a> · <a href="https://ledeuxions.com/web-projects/pdf300/" hreflang="ko">한국어</a></p>
 </section>
 </main>
@@ -1940,13 +1941,13 @@
     </div>
 </footer>
 
-<script src="../../../assets/js/common.js"></script>
-<script src="pdf300.js"></script>
-<script src="paywall.js"></script>
-<script src="pdf300-server.js"></script>
-<script src="early-access.js"></script>
-<script src="promo.js"></script>
-<script src="searchable.js"></script>
+<script src="../../../assets/js/common.js" defer></script>
+<script src="pdf300.js" defer></script>
+<script src="paywall.js" defer></script>
+<script src="pdf300-server.js" defer></script>
+<script src="early-access.js" defer></script>
+<script src="promo.js" defer></script>
+<script src="searchable.js" defer></script>
   <script src="/count.js" defer></script>
 </body>
 </html>
