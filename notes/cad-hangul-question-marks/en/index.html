@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<title>Korean (Hangul) Text Shows ??? in a DWG — ZWCAD, BricsCAD, Mac/Linux: Font vs. Encoding Fixes | LeDeuxions</title>
+<meta name="description" content="Korean text in a ZWCAD or AutoCAD drawing turns into ??? when opened in BricsCAD or on Mac/Linux. A 30-second test tells you whether it's a font or an encoding problem, plus the fix for each and two ready-to-use LISP files.">
+<meta property="og:title" content="Korean text shows ??? in a DWG — font or encoding?">
+<meta property="og:description" content="English text is fine, only the Hangul is question marks. Find out whether it's the font or the encoding first — the fixes are different.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://ledeuxions.com/notes/cad-hangul-question-marks/en/">
+<link rel="canonical" href="https://ledeuxions.com/notes/cad-hangul-question-marks/en/">
+<link rel="alternate" hreflang="ko" href="https://ledeuxions.com/notes/cad-hangul-question-marks/">
+<link rel="alternate" hreflang="en" href="https://ledeuxions.com/notes/cad-hangul-question-marks/en/">
+<link rel="alternate" hreflang="x-default" href="https://ledeuxions.com/notes/cad-hangul-question-marks/en/">
+<style>
+  :root{
+    --bg:#FAF9F5; --ink:#1F1E1B; --muted:#6B675E; --rule:#E3E0D8; --code:#F0EEE7;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16150F; --ink:#EDEAE0; --muted:#9B968A; --rule:#302E27; --code:#22201A; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",Segoe UI,sans-serif;
+    line-height:1.85; font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px; margin:0 auto; padding:64px 24px 96px}
+  a{color:inherit}
+  h1{font-size:1.6rem; line-height:1.45; margin:0 0 8px; letter-spacing:-.01em}
+  .kicker{color:var(--muted); font-size:.86rem; margin:0 0 40px}
+  h2{font-size:1.08rem; margin:44px 0 12px; letter-spacing:-.01em}
+  h3{font-size:1rem; margin:28px 0 8px}
+  p{margin:0 0 20px}
+  ul,ol{margin:0 0 20px; padding-left:20px}
+  li{margin:0 0 8px}
+  .lead{font-size:1.06rem}
+  hr{border:0; border-top:1px solid var(--rule); margin:56px 0 28px}
+  .foot{color:var(--muted); font-size:.9rem}
+  strong{font-weight:600}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.88em;
+    background:var(--code); padding:1px 5px; border-radius:2px; overflow-wrap:anywhere}
+  pre{background:var(--code); padding:14px 16px; margin:0 0 20px; border-radius:2px;
+    overflow-x:auto; font-size:.82rem; line-height:1.6}
+  pre code{background:none; padding:0; overflow-wrap:normal}
+  .box{border:1px solid var(--rule); padding:18px 20px 4px; margin:0 0 28px}
+  .dl{display:inline-block; padding:10px 18px; border:1px solid var(--ink); border-radius:2px;
+    text-decoration:none; font-weight:600; margin:0 8px 10px 0}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Korean text shows ??? in a DWG — ZWCAD, BricsCAD, Mac/Linux: font vs. encoding fixes</h1>
+  <p class="kicker">LeDeuxions · <a href="/notes/cad-hangul-question-marks/" lang="ko">한국어</a></p>
+
+  <p class="lead">You open a drawing from a Korean office. Dimensions and English notes look fine, but every room name, legend and note in Korean is a row of question marks.</p>
+
+  <p>Most advice says "install the font." Often that's right. But sometimes every font is installed and the ??? stays. In that case the problem isn't the font at all — it's the <strong>encoding</strong>. Different cause, different fix.</p>
+
+  <h2>The 30-second test</h2>
+
+  <div class="box">
+    <p>In the broken drawing, <strong>type a new piece of Korean text</strong> (TEXT command, e.g. "가나다").</p>
+    <ul>
+      <li><strong>Your new Korean text displays, only the existing text is ???</strong> → <a href="#encoding">encoding</a>. Changing fonts won't help.</li>
+      <li><strong>Your new text is ??? too</strong> → <a href="#font">font</a>. The current text style's font has no Korean glyphs.</li>
+      <li><strong>On Mac/Linux, only text using SHX fonts shows ????</strong> → <a href="#shx">SHX</a>. Switch the style to a Korean TrueType font.</li>
+    </ul>
+  </div>
+
+  <p>The classic case: drawings <strong>saved in ZWCAD (or AutoCAD) on a Korean Windows PC, then opened in BricsCAD or on a Mac or Linux machine</strong>. They look perfect back at the office, which makes it confusing.</p>
+
+  <h2 id="encoding">Cause A — encoding in older drawing formats</h2>
+
+  <p>DWG and DXF store text differently depending on the format version. <strong>Before R2007 (AC1021)</strong>, text is stored in the local Windows code page — for Korean, <strong>ANSI_949 (CP949)</strong>. <strong>From R2007 on</strong>, text is Unicode; DXF files are UTF-8 (see the <a href="https://ezdxf.readthedocs.io/en/stable/dxfinternals/fileencoding.html">ezdxf documentation</a>).</p>
+
+  <p>A CAD program on Korean Windows reads those old files as CP949, so nobody at the office notices. On Mac or Linux, or under a different system language, that interpretation often fails and the Korean turns into ???. The characters were misread before any font gets involved, which is why swapping fonts does nothing.</p>
+
+  <p>If an office keeps its default save format at 2004 or older, every drawing it sends out is in this state.</p>
+
+  <h3>Fix — save as a newer format, close, reopen</h3>
+
+  <ol>
+    <li>Open the broken drawing (still showing ???).</li>
+    <li><strong>SAVEAS</strong> → file type <strong>AutoCAD 2018 Drawing (*.dwg)</strong>. Use a new name and keep the original.</li>
+    <li><strong>Close</strong> the drawing.</li>
+    <li>Open the newly saved file. The Korean text is back.</li>
+  </ol>
+
+  <p>Step 3 matters. Right after saving, the open drawing still shows ???. You only see the result after closing and reopening.</p>
+
+  <p>In BricsCAD you can do it from the command line in one line. Change the path to suit your machine.</p>
+
+<pre><code>(vla-saveas (vla-get-activedocument (vlax-get-acad-object)) "/path/newname.dwg" 60)
+; 60 = acR2018_dwg</code></pre>
+
+  <p>For many drawings, use <a href="#lisp">permanent_save.lsp</a> below. It saves <code>[original]_UTF8.dwg</code> next to the original.</p>
+
+  <p>In some drawings a few strings stayed as ??? even after the R2018 save. For those, follow up with the Cause C fix (switch text styles to a Korean TTF).</p>
+
+  <h3>What about DWGCODEPAGE?</h3>
+
+  <p>You'll see advice to change the <code>DWGCODEPAGE</code> variable. Threads on the <a href="https://forum.bricsys.com/">Bricsys forum</a> report that this alone often doesn't fix it. Re-saving in a newer format was the reliable route.</p>
+
+  <h3>What we tried that didn't work</h3>
+
+  <ul>
+    <li><strong>Changing the style font to a TTF</strong> — English became fine, Korean stayed ???</li>
+    <li><strong>Assigning an SHX big font</strong> (editing the style with entmod) — no change</li>
+    <li><strong>fontconfig aliases, fontalt.fmp substitutions</strong> — no change</li>
+    <li><strong>Symlinking Linux fonts under Windows TTF names</strong> — no change</li>
+  </ul>
+
+  <p>All of these fix fonts. When the characters themselves have been misread, any font will draw question marks.</p>
+
+  <h2 id="font">Cause B — the drawing's font isn't on your machine</h2>
+
+  <p>The most common case. If your newly typed Korean is ??? too, this is it.</p>
+
+  <ul>
+    <li><strong>Avoid .otf fonts.</strong> CAD programs generally use TTF and SHX. If you installed an .otf version, get the .ttf version instead.</li>
+    <li><strong>On Windows, choose "Install for all users"</strong> so the font lands in <code>C:\Windows\Fonts</code>. Per-user installs are sometimes invisible to CAD. Restart CAD afterwards.</li>
+    <li><strong>SHX fonts</strong> go in the CAD program's Fonts folder (or a support file search path).</li>
+    <li><strong>Set a substitute font</strong> with Korean glyphs, so missing fonts are replaced automatically — <code>FONTALT</code> in AutoCAD, the alternate font option in ZWCAD.</li>
+  </ul>
+
+  <p>ZWCAD has an official guide: <a href="https://www.zwsoft.com/user-guide/how-to-add-system-fonts-in-zwcad">How to add system fonts in ZWCAD</a>.</p>
+
+  <h2 id="shx">Cause C — SHX Korean shows ???? on Mac/Linux</h2>
+
+  <p>Even in Unicode (R2007+) drawings, Korean text set in SHX fonts can show ???? on Mac or Linux, because the Windows Korean SHX big fonts aren't available or aren't read correctly there. The Bricsys forum has reports of the same thing.</p>
+
+  <p>The fix is to <strong>switch the text style to a Korean TrueType font</strong>. NanumGothic is free and easy to install on Mac and Linux.</p>
+
+  <ol>
+    <li>Install NanumGothic (on Linux, usually the <code>fonts-nanum</code> package).</li>
+    <li><strong>STYLE</strong> → pick the broken style → set the font to NanumGothic and turn off big font.</li>
+    <li><strong>REGENALL</strong>.</li>
+  </ol>
+
+  <p>With many styles, <a href="#lisp">style_fix_nanum.lsp</a> changes them all at once. It changes every style in the drawing, so try it on a copy first.</p>
+
+  <h2 id="lisp">LISP files</h2>
+
+  <p>Tested in BricsCAD on Linux. AutoCAD and ZWCAD use the same LISP functions, but we haven't tested them there. Prompt order of commands can differ between programs and versions. The comments inside the files are in Korean; the console messages are in English.</p>
+
+  <p>
+    <a class="dl" href="../permanent_save.lsp" download>permanent_save.lsp</a>
+    <a class="dl" href="../style_fix_nanum.lsp" download>style_fix_nanum.lsp</a>
+  </p>
+
+  <ul>
+    <li><strong>permanent_save.lsp</strong> — re-saves the current drawing as R2018 DWG (Cause A). Leaves the original untouched and writes <code>_UTF8.dwg</code> in the same folder.</li>
+    <li><strong>style_fix_nanum.lsp</strong> — sets every text style to NanumGothic.ttf and runs REGENALL (Cause C, or leftovers after A).</li>
+  </ul>
+
+  <p>Load from the command line, with your own path and forward slashes:</p>
+
+<pre><code>(load "C:/Users/you/Downloads/permanent_save.lsp")</code></pre>
+
+  <p>Or use <strong>APPLOAD</strong> and pick the file.</p>
+
+  <h2>Summary</h2>
+
+  <ul>
+    <li>New Korean text displays → <strong>encoding</strong>. SAVEAS 2018 DWG, close, reopen.</li>
+    <li>New Korean text is ??? too → <strong>font</strong>. Install the TTF (not .otf), for all users, and set a substitute font.</li>
+    <li>Only SHX Korean breaks on Mac/Linux → <strong>switch the style to a Korean TTF</strong>.</li>
+  </ul>
+
+  <hr>
+
+  <p class="foot">Questions: <a href="mailto:ledeuxions@gmail.com?subject=Korean%20text%20in%20CAD">ledeuxions@gmail.com</a></p>
+  <noscript><p class="foot">If the address looks hidden, write to &nbsp;ledeuxions&nbsp;[at]&nbsp;gmail.com.</p></noscript>
+  <p class="foot"><a href="/en/">LeDeuxions</a> · <a href="/notes/">Field Notes</a> · <a href="/notes/cad-hwp-vector/en/">Pasting CAD drawings into reports as vector</a></p>
+
+</div>
+<script src="/count.js" defer></script>
+<script src="/assets/remote-nav.js" defer></script>
+</body>
+</html>

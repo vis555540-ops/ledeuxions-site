@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF9F5">
+<meta name="description" content="ZWCAD·캐드 도면을 열었더니 한글만 ??로 깨질 때. 새로 쓴 한글이 보이면 인코딩 문제, 새로 쓴 것도 깨지면 폰트 문제입니다. 30초 판별법과 원인별 해결, 바로 쓰는 LISP 파일까지 정리했습니다.">
+<meta property="og:title" content="ZWCAD·캐드 도면 한글이 ??로 깨질 때 — 폰트 문제와 인코딩 문제, 원인별 해결 총정리">
+<meta property="og:description" content="영문은 멀쩡하고 한글만 ??라면, 먼저 폰트 문제인지 인코딩 문제인지부터 가려야 합니다. 원인이 다르면 해결도 다릅니다.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://ledeuxions.com/notes/cad-hangul-question-marks/">
+<title>ZWCAD·캐드 도면 한글이 ??로 깨질 때 — 폰트 문제와 인코딩 문제, 원인별 해결 총정리 — LeDeuxions</title>
+<link rel="canonical" href="https://ledeuxions.com/notes/cad-hangul-question-marks/">
+<link rel="alternate" hreflang="ko" href="https://ledeuxions.com/notes/cad-hangul-question-marks/">
+<link rel="alternate" hreflang="en" href="https://ledeuxions.com/notes/cad-hangul-question-marks/en/">
+<link rel="alternate" hreflang="x-default" href="https://ledeuxions.com/notes/cad-hangul-question-marks/en/">
+<style>
+  :root{
+    --bg:#FAF9F5; --ink:#1F1E1B; --muted:#6B675E; --rule:#E3E0D8; --code:#F0EEE7;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#16150F; --ink:#EDEAE0; --muted:#9B968A; --rule:#302E27; --code:#22201A; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",Segoe UI,sans-serif;
+    line-height:1.85; font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px; margin:0 auto; padding:64px 24px 96px}
+  a{color:inherit}
+  h1{font-size:1.6rem; line-height:1.45; margin:0 0 8px; letter-spacing:-.01em}
+  .kicker{color:var(--muted); font-size:.86rem; margin:0 0 40px}
+  h2{font-size:1.08rem; margin:44px 0 12px; letter-spacing:-.01em}
+  h3{font-size:1rem; margin:28px 0 8px}
+  p{margin:0 0 20px}
+  ul,ol{margin:0 0 20px; padding-left:20px}
+  li{margin:0 0 8px}
+  .lead{font-size:1.06rem}
+  hr{border:0; border-top:1px solid var(--rule); margin:56px 0 28px}
+  .foot{color:var(--muted); font-size:.9rem}
+  strong{font-weight:600}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.88em;
+    background:var(--code); padding:1px 5px; border-radius:2px; overflow-wrap:anywhere}
+  pre{background:var(--code); padding:14px 16px; margin:0 0 20px; border-radius:2px;
+    overflow-x:auto; font-size:.82rem; line-height:1.6}
+  pre code{background:none; padding:0; overflow-wrap:normal}
+  .box{border:1px solid var(--rule); padding:18px 20px 4px; margin:0 0 28px}
+  .box p:first-child{margin-top:0}
+  .dl{display:inline-block; padding:10px 18px; border:1px solid var(--ink); border-radius:2px;
+    text-decoration:none; font-weight:600; margin:0 8px 10px 0}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>ZWCAD·캐드 도면 한글이 ??로 깨질 때 — 폰트 문제와 인코딩 문제, 원인별 해결 총정리</h1>
+  <p class="kicker">LeDeuxions · <a href="/notes/cad-hangul-question-marks/en/" lang="en">English</a></p>
+
+  <p class="lead">도면을 열었습니다. 치수와 영문은 멀쩡한데 한글 자리만 <strong>??</strong>나 <strong>????</strong>로 나옵니다. 실명, 범례, 주기가 전부 물음표입니다.</p>
+
+  <p>검색하면 대부분 "폰트를 설치하라"고 합니다. 맞는 경우도 많습니다. 그런데 폰트를 다 깔아도 그대로인 경우가 있습니다. 그때는 원인이 폰트가 아니라 <strong>인코딩</strong>입니다. 원인이 다르면 해결도 다릅니다.</p>
+
+  <h2>30초 판별 — 어느 쪽 문제인가</h2>
+
+  <div class="box">
+    <p>깨진 도면에서 <strong>새 한글 텍스트를 하나 써 봅니다.</strong> (TEXT 명령으로 "가나다")</p>
+    <ul>
+      <li><strong>새로 쓴 한글은 보이고, 원래 있던 한글만 ??</strong> → <a href="#encoding">인코딩 문제</a>입니다. 폰트를 바꿔도 안 고쳐집니다.</li>
+      <li><strong>새로 쓴 한글도 ??</strong> → <a href="#font">폰트 문제</a>입니다. 지금 문자 스타일의 글꼴에 한글이 없습니다.</li>
+      <li><strong>맥·리눅스에서 SHX 글꼴을 쓰는 글자만 ????</strong> → <a href="#shx">SHX 문제</a>입니다. 한글 TTF로 바꾸면 됩니다.</li>
+    </ul>
+  </div>
+
+  <p>특히 <strong>회사에서 ZWCAD로 저장한 도면을 집에서 다른 캐드(BricsCAD 등)로, 또는 맥·리눅스에서 열 때</strong> ??가 나왔다면 인코딩 문제일 가능성이 높습니다. 회사 컴퓨터에서는 같은 도면이 잘 보이기 때문에 더 헷갈립니다.</p>
+
+  <h2 id="encoding">원인 A — 인코딩: 옛 형식 도면의 한글</h2>
+
+  <p>잘 다루어지지 않는 쪽부터 적습니다.</p>
+
+  <p>DWG·DXF는 형식 버전에 따라 글자를 저장하는 방식이 다릅니다. <strong>R2007(AC1021) 이전 형식</strong>은 글자를 그 나라의 코드 페이지로 저장합니다. 한국어라면 <strong>ANSI_949(CP949)</strong>입니다. <strong>R2007 이후 형식</strong>은 유니코드로 저장합니다. DXF는 R2007부터 UTF-8입니다(<a href="https://ezdxf.readthedocs.io/en/stable/dxfinternals/fileencoding.html">ezdxf 문서</a>).</p>
+
+  <p>한국어 윈도우의 캐드는 옛 형식 도면을 열 때 CP949로 읽어 줍니다. 그래서 회사에서는 문제가 보이지 않습니다. 맥·리눅스용 캐드나 다른 언어 환경에서는 이 해석이 맞지 않는 경우가 많고, 한글이 ??로 바뀝니다. 글꼴이 아니라 <strong>글자 자체를 잘못 읽은 것</strong>이라 폰트를 바꿔도 소용이 없습니다.</p>
+
+  <!-- 형확인: 아래 문장이 딱딱함. 회사 도면 설정 이야기를 형 말투로 -->
+  <p>회사 캐드가 기본 저장 형식을 2004 이하로 두고 있으면, 그 회사에서 나오는 도면은 모두 이 상태로 저장됩니다.</p>
+
+  <h3>해결 — 새 형식으로 다시 저장하고, 닫았다가 다시 연다</h3>
+
+  <ol>
+    <li>깨진 도면을 엽니다. (??로 보이는 상태 그대로)</li>
+    <li><strong>SAVEAS</strong>(다른 이름으로 저장) → 파일 형식에서 <strong>AutoCAD 2018 도면 (*.dwg)</strong>을 고릅니다. 원본은 두고 새 이름으로 저장합니다.</li>
+    <li>도면을 <strong>닫습니다.</strong></li>
+    <li>새로 저장한 파일을 다시 엽니다. 한글이 보입니다.</li>
+  </ol>
+
+  <p>3번이 중요합니다. 저장만 하고 그 화면을 그대로 보면 여전히 ??입니다. 닫고 다시 열어야 바뀐 내용이 보입니다.</p>
+
+  <p>BricsCAD 명령창에서는 한 줄로도 됩니다. 경로는 본인 컴퓨터에 맞게 바꾸십시오.</p>
+
+<pre><code>(vla-saveas (vla-get-activedocument (vlax-get-acad-object)) "/경로/저장명.dwg" 60)
+; 60 = acR2018_dwg (R2018 DWG 형식)</code></pre>
+
+  <p>도면이 여러 장이면 아래 <a href="#lisp">permanent_save.lsp</a>를 쓰면 편합니다. 원본 옆에 <code>[원본이름]_UTF8.dwg</code>로 저장합니다.</p>
+
+  <p>R2018로 다시 저장한 뒤에도 일부 글자가 ??로 남는 도면이 있었습니다. 그럴 때는 아래 원인 C의 방법(문자 스타일을 한글 TTF로 바꾸기)을 이어서 하면 됩니다.</p>
+
+  <h3>DWGCODEPAGE는?</h3>
+
+  <p>도면의 코드 페이지를 나타내는 <code>DWGCODEPAGE</code> 변수를 바꾸라는 안내도 있습니다. 다만 이것만으로는 해결되지 않는 경우가 많다는 이야기가 <a href="https://forum.bricsys.com/">Bricsys 포럼</a>에 여러 번 나옵니다. 실제로도 위의 다시 저장 방법이 확실했습니다.</p>
+
+  <h3>해 봤지만 안 된 것</h3>
+
+  <p>인코딩 문제일 때 아래 방법들은 효과가 없었습니다. 같은 길을 돌지 않도록 적어 둡니다.</p>
+
+  <ul>
+    <li><strong>문자 스타일 글꼴을 TTF로 변경</strong> — 영문만 정상이 되고 한글은 그대로 ??</li>
+    <li><strong>SHX 빅폰트를 지정</strong>(entmod로 스타일 수정) — 변화 없음</li>
+    <li><strong>fontconfig 별칭, fontalt.fmp 대체 글꼴 설정</strong> — 변화 없음</li>
+    <li><strong>윈도우 TTF 이름으로 가짜 링크 만들기</strong> — 변화 없음</li>
+  </ul>
+
+  <!-- 형확인: 정리 문장이 설명조. 형이 겪은 느낌으로 한 줄 바꿔도 좋음 -->
+  <p>모두 글꼴을 고치는 방법입니다. 글자를 잘못 읽은 상태에서는 어떤 글꼴로 그려도 ??가 나옵니다.</p>
+
+  <h2 id="font">원인 B — 폰트: 도면에 쓴 글꼴이 내 컴퓨터에 없다</h2>
+
+  <p>가장 흔한 경우입니다. 새로 쓴 한글도 ??라면 여기에 해당합니다. 다른 사무실에서 받은 도면이 그쪽에서만 쓰는 글꼴로 되어 있을 때 자주 생깁니다.</p>
+
+  <ul>
+    <li><strong>.otf 글꼴은 피합니다.</strong> 캐드는 대개 TTF와 SHX를 씁니다. 같은 글꼴이라도 .otf로 설치했다면 .ttf 판을 받아 다시 설치합니다.</li>
+    <li><strong>윈도우에서는 "모든 사용자용으로 설치"</strong>를 고릅니다. 그래야 <code>C:\Windows\Fonts</code>에 들어갑니다. 내 계정에만 설치하면 캐드가 못 찾는 경우가 있습니다. 설치 후 캐드를 다시 켭니다.</li>
+    <li><strong>SHX 글꼴</strong>은 캐드 설치 폴더의 Fonts 폴더(또는 지원 파일 경로)에 넣습니다.</li>
+    <li><strong>대체 글꼴을 지정</strong>합니다. 없는 글꼴을 만났을 때 대신 쓸 한글 글꼴을 정해 두면, 도면을 열 때마다 묻지 않습니다. AutoCAD는 <code>FONTALT</code> 변수, ZWCAD는 옵션의 대체 글꼴 설정입니다.</li>
+  </ul>
+
+  <p>ZWCAD에서 시스템 글꼴을 추가하는 방법은 공식 안내가 있습니다. <a href="https://www.zwsoft.com/user-guide/how-to-add-system-fonts-in-zwcad">How to add system fonts in ZWCAD</a></p>
+
+  <h2 id="shx">원인 C — 맥·리눅스에서 SHX 한글이 ????</h2>
+
+  <p>유니코드(R2007 이후) 도면인데도 맥·리눅스에서 SHX 글꼴로 된 한글만 ????로 나오는 경우가 있습니다. 윈도우용 한글 SHX(빅폰트)가 그 환경에 없거나 제대로 읽히지 않는 경우입니다. Bricsys 포럼에도 같은 보고가 있습니다.</p>
+
+  <p>해결은 <strong>문자 스타일의 글꼴을 한글 TTF로 바꾸는 것</strong>입니다. 나눔고딕(NanumGothic.ttf)처럼 맥·리눅스에서도 쉽게 설치되는 글꼴이 좋습니다.</p>
+
+  <ol>
+    <li>나눔고딕을 설치합니다. (리눅스는 배포판 패키지 <code>fonts-nanum</code> 등)</li>
+    <li><strong>STYLE</strong> 명령 → 깨지는 스타일을 골라 글꼴을 NanumGothic으로 바꿉니다. 빅폰트 사용은 끕니다.</li>
+    <li><strong>REGENALL</strong>로 다시 그립니다.</li>
+  </ol>
+
+  <p>스타일이 많으면 아래 <a href="#lisp">style_fix_nanum.lsp</a>가 모든 스타일을 한 번에 바꿉니다. 도면 전체의 글꼴이 바뀌므로 사본에서 먼저 해 보십시오.</p>
+
+  <h2 id="lisp">바로 쓰는 LISP 파일</h2>
+
+  <p>위에서 쓴 두 파일입니다. BricsCAD(리눅스)에서 확인했습니다. AutoCAD·ZWCAD도 같은 LISP 명령을 쓰지만 직접 확인하지는 않았습니다. 캐드 종류와 버전에 따라 명령 질문 순서가 다를 수 있습니다.</p>
+
+  <p>
+    <a class="dl" href="permanent_save.lsp" download>permanent_save.lsp</a>
+    <a class="dl" href="style_fix_nanum.lsp" download>style_fix_nanum.lsp</a>
+  </p>
+
+  <ul>
+    <li><strong>permanent_save.lsp</strong> — 지금 연 도면을 R2018 DWG로 다시 저장합니다(원인 A). 원본은 그대로 두고 같은 폴더에 <code>_UTF8.dwg</code>를 만듭니다.</li>
+    <li><strong>style_fix_nanum.lsp</strong> — 모든 문자 스타일을 NanumGothic.ttf로 바꾸고 REGENALL 합니다(원인 C, 또는 A 이후 남은 글자).</li>
+  </ul>
+
+  <p>쓰는 법은 명령창에 아래처럼 입력합니다. 경로는 파일을 받은 위치로 바꾸고, 구분자는 <code>/</code>를 씁니다.</p>
+
+<pre><code>(load "C:/Users/사용자/Downloads/permanent_save.lsp")</code></pre>
+
+  <p>또는 <strong>APPLOAD</strong> 명령으로 파일을 골라 불러와도 됩니다.</p>
+
+  <h2>정리</h2>
+
+  <!-- 형확인: 마무리가 목록처럼 건조함. 형 한마디로 닫아도 좋음 -->
+  <ul>
+    <li>새로 쓴 한글이 보이면 <strong>인코딩</strong>. SAVEAS로 2018 형식 저장 → 닫기 → 다시 열기.</li>
+    <li>새로 쓴 한글도 깨지면 <strong>폰트</strong>. TTF로 설치(.otf 말고), 모든 사용자용으로, 대체 글꼴 지정.</li>
+    <li>맥·리눅스에서 SHX 한글만 깨지면 <strong>문자 스타일을 한글 TTF로</strong>.</li>
+  </ul>
+
+  <hr>
+
+  <p class="foot">문의: <a href="mailto:ledeuxions@gmail.com?subject=%EC%BA%90%EB%93%9C%20%ED%95%9C%EA%B8%80%20%EA%B9%A8%EC%A7%90">ledeuxions@gmail.com</a></p>
+  <noscript><p class="foot">주소가 가려져 보이면 &nbsp;ledeuxions&nbsp;[at]&nbsp;gmail.com&nbsp; 으로 보내주십시오.</p></noscript>
+  <p class="foot"><a href="/">LeDeuxions</a> · <a href="/notes/">Field Notes</a> · <a href="/notes/cad-hwp-vector/">캐드 도면을 한글 보고서에 선명하게 넣는 법</a></p>
+
+</div>
+<script src="/count.js" defer></script>
+<script src="/assets/office-badge.js" defer></script>
+<script src="/assets/remote-nav.js" defer></script>
+</body>
+</html>
