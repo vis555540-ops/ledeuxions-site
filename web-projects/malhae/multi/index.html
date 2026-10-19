@@ -124,7 +124,7 @@
 
 <div id="start">
   <h1>여러 카메라로 예·아니요</h1>
-  <p><b style="color:var(--yes)">왼쪽</b>을 보면 <b style="color:var(--yes)">「예」</b>, <b style="color:var(--no)">오른쪽</b>은 <b style="color:var(--no)">「아니요」</b>, <b style="color:var(--up)">위</b>는 <b style="color:var(--up)">「설명이 필요해요」</b>.<br>
+  <p><b style="color:var(--yes)">왼쪽</b>을 보면 <b style="color:var(--yes)">「예」</b>, <b style="color:var(--no)">오른쪽</b>은 <b style="color:var(--no)">「아니요」</b>, <b style="color:var(--up)">위</b>는 <b style="color:var(--up)">「다음 말」</b>(아파요·숨차요·가래·목말라요… 8묶음 16가지).<br>
   컴퓨터에 꽂은 카메라 <b>최대 3대</b>가 같이 봅니다(얼굴 정면 · 얼굴 옆 · 눈 확대). 한 대가 놓쳐도 나머지가 받쳐 줍니다.<br>
   처음에 12초만 같이 맞춥니다(정면 → 왼쪽 → 오른쪽 → 위). 카메라가 비뚤거나 뒤집혀 달려도 됩니다.<br>
   영상은 기기 밖으로 나가지 않습니다.</p>
@@ -481,19 +481,33 @@ async function calibrate(){
 }
 
 /* ── 고르기 ── */
-const Z = { L:$('zL'), R:$('zR'), U:$('zUp') }, SAY = { L:'예', R:'아니요', U:'설명이 필요해요' };
+const Z = { L:$('zL'), R:$('zR'), U:$('zUp') }, SAY = { L:'예', R:'아니요', U:'다음 말' };
+// 말 묶음 (형 10/19 「눈이 인식이 잘 되니까 글씨 개수 늘려 달라고」) — 왼쪽·오른쪽에 두 말씩, 위 = 다음 묶음. 대답하고 나면 첫 묶음(예/아니요)으로
+const GROUPS = [['예','아니요'],['아파요','숨차요'],['가래 빼 주세요','목말라요'],['추워요','더워요'],['자세 바꿔 주세요','화장실'],
+  ['고마워요','사랑해요'],['간호사 불러 주세요','가족 불러 주세요'],['설명이 필요해요','쉬고 싶어요']];
+let gi = 0;
+function showGroup(){
+  SAY.L = GROUPS[gi][0]; SAY.R = GROUPS[gi][1];
+  const fs = t => t.length <= 3 ? '1em' : t.length <= 5 ? '.68em' : '.5em';
+  const l = Z.L.querySelector('span'), r = Z.R.querySelector('span'), u = Z.U.querySelector('span');
+  l.textContent = '⬅ ' + SAY.L; l.style.fontSize = fs(SAY.L);
+  r.textContent = SAY.R + ' ➡'; r.style.fontSize = fs(SAY.R);
+  u.textContent = `⬆ 다음 말 (${gi+1}/${GROUPS.length}) — ${GROUPS[(gi+1)%GROUPS.length].join(' · ')}`;
+}
+showGroup();
 let busy = false, cur = null, curAt = 0, needCenter = false, saying = false, sayAt = 0, running = false;
 const answers = [];
 function paint(k, p){
   for(const d in Z){ const on = d === k; Z[d].classList.toggle('arm', on && p > 0); Z[d].querySelector('.fill').style.width = on ? Math.min(100, p*100) + '%' : '0'; }
 }
 function fire(k){
+  if(k === 'U'){ gi = (gi + 1) % GROUPS.length; showGroup(); needCenter = true; paint(null, 0); speak(SAY.L + ', ' + SAY.R, 1.05); return; }
   saying = true; sayAt = performance.now(); needCenter = true; answers.push(k);
   const col = { L:'var(--yes)', R:'var(--no)', U:'var(--up)' }[k];
-  $('say').style.background = col; $('sayW').textContent = SAY[k]; $('sayLink').style.display = k === 'U' ? 'inline-block' : 'none';
+  $('say').style.background = col; $('sayW').textContent = SAY[k]; $('sayLink').style.display = SAY[k] === '설명이 필요해요' ? 'inline-block' : 'none';
   $('say').style.display = 'flex'; speak(SAY[k], 0.9); paint(null, 0);
 }
-function unsay(){ saying = false; $('say').style.display = 'none'; }
+function unsay(){ saying = false; $('say').style.display = 'none'; if(gi){ gi = 0; showGroup(); } }
 $('say').addEventListener('click', e => { if(e.target.id !== 'sayLink') unsay(); });
 
 /* ── 화면: 카메라 칸 ── */
