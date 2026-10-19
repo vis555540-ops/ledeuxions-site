@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<link rel="canonical" href="https://ledeuxions.com/web-projects/malhae/write/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>글씨만 — 화면 가득 손가락으로 쓰기 | 말해요</title>
+<meta name="description" content="화면 전체가 글씨 칸입니다. 손가락 여러 개나 손바닥이 같이 닿아도 한 줄로 이어 쓰고, 다 쓰면 글자로 바꿔 소리로 읽어 줍니다. 손에 힘이 없는 분을 위한 무료 의사소통 도구.">
+<meta name="theme-color" content="#0B0E12">
+<style>
+  :root{--bg:#0B0E12; --panel:#141A22; --on:#E9F0F8; --muted:#93A2B5; --line:#28313D; --hi:#FFD23F}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none}
+  html,body{height:100%; margin:0; overflow:hidden; overscroll-behavior:none}
+  body{background:var(--bg); color:var(--on); font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+       display:flex; flex-direction:column; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  #top{display:flex; gap:8px; padding:8px; flex:0 0 auto}
+  #cand{flex:1; min-width:0; font:inherit; font-size:clamp(26px,7vw,48px); font-weight:800; text-align:left; padding:10px 14px; border-radius:14px;
+        border:2px solid var(--hi); background:var(--panel); color:var(--on); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  #cand.idle{border-color:var(--line); color:var(--muted); font-size:clamp(18px,4.6vw,26px); font-weight:600}
+  #clr{flex:0 0 auto; font:inherit; font-size:clamp(20px,5vw,30px); font-weight:800; padding:0 18px; border-radius:14px; border:0; background:#c62828; color:#fff}
+  #alts{display:flex; gap:8px; padding:0 8px 8px; flex:0 0 auto; overflow-x:auto; min-height:8px}
+  #alts button{font:inherit; font-size:22px; font-weight:700; padding:8px 14px; border-radius:12px; border:1px solid var(--line); background:var(--panel); color:var(--on); white-space:nowrap}
+  #ink{flex:1; min-height:0; margin:0 8px 8px; border-radius:16px; background:#fffdf5; touch-action:none; display:block; width:calc(100% - 16px)}
+  #big{position:fixed; inset:0; background:#fffdf5; display:none; z-index:5}
+  #big.on{display:block}
+  #big img{width:100%; height:100%; object-fit:contain}
+  #big span{position:absolute; left:0; right:0; bottom:16px; text-align:center; color:#555; font-size:18px}
+</style>
+</head>
+<body>
+<div id="top"><button id="cand" class="idle" type="button">✍️ 아래 아무 데나 쓰세요</button><button id="clr" type="button">지우기</button></div>
+<div id="alts"></div>
+<canvas id="ink"></canvas>
+<div id="big"><img alt="쓴 글씨 크게"><span>톡 하면 닫힘</span></div>
+<script>
+(function(){
+'use strict';
+// 글씨만 (2026-10-19, 형: 장인어른 중환자실 — 손가락 거의 못 움직이심·여러 손가락이 같이 닿음)
+//  · 화면 전체 = 글씨 칸. 다른 단추는 위 두 개뿐(잘못 눌러 넘어갈 데가 없게)
+//  · 여러 손가락·손바닥 = 펜 하나(닿은 손가락들 가운데). 다 떼야 획 끝
+//  · 손 떼고 1.2초 → 글자로(구글 손글씨, 인터넷 필요). 글자 톡 = 소리. 안 바뀌면 그림 그대로 — 「크게」로 보여 줌
+var cv=document.getElementById('ink'), cx=cv.getContext('2d'), cand=document.getElementById('cand'), alts=document.getElementById('alts'), big=document.getElementById('big');
+var HINT='✍️ 아래 아무 데나 쓰세요';
+var strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null, P=new Map(), off=[0,0];
+
+function speak(t){ try{ speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='ko-KR'; u.rate=0.9; speechSynthesis.speak(u); }catch(e){} }
+function pen(){ cx.lineWidth=Math.max(8,Math.min(W,H)/28); cx.lineCap='round'; cx.lineJoin='round'; cx.strokeStyle='#111'; cx.fillStyle='#111'; }
+function redraw(){ cx.clearRect(0,0,W,H); pen();
+  strokes.forEach(function(s){ cx.beginPath(); cx.moveTo(s[0][0],s[1][0]);
+    if(s[0].length===1){ cx.arc(s[0][0],s[1][0],cx.lineWidth/2,0,7); cx.fill(); return; }
+    for(var i=1;i<s[0].length;i++) cx.lineTo(s[0][i],s[1][i]); cx.stroke(); }); }
+function fit(){ var r=cv.getBoundingClientRect(); if(!r.width||!r.height) return;
+  var d=window.devicePixelRatio||1, w=Math.round(r.width), h=Math.round(r.height);
+  if(W&&H) strokes.forEach(function(s){ s[0]=s[0].map(function(x){return x*w/W;}); s[1]=s[1].map(function(y){return y*h/H;}); });
+  W=w; H=h; cv.width=Math.round(w*d); cv.height=Math.round(h*d); cx.setTransform(d,0,0,d,0,0); redraw(); }
+addEventListener('resize', function(){ requestAnimationFrame(fit); });
+
+function setCand(list){
+  alts.innerHTML='';
+  if(!list.length){ cand.textContent=HINT; cand.classList.add('idle'); return; }
+  cand.textContent=list[0]; cand.classList.remove('idle'); speak(list[0]);
+  list.slice(1,5).forEach(function(t){ var b=document.createElement('button'); b.type='button'; b.textContent=t;
+    b.onclick=function(){ cand.textContent=t; speak(t); }; alts.appendChild(b); });
+  var g=document.createElement('button'); g.type='button'; g.textContent='🔍 그림 크게';
+  g.onclick=function(){ showBig(); }; alts.appendChild(g);
+}
+function showBig(){ if(!strokes.length) return; big.querySelector('img').src=cv.toDataURL(); big.classList.add('on'); }
+big.onclick=function(){ big.classList.remove('on'); };
+function clear(){ strokes=[]; cur=null; P.clear(); seq++; clearTimeout(timer); if(ctl)try{ctl.abort();}catch(e){} redraw(); setCand([]); }
+document.getElementById('clr').onclick=clear;
+cand.onclick=function(){ if(!cand.classList.contains('idle')) speak(cand.textContent); else showBig(); };
+
+function recog(){
+  if(!strokes.length) return;
+  var my=++seq; if(ctl)try{ctl.abort();}catch(e){}
+  ctl=window.AbortController?new AbortController():null;
+  var len=function(s){ var d=0; for(var i=1;i<s[0].length;i++) d+=Math.hypot(s[0][i]-s[0][i-1], s[1][i]-s[1][i-1]); return d; };
+  var tiny=Math.max(10, Math.min(W,H)/40);
+  var use=strokes.filter(function(s){ return len(s)>=tiny; }); if(!use.length) use=strokes;   // 스친 점 빼기
+  var sm=function(a){ return a.map(function(v,i){ var t=0,n=0; for(var k=i-2;k<=i+2;k++) if(k>=0&&k<a.length){t+=a[k];n++;} return t/n; }); };   // 떨린 선 펴기
+  var ink=use.map(function(s){ return [sm(s[0]).map(Math.round), sm(s[1]).map(Math.round), s[2]]; });
+  var to=setTimeout(function(){ if(ctl)try{ctl.abort();}catch(e){} },6000);
+  fetch('https://inputtools.google.com/request?ime=handwriting&app=mobilesearch&cs=1&oe=UTF-8&itc=ko-t-i0-handwrit',{
+    method:'POST', headers:{'Content-Type':'application/json'}, signal:ctl?ctl.signal:undefined,
+    body:JSON.stringify({options:'enable_pre_space',requests:[{writing_guide:{writing_area_width:W,writing_area_height:H},ink:ink,language:'ko'}]})
+  }).then(function(r){ return r.json(); }).then(function(j){
+    clearTimeout(to); if(my!==seq) return;
+    var c=(j&&j[0]==='SUCCESS'&&j[1]&&j[1][0]&&j[1][0][1])||[], seen={}, list=[];
+    c.forEach(function(t){ t=String(t).trim(); if(t&&!seen[t]){ seen[t]=1; list.push(t); } });
+    setCand(list);
+  }).catch(function(){ clearTimeout(to); });
+}
+
+function pt(e){ var r=cv.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
+function cen(){ var x=0,y=0; P.forEach(function(v){ x+=v[0]; y+=v[1]; }); return [x/P.size, y/P.size]; }
+function relink(){ if(!cur||!P.size) return; var l=cur[0].length-1, c=cen(); off=[cur[0][l]-c[0], cur[1][l]-c[1]]; }
+function add(x,y){ var l=cur[0].length-1; if(Math.abs(x-cur[0][l])+Math.abs(y-cur[1][l])<0.5) return;
+  pen(); cx.beginPath(); cx.moveTo(cur[0][l],cur[1][l]); cx.lineTo(x,y); cx.stroke();
+  cur[0].push(x); cur[1].push(y); cur[2].push(Date.now()-t0); }
+function down(e){ if(e.cancelable!==false) e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+  P.set(e.pointerId, pt(e)); if(cur){ relink(); return; }
+  clearTimeout(timer); off=[0,0]; if(!strokes.length) t0=Date.now();
+  var c=cen(); cur=[[c[0]],[c[1]],[Date.now()-t0]]; strokes.push(cur);
+  pen(); cx.beginPath(); cx.arc(c[0],c[1],cx.lineWidth/2,0,7); cx.fill(); }
+function move(e){ if(!P.has(e.pointerId)||!cur) return; if(e.cancelable) e.preventDefault();
+  var evs=e.getCoalescedEvents?e.getCoalescedEvents():[]; (evs.length?evs:[e]).forEach(function(ev){ P.set(e.pointerId, pt(ev)); var c=cen(); add(c[0]+off[0], c[1]+off[1]); }); }
+function up(e){ if(!P.has(e.pointerId)) return; P.delete(e.pointerId); if(P.size){ relink(); return; }
+  cur=null; clearTimeout(timer); timer=setTimeout(recog,1200); }
+if(window.PointerEvent){
+  cv.addEventListener('pointerdown',down); cv.addEventListener('pointermove',move,{passive:false});
+  cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+} else {
+  var f=function(t,ev){ return {pointerId:'t'+t.identifier, clientX:t.clientX, clientY:t.clientY, cancelable:true, preventDefault:function(){ ev.preventDefault(); }}; };
+  cv.addEventListener('touchstart',function(ev){ ev.preventDefault(); [].forEach.call(ev.changedTouches,function(t){ down(f(t,ev)); }); },{passive:false});
+  cv.addEventListener('touchmove',function(ev){ ev.preventDefault(); [].forEach.call(ev.changedTouches,function(t){ move(f(t,ev)); }); },{passive:false});
+  cv.addEventListener('touchend',function(ev){ [].forEach.call(ev.changedTouches,function(t){ up(f(t,ev)); }); });
+}
+cv.addEventListener('touchstart',function(ev){ ev.preventDefault(); },{passive:false});
+cv.addEventListener('contextmenu',function(e){ e.preventDefault(); });
+try{ if('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(function(){}); }catch(e){}
+requestAnimationFrame(fit);
+})();
+</script>
+</body>
+</html>
