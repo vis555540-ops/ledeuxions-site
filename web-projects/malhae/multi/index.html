@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<link rel="canonical" href="https://ledeuxions.com/web-projects/malhae/multi/">
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>여러 카메라로 예·아니요 — 카메라끼리 서로 고쳐 주기 | 말해요 (시험판)</title>
+<meta name="description" content="손도 말도 어려운 분을 위한 무료 도구. 컴퓨터에 꽂은 USB 카메라 여러 대(얼굴 정면·옆·눈 확대)가 같이 보고 서로 고쳐 주며, 왼쪽은 「예」, 오른쪽은 「아니요」, 위는 「설명이 필요해요」를 소리로 말해 줍니다.">
+<meta name="theme-color" content="#0B0E12">
+<style>
+  :root{--bg:#0B0E12; --panel:#141A22; --on:#E9F0F8; --muted:#93A2B5; --line:#28313D; --yes:#3DD68C; --no:#FF6B5E; --up:#5B9BFF; --hi:#FFD23F}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none}
+  html,body{height:100%; margin:0; overflow:hidden}
+  body{background:var(--bg); color:var(--on); font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+       display:grid; grid-template-rows:auto 1fr auto; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  #bar{display:flex; gap:8px; align-items:center; padding:8px 10px; border-bottom:1px solid var(--line); min-width:0}
+  #bar .t{flex:1; min-width:0; font-size:14px; font-weight:600; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  #bar button, .btn{font:inherit; font-size:15px; color:var(--on); background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:8px 12px; white-space:nowrap}
+  #board{display:grid; grid-template-columns:1fr 1.25fr 1fr; grid-template-rows:auto 1fr; gap:10px; padding:10px; min-height:0}
+  .z{border-radius:20px; border:3px solid var(--line); background:var(--panel); display:flex; align-items:center; justify-content:center; text-align:center;
+     font-weight:800; letter-spacing:-.02em; padding:10px; transition:background .12s, border-color .12s; position:relative; overflow:hidden; min-width:0}
+  #zUp{grid-column:1 / 4; font-size:clamp(24px,5.5vw,46px); color:var(--up); min-height:16vh}
+  #zL{font-size:clamp(40px,9vw,110px); color:var(--yes)}
+  #zR{font-size:clamp(30px,7vw,92px); color:var(--no)}
+  #mid{display:flex; flex-direction:column; align-items:stretch; justify-content:center; gap:8px; min-width:0; min-height:0}
+  #st{font-size:16px; color:var(--muted); text-align:center; min-height:22px}
+  .fill{position:absolute; left:0; bottom:0; height:8px; width:0; background:currentColor; opacity:.9}
+  .z.arm{border-color:currentColor}
+
+  /* 카메라마다 작은 칸 — 누가 어느 쪽에 「표」를 주는지 보인다 */
+  #cams{display:grid; grid-template-columns:repeat(auto-fit,minmax(92px,1fr)); gap:8px; width:100%}
+  .cc{background:var(--panel); border:2px solid var(--line); border-radius:12px; padding:5px; display:flex; flex-direction:column; gap:4px; min-width:0}
+  .cc.open{border-color:var(--yes)} .cc.none{border-color:var(--no)} .cc.closed{border-color:var(--hi)} .cc.out{border-style:dashed}
+  .vw{position:relative; aspect-ratio:4/3; background:#000; border-radius:8px; overflow:hidden}
+  .vw video, .vw canvas{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+  .vw video.mir{transform:scaleX(-1)}
+  .vw canvas{image-rendering:pixelated}
+  .nm{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:4px; white-space:nowrap; overflow:hidden}
+  .nm b{color:var(--on); font-weight:700; overflow:hidden; text-overflow:ellipsis}
+  .why{font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:14px}
+  .bars{display:grid; grid-template-columns:auto 1fr; gap:3px 5px; font-size:11px; align-items:center}
+  .b{height:6px; background:var(--line); border-radius:3px; overflow:hidden; position:relative}
+  .b i{display:block; height:100%; width:0}
+  .b.L i{background:var(--yes)} .b.R i{background:var(--no)} .b.U i{background:var(--up)} .b.W i{background:var(--hi)}
+  #fused{background:var(--panel); border:2px solid var(--line); border-radius:12px; padding:8px 10px}
+  #fused .nm{font-size:13px}
+  #fused .bars{font-size:13px; gap:5px 8px}
+  #fused .b{height:11px; border-radius:6px}
+  #fused .b::after{content:""; position:absolute; top:0; bottom:0; left:var(--s,40%); width:2px; background:var(--on); opacity:.6}
+
+  #say{position:fixed; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:18px; z-index:5; text-align:center; padding:20px}
+  #say .w{font-size:clamp(56px,16vw,150px); font-weight:900; color:#0B0E12; letter-spacing:-.03em; line-height:1.1}
+  #say .s{font-size:18px; color:#0B0E12; opacity:.75}
+  #say a{font-size:20px; font-weight:800; color:#0B0E12; background:rgba(255,255,255,.55); padding:10px 18px; border-radius:12px; text-decoration:none}
+  #foot{display:flex; gap:8px; padding:6px 10px 10px; justify-content:center; flex-wrap:wrap; text-align:center}
+  #cal, #start, #set, #setup{position:fixed; inset:0; z-index:6; display:none; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:rgba(11,14,18,.97); text-align:center; padding:24px}
+  #start{display:flex}
+  #start h1, #cal h1{margin:0; font-size:clamp(28px,6vw,44px)}
+  #start p, #cal p{margin:0; font-size:19px; line-height:1.6; color:var(--muted); max-width:36em}
+  .go{font:inherit; font-size:26px; font-weight:800; padding:16px 44px; border-radius:18px; border:0; background:var(--hi); color:#111}
+  #cal .arrow{font-size:clamp(70px,18vw,160px); line-height:1; color:var(--hi)}
+  #cal .prog{width:min(420px,80vw); height:12px; background:var(--line); border-radius:6px; overflow:hidden}
+  #cal .prog i{display:block; height:100%; width:0; background:var(--hi)}
+  #set .box{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:20px; width:min(480px,100%); display:flex; flex-direction:column; gap:14px; text-align:left}
+  #set label{font-size:17px; display:flex; flex-direction:column; gap:6px}
+  #set input[type=range]{width:100%}
+
+  /* 카메라 고르기 */
+  #setup{justify-content:flex-start; overflow:auto; padding:18px 16px}
+  #setup .sbox{width:min(860px,100%); display:flex; flex-direction:column; gap:14px; text-align:left}
+  #setup h2{margin:0; font-size:26px}
+  #setup p{margin:0; font-size:16px; line-height:1.55; color:var(--muted)}
+  #devList{display:flex; flex-direction:column; gap:10px}
+  .dv{display:grid; grid-template-columns:176px 1fr; gap:12px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:10px; align-items:center}
+  .dv .vw{width:100%}
+  .dv .lb{font-size:16px; font-weight:700; word-break:break-all}
+  .dv .ds{font-size:14px; color:var(--muted); margin:4px 0 8px}
+  .dv .ds.bad{color:var(--no)}
+  .roles{display:flex; flex-wrap:wrap; gap:6px}
+  .rb{font:inherit; font-size:15px; color:var(--on); background:var(--bg); border:2px solid var(--line); border-radius:10px; padding:8px 10px}
+  .rb.sel{background:var(--hi); border-color:var(--hi); color:#111; font-weight:800}
+  .rb.again{border-style:dashed}
+  #setMsg{font-size:16px; color:var(--hi); min-height:22px}
+  .srow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end}
+
+  @media (max-aspect-ratio: 3/4){
+    #board{grid-template-columns:1fr 1fr; grid-template-rows:auto auto 1fr}
+    #mid{grid-column:1 / 3; grid-row:2}
+    #zL{grid-row:3} #zR{grid-row:3}
+  }
+  @media (max-width: 520px){
+    .dv{grid-template-columns:120px 1fr; gap:10px}
+    #bar button{padding:7px 9px; font-size:14px}
+    #bar .t{font-size:13px}
+    .go{font-size:22px; padding:14px 30px}
+  }
+</style>
+</head>
+<body>
+<div id="bar"><span class="t">말해요 · 여러 카메라로 예·아니요 (시험)</span><button id="camBtn">카메라</button><button id="reBtn">다시 맞추기</button><button id="gear">설정</button></div>
+<div id="board">
+  <div class="z" id="zUp" style="color:var(--up)"><span>⬆ 설명이 필요해요</span><i class="fill"></i></div>
+  <div class="z" id="zL" style="color:var(--yes)"><span>⬅ 예</span><i class="fill"></i></div>
+  <div id="mid">
+    <div id="cams"></div>
+    <div id="fused"><div class="nm"><b>합친 값</b><span id="fuW"></span></div>
+      <div class="bars"><span>예</span><div class="b L"><i></i></div><span>아니요</span><div class="b R"><i></i></div><span>위</span><div class="b U"><i></i></div></div></div>
+    <div id="st">시작을 눌러 주세요</div>
+  </div>
+  <div class="z" id="zR" style="color:var(--no)"><span>아니요 ➡</span><i class="fill"></i></div>
+</div>
+<div id="foot"><span class="tip" style="color:var(--muted);font-size:14px">카메라마다 따로 보고, 잘 보이는 카메라 말을 더 믿어서 합칩니다. 막대가 다 차면 말합니다. 가운데로 눈을 돌렸다가 다음 대답.</span></div>
+
+<div id="say"><div class="w" id="sayW"></div><a id="sayLink" href="../write/" style="display:none">✍️ 글씨판 열기</a><div class="s">가운데를 보면 돌아갑니다 · 화면을 눌러도 됩니다</div></div>
+
+<div id="start">
+  <h1>여러 카메라로 예·아니요</h1>
+  <p><b style="color:var(--yes)">왼쪽</b>을 보면 <b style="color:var(--yes)">「예」</b>, <b style="color:var(--no)">오른쪽</b>은 <b style="color:var(--no)">「아니요」</b>, <b style="color:var(--up)">위</b>는 <b style="color:var(--up)">「설명이 필요해요」</b>.<br>
+  컴퓨터에 꽂은 카메라 <b>최대 3대</b>가 같이 봅니다(얼굴 정면 · 얼굴 옆 · 눈 확대). 한 대가 놓쳐도 나머지가 받쳐 줍니다.<br>
+  처음에 12초만 같이 맞춥니다(정면 → 왼쪽 → 오른쪽 → 위). 카메라가 비뚤거나 뒤집혀 달려도 됩니다.<br>
+  영상은 기기 밖으로 나가지 않습니다.</p>
+  <button class="go" id="go">카메라 고르기</button>
+</div>
+
+<div id="setup"><div class="sbox">
+  <h2>카메라 고르기</h2>
+  <p>카메라마다 할 일을 고르세요. <b>얼굴(정면)</b> = 얼굴 앞, <b>얼굴(옆)</b> = 비스듬히, <b>눈 확대</b> = 눈 가까이 붙인 카메라(귀이개 카메라 등 — LED 를 약하게 켜 두면 눈에 비친 반짝점까지 봐서, 카메라가 조금 밀려도 덜 틀립니다). 안 쓰는 카메라는 <b>안 씀</b> — 꺼 두면 USB 길이 넓어져 나머지가 잘 켜집니다.</p>
+  <div id="devList"></div>
+  <div id="setMsg"></div>
+  <div class="srow"><button class="btn" id="rescan">다시 찾기</button><button class="go" id="begin">시작</button></div>
+</div></div>
+
+<div id="cal">
+  <h1 id="calT">정면을 보세요</h1>
+  <div class="arrow" id="calA">●</div>
+  <div class="prog"><i id="calP"></i></div>
+  <p id="calS">편하게 화면 가운데를 보세요</p>
+</div>
+
+<div id="set"><div class="box">
+  <label>다 차는 시간: <span id="hdV"></span>초 <input id="hd" type="range" min="0.3" max="2" step="0.1"></label>
+  <label>예민함 (낮을수록 조금만 봐도 됨): <span id="snV"></span> <input id="sn" type="range" min="0.25" max="0.9" step="0.05"></label>
+  <label><span><input id="sw" type="checkbox"> 왼쪽·오른쪽이 거꾸로 잡히면 체크</span></label>
+  <label><span><input id="vo" type="checkbox"> 소리로 말하기</span></label>
+  <div style="display:flex;gap:10px"><button class="btn" id="close" style="flex:1">닫기</button></div>
+</div></div>
+
+<script type="module">
+// 여러 카메라로 예·아니요 (2026-10-19, 형: 「카메라 세 대를 GPS 처럼 — 여러 자리에서 보고 서로 고쳐 주게」)
+//  · 카메라마다 따로 읽는다: 얼굴 카메라 = MediaPipe eyeLook 값(얼굴 기준 눈 방향), 눈 확대 카메라 = 까만 눈동자 덩어리 자리
+//  · 맞추기는 한 번: 정면·왼쪽·오른쪽·위를 볼 때 모든 카메라를 같이 적는다 → 카메라마다 「왼쪽은 내 화면에서 이쪽」 화살표를 따로 갖는다
+//    (화살표에 얼마나 실렸나로 재니까, 카메라가 돌아가거나 거울처럼 뒤집혀도 상관없다)
+//  · 합치기: 카메라마다 「얼마나 믿을 만한가」(보이나·덜 떨리나·눈동자 크기가 맞나)로 무게를 주고 평균. 혼자 딴소리하는 카메라는 무게를 확 줄인다
+//  · 깜빡임: 감았다고 보는 카메라 무게가 뜬 쪽 이상이면 안 센다. 한 번 고르면 가운데로 돌아와야 다음 대답
+const $ = id => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+const TEST = Q.get('test') === '1', DEBUG = TEST || Q.get('stat') === '1';
+const CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+const MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+const ROLES = { front:{ n:'얼굴(정면)', k:'face', prior:1 }, side:{ n:'얼굴(옆)', k:'face', prior:0.8 }, eye:{ n:'눈 확대', k:'eye', prior:1 }, off:{ n:'안 씀' } };
+const DIRS = ['L','R','U'];
+const MAXCAM = 3;
+const cfg = { hold:0.8, sens:0.5, swap:false, voice:true };
+const lsGet = (k, d) => { try{ return JSON.parse(localStorage.getItem(k) || 'null') || d; }catch(e){ return d; } };
+const lsSet = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+Object.assign(cfg, lsGet('malhae_multi', {}));
+const save = () => lsSet('malhae_multi', cfg);
+const roleStore = lsGet('malhae_multi_roles', {});   // deviceId → 역할, 'L:이름#n' → 역할 (deviceId 가 바뀔 때 대비)
+const calStore = lsGet('malhae_multi_cal', {});      // deviceId|역할 → 맞춘 값
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const med = a => { const s = a.slice().sort((x,y)=>x-y); return s.length ? s[s.length>>1] : 0; };
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+function speak(t, rate){ if(!cfg.voice || !window.speechSynthesis) return; try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang='ko-KR'; u.rate = rate || 0.95; speechSynthesis.speak(u); }catch(e){} }
+
+/* ── 카메라 찾기·열기 ── */
+let devs = [], cams = [], fakes = {};
+const keyOf = d => d.id + '|' + d.role;
+const errText = e => {
+  const n = e && e.name || String(e);
+  return ({ NotReadableError:'안 열림 — 다른 프로그램이 쓰는 중이거나 USB 길이 모자람(다른 카메라를 「안 씀」으로)',
+            NotAllowedError:'카메라 허락이 안 됨 — 주소창 옆 카메라 아이콘에서 허락',
+            OverconstrainedError:'이 카메라가 맞는 크기를 못 냄', NotFoundError:'카메라가 빠짐', AbortError:'안 열림(멈춤) — USB 길이 모자람' })[n] || ('안 열림 (' + n + ')');
+};
+function stopDev(d){ if(d.stream){ d.stream.getTracks().forEach(t => t.stop()); d.stream = null; } if(d.video) d.video.srcObject = null; }
+async function openDev(d){
+  stopDev(d); d.err = null; d.res = '여는 중…'; paintSetup();
+  // 여러 USB 카메라가 한 길을 나눠 써서, 작게(320×240·15장) 먼저 청한다. 안 되면 조건을 하나씩 푼다
+  const tries = [
+    { deviceId:{ exact:d.id }, width:{ ideal:320, max:640 }, height:{ ideal:240, max:480 }, frameRate:{ ideal:15, max:30 } },
+    { deviceId:{ exact:d.id }, width:{ ideal:320 }, height:{ ideal:240 } },
+    { deviceId:{ exact:d.id } }
+  ];
+  let last = null;
+  for(const v of tries){
+    try{ d.stream = await navigator.mediaDevices.getUserMedia({ video:v, audio:false }); break; }
+    catch(e){ last = e; if(e && (e.name === 'NotAllowedError' || e.name === 'NotFoundError')) break; }
+  }
+  if(!d.stream){ d.err = errText(last); d.res = ''; paintSetup(); return false; }
+  const tr = d.stream.getVideoTracks()[0];
+  tr.onended = () => { d.err = '연결이 끊김 — 선을 확인하고 「다시 찾기」'; d.stream = null; d.state = 'none'; paintSetup(); };
+  d.video.srcObject = d.stream; try{ await d.video.play(); }catch(e){}
+  const s = tr.getSettings ? tr.getSettings() : {};
+  d.res = (s.width && s.height ? s.width + '×' + s.height : '열림') + (s.frameRate ? ' · ' + Math.round(s.frameRate) + '장/초' : '');
+  paintSetup(); return true;
+}
+function newDev(id, label, i, dup){
+  const d = { id, label: label || ('카메라 ' + (i+1)), dup, role:'off', video: document.createElement('video'), stream:null, err:null, res:'',
+              state:'none', t:-1e9, openAt:-1e9, lv:null, lvT:0, jit:0, conf:0, w:0, cal:null, nBase:0, buf:[], nBuf:[], cnt:0, fps:0, ms:0, lastVT:-1, lm:null, dead:false, why:'' };
+  d.video.playsInline = true; d.video.muted = true; d.video.setAttribute('playsinline', '');
+  d.lkey = 'L:' + d.label + '#' + dup;
+  d.role = roleStore[id] || roleStore[d.lkey] || 'off';
+  return d;
+}
+async function findDevs(){
+  for(const d of devs){ stopDev(d); try{ d.lm && d.lm.close(); }catch(e){} }
+  devs = []; $('devList').innerHTML = ''; $('setMsg').textContent = '카메라 찾는 중…';
+  let list = [];
+  if(TEST){
+    list = (window.__mc && window.__mc._devices) || [{ deviceId:'f1', label:'가짜 카메라 1', role:'front' }, { deviceId:'f2', label:'가짜 카메라 2', role:'side' }, { deviceId:'f3', label:'가짜 카메라 3', role:'eye' }];
+  } else {
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ $('setMsg').textContent = '이 브라우저는 카메라를 못 씁니다 (크롬을 써 주세요)'; return; }
+    try{ const s = await navigator.mediaDevices.getUserMedia({ video:true, audio:false }); s.getTracks().forEach(t => t.stop()); }   // 이름을 보려면 한 번 허락이 필요
+    catch(e){ if(e && e.name === 'NotAllowedError'){ $('setMsg').textContent = errText(e); return; } }
+    try{ list = (await navigator.mediaDevices.enumerateDevices()).filter(x => x.kind === 'videoinput'); }catch(e){ list = []; }
+  }
+  const seen = {};
+  list.forEach((x, i) => { const l = x.label || ''; seen[l] = (seen[l] || 0) + 1; const d = newDev(x.deviceId, l, i, seen[l]); if(TEST && x.role && !roleStore[d.id]) d.role = x.role; devs.push(d); });
+  buildSetup();
+  if(!devs.length){ $('setMsg').textContent = '카메라가 하나도 안 보여요 — 꽂고 「다시 찾기」'; return; }
+  $('setMsg').textContent = devs.length + '대 찾음';
+  if(!TEST) for(const d of devs) await openDev(d);   // 하나씩 차례로 (한꺼번에 열면 USB 가 막히기 쉽다)
+  paintSetup();
+}
+function buildSetup(){
+  const box = $('devList'); box.innerHTML = '';
+  for(const d of devs){
+    const row = document.createElement('div'); row.className = 'dv';
+    row.innerHTML = `<div class="vw"></div><div><div class="lb"></div><div class="ds"></div><div class="roles">${
+      Object.keys(ROLES).map(r => `<button class="rb" data-r="${r}">${ROLES[r].n}</button>`).join('')}<button class="rb again" data-r="again">다시 열기</button></div></div>`;
+    row.querySelector('.lb').textContent = d.label;
+    row.querySelector('.vw').appendChild(d.video); d.video.className = '';
+    row.querySelectorAll('.rb').forEach(b => b.onclick = () => pickRole(d, b.dataset.r));
+    d.row = row; box.appendChild(row);
+  }
+  paintSetup();
+}
+async function pickRole(d, r){
+  if(r === 'again'){ if(!TEST) await openDev(d); return; }
+  d.role = r; roleStore[d.id] = r; roleStore[d.lkey] = r; lsSet('malhae_multi_roles', roleStore);
+  if(!TEST){ if(r === 'off') stopDev(d); else if(!d.stream) await openDev(d); }
+  paintSetup();
+}
+function paintSetup(){
+  for(const d of devs){
+    if(!d.row) continue;
+    d.row.querySelectorAll('.rb').forEach(b => { b.classList.toggle('sel', b.dataset.r === d.role); if(b.dataset.r === 'again') b.style.display = (d.err && d.role !== 'off') ? '' : 'none'; });
+    const ds = d.row.querySelector('.ds');
+    ds.className = 'ds' + (d.err ? ' bad' : '');
+    ds.textContent = TEST ? '시험용 가짜 카메라' : d.err ? d.err : d.stream ? ('켜짐 · ' + d.res) : d.role === 'off' ? '꺼 둠 — 역할을 고르면 켜짐' : (d.res || '꺼짐');
+  }
+  const n = devs.filter(d => d.role !== 'off').length;
+  if(devs.length) $('setMsg').textContent = n > MAXCAM ? `${MAXCAM}대까지만 됩니다 — 하나를 「안 씀」으로` : n ? `${n}대 고름` : '쓸 카메라를 하나 이상 골라 주세요';
+}
+
+/* ── 카메라마다 읽기 ── */
+let visionP = null;
+function vision(){
+  return visionP || (visionP = (async () => {
+    const mod = await import(CDN + '/vision_bundle.mjs');
+    const fs = await mod.FilesetResolver.forVisionTasks(CDN + '/wasm');
+    const buf = new Uint8Array(await (await fetch(MODEL)).arrayBuffer());   // 모델은 한 번만 받아서 카메라마다 나눠 씀
+    return { mod, fs, buf };
+  })());
+}
+async function loadTrackers(){
+  const faces = cams.filter(d => d.kind === 'face' && !d.lm);
+  if(TEST || !faces.length) return;
+  $('st').textContent = '눈 읽는 법 받는 중…';
+  let v;
+  try{ v = await vision(); }catch(e){ visionP = null; for(const d of faces){ d.dead = true; d.why = '눈 읽는 법을 못 받음(인터넷)'; } return; }
+  for(const d of faces){
+    try{ d.lm = await v.mod.FaceLandmarker.createFromOptions(v.fs, { baseOptions:{ modelAssetBuffer: v.buf.slice() }, outputFaceBlendshapes:true, runningMode:'VIDEO', numFaces:1 }); }
+    catch(e){ d.dead = true; d.why = '눈 읽는 법이 안 켜짐'; }
+  }
+}
+function readFace(d, now){
+  const v = d.video;
+  if(!d.lm || v.readyState < 2 || v.currentTime === d.lastVT) return undefined;
+  d.lastVT = v.currentTime;
+  try{
+    const r = d.lm.detectForVideo(v, now), bs = r.faceBlendshapes && r.faceBlendshapes[0];
+    if(!bs) return null;
+    const m = {}; for(const c of bs.categories) m[c.categoryName] = c.score;
+    return { L:(m.eyeLookOutLeft + m.eyeLookInRight)/2, R:(m.eyeLookOutRight + m.eyeLookInLeft)/2,
+             up:(m.eyeLookUpLeft + m.eyeLookUpRight)/2, dn:(m.eyeLookDownLeft + m.eyeLookDownRight)/2, v:(m.eyeBlinkLeft + m.eyeBlinkRight)/2 };
+  }catch(e){ return null; }
+}
+const PW = 160, PH = 120;
+function readEye(d){
+  // 눈동자 판과 같음: 160×120 회색 → 가장 어두운 3% 쯤이 문턱 → 그 점들의 무게중심. 감으면 까만 점이 거의 없어진다
+  const v = d.video;
+  if(!d.ctx || v.readyState < 2 || v.currentTime === d.lastVT) return undefined;
+  d.lastVT = v.currentTime;
+  const cx = d.ctx; cx.drawImage(v, 0, 0, PW, PH);
+  const img = cx.getImageData(0, 0, PW, PH), px = img.data, g = d.g || (d.g = new Uint8Array(PW*PH)), hist = d.hist || (d.hist = new Uint32Array(256));
+  hist.fill(0);
+  for(let i = 0, j = 0; i < px.length; i += 4, j++){ const y = (px[i]*77 + px[i+1]*150 + px[i+2]*29) >> 8; g[j] = y; hist[y]++; }
+  let acc = 0, thr = 0; const want = PW*PH*0.03;
+  for(let y = 0; y < 256; y++){ acc += hist[y]; if(acc >= want){ thr = y; break; } }
+  thr = Math.min(thr + 6, 110);
+  let sx = 0, sy = 0, n = 0;
+  for(let y = 2; y < PH-2; y++) for(let x = 2; x < PW-2; x++){ if(g[y*PW+x] <= thr){ sx += x; sy += y; n++; } }
+  for(let j = 0; j < PW*PH; j++) if(g[j] <= thr){ px[j*4] = 255; px[j*4+1] = 210; px[j*4+2] = 63; }
+  cx.putImageData(img, 0, 0);
+  if(n < 20) return null;
+  const mx = sx/n, my = sy/n;
+  cx.strokeStyle = '#3DD68C'; cx.lineWidth = 2; cx.beginPath(); cx.arc(mx, my, 6, 0, 7); cx.stroke();
+  // 반짝점(각막에 비친 카메라 LED) — EyeWriter·openEyes(Starburst) 처럼 눈동자 둘레에서 「제일 밝고 작은 점」을 찾는다.
+  // 카메라가 안경에서 조금 미끄러져도 눈동자와 반짝점이 같이 밀리니, 둘의 차이(눈동자 − 반짝점)는 그대로다
+  const R = 30, x0 = Math.max(0, mx - R | 0), x1 = Math.min(PW, mx + R | 0), y0 = Math.max(0, my - R | 0), y1 = Math.min(PH, my + R | 0);
+  let gmax = 0; for(let y = y0; y < y1; y++) for(let x = x0; x < x1; x++){ const q = g[y*PW+x]; if(q > gmax) gmax = q; }
+  let gx = null, gy = null;
+  if(gmax >= 200){
+    const gt = gmax - 12; let ax = 0, ay = 0, gn = 0, bx0 = PW, bx1 = 0, by0 = PH, by1 = 0;
+    for(let y = y0; y < y1; y++) for(let x = x0; x < x1; x++) if(g[y*PW+x] >= gt){ ax += x; ay += y; gn++; if(x < bx0) bx0 = x; if(x > bx1) bx1 = x; if(y < by0) by0 = y; if(y > by1) by1 = y; }
+    if(gn >= 1 && gn <= 80 && bx1 - bx0 <= 14 && by1 - by0 <= 14){                // 작고 뭉친 점만 (넓게 밝으면 반짝점이 아님)
+      gx = ax / gn; gy = ay / gn;
+      cx.strokeStyle = '#FFFFFF'; cx.lineWidth = 1.5; cx.beginPath(); cx.moveTo(gx - 5, gy); cx.lineTo(gx + 5, gy); cx.moveTo(gx, gy - 5); cx.lineTo(gx, gy + 5); cx.stroke();
+      gx /= PW; gy /= PH;
+    }
+  }
+  return { x: mx/PW, y: my/PH, n, gx, gy };
+}
+
+/* ── 카메라 한 대의 값 → 방향 크기 + 믿음 ── */
+let calOn = false;
+function level(d, f){
+  // 맞춘 화살표에 얼마나 실렸나 (1 = 맞출 때만큼). 화살표가 없는 방향(예: 위를 못 맞춘 카메라)은 표를 안 준다
+  // 반짝점으로 맞춘 카메라는 (눈동자 − 반짝점) 을, 아니면 눈동자 자리 그대로를 쓴다
+  const H = d.cal.g ? f.gh : f.h, U = d.cal.g ? f.gu : f.u;
+  if(H == null) return null;
+  const c = d.cal.c, dx = H - c.h, dy = U - c.u, o = {};
+  for(const k of DIRS){ const v = d.cal.v[k]; o[k] = v ? clamp((dx*v.x + dy*v.y) / (v.x*v.x + v.y*v.y), -1.5, 2) : undefined; }
+  return o;
+}
+function update(d, raw, now){
+  d.cnt++; d.t = now;
+  if(raw === null){
+    // 눈 확대 카메라에서 까만 덩어리가 막 사라졌다 = 감음. 얼굴 카메라에서 얼굴이 없다 = 못 봄
+    d.state = (d.kind === 'eye' && d.nBase && now - d.openAt < 1500) ? 'closed' : 'none';
+    d.why = d.state === 'closed' ? '감음' : (d.kind === 'eye' ? '눈동자 안 보임' : '얼굴 안 보임'); return;
+  }
+  let f;
+  if(d.kind === 'face') f = { h: raw.L - raw.R, u: raw.up - raw.dn, v: raw.v };
+  else {
+    if(raw.gx != null){ d.glint = { x: raw.gx, y: raw.gy }; d.glintAt = now; }
+    const G = d.glint;                                                 // 반짝점이 잠깐 안 보이면 마지막 자리를 빌려 씀
+    f = { h: raw.x, u: raw.y, n: raw.n, g: raw.gx != null, gh: G ? raw.x - G.x : null, gu: G ? raw.y - G.y : null };
+  }
+  const closed = d.kind === 'face' ? f.v > 0.5 : (d.nBase > 0 && f.n < d.nBase * 0.35);
+  if(closed){ d.state = 'closed'; d.why = '감음'; return; }
+  d.state = 'open'; d.openAt = now;
+  if(calOn){ d.buf.push(f); if(d.kind === 'eye') d.nBuf.push(f.n); }
+  if(!d.cal){ d.why = calOn ? '맞추는 중' : '안 맞춤'; return; }
+  const lv = level(d, f);
+  if(!lv){ d.why = '반짝점 안 보임'; d.state = 'none'; return; }
+  if(d.lv && now - d.lvT < 500){
+    let dj = 0; for(const k of DIRS) if(lv[k] !== undefined && d.lv[k] !== undefined) dj = Math.max(dj, Math.abs(lv[k] - d.lv[k]));
+    d.jit += (dj - d.jit) * 0.15;                                      // 떨림: 앞 장과 얼마나 튀나 (천천히 따라감)
+  }
+  d.lv = lv; d.lvT = now;
+  let q = d.prior * d.cal.q, why = '';
+  if(d.kind === 'eye' && d.nBase){ const r = f.n / d.nBase; const sq = clamp(1 - Math.abs(Math.log(r)) / Math.log(3), 0.2, 1); q *= sq; if(sq < 0.6) why = '눈동자 크기 이상'; }
+  if(d.kind === 'eye' && d.cal.g && !f.g) q *= 0.7;                   // 마지막 반짝점을 빌려 쓰는 중이면 조금 덜 믿음
+  if(d.kind === 'face' && f.v > 0.3){ q *= 1 - clamp((f.v - 0.3) / 0.2, 0, 1) * 0.5; why = '반쯤 감음'; }
+  d.conf = q / (1 + (d.jit / 0.25) ** 2);
+  if(d.jit > 0.25) why = '흔들림';
+  d.why = why || (d.kind === 'eye' && d.cal.g ? '잘 보임 · 반짝점' : '잘 보임');
+}
+
+/* ── 합치기 (GPS 처럼) ── */
+let lastF = null;
+function fuse(now){
+  let openW = 0, closedW = 0; const vot = [];
+  for(const d of cams){
+    d.w = 0; d.out = false;
+    if(d.dead || !d.cal) continue;
+    if(now - d.t > 400 || d.state === 'none') continue;                // 오래된 값·못 보는 카메라는 빠짐
+    if(d.state === 'closed'){ closedW += d.prior * Math.max(d.conf, 0.3); continue; }
+    if(d.lv && now - d.lvT < 400) vot.push(d);
+  }
+  // 셋이 볼 때: 둘이 서로 맞는데 하나만 딴소리면, 그 하나의 무게를 확 줄인다
+  const dist = (a, b) => { let m = 0; for(const k of DIRS) if(a[k] !== undefined && b[k] !== undefined) m = Math.max(m, Math.abs(a[k] - b[k])); return m; };
+  if(vot.length >= 3) for(const d of vot){
+    const o = vot.filter(x => x !== d);
+    let agree = true; for(let i = 0; i < o.length; i++) for(let j = i+1; j < o.length; j++) if(dist(o[i].lv, o[j].lv) > 0.5) agree = false;
+    if(agree && o.every(x => dist(d.lv, x.lv) > 0.8)) d.out = true;
+  }
+  const acc = { L:0, R:0, U:0 }, ws = { L:0, R:0, U:0 };
+  for(const d of vot){
+    d.w = d.conf * (d.out ? 0.15 : 1); openW += d.w;
+    for(const k of DIRS) if(d.lv[k] !== undefined){ acc[k] += d.w * d.lv[k]; ws[k] += d.w; }
+  }
+  const lv = {}; for(const k of DIRS) lv[k] = ws[k] > 0 ? acc[k] / ws[k] : -1;
+  if(cfg.swap){ const t = lv.L; lv.L = lv.R; lv.R = t; }
+  return lastF = { lv, openW, closedW, n: vot.length };
+}
+let sm = null, smT = 0;
+function smooth(f, now){
+  if(!sm || now - smT > 400){ sm = { ...f }; smT = now; return sm; }
+  const a = 1 - Math.exp(-(now - smT) / 120); for(const k in f) sm[k] += (f[k] - sm[k]) * a; smT = now; return sm;
+}
+
+/* ── 맞추기 (모든 카메라 같이) ── */
+const STEPS = [
+  { k:'c', t:'정면을 보세요', a:'●', s:'편하게 화면 가운데를 보세요', say:'편하게 화면 가운데를 보세요.' },
+  { k:'L', t:'왼쪽을 보세요', a:'⬅', s:'고개는 그대로, 눈만 왼쪽으로', say:'고개는 그대로 두고, 눈만 왼쪽을 보세요.' },
+  { k:'R', t:'오른쪽을 보세요', a:'➡', s:'고개는 그대로, 눈만 오른쪽으로', say:'이번엔 눈만 오른쪽을 보세요.' },
+  { k:'U', t:'위를 보세요', a:'⬆', s:'고개는 그대로, 눈만 위로', say:'이번엔 눈만 위를 보세요.' }
+];
+let calStep = null;
+async function calibrate(){
+  if(!cams.length) return;
+  busy = true; $('cal').style.display = 'flex';
+  const got = new Map(cams.map(d => [d, {}]));
+  for(const s of STEPS){
+    calStep = s.k;
+    $('calT').textContent = s.t; $('calA').textContent = s.a; $('calS').textContent = s.s; $('calP').style.width = '0%';
+    speak(s.say); await wait(TEST ? 50 : 1700);                        // 말 듣고 눈 옮길 시간
+    for(const d of cams){ d.buf = []; d.nBuf = []; if(s.k === 'c') d.nBase = 0; }
+    calOn = true; const t0 = performance.now(), dur = TEST ? 300 : 1300;
+    while(performance.now() - t0 < dur){ $('calP').style.width = Math.min(100, (performance.now()-t0)/dur*100) + '%'; await wait(40); }
+    calOn = false;
+    for(const d of cams){
+      const b = d.buf, c = b.length >= 3 ? { h: med(b.map(f=>f.h)), u: med(b.map(f=>f.u)) } : null;
+      if(c){
+        c.sp = med(b.map(f => Math.hypot(f.h - c.h, f.u - c.u)));                      // 가만히 볼 때 흔들리는 크기
+        const bg = b.filter(f => f.gh != null); c.gf = b.filter(f => f.g).length / b.length;   // 반짝점이 보인 비율
+        if(bg.length >= 3){ c.gh = med(bg.map(f=>f.gh)); c.gu = med(bg.map(f=>f.gu)); c.gsp = med(bg.map(f => Math.hypot(f.gh - c.gh, f.gu - c.gu))); }
+      }
+      got.get(d)[s.k] = c;
+      if(s.k === 'c' && d.kind === 'eye') d.nBase = med(d.nBuf);
+    }
+  }
+  calStep = null; $('cal').style.display = 'none'; busy = false;
+  const bad = [];
+  for(const d of cams){
+    const g = got.get(d), minL = d.kind === 'eye' ? 0.03 : 0.04;
+    d.cal = null; d.lv = null; d.jit = 0; d.conf = 0;
+    if(d.dead){ bad.push(d.no + '번(' + d.why + ')'); continue; }
+    if(!g.c || !g.L || !g.R){ d.why = '못 맞춤(안 보였음)'; bad.push(d.no + '번(안 보였음)'); continue; }
+    // 눈 카메라: 정면·왼쪽·오른쪽에서 반짝점이 60% 넘게 보였으면 (눈동자 − 반짝점) 으로 맞춘다
+    const useG = d.kind === 'eye' && ['c','L','R'].every(k => g[k] && g[k].gf >= 0.6 && g[k].gh != null);
+    const P = k => !g[k] ? null : useG ? (g[k].gh != null ? { h: g[k].gh, u: g[k].gu } : null) : { h: g[k].h, u: g[k].u };
+    const pc = P('c');
+    const vec = k => P(k) ? { x: P(k).h - pc.h, y: P(k).u - pc.u } : null, len = v => v ? Math.hypot(v.x, v.y) : 0;
+    const v = { L: vec('L'), R: vec('R'), U: vec('U') };
+    const cos = (v.L.x*v.R.x + v.L.y*v.R.y) / (len(v.L) * len(v.R) || 1);
+    if(len(v.L) < minL || len(v.R) < minL || cos > 0.3){ d.why = '못 맞춤(눈이 거의 안 움직임)'; bad.push(d.no + '번(움직임 작음)'); continue; }
+    if(len(v.U) < minL) v.U = null;
+    const sep = Math.min(len(v.L), len(v.R)) / (((useG ? g.c.gsp : g.c.sp) || 0) + 1e-3);
+    d.cal = { c: pc, v, q: clamp(sep / 6, 0.25, 1), g: useG };
+    d.why = useG ? '맞춤 · 반짝점' : '맞춤';
+    calStore[keyOf(d)] = { ...d.cal, nBase: d.nBase };
+  }
+  lsSet('malhae_multi_cal', calStore);
+  const ok = cams.filter(d => d.cal);
+  if(!ok.length){ $('st').textContent = '눈이 잘 안 보였어요 — 「다시 맞추기」'; speak('눈이 잘 안 보였어요. 다시 맞춰 주세요.'); return; }
+  $('st').textContent = `${ok.length}대로 보는 중` + (bad.length ? ' · 빠짐: ' + bad.join(', ') : '');
+  speak('다 됐습니다. 왼쪽은 예, 오른쪽은 아니요, 위는 설명이 필요해요.');
+}
+
+/* ── 고르기 ── */
+const Z = { L:$('zL'), R:$('zR'), U:$('zUp') }, SAY = { L:'예', R:'아니요', U:'설명이 필요해요' };
+let busy = false, cur = null, curAt = 0, needCenter = false, saying = false, sayAt = 0, running = false;
+const answers = [];
+function paint(k, p){
+  for(const d in Z){ const on = d === k; Z[d].classList.toggle('arm', on && p > 0); Z[d].querySelector('.fill').style.width = on ? Math.min(100, p*100) + '%' : '0'; }
+}
+function fire(k){
+  saying = true; sayAt = performance.now(); needCenter = true; answers.push(k);
+  const col = { L:'var(--yes)', R:'var(--no)', U:'var(--up)' }[k];
+  $('say').style.background = col; $('sayW').textContent = SAY[k]; $('sayLink').style.display = k === 'U' ? 'inline-block' : 'none';
+  $('say').style.display = 'flex'; speak(SAY[k], 0.9); paint(null, 0);
+}
+function unsay(){ saying = false; $('say').style.display = 'none'; }
+$('say').addEventListener('click', e => { if(e.target.id !== 'sayLink') unsay(); });
+
+/* ── 화면: 카메라 칸 ── */
+function buildCards(){
+  const box = $('cams'); box.innerHTML = '';
+  cams.forEach((d, i) => {
+    d.no = i + 1;
+    const c = document.createElement('div'); c.className = 'cc none';
+    c.innerHTML = `<div class="vw"></div><div class="nm"><b>${d.no}. ${ROLES[d.role].n}</b><span class="fp"></span></div>
+      <div class="bars"><span>예</span><div class="b L"><i></i></div><span>아니</span><div class="b R"><i></i></div><span>위</span><div class="b U"><i></i></div><span>믿음</span><div class="b W"><i></i></div></div><div class="why"></div>`;
+    const vw = c.querySelector('.vw');
+    vw.appendChild(d.video); d.video.className = d.kind === 'face' ? 'mir' : '';
+    if(d.kind === 'eye'){
+      d.video.style.visibility = 'hidden';
+      const cv = document.createElement('canvas'); cv.width = PW; cv.height = PH; vw.appendChild(cv);
+      d.ctx = cv.getContext('2d', { willReadFrequently:true });
+    } else d.video.style.visibility = '';
+    if(d.stream) d.video.play().catch(() => {});
+    d.card = c; box.appendChild(c);
+  });
+}
+let paintAt = 0, fpsAt = 0;
+function paintCards(now){
+  if(now - paintAt < 100) return; paintAt = now;
+  if(now - fpsAt > 1000){ for(const d of cams){ d.fps = d.cnt * 1000 / (now - fpsAt || 1000); d.cnt = 0; } fpsAt = now; }
+  const tot = cams.reduce((a, d) => a + d.w, 0);
+  const bw = (el, x) => { el.style.width = (clamp(x, 0, 1) * 100).toFixed(0) + '%'; };
+  for(const d of cams){
+    const c = d.card; if(!c) continue;
+    const fresh = now - d.t < 400;
+    c.className = 'cc ' + (d.dead ? 'none' : !fresh ? 'none' : d.state) + (d.out ? ' out' : '');
+    const lv = d.cal && d.lv && fresh && d.state === 'open' ? d.lv : null;
+    for(const k of DIRS) bw(c.querySelector('.b.' + k + ' i'), lv && lv[k] !== undefined ? lv[k] / 1.2 : 0);
+    bw(c.querySelector('.b.W i'), tot > 0 ? d.w / tot : 0);
+    c.querySelector('.fp').textContent = d.dead ? '' : Math.round(d.fps) + '/초';
+    c.querySelector('.why').textContent = d.dead ? d.why : !fresh && !TEST ? (d.stream ? '화면이 안 옴' : '꺼짐') : (d.out ? '혼자 딴소리 — 덜 믿음' : d.why);
+  }
+  const f = lastF, fu = $('fused');
+  for(const k of DIRS) bw(fu.querySelector('.b.' + k + ' i'), f && sm ? sm[k] / 1.2 : 0);
+  fu.style.setProperty('--s', (cfg.sens / 1.2 * 100) + '%');
+  $('fuW').textContent = f ? f.n + '대가 표를 줌' : '';
+}
+
+/* ── 매 장면 ── */
+let rr = 0, nextFaceAt = 0;
+function readAll(now){
+  if(TEST){
+    for(const d of cams){ const raw = window.__mc.feed ? window.__mc.feed(d.id, now) : fakes[d.id]; if(raw !== undefined) update(d, raw, now); }
+    return;
+  }
+  for(const d of cams) if(d.kind === 'eye' && !d.dead){ const raw = readEye(d); if(raw !== undefined) update(d, raw, now); }
+  // 얼굴 카메라는 한 장면에 한 대씩 번갈아 — 읽는 데 걸린 시간만큼 쉬어서 CPU 를 반쯤만 쓴다
+  const faces = cams.filter(d => d.kind === 'face' && d.lm && !d.dead);
+  if(!faces.length || now < nextFaceAt) return;
+  for(let i = 0; i < faces.length; i++){
+    const d = faces[(rr + i) % faces.length], t0 = performance.now(), raw = readFace(d, now);
+    if(raw === undefined) continue;
+    const dt = performance.now() - t0; d.ms = d.ms ? d.ms * 0.9 + dt * 0.1 : dt;
+    rr = (rr + i + 1) % faces.length; nextFaceAt = now + dt;
+    update(d, raw, now); break;
+  }
+}
+let loopN = 0, loopFps = 0, loopAt = 0;
+function tick(now){
+  loopN++; if(now - loopAt > 1000){ loopFps = loopN * 1000 / (now - loopAt || 1000); loopN = 0; loopAt = now; }
+  readAll(now);
+  if(calOn || busy || !running){ paintCards(now); return; }
+  if(!cams.some(d => d.cal)){ paintCards(now); return; }
+  const F = fuse(now); paintCards(now);
+  if(F.openW < 0.03 && F.closedW === 0){ if(!saying){ $('st').textContent = '카메라가 눈을 못 봐요'; cur = null; paint(null, 0); } return; }
+  if(F.closedW > 0 && F.closedW >= F.openW){ curAt = now; return; }   // 감은 동안은 안 셈
+  const s = smooth(F.lv, now), lv = s;
+  const best = DIRS.reduce((a, b) => lv[a] >= lv[b] ? a : b);
+  const on = lv[best] >= cfg.sens;
+  const center = Math.max(lv.L, lv.R, lv.U) < cfg.sens * 0.5;
+  if(saying){ if(center && now - sayAt > 1200) unsay(); return; }
+  if(needCenter){ if(center) needCenter = false; paint(null, 0); $('st').textContent = needCenter ? '가운데를 보세요' : '보는 중'; return; }
+  if(!on){ cur = null; paint(null, 0); $('st').textContent = '보는 중'; return; }
+  if(best !== cur){ cur = best; curAt = now; }
+  const p = (now - curAt) / 1000 / cfg.hold;
+  paint(cur, p); $('st').textContent = SAY[cur] + '…';
+  if(p >= 1){ const k = cur; cur = null; fire(k); }
+}
+let loopOn = false;
+function loop(now){ try{ tick(now); }catch(e){ console.warn(e); } requestAnimationFrame(loop); }
+
+/* ── 켜기 ── */
+async function openSetup(){
+  if(busy) return;
+  running = false; $('start').style.display = 'none'; $('setup').style.display = 'flex';
+  if(!devs.length) await findDevs(); else buildSetup();
+}
+async function begin(){
+  const act = devs.filter(d => d.role !== 'off');
+  if(!act.length){ $('setMsg').textContent = '쓸 카메라를 하나 이상 골라 주세요'; return; }
+  if(act.length > MAXCAM){ $('setMsg').textContent = `${MAXCAM}대까지만 됩니다 — 하나를 「안 씀」으로`; return; }
+  for(const d of devs) if(d.role === 'off') stopDev(d);
+  if(!TEST) for(const d of act) if(!d.stream) await openDev(d);
+  const ok = act.filter(d => TEST || d.stream);
+  if(!ok.length){ $('setMsg').textContent = '고른 카메라가 하나도 안 열려요'; return; }
+  for(const d of devs){ d.kind = ROLES[d.role].k; d.prior = ROLES[d.role].prior || 0; d.dead = false; d.out = false; d.w = 0; d.ctx = null; d.lastVT = -1; d.cal = null; d.lv = null; d.jit = 0; d.why = ''; d.glint = null; }
+  cams = ok; buildCards();
+  $('setup').style.display = 'none'; speak('카메라를 켭니다.');
+  const failed = act.filter(d => !ok.includes(d));
+  await loadTrackers();
+  try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){}
+  running = true;
+  if(!loopOn){ loopOn = true; requestAnimationFrame(loop); }
+  // 같은 카메라·같은 역할로 맞춘 값이 다 있으면 그대로 쓴다 (카메라를 옮겼으면 「다시 맞추기」)
+  const saved = cams.every(d => calStore[keyOf(d)]);
+  if(saved && !TEST){
+    for(const d of cams){ const c = calStore[keyOf(d)]; d.cal = { c:c.c, v:c.v, q:c.q, g:!!c.g }; d.nBase = c.nBase || 0; d.why = '맞춤'; }
+    $('st').textContent = `${cams.length}대로 보는 중` + (failed.length ? ' · 안 열림 ' + failed.length + '대' : '');
+    speak('왼쪽은 예, 오른쪽은 아니요, 위는 설명이 필요해요.');
+  } else await calibrate();
+}
+$('go').onclick = () => { openSetup(); };
+$('camBtn').onclick = () => { openSetup(); };
+$('begin').onclick = () => { begin(); };
+$('rescan').onclick = () => { findDevs(); };
+if(navigator.mediaDevices && navigator.mediaDevices.addEventListener) navigator.mediaDevices.addEventListener('devicechange', () => { if($('setup').style.display === 'flex') $('setMsg').textContent = '카메라가 바뀌었어요 — 「다시 찾기」를 눌러 주세요'; });
+$('reBtn').onclick = () => { if(!busy && running) calibrate(); };
+function setUI(){ $('hd').value = cfg.hold; $('hdV').textContent = cfg.hold; $('sn').value = cfg.sens; $('snV').textContent = cfg.sens; $('sw').checked = cfg.swap; $('vo').checked = cfg.voice; }
+$('gear').onclick = () => { setUI(); $('set').style.display = 'flex'; };
+$('close').onclick = () => { $('set').style.display = 'none'; };
+$('hd').oninput = e => { cfg.hold = +e.target.value; $('hdV').textContent = cfg.hold; save(); };
+$('sn').oninput = e => { cfg.sens = +e.target.value; $('snV').textContent = cfg.sens; save(); };
+$('sw').onchange = e => { cfg.swap = e.target.checked; save(); };
+$('vo').onchange = e => { cfg.voice = e.target.checked; save(); };
+
+if(DEBUG) window.__mc = {
+  _devices: null, feed: null,
+  devices: list => { window.__mc._devices = list; },
+  set: (id, raw) => { fakes[id] = raw; },
+  calibrate, openSetup, begin, pickRole: (i, r) => pickRole(devs[i], r),
+  get calStep(){ return calStep; },
+  state: () => ({ calStep, busy, running, saying, cur, needCenter, say: $('sayW').textContent, shown: $('say').style.display, answers: answers.slice(), loopFps,
+    fused: lastF && { ...lastF.lv, openW: lastF.openW, closedW: lastF.closedW, n: lastF.n }, st: $('st').textContent,
+    devs: devs.map(d => ({ id: d.id, label: d.label, role: d.role, err: d.err, res: d.res })),
+    cams: cams.map(d => ({ id: d.id, role: d.role, cal: !!d.cal, glint: !!(d.cal && d.cal.g), w: d.w, conf: d.conf, jit: d.jit, state: d.state, out: d.out, lv: d.lv, fps: d.fps, ms: d.ms, dead: d.dead, why: d.why })) })
+};
+</script>
+</body>
+</html>
