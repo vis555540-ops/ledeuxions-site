@@ -24,7 +24,7 @@
       "주소: " + location.origin + location.pathname,
       "브라우저: " + ua()
     ].join("\r\n");
-    return "mailto:vis555540@gmail.com?subject=" + encodeURIComponent("[말해요 의견] " + tool) + "&body=" + encodeURIComponent(body);
+    return "mailto:meajeum@gmail.com?subject=" + encodeURIComponent("[말해요 의견] " + tool) + "&body=" + encodeURIComponent(body);
   }
   window.malhaeFbHref = href;
   function fill(){ document.querySelectorAll("a[data-fb]").forEach(function(a){ a.href = href(a.dataset.fb); }); }

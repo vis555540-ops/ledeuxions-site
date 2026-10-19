@@ -164,8 +164,17 @@ document.addEventListener('pointerdown', tap, {passive:false});
 document.addEventListener('keydown', function(e){
   if (['Tab','Shift','Control','Alt','Meta','Escape'].indexOf(e.key) >= 0) return;
   if ($('start').style.display !== 'none' || $('set').style.display === 'flex') return;
-  e.preventDefault(); tap({ target: document.body, preventDefault: function(){} });
+  e.preventDefault(); keyBadge(e.key); tap({ target: document.body, preventDefault: function(){} });
 });
+// 받은 단추 이름을 잠깐 보여 준다 — 어떤 리모컨이 되는지 바로 알게 (형: 「블루투스를 뭐로 인식하는지 모르겠네」)
+function keyBadge(k){
+  var b = $('keyB'); if (!b){ b = document.createElement('div'); b.id = 'keyB';
+    b.style.cssText = 'position:fixed;left:50%;top:60px;transform:translateX(-50%);background:#3DD68C;color:#06210f;font:700 18px/1.2 sans-serif;padding:8px 14px;border-radius:12px;z-index:9;pointer-events:none';
+    document.body.appendChild(b); }
+  b.textContent = '단추 받음: ' + k; b.style.display = 'block'; clearTimeout(b._t); b._t = setTimeout(function(){ b.style.display = 'none'; }, 1500);
+}
+// 시작 화면에서도 단추가 들어오는지 보여 준다
+document.addEventListener('keydown', function(e){ if ($('start').style.display !== 'none') keyBadge(e.key); });
 
 function setUI(){ $('sp').value = S.sp; $('spV').textContent = S.sp; $('voice').checked = S.voice; $('db').value = S.db; $('dbV').textContent = S.db;
   $('hd').value = S.hd; $('hdV').textContent = S.hd; $('th').value = S.th; $('thV').textContent = S.th; }

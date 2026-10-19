@@ -350,7 +350,7 @@
       <p style="margin-top:12px">놓는 자리</p>
       <div class="row"><button type="button" data-h="left" class="${hand==="left"?"on":""}">왼손 (왼쪽 아래)</button><button type="button" data-h="right" class="${hand==="right"?"on":""}">오른손 (좌우 반전)</button></div>
       <p style="margin-top:12px">🚨 아무 데나 손가락을 움직이지 않고 2초 누르고 있으면 긴급 알람이 울립니다. 「멈춤」을 누르면 꺼집니다.</p>
-      <p style="margin-top:12px">불편한 점·있었으면 하는 말이 있으면 <a data-fb="눌러서 말하기" href="mailto:vis555540@gmail.com" style="color:#8ec5ff">의견 보내기</a> (메일 앱이 열립니다)</p>
+      <p style="margin-top:12px">불편한 점·있었으면 하는 말이 있으면 <a data-fb="눌러서 말하기" href="mailto:meajeum@gmail.com" style="color:#8ec5ff">의견 보내기</a> (메일 앱이 열립니다)</p>
       <div class="row"><button type="button" class="rst">처음대로</button><button type="button" class="cn">닫기</button><button type="button" class="ok">저장</button></div>
     </div>`;
   }

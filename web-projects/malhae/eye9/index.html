@@ -282,14 +282,14 @@
     <button class="mini" id="calBtn">다시 맞추기</button>
   </div>
   <p class="note" id="calInfo"></p>
-  <p class="note">점 아홉 개 → 점을 보며 고개 좌우 → 고개 위아래 순서로 맞춥니다. 단계마다 말로 알려 드리고, 준비되면 화면을 누르세요(눈을 1초 꾹 감아도 됩니다). 그러면 3·2·1 뒤에 잽니다. 폰 위치·자세·안경·불빛이 많이 바뀌면 다시 맞추세요.</p>
+  <p class="note">점이 아홉 군데를 차례로 옮겨 다닙니다. 점마다 1초쯤만 보면 되고, 두 바퀴 돕니다(사이에 쉬는 자리). 그다음 점을 보며 고개 좌우·위아래. 처음과 쉬는 자리에서만 「준비되면 누르세요」(눈 1초 꾹 감아도 됨). 폰 위치·자세·안경·불빛이 많이 바뀌면 다시 맞추세요.</p>
 
   <label>정확도 시험 기록 (최근 것 위)</label>
   <div class="note" id="accHist">아직 없음</div>
 
   <p class="note" style="margin-top:14px">
     써 보시고 불편한 점이나 있었으면 하는 기능이 있으면 알려 주세요. 메일 앱이 열립니다.<br>
-    <a data-fb="눈으로 9칸" href="mailto:vis555540@gmail.com" style="color:var(--on)">의견 보내기 (메일)</a>
+    <a data-fb="눈으로 9칸" href="mailto:meajeum@gmail.com" style="color:var(--on)">의견 보내기 (메일)</a>
   </p>
   <p class="note"><a href="../head/" style="color:var(--on)">고개로 고르기(시험판 3)</a> · <a href="../eye4/" style="color:var(--on)">눈 4방향(시험판 2)</a></p>
 
@@ -541,11 +541,13 @@ let keyAt = 0;
 addEventListener("keydown", e => {
   const t = e.target; if(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
   if(["Tab","Shift","Control","Alt","Meta","Escape"].includes(e.key)) return;
-  if(!running || !model || calBusy) return;
+  if(calBusy) return;
+  holdTxt.textContent = `단추 받음 (${e.key})`;          // 형: 「블루투스를 뭐로 인식하는지 모르겠네」 → 받은 이름을 보여 준다
+  if(!running || !model) return;
   e.preventDefault();
   const now = performance.now(); if(now - keyAt < 600) return; keyAt = now;   // 꾹 눌러 반복되는 것 막기
   const c = cell; if(c < 0){ holdTxt.textContent = "칸 밖 — 칸을 보고 누르세요"; return; }
-  lockCell = c; showRing(-1, 0); holdTxt.textContent = "선택!"; choose(c);
+  lockCell = c; showRing(-1, 0); holdTxt.textContent = `단추(${e.key}) → 선택!`; choose(c);
 }, { passive:false });
 
 function loop(){
@@ -625,9 +627,14 @@ function setDot(i){
 }
 // 순서: 가운데부터 시계 방향으로 한 바퀴 (점이 옆 칸으로만 옮겨 가서 따라가기 쉽다)
 const ORDER = [4, 0, 1, 2, 5, 8, 7, 6, 3];
+// 형 10/19 「짧고 여러 번 하는 게 나을 것 같아, 계속 보고 있으려니 힘드네」
+//   → 점마다 1초쯤만 보고 넘어감(기다림·3·2·1 없음), 두 바퀴. 바퀴 사이에 눈 쉬는 자리. 처음 한 번만 「준비됐으면 누르세요」.
 function calSteps(){
-  const s = ORDER.map(i => ({ k:"p"+i, cell:i, name:POS[i], msg:`${POS[i]} 점을 보세요`, say:`${POS[i]} 점을 보세요.`,
-    sub:"고개는 편하게 두고, 눈으로 점 가운데 하얀 곳을 보세요", ms:2500 }));
+  const pass = (n) => ORDER.map((i, j) => ({ k:"p"+i, cell:i, name:POS[i], msg:`${POS[i]} 점`, say: j===0 ? `점이 나오는 곳을 차례로 잠깐씩 보세요.` : "",
+    sub:"점이 옮겨 가면 따라서 보세요. 깜빡여도 괜찮아요", ms:900, quick: j>0, pass:n }));
+  const s = pass(1);
+  s.push({ k:"rest", cell:null, name:"쉬기", msg:"눈 잠깐 쉬세요", sub:"한 바퀴 더 짧게 합니다", say:"잘하셨어요. 눈 잠깐 쉬세요. 준비되면 한 바퀴 더 합니다.", ms:0, rest:true });
+  s.push(...pass(2));
   s.push({ k:"wigX", cell:4, name:"고개 좌우", msg:"점을 보면서 고개만 좌우로", sub:"눈은 가운데 점에 두고, 고개만 천천히 왼쪽·오른쪽으로 두세 번",
     say:"가운데 점에서 눈을 떼지 말고, 고개만 천천히 왼쪽 오른쪽으로 두세 번 돌리세요.", ms:4500 });
   s.push({ k:"wigY", cell:4, name:"고개 위아래", msg:"점을 보면서 고개만 위아래로", sub:"눈은 가운데 점에 두고, 고개만 천천히 끄덕이듯 두세 번",
@@ -654,6 +661,25 @@ async function runStep(s, i, total){
   calStep.textContent = `${i+1} / ${total}`;
   calMsg.textContent = s.msg; calSub.textContent = s.sub;
   setDot(s.cell);
+  if(s.quick){                                   // 짧게: 점 옮김 → 0.5초 눈이 닿기 → 0.9초 재기 → 다음
+    calShow("rec"); calVal.textContent = "";
+    const evP = calNext(); const pause = ms => Promise.race([wait(ms).then(()=>null), evP]);
+    let r = await pause(500*calScale); if(r) return r;
+    const bar = calProg.firstElementChild, ms = s.ms*calScale, t0 = performance.now();
+    bar.style.width = "0%"; sample = [];
+    while(performance.now() - t0 < ms){ bar.style.width = Math.min(100,(performance.now()-t0)/ms*100) + "%"; r = await pause(40); if(r){ sample = null; return r; } }
+    let got = sample; sample = null; calEv = null;
+    got = got.filter(m => m.v < cfg.thr);
+    tone(880, 60, .08);
+    return got.length >= 4 ? got : "skip";       // 못 읽은 점은 다시 안 시키고 넘어감(지치지 않게)
+  }
+  if(s.rest){
+    setDot(null); calShow("wait");
+    calPrompt.innerHTML = cfg.calWait ? "준비되면 화면을 누르세요<small>눈을 1초 꾹 감아도 됩니다</small>" : "곧 이어 합니다";
+    calClosed = null; calOpenSeen = false; guide(s.say);
+    const ev = await (calAuto ? Promise.race([calNext(), wait(150).then(()=>"ready")]) : cfg.calWait ? calNext() : Promise.race([calNext(), wait(3000).then(()=>"ready")]));
+    return ev === "ready" ? [] : ev;
+  }
   calShow("wait");
   calPrompt.innerHTML = cfg.calWait ? "준비됐으면 화면을 누르세요<small>눈을 1초 꾹 감아도 됩니다</small>" : "곧 시작합니다";
   calVal.textContent = calNote; calNote = "";
@@ -666,7 +692,7 @@ async function runStep(s, i, total){
   const evP = calNext();
   const pause = ms => Promise.race([wait(ms).then(()=>null), evP]);
   calShow("count"); calVal.textContent = "";
-  for(let k=3; k>=1; k--){ calCount.textContent = k; const r = await pause(1000*calScale); if(r) return r; }
+  for(let k = s.k.startsWith("p") ? 1 : 3; k>=1; k--){ calCount.textContent = k; const r = await pause(1000*calScale); if(r) return r; }
 
   calShow("rec");
   const bar = calProg.firstElementChild, ms = s.ms*calScale, t0 = performance.now();
@@ -721,7 +747,8 @@ async function calibrate(){
       if(r === "cancel"){ end = "cancel"; break; }
       if(r === "restart"){ i = 0; R = {}; calNote = ""; continue; }
       if(r === "redo") continue;
-      R[steps[i].k] = r; i++;
+      if(r === "skip"){ i++; continue; }
+      const k = steps[i].k; if(k !== "rest") R[k] = (R[k] || []).concat(r); i++;
     }
     if(end === "cancel") break;
     const { ok, msg } = calFinish(R);
