@@ -60,7 +60,7 @@ document.getElementById('back').onclick=function(){ if(!cand.classList.contains(
 var strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null, P=new Map(), off=[0,0];
 
 function speak(t){ try{ speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='ko-KR'; u.rate=0.9; speechSynthesis.speak(u); }catch(e){} }
-function pen(){ cx.lineWidth=Math.max(8,Math.min(W,H)/28); cx.lineCap='round'; cx.lineJoin='round'; cx.strokeStyle='#111'; cx.fillStyle='#111'; }
+function pen(){ cx.lineWidth=Math.max(5,Math.min(W,H)/45); cx.lineCap='round'; cx.lineJoin='round'; cx.strokeStyle='#111'; cx.fillStyle='#111'; }
 function redraw(){ cx.clearRect(0,0,W,H); pen();
   strokes.forEach(function(s){ cx.beginPath(); cx.moveTo(s[0][0],s[1][0]);
     if(s[0].length===1){ cx.arc(s[0][0],s[1][0],cx.lineWidth/2,0,7); cx.fill(); return; }
