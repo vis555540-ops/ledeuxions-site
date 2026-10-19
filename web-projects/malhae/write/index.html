@@ -18,6 +18,11 @@
         border:2px solid var(--hi); background:var(--panel); color:var(--on); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   #cand.idle{border-color:var(--line); color:var(--muted); font-size:clamp(18px,4.6vw,26px); font-weight:600}
   #clr{flex:0 0 auto; font:inherit; font-size:clamp(20px,5vw,30px); font-weight:800; padding:0 18px; border-radius:14px; border:0; background:#c62828; color:#fff}
+  #sent{display:flex; gap:8px; padding:8px 8px 0; align-items:stretch}
+  #sentT{flex:1; min-width:0; min-height:56px; font-size:clamp(22px,5.5vw,36px); font-weight:800; padding:8px 12px; border-radius:14px; background:#fffdf5; color:#111; line-height:1.3; word-break:keep-all; overflow-wrap:anywhere}
+  #sentT:empty::before{content:"쓴 말이 여기 이어 붙어요"; color:#9aa; font-weight:600; font-size:18px}
+  #sent button{font:inherit; font-size:18px; font-weight:800; border-radius:14px; border:0; padding:0 14px; white-space:nowrap}
+  #say{background:#3DD68C; color:#06210f} #back{background:#2B3440; color:#E9F0F8}
   #alts{display:flex; gap:8px; padding:0 8px 8px; flex:0 0 auto; overflow-x:auto; min-height:8px}
   #alts button{font:inherit; font-size:22px; font-weight:700; padding:8px 14px; border-radius:12px; border:1px solid var(--line); background:var(--panel); color:var(--on); white-space:nowrap}
   #ink{flex:1; min-height:0; margin:0 8px 8px; border-radius:16px; background:#fffdf5; touch-action:none; display:block; width:calc(100% - 16px)}
@@ -28,7 +33,8 @@
 </style>
 </head>
 <body>
-<div id="top"><button id="cand" class="idle" type="button">✍️ 아래 아무 데나 쓰세요</button><button id="clr" type="button">지우기</button></div>
+<div id="sent"><div id="sentT"></div><button id="say" type="button">🔊 말하기</button><button id="back" type="button">⌫</button></div>
+<div id="top"><button id="cand" class="idle" type="button">✍️ 아래 아무 데나 쓰세요</button><button id="clr" type="button">다 지우기</button></div>
 <div id="alts"></div>
 <canvas id="ink"></canvas>
 <div id="big"><img alt="쓴 글씨 크게"><span>톡 하면 닫힘</span></div>
@@ -41,6 +47,12 @@
 //  · 손 떼고 1.2초 → 글자로(구글 손글씨, 인터넷 필요). 글자 톡 = 소리. 안 바뀌면 그림 그대로 — 「크게」로 보여 줌
 var cv=document.getElementById('ink'), cx=cv.getContext('2d'), cand=document.getElementById('cand'), alts=document.getElementById('alts'), big=document.getElementById('big');
 var HINT='✍️ 아래 아무 데나 쓰세요';
+// 문장 이어 쓰기 (형 10/19 「잘 인식되니까 글자 수 늘려 달라고」) — 글자로 바뀐 뒤 다시 쓰기 시작하면 그 말이 위 줄에 붙고 칸이 비워진다
+var sent=[], sentT=document.getElementById('sentT');
+function drawSent(){ sentT.textContent = sent.join(' '); }
+function commit(){ if(cand.classList.contains('idle')) return; sent.push(cand.textContent); drawSent(); strokes=[]; cur=null; P.clear(); seq++; redraw(); setCand([], true); }
+document.getElementById('say').onclick=function(){ var t=sent.join(' '); if(!cand.classList.contains('idle')) t=(t+' '+cand.textContent).trim(); if(t) speak(t); };
+document.getElementById('back').onclick=function(){ if(!cand.classList.contains('idle')){ strokes=[]; redraw(); setCand([], true); return; } sent.pop(); drawSent(); };
 var strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null, P=new Map(), off=[0,0];
 
 function speak(t){ try{ speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='ko-KR'; u.rate=0.9; speechSynthesis.speak(u); }catch(e){} }
@@ -55,10 +67,10 @@ function fit(){ var r=cv.getBoundingClientRect(); if(!r.width||!r.height) return
   W=w; H=h; cv.width=Math.round(w*d); cv.height=Math.round(h*d); cx.setTransform(d,0,0,d,0,0); redraw(); }
 addEventListener('resize', function(){ requestAnimationFrame(fit); });
 
-function setCand(list){
+function setCand(list, quiet){
   alts.innerHTML='';
   if(!list.length){ cand.textContent=HINT; cand.classList.add('idle'); return; }
-  cand.textContent=list[0]; cand.classList.remove('idle'); speak(list[0]);
+  cand.textContent=list[0]; cand.classList.remove('idle'); if(!quiet) speak(list[0]);
   list.slice(1,5).forEach(function(t){ var b=document.createElement('button'); b.type='button'; b.textContent=t;
     b.onclick=function(){ cand.textContent=t; speak(t); }; alts.appendChild(b); });
   var g=document.createElement('button'); g.type='button'; g.textContent='🔍 그림 크게';
@@ -66,7 +78,7 @@ function setCand(list){
 }
 function showBig(){ if(!strokes.length) return; big.querySelector('img').src=cv.toDataURL(); big.classList.add('on'); }
 big.onclick=function(){ big.classList.remove('on'); };
-function clear(){ strokes=[]; cur=null; P.clear(); seq++; clearTimeout(timer); if(ctl)try{ctl.abort();}catch(e){} redraw(); setCand([]); }
+function clear(){ strokes=[]; cur=null; P.clear(); seq++; clearTimeout(timer); if(ctl)try{ctl.abort();}catch(e){} redraw(); setCand([]); sent=[]; drawSent(); }
 document.getElementById('clr').onclick=clear;
 cand.onclick=function(){ if(!cand.classList.contains('idle')) speak(cand.textContent); else showBig(); };
 
@@ -87,6 +99,8 @@ function recog(){
     clearTimeout(to); if(my!==seq) return;
     var c=(j&&j[0]==='SUCCESS'&&j[1]&&j[1][0]&&j[1][0][1])||[], seen={}, list=[];
     c.forEach(function(t){ t=String(t).trim(); if(t&&!seen[t]){ seen[t]=1; list.push(t); } });
+    // 한글이 든 후보를 앞으로 (ㄱ 을 7 로 읽는 일이 있어서)
+    var hg=/[\u3131-\u318E\uAC00-\uD7A3]/; list=list.filter(function(t){return hg.test(t);}).concat(list.filter(function(t){return !hg.test(t);}));
     setCand(list);
   }).catch(function(){ clearTimeout(to); });
 }
@@ -98,6 +112,7 @@ function add(x,y){ var l=cur[0].length-1; if(Math.abs(x-cur[0][l])+Math.abs(y-cu
   pen(); cx.beginPath(); cx.moveTo(cur[0][l],cur[1][l]); cx.lineTo(x,y); cx.stroke();
   cur[0].push(x); cur[1].push(y); cur[2].push(Date.now()-t0); }
 function down(e){ if(e.cancelable!==false) e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+  if(!cur && !P.size && !cand.classList.contains('idle')) commit();   // 글자로 바뀐 뒤 새로 쓰기 시작 = 앞 말을 문장에 붙임
   P.set(e.pointerId, pt(e)); if(cur){ relink(); return; }
   clearTimeout(timer); off=[0,0]; if(!strokes.length) t0=Date.now();
   var c=cen(); cur=[[c[0]],[c[1]],[Date.now()-t0]]; strokes.push(cur);
