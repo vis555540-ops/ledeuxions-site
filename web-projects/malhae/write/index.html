@@ -36,7 +36,7 @@
 </head>
 <body>
 <div id="sent"><div id="sentT"></div><button id="say" type="button">🔊 말하기</button><button id="back" type="button">⌫</button><button id="full" type="button" title="전체 화면">⛶</button></div>
-<div id="top"><button id="cand" class="idle" type="button">✍️ 아래 아무 데나 쓰세요</button><button id="clr" type="button">다 지우기</button></div>
+<div id="top"><button id="cand" class="idle" type="button">✍️ 손 전체로 문질러 써도 돼요 · 화면 맨 아래는 종이로 가리고 쓰세요</button><button id="clr" type="button">다 지우기</button></div>
 <div id="alts"></div>
 <canvas id="ink"></canvas>
 <div id="big"><img alt="쓴 글씨 크게"><span>톡 하면 닫힘</span></div>
@@ -48,7 +48,7 @@
 //  · 여러 손가락·손바닥 = 펜 하나(닿은 손가락들 가운데). 다 떼야 획 끝
 //  · 손 떼고 1.2초 → 글자로(구글 손글씨, 인터넷 필요). 글자 톡 = 소리. 안 바뀌면 그림 그대로 — 「크게」로 보여 줌
 var cv=document.getElementById('ink'), cx=cv.getContext('2d'), cand=document.getElementById('cand'), alts=document.getElementById('alts'), big=document.getElementById('big');
-var HINT='✍️ 아래 아무 데나 쓰세요';
+var HINT='✍️ 손 전체로 문질러 써도 돼요 · 화면 맨 아래는 종이로 가리고 쓰세요';
 // 문장 이어 쓰기 (형 10/19 「잘 인식되니까 글자 수 늘려 달라고」) — 글자로 바뀐 뒤 다시 쓰기 시작하면 그 말이 위 줄에 붙고 칸이 비워진다
 var sent=[], sentT=document.getElementById('sentT');
 function drawSent(){ sentT.textContent = sent.join(' '); }
