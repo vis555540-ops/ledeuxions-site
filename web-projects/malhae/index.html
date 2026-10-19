@@ -182,7 +182,13 @@ function renderGrid(){
     if(!strokes.length) return;
     const my=++seq; if(ctl)try{ctl.abort();}catch(e){}
     ctl=window.AbortController?new AbortController():null;
-    const ink=strokes.map(s=>[s[0].map(Math.round),s[1].map(Math.round),s[2]]);
+    // 대충 알아보게 (형 10/19 「손가락 여러 개 잘못 눌려도 대충 인식」):
+    //   ① 스친 점(아주 짧은 획)은 빼고 ② 떨리는 선은 이웃 점과 평균 내서 펴서 보낸다. 화면 그림은 그대로.
+    const len=s=>{ let d=0; for(let i=1;i<s[0].length;i++) d+=Math.hypot(s[0][i]-s[0][i-1], s[1][i]-s[1][i-1]); return d; };
+    const tiny=Math.max(10, Math.min(W,H)/40);
+    let use=strokes.filter(s=>len(s)>=tiny); if(!use.length) use=strokes;
+    const sm=a=>a.map((v,i)=>{ let t=0,n=0; for(let k=i-2;k<=i+2;k++) if(k>=0&&k<a.length){t+=a[k];n++;} return t/n; });
+    const ink=use.map(s=>[sm(s[0]).map(Math.round),sm(s[1]).map(Math.round),s[2]]);
     const to=setTimeout(()=>{ if(ctl)try{ctl.abort();}catch(e){} },6000);
     fetch('https://inputtools.google.com/request?ime=handwriting&app=mobilesearch&cs=1&oe=UTF-8&itc=ko-t-i0-handwrit',{
       method:'POST', headers:{'Content-Type':'application/json'}, signal:ctl?ctl.signal:undefined,
