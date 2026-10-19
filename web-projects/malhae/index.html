@@ -176,7 +176,7 @@ function renderGrid(){
     list.slice(1,4).forEach(t=>{ const b=document.createElement('button'); b.type='button'; b.className='c'; b.textContent=t;
       b.onclick=()=>{ speak(t); cand.textContent=t; }; alts.insertBefore(b,bigBtn); });
   }
-  function clear(){ strokes=[]; cur=null; seq++; clearTimeout(timer); if(ctl)try{ctl.abort();}catch(e){} redraw(); setCand([]); }
+  function clear(){ strokes=[]; cur=null; P.clear(); seq++; clearTimeout(timer); if(ctl)try{ctl.abort();}catch(e){} redraw(); setCand([]); }
   // 글자 알아보기: 구글 손글씨 (인터넷 필요). 안 되면 조용히 그림만
   function recog(){
     if(!strokes.length) return;
@@ -195,29 +195,43 @@ function renderGrid(){
     }).catch(()=>{ clearTimeout(to); });
   }
   function pt(e){ const r=cv.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
-  function add(e){ const [x,y]=pt(e); const last=cur[0].length-1;
+  // 여러 손가락 = 펜 하나 (2026-10-19 형: 「손가락 여러 개 써도 인식」). 힘없는 손은 손가락 몇 개·손바닥이 같이 닿는다.
+  //   닿은 손가락들의 가운데를 펜 끝으로 쓰고, 손가락이 붙거나 떨어질 때 선이 튀지 않게 차이(off)를 이어 붙인다.
+  //   모든 손가락이 떨어져야 한 획이 끝난다.
+  const P=new Map(); let off=[0,0];
+  function cen(){ let x=0,y=0; P.forEach(v=>{x+=v[0];y+=v[1];}); return [x/P.size,y/P.size]; }
+  function penAt(){ const c=cen(); return [c[0]+off[0], c[1]+off[1]]; }
+  function relink(){ if(!cur||!P.size) return; const l=cur[0].length-1, c=cen(); off=[cur[0][l]-c[0], cur[1][l]-c[1]]; }
+  function add(x,y){ const last=cur[0].length-1;
+    if(Math.abs(x-cur[0][last])+Math.abs(y-cur[1][last])<0.5) return;
     pen(); cx.beginPath(); cx.moveTo(cur[0][last],cur[1][last]); cx.lineTo(x,y); cx.stroke();
     cur[0].push(x); cur[1].push(y); cur[2].push(Date.now()-t0); }
-  let pid=null;
   function down(e){
-    if(pid!==null) return; pid=e.pointerId; clearTimeout(timer);
     if(e.cancelable!==false) e.preventDefault();
-    try{ cv.setPointerCapture(pid); }catch(_){}
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+    P.set(e.pointerId, pt(e));
+    if(cur){ relink(); return; }               // 획 도중 손가락이 하나 더 닿음 — 선은 그대로 이어진다
+    clearTimeout(timer); off=[0,0];
     if(!strokes.length) t0=Date.now();
-    const [x,y]=pt(e); cur=[[x],[y],[Date.now()-t0]]; strokes.push(cur);
+    const [x,y]=cen(); cur=[[x],[y],[Date.now()-t0]]; strokes.push(cur);
     pen(); cx.beginPath(); cx.arc(x,y,cx.lineWidth/2,0,7); cx.fill();
   }
   function move(e){
-    if(e.pointerId!==pid||!cur) return; if(e.cancelable) e.preventDefault();
-    const evs=e.getCoalescedEvents?e.getCoalescedEvents():[]; (evs.length?evs:[e]).forEach(add);
+    if(!P.has(e.pointerId)||!cur) return; if(e.cancelable) e.preventDefault();
+    const evs=e.getCoalescedEvents?e.getCoalescedEvents():[];
+    (evs.length?evs:[e]).forEach(ev=>{ P.set(e.pointerId, pt(ev)); const q=penAt(); add(q[0],q[1]); });
   }
-  function up(e){ if(e.pointerId!==pid) return; pid=null; cur=null; clearTimeout(timer); timer=setTimeout(recog,800); }
+  function up(e){
+    if(!P.has(e.pointerId)) return; P.delete(e.pointerId);
+    if(P.size){ relink(); return; }            // 아직 닿은 손가락이 있으면 획을 안 끊는다
+    cur=null; clearTimeout(timer); timer=setTimeout(recog,800);
+  }
   if(window.PointerEvent){
     cv.addEventListener('pointerdown',down); cv.addEventListener('pointermove',move,{passive:false});
     cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
   } else {
     const f=(t,ev)=>({pointerId:'t'+t.identifier,clientX:t.clientX,clientY:t.clientY,cancelable:true,preventDefault:()=>ev.preventDefault()});
-    cv.addEventListener('touchstart',ev=>{ev.preventDefault();down(f(ev.changedTouches[0],ev));},{passive:false});
+    cv.addEventListener('touchstart',ev=>{ev.preventDefault();[...ev.changedTouches].forEach(t=>down(f(t,ev)));},{passive:false});
     cv.addEventListener('touchmove',ev=>{ev.preventDefault();[...ev.changedTouches].forEach(t=>move(f(t,ev)));},{passive:false});
     cv.addEventListener('touchend',ev=>{[...ev.changedTouches].forEach(t=>up(f(t,ev)));});
   }
