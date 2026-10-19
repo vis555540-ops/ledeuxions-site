@@ -47,6 +47,14 @@
   #set .row{display:flex; gap:10px}
   #set button{flex:1; font:inherit; font-size:18px; padding:12px; border-radius:12px; border:1px solid var(--line); background:#1B232E; color:var(--on)}
   .tip{font-size:15px; color:var(--muted); line-height:1.5}
+  #go2{background:#5B9BFF !important; color:#fff !important; font-size:24px !important; padding:16px 30px !important}
+  #cam{position:fixed; right:10px; bottom:10px; width:120px; z-index:4; display:none; flex-direction:column; gap:4px; pointer-events:none}
+  #cam video{width:120px; height:90px; object-fit:cover; border-radius:10px; border:3px solid var(--line); transform:scaleX(-1); background:#000}
+  #cam.face video{border-color:var(--ok)}
+  #cam.nof video{border-color:#ff5a4f}
+  #cam .bar{height:10px; border-radius:5px; background:var(--line); overflow:hidden}
+  #cam .bar i{display:block; height:100%; width:0; background:var(--hi)}
+  #cam .st{font-size:13px; color:var(--muted); text-align:center}
 </style>
 </head>
 <body>
@@ -54,7 +62,8 @@
 <div id="where"></div>
 <div id="list"></div>
 
-<div id="said"><div class="w" id="saidW"></div><div class="s">화면을 톡 하면 처음으로</div></div>
+<div id="said"><div class="w" id="saidW"></div><div class="s" id="saidS">화면을 톡 하면 처음으로</div></div>
+<div id="cam"><video id="vid" playsinline muted></video><div class="bar"><i id="camBar"></i></div><div class="st" id="camSt">준비 중…</div></div>
 
 <div id="start">
   <h1>한 번 톡</h1>
@@ -62,6 +71,8 @@
   맞는 말이 나올 때 <b>화면 아무 데나 한 번 톡</b> 하세요.<br>
   손가락이 어려우면 눈을 깜빡여 알려 주시고, 옆 사람이 대신 톡 해 주세요.</p>
   <button id="go">시작</button>
+  <button id="go2">📷 눈 꾹 감기로 고르기</button>
+  <p class="tip">📷 은 앞카메라로 <b>눈을 1초쯤 꾹 감으면</b> 자동으로 톡 합니다. 보통 깜빡임은 무시합니다.<br>탭·폰을 얼굴 앞 40~60cm 에 세워 두세요. 영상은 어디로도 보내지 않습니다.</p>
   <p class="tip">소리가 안 나오면 휴대폰 무음을 꺼 주세요.<br>휴대폰을 못 쓰는 곳이면 → <a href="print.html" style="color:#FFD23F">종이 말판 인쇄</a></p>
 </div>
 
@@ -71,6 +82,10 @@
   <label><span><input id="voice" type="checkbox"> 하나씩 소리로 읽기</span></label>
   <label>톡이 두 번 들어가는 것 막기: <span id="dbV"></span>초
     <input id="db" type="range" min="0.3" max="2" step="0.1"></label>
+  <label>📷 눈 감고 있어야 하는 시간: <span id="hdV"></span>초
+    <input id="hd" type="range" min="0.5" max="2.5" step="0.1"></label>
+  <label>📷 감은 것으로 볼 정도 (낮을수록 예민): <span id="thV"></span>
+    <input id="th" type="range" min="0.25" max="0.8" step="0.05"></label>
   <div class="row"><button id="close">닫기</button></div>
 </div></div>
 
@@ -88,7 +103,7 @@ var M = {
 };
 var NAME = {'처음':'', '어디':'아파요 → 어디가?', '몸':'몸이 불편해요 →', '마음':'마음 →', '부르기':'사람 불러 주세요 →'};
 
-var S = {sp:2.5, voice:true, db:0.6};
+var S = {sp:2.5, voice:true, db:0.6, hd:1.0, th:0.5};
 try{ var o = JSON.parse(localStorage.getItem('malhae_tok')||'{}'); for(var k in o) if(k in S) S[k]=o[k]; }catch(e){}
 function save(){ try{ localStorage.setItem('malhae_tok', JSON.stringify(S)); }catch(e){} }
 
@@ -124,14 +139,16 @@ function step(){
   clearTimeout(timer); timer = setTimeout(step, S.sp * 1000);
 }
 function open(name){ menu = name; idx = -1; clearTimeout(timer); timer = setTimeout(step, 700); draw(); }
-function pick(){
-  if (idx < 0) return;
-  var it = M[menu][idx];
+function pick(at){
+  var i = (at == null) ? idx : at;
+  if (i < 0) return;
+  var it = M[menu][i];
   if (it[0] === BACK){ open('처음'); return; }
   if (it[2]){ speak(it[0], true); open(it[2]); return; }
   clearTimeout(timer);
   var w = (NAME[menu] && menu==='어디') ? it[0] + ' 아파요' : (it[1] || it[0]);
   $('saidW').textContent = w; said.style.display = 'flex'; saidOn = true;
+  $('saidS').textContent = camOn ? '눈을 꾹 감으면 처음으로' : '화면을 톡 하면 처음으로';
   speak(w, true);
   setTimeout(function(){ speak(w, true); }, 2600);   // 한 번 더 — 옆 사람이 놓치지 않게
 }
@@ -144,7 +161,10 @@ function tap(e){
 }
 document.addEventListener('pointerdown', tap, {passive:false});
 
-function setUI(){ $('sp').value = S.sp; $('spV').textContent = S.sp; $('voice').checked = S.voice; $('db').value = S.db; $('dbV').textContent = S.db; }
+function setUI(){ $('sp').value = S.sp; $('spV').textContent = S.sp; $('voice').checked = S.voice; $('db').value = S.db; $('dbV').textContent = S.db;
+  $('hd').value = S.hd; $('hdV').textContent = S.hd; $('th').value = S.th; $('thV').textContent = S.th; }
+$('hd').oninput = function(){ S.hd = +this.value; $('hdV').textContent = S.hd; save(); };
+$('th').oninput = function(){ S.th = +this.value; $('thV').textContent = S.th; save(); };
 $('sp').oninput = function(){ S.sp = +this.value; $('spV').textContent = S.sp; save(); };
 $('db').oninput = function(){ S.db = +this.value; $('dbV').textContent = S.db; save(); };
 $('voice').onchange = function(){ S.voice = this.checked; save(); };
@@ -161,6 +181,77 @@ $('go').onclick = function(){
   wake();
   setTimeout(function(){ open('처음'); }, 2600);
 };
+$('go2').onclick = function(){
+  $('start').style.display = 'none';
+  speak('카메라를 켭니다. 맞는 말이 나오면 눈을 꾹 감으세요.', false);
+  wake(); startCam();
+};
+
+/* ---------- 📷 눈 꾹 감기 = 톡 ----------
+   보통 깜빡임(0.1~0.3초)은 무시하고, S.hd 초 넘게 감고 있으면 한 번 고른다.
+   0.35초 넘게 감고 있으면 넘기기를 멈춘다 — 감는 동안 노란 칸이 달아나지 않게. 고르는 칸은 「감기 시작할 때」 칸. */
+var CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+var camOn = false, lm = null, vid = $('vid'), closedAt = null, idxAtClose = -1, fired = false, frozen = false, lastSeen = 0, lastT = -1;
+async function startCam(){
+  var cam = $('cam'), st = $('camSt'); cam.style.display = 'flex'; st.textContent = '카메라 준비 중…';
+  try{
+    var stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ideal:640}, height:{ideal:480} }, audio:false });
+    vid.srcObject = stream; await vid.play();
+    st.textContent = '눈 읽는 법 받는 중…';
+    var mod = await import(CDN + '/vision_bundle.mjs');
+    var vision = await mod.FilesetResolver.forVisionTasks(CDN + '/wasm');
+    lm = await mod.FaceLandmarker.createFromOptions(vision, {
+      baseOptions:{ modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task' },
+      outputFaceBlendshapes:true, runningMode:'VIDEO', numFaces:1 });
+    camOn = true; st.textContent = '보는 중';
+    open('처음'); requestAnimationFrame(camLoop);
+  }catch(e){
+    window.__camErr = String(e && (e.name + ': ' + e.message) || e);
+    st.textContent = '카메라 안 됨 — 톡으로 쓰세요';
+    speak('카메라가 안 됩니다. 화면을 톡 해서 쓰세요.', false);
+    setTimeout(function(){ open('처음'); }, 2600);
+  }
+}
+function eyeV(now){
+  if (window.__fakeEye != null) return window.__fakeEye;     // 시험용
+  if (!lm || vid.readyState < 2) return null;
+  if (vid.currentTime === lastT) return undefined; lastT = vid.currentTime;
+  try{
+    var r = lm.detectForVideo(vid, now), bs = r.faceBlendshapes && r.faceBlendshapes[0];
+    if (!bs) return null;
+    var m = {}; bs.categories.forEach(function(c){ m[c.categoryName] = c.score; });
+    return ((m.eyeBlinkLeft||0) + (m.eyeBlinkRight||0)) / 2;
+  }catch(e){ return null; }
+}
+function camLoop(now){
+  if (!camOn) return;
+  var v = eyeV(now), cam = $('cam');
+  if (v === undefined){ requestAnimationFrame(camLoop); return; }
+  if (v === null){
+    cam.className = 'nof'; $('camSt').textContent = '얼굴이 안 보여요';
+    if (closedAt !== null){ closedAt = null; unfreeze(); }
+    $('camBar').style.width = '0';
+    requestAnimationFrame(camLoop); return;
+  }
+  cam.className = 'face'; lastSeen = now;
+  if (v >= S.th){
+    if (closedAt === null){ closedAt = now; idxAtClose = idx; fired = false; }
+    var held = (now - closedAt) / 1000;
+    if (held > 0.35 && !frozen && !fired && !saidOn){ frozen = true; clearTimeout(timer); }
+    $('camBar').style.width = Math.min(100, held / S.hd * 100) + '%';
+    $('camSt').textContent = fired ? '눈을 떠 주세요' : '감는 중…';
+    if (!fired && held >= S.hd){
+      fired = true;
+      if (saidOn){ said.style.display = 'none'; saidOn = false; frozen = false; open('처음'); }
+      else { frozen = false; pick(idxAtClose); }
+    }
+  } else {
+    if (closedAt !== null){ closedAt = null; if (!fired) unfreeze(); }
+    $('camBar').style.width = '0'; $('camSt').textContent = '보는 중';
+  }
+  requestAnimationFrame(camLoop);
+}
+function unfreeze(){ if (frozen){ frozen = false; if (!saidOn){ clearTimeout(timer); timer = setTimeout(step, S.sp * 1000); } } }
 draw();
 })();
 </script>
