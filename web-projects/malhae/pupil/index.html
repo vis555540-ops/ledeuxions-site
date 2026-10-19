@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<link rel="canonical" href="https://ledeuxions.com/web-projects/malhae/pupil/">
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>눈동자 따라가기 — 눈 가까이 카메라로 예·아니요 | 말해요 (시험판)</title>
+<meta name="description" content="손도 말도 어려운 분을 위한 무료 도구. 왼쪽을 보면 「예」, 오른쪽을 보면 「아니요」, 위를 보면 「설명이 필요해요」를 소리로 말해 줍니다. 폰·노트북 앞카메라로, 맞추기는 10초.">
+<meta name="theme-color" content="#0B0E12">
+<style>
+  :root{--bg:#0B0E12; --panel:#141A22; --on:#E9F0F8; --muted:#93A2B5; --line:#28313D; --yes:#3DD68C; --no:#FF6B5E; --up:#5B9BFF; --hi:#FFD23F}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; user-select:none}
+  html,body{height:100%; margin:0; overflow:hidden}
+  body{background:var(--bg); color:var(--on); font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+       display:grid; grid-template-rows:auto 1fr auto; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  #bar{display:flex; gap:8px; align-items:center; padding:8px 10px; border-bottom:1px solid var(--line)}
+  #bar .t{flex:1; font-size:14px; font-weight:600; color:var(--muted)}
+  #bar button, .btn{font:inherit; font-size:15px; color:var(--on); background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:8px 12px}
+  #board{display:grid; grid-template-columns:1fr 1.1fr 1fr; grid-template-rows:auto 1fr; gap:10px; padding:10px; min-height:0}
+  .z{border-radius:20px; border:3px solid var(--line); background:var(--panel); display:flex; align-items:center; justify-content:center; text-align:center;
+     font-weight:800; letter-spacing:-.02em; padding:10px; transition:background .12s, border-color .12s; position:relative; overflow:hidden}
+  #zUp{grid-column:1 / 4; font-size:clamp(24px,5.5vw,46px); color:var(--up); min-height:18vh}
+  #zL{font-size:clamp(40px,11vw,110px); color:var(--yes)}
+  #zR{font-size:clamp(34px,9vw,96px); color:var(--no)}
+  #mid{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-width:0}
+  #vid{display:none}
+  #cv{width:100%; max-width:260px; aspect-ratio:4/3; border-radius:14px; border:3px solid var(--line); background:#000; image-rendering:pixelated}
+  #mid.face #cv{border-color:var(--yes)}
+  #mid.nof #cv{border-color:var(--no)}
+  #mid.face #vid{border-color:var(--yes)}
+  #mid.nof #vid{border-color:var(--no)}
+  #st{font-size:16px; color:var(--muted); text-align:center; min-height:22px}
+  .fill{position:absolute; left:0; bottom:0; height:8px; width:0; background:currentColor; opacity:.9}
+  .z.arm{border-color:currentColor}
+  .z.on{background:currentColor}
+  .z.on span{color:#0B0E12}
+  #say{position:fixed; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:18px; z-index:5; text-align:center; padding:20px}
+  #say .w{font-size:clamp(56px,16vw,150px); font-weight:900; color:#0B0E12; letter-spacing:-.03em; line-height:1.1}
+  #say .s{font-size:18px; color:#0B0E12; opacity:.75}
+  #say a{font-size:20px; font-weight:800; color:#0B0E12; background:rgba(255,255,255,.55); padding:10px 18px; border-radius:12px; text-decoration:none}
+  #foot{display:flex; gap:8px; padding:6px 10px 10px; justify-content:center; flex-wrap:wrap}
+  #cal, #start, #set{position:fixed; inset:0; z-index:6; display:none; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:rgba(11,14,18,.96); text-align:center; padding:24px}
+  #start{display:flex}
+  #start h1, #cal h1{margin:0; font-size:clamp(28px,6vw,44px)}
+  #start p, #cal p{margin:0; font-size:19px; line-height:1.6; color:var(--muted); max-width:34em}
+  #start .go{font:inherit; font-size:28px; font-weight:800; padding:18px 48px; border-radius:18px; border:0; background:var(--hi); color:#111}
+  #cal .arrow{font-size:clamp(70px,18vw,160px); line-height:1; color:var(--hi)}
+  #cal .prog{width:min(420px,80vw); height:12px; background:var(--line); border-radius:6px; overflow:hidden}
+  #cal .prog i{display:block; height:100%; width:0; background:var(--hi)}
+  #set .box{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:20px; width:min(480px,100%); display:flex; flex-direction:column; gap:14px; text-align:left}
+  #set label{font-size:17px; display:flex; flex-direction:column; gap:6px}
+  #set input[type=range]{width:100%}
+  @media (max-aspect-ratio: 3/4){
+    #board{grid-template-columns:1fr 1fr; grid-template-rows:auto auto 1fr}
+    #mid{grid-column:1 / 3; grid-row:2}
+    #zL{grid-row:3} #zR{grid-row:3}
+    #vid{max-width:180px}
+  }
+</style>
+</head>
+<body>
+<div id="bar"><span class="t">말해요 · 눈동자 따라가기 (시험)</span><select id="camSel" class="btn" style="max-width:40vw"></select><button id="reBtn">다시 맞추기</button><button id="gear">설정</button></div>
+<div id="board">
+  <div class="z" id="zUp" style="color:var(--up)"><span>⬆ 설명이 필요해요</span><i class="fill"></i></div>
+  <div class="z" id="zL" style="color:var(--yes)"><span>⬅ 예</span><i class="fill"></i></div>
+  <div id="mid"><video id="vid" playsinline muted></video><canvas id="cv" width="160" height="120"></canvas><div id="st">시작을 눌러 주세요</div></div>
+  <div class="z" id="zR" style="color:var(--no)"><span>아니요 ➡</span><i class="fill"></i></div>
+</div>
+<div id="foot"><span class="tip" style="color:var(--muted);font-size:14px">보고 있으면 막대가 차오르고, 다 차면 말합니다. 가운데로 눈을 돌렸다가 다음 대답.</span></div>
+
+<div id="say"><div class="w" id="sayW"></div><a id="sayLink" href="../write/" style="display:none">✍️ 글씨판 열기</a><div class="s">가운데를 보면 돌아갑니다 · 화면을 눌러도 됩니다</div></div>
+
+<div id="start">
+  <h1>눈으로 예·아니요</h1>
+  <p><b style="color:var(--yes)">왼쪽</b>을 보면 <b style="color:var(--yes)">「예」</b>, <b style="color:var(--no)">오른쪽</b>은 <b style="color:var(--no)">「아니요」</b>, <b style="color:var(--up)">위</b>는 <b style="color:var(--up)">「설명이 필요해요」</b>.<br>
+  <b>눈 가까이 붙인 카메라</b>(귀이개 카메라 같은 USB 카메라)로 까만 눈동자만 따라갑니다. 위 칸에서 카메라를 고르세요.<br>
+  카메라는 안경테·머리띠에 붙여 머리와 같이 움직이게 하고, 눈동자가 화면 가운데 크게 보이게 맞추세요. 불빛은 약하게.<br>
+  처음에 10초만 맞춥니다(정면 → 왼쪽 → 오른쪽 → 위). 카메라가 비뚤게 달려도 됩니다.<br>
+  영상은 기기 밖으로 나가지 않습니다.</p>
+  <button class="go" id="go">시작</button>
+</div>
+
+<div id="cal">
+  <h1 id="calT">정면을 보세요</h1>
+  <div class="arrow" id="calA">●</div>
+  <div class="prog"><i id="calP"></i></div>
+  <p id="calS">편하게 화면 가운데를 보세요</p>
+</div>
+
+<div id="set"><div class="box">
+  <label>다 차는 시간: <span id="hdV"></span>초 <input id="hd" type="range" min="0.3" max="2" step="0.1"></label>
+  <label>예민함 (낮을수록 조금만 봐도 됨): <span id="snV"></span> <input id="sn" type="range" min="0.25" max="0.9" step="0.05"></label>
+  <label><span><input id="sw" type="checkbox"> 왼쪽·오른쪽이 거꾸로 잡히면 체크</span></label>
+  <label><span><input id="vo" type="checkbox"> 소리로 말하기</span></label>
+  <div style="display:flex;gap:10px"><button class="btn" id="close" style="flex:1">닫기</button></div>
+</div></div>
+
+<script type="module">
+// 눈으로 예·아니요 (2026-10-19, 형: 「예/아니요(좌우), 위에는 설명이 필요해. 폰 트래킹이랑 노트북 트래킹이랑 같이」)
+//  · (눈동자 판) 눈 가까이 붙인 카메라 화면에서 까만 눈동자 자리만 본다. 카메라가 머리와 같이 움직이면 고개를 돌려도 상관없다
+//  · 맞추기 10초: 정면·왼쪽·오른쪽·위를 한 번씩, 짧게. 사람마다 눈 움직이는 크기가 달라서 기준을 그 사람에 맞춘다
+//  · 깜빡이거나 감은 동안은 안 센다. 한 번 고르면 가운데로 돌아와야 다음 대답
+const $ = id => document.getElementById(id);
+const TEST = new URLSearchParams(location.search).get('test') === '1';
+const cfg = { hold:0.8, sens:0.5, swap:false, voice:true };
+try{ Object.assign(cfg, JSON.parse(localStorage.getItem('malhae_pupil') || '{}')); }catch(e){}
+const save = () => { try{ localStorage.setItem('malhae_pupil', JSON.stringify(cfg)); }catch(e){} };
+let cal = null; try{ cal = JSON.parse(localStorage.getItem('malhae_pupil_cal') || 'null'); if(cal && !cal.v) cal = null; }catch(e){}
+
+function speak(t, rate){ if(!cfg.voice || !window.speechSynthesis) return; try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang='ko-KR'; u.rate = rate || 0.95; speechSynthesis.speak(u); }catch(e){} }
+
+/* ── 눈동자 읽기 ── (2026-10-19 형: 귀이개 카메라를 눈 가까이 → 얼굴 인식 없이 「제일 까만 덩어리 = 눈동자」의 자리만 본다)
+   160×120 으로 줄여 회색으로 → 가장 어두운 3% 쯤을 문턱으로 → 그 점들의 무게중심. 감으면 까만 점이 거의 없어진다 = 감음 */
+const vid = $('vid'), cv = $('cv'), cx = cv.getContext('2d', { willReadFrequently:true }); let fake = null, lastVT = -1;
+const W = 160, H = 120, hist = new Uint32Array(256);
+function read(now){
+  if(TEST) return fake;
+  if(vid.readyState < 2) return undefined;
+  if(vid.currentTime === lastVT) return undefined; lastVT = vid.currentTime;
+  cx.drawImage(vid, 0, 0, W, H);
+  const img = cx.getImageData(0, 0, W, H), d = img.data, g = new Uint8Array(W*H);
+  hist.fill(0);
+  for(let i = 0, j = 0; i < d.length; i += 4, j++){ const y = (d[i]*77 + d[i+1]*150 + d[i+2]*29) >> 8; g[j] = y; hist[y]++; }
+  let acc = 0, thr = 0; const want = W*H*0.03;
+  for(let y = 0; y < 256; y++){ acc += hist[y]; if(acc >= want){ thr = y; break; } }
+  thr = Math.min(thr + 6, 110);
+  let sx = 0, sy = 0, n = 0;
+  for(let y = 2; y < H-2; y++) for(let x = 2; x < W-2; x++){ if(g[y*W+x] <= thr){ sx += x; sy += y; n++; } }
+  // 보이는 화면에 눈동자 자리 표시
+  for(let j = 0; j < W*H; j++) if(g[j] <= thr){ d[j*4] = 255; d[j*4+1] = 210; d[j*4+2] = 63; }
+  cx.putImageData(img, 0, 0);
+  if(n < 20) return null;                                  // 까만 덩어리가 없음 = 감았거나 안 보임
+  const px = sx/n, py = sy/n;
+  cx.strokeStyle = '#3DD68C'; cx.lineWidth = 2; cx.beginPath(); cx.arc(px, py, 6, 0, 7); cx.stroke();
+  return { x: px/W, y: py/H, n };
+}
+let nBase = 0;
+const feat = m => ({ h: m.x, u: m.y, v: nBase && m.n < nBase * 0.35 ? 1 : 0 });   // 까만 점이 확 줄면 감는 중
+let sm = null, smT = 0;
+function smooth(f, now){
+  if(!sm || now - smT > 400){ sm = { ...f }; smT = now; return sm; }
+  const a = 1 - Math.exp(-(now - smT) / 120); for(const k in f) sm[k] += (f[k] - sm[k]) * a; smT = now; return sm;
+}
+const med = a => { const s = a.slice().sort((x,y)=>x-y); return s.length ? s[s.length>>1] : 0; };
+
+/* ── 맞추기 ── */
+const STEPS = [
+  { k:'c', t:'정면을 보세요', a:'●', s:'편하게 화면 가운데를 보세요', say:'편하게 화면 가운데를 보세요.' },
+  { k:'L', t:'왼쪽을 보세요', a:'⬅', s:'고개는 그대로, 눈만 왼쪽으로', say:'고개는 그대로 두고, 눈만 왼쪽을 보세요.' },
+  { k:'R', t:'오른쪽을 보세요', a:'➡', s:'고개는 그대로, 눈만 오른쪽으로', say:'이번엔 눈만 오른쪽을 보세요.' },
+  { k:'U', t:'위를 보세요', a:'⬆', s:'고개는 그대로, 눈만 위로', say:'이번엔 눈만 위를 보세요.' }
+];
+let calBuf = null, calN = [];
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function calibrate(){
+  busy = true; $('cal').style.display = 'flex';
+  const got = {};
+  for(const s of STEPS){
+    $('calT').textContent = s.t; $('calA').textContent = s.a; $('calS').textContent = s.s; $('calP').style.width = '0%';
+    speak(s.say); await wait(TEST ? 50 : 1900);              // 말 듣고 눈 옮길 시간
+    calBuf = []; calN = []; const t0 = performance.now(), dur = TEST ? 300 : 1300;
+    while(performance.now() - t0 < dur){ $('calP').style.width = Math.min(100, (performance.now()-t0)/dur*100) + '%'; await wait(40); }
+    const b = calBuf.filter(f => f.v < 0.5); calBuf = null;
+    got[s.k] = b.length >= 3 ? { h:med(b.map(f=>f.h)), u:med(b.map(f=>f.u)) } : null;
+    if(s.k === 'c') nBase = med(calN);
+  }
+  $('cal').style.display = 'none'; busy = false;
+  if(!got.c || !got.L || !got.R){ $('st').textContent = '얼굴이 잘 안 보였어요 — 「다시 맞추기」'; speak('얼굴이 잘 안 보였어요. 다시 맞춰 주세요.'); return; }
+  const vec = k => got[k] ? { x: got[k].h - got.c.h, y: got[k].u - got.c.u } : null;
+  cal = { c: got.c, v: { L: vec('L'), R: vec('R'), U: vec('U') } };
+  const len = v => v ? Math.hypot(v.x, v.y) : 0;
+  if(len(cal.v.L) < 0.03 || len(cal.v.R) < 0.03){ $('st').textContent = '눈동자가 거의 안 움직였어요 — 카메라를 더 가까이/가운데로 하고 「다시 맞추기」'; }
+  else $('st').textContent = '보는 중';
+  if(!cal.v.U || len(cal.v.U) < 0.03) cal.v.U = null;
+  try{ localStorage.setItem('malhae_pupil_cal', JSON.stringify(cal)); }catch(e){}
+  speak('다 됐습니다. 왼쪽은 예, 오른쪽은 아니요, 위는 설명이 필요해요.');
+}
+
+/* ── 고르기 ── */
+const Z = { L:$('zL'), R:$('zR'), U:$('zUp') }, SAY = { L:'예', R:'아니요', U:'설명이 필요해요' };
+let busy = false, cur = null, curAt = 0, needCenter = false, saying = false, sayAt = 0;
+function level(f){
+  // 각 방향: 맞춘 쪽 화살표에 얼마나 실렸나 (1 = 맞출 때만큼). 카메라가 돌아가 있어도 맞춘 방향 그대로 쓴다
+  const d = { x: f.h - cal.c.h, y: f.u - cal.c.u };
+  const pr = v => v ? (d.x*v.x + d.y*v.y) / (v.x*v.x + v.y*v.y) : -1;
+  let l = pr(cal.v.L), r = pr(cal.v.R); if(cfg.swap){ const t = l; l = r; r = t; }
+  return { L:l, R:r, U: pr(cal.v.U) };
+}
+function paint(k, p){
+  for(const d in Z){ const on = d === k; Z[d].classList.toggle('arm', on && p > 0); Z[d].querySelector('.fill').style.width = on ? Math.min(100, p*100) + '%' : '0'; }
+}
+function fire(k){
+  saying = true; sayAt = performance.now(); needCenter = true;
+  const col = { L:'var(--yes)', R:'var(--no)', U:'var(--up)' }[k];
+  $('say').style.background = col; $('sayW').textContent = SAY[k]; $('sayLink').style.display = k === 'U' ? 'inline-block' : 'none';
+  $('say').style.display = 'flex'; speak(SAY[k], 0.9); paint(null, 0);
+}
+function unsay(){ saying = false; $('say').style.display = 'none'; }
+$('say').addEventListener('click', e => { if(e.target.id !== 'sayLink') unsay(); });
+
+function tick(now){
+  const m = read(now);
+  if(m === undefined) return;
+  const mid = $('mid');
+  if(!m){ mid.className = 'nof'; if(!busy) $('st').textContent = '눈동자가 안 보여요 (감았거나 카메라 밖)'; cur = null; paint(null,0); return; }
+  mid.className = 'face';
+  const f = feat(m);
+  if(calBuf){ calBuf.push(f); calN.push(m.n); return; }
+  if(busy || !cal) return;
+  if(f.v > 0.5){ curAt = now; return; }                    // 감은 동안은 안 셈 (막대도 멈춤)
+  const s = smooth(f, now), lv = level(s);
+  const best = ['L','R','U'].reduce((a,b) => lv[a] >= lv[b] ? a : b);
+  const on = lv[best] >= cfg.sens;
+  const center = Math.max(lv.L, lv.R, lv.U) < cfg.sens * 0.5;
+  if(saying){ if(center && now - sayAt > 1200){ unsay(); } return; }
+  if(needCenter){ if(center) needCenter = false; paint(null,0); $('st').textContent = needCenter ? '가운데를 보세요' : '보는 중'; return; }
+  if(!on){ cur = null; paint(null,0); $('st').textContent = '보는 중'; return; }
+  if(best !== cur){ cur = best; curAt = now; }
+  const p = (now - curAt) / 1000 / cfg.hold;
+  paint(cur, p); $('st').textContent = SAY[cur] + '…';
+  if(p >= 1){ const k = cur; cur = null; fire(k); }
+}
+function loop(now){ tick(now); requestAnimationFrame(loop); }
+
+/* ── 켜기 ── */
+let stream = null;
+async function openCam(id){
+  if(stream) stream.getTracks().forEach(t => t.stop());
+  stream = await navigator.mediaDevices.getUserMedia({ video: id ? { deviceId:{ exact:id }, width:{ideal:640}, height:{ideal:480} } : { width:{ideal:640}, height:{ideal:480} }, audio:false });
+  vid.srcObject = stream; await vid.play();
+}
+async function listCams(){
+  const sel = $('camSel'); const ds = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+  const curId = stream && stream.getVideoTracks()[0].getSettings().deviceId;
+  sel.innerHTML = ds.map((d,i) => `<option value="${d.deviceId}" ${d.deviceId===curId?'selected':''}>${(d.label || ('카메라 ' + (i+1))).slice(0,30)}</option>`).join('');
+}
+$('camSel').onchange = async e => { cfg.cam = e.target.value; save(); try{ await openCam(cfg.cam); $('st').textContent = '카메라 바꿈 — 「다시 맞추기」'; }catch(err){ $('st').textContent = '그 카메라가 안 열려요'; } };
+async function startCam(){
+  $('st').textContent = '카메라 켜는 중…';
+  if(!TEST){
+    try{ await openCam(cfg.cam); }catch(e){ await openCam(null); }
+    await listCams();
+  }
+  try{ if('wakeLock' in navigator) await navigator.wakeLock.request('screen'); }catch(e){}
+  requestAnimationFrame(loop);
+}
+$('go').onclick = async () => {
+  $('start').style.display = 'none'; speak('카메라를 켭니다.');
+  try{ await startCam(); }catch(e){ $('st').textContent = '카메라가 안 됩니다 (' + (e && e.name || e) + ')'; return; }
+  if(!cal) await calibrate(); else { $('st').textContent = '보는 중'; speak('왼쪽은 예, 오른쪽은 아니요, 위는 설명이 필요해요.'); }
+};
+$('reBtn').onclick = () => { if(!busy) calibrate(); };
+function setUI(){ $('hd').value = cfg.hold; $('hdV').textContent = cfg.hold; $('sn').value = cfg.sens; $('snV').textContent = cfg.sens; $('sw').checked = cfg.swap; $('vo').checked = cfg.voice; }
+$('gear').onclick = () => { setUI(); $('set').style.display = 'flex'; };
+$('close').onclick = () => { $('set').style.display = 'none'; };
+$('hd').oninput = e => { cfg.hold = +e.target.value; $('hdV').textContent = cfg.hold; save(); };
+$('sn').oninput = e => { cfg.sens = +e.target.value; $('snV').textContent = cfg.sens; save(); };
+$('sw').onchange = e => { cfg.swap = e.target.checked; save(); };
+$('vo').onchange = e => { cfg.voice = e.target.checked; save(); };
+
+if(TEST) window.__pp = { set: v => { fake = v; }, calibrate, state: () => ({ cal, saying, cur, needCenter, say: $('sayW').textContent, shown: $('say').style.display }) };
+</script>
+</body>
+</html>
