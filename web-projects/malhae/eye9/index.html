@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<link rel="canonical" href="https://ledeuxions.com/web-projects/malhae/eye9/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#101317">
+<!-- 시험 중. 아직 첫 화면에서 안 이어 두었고 검색에도 안 올린다 -->
+<meta name="robots" content="noindex">
+<title>말해요 · 눈으로 9칸 (시험판 4)</title>
+<meta name="description" content="눈길로 아홉 칸 가운데 하나를 고르는 의사소통 판의 네 번째 시험판. 얼굴까지 거리와 고개 방향을 빼고 눈길만 셉니다. 영상은 휴대폰 안에서만 처리합니다.">
+<style>
+  :root{
+    --bg:#101317; --panel:#1a1f26; --ink:#F2F0EA; --muted:#8B93A0;
+    --on:#FFD24A; --ok:#4ADE80; --warn:#F87171; --line:#2A313B; --blue:#5B9BFF;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  [hidden]{display:none !important}
+  html,body{height:100%; height:100dvh}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  header{display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--line); min-width:0}
+  h1{font-size:16px; margin:0; font-weight:600; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
+  .tag{font-size:11px; color:var(--muted); white-space:nowrap}
+  .spacer{flex:1}
+  .trial{
+    display:flex; align-items:center; gap:4px 12px; flex-wrap:wrap;
+    padding:7px 14px; background:#2A2410; border-bottom:1px solid #4A3F17; color:#FFE7A3; font-size:13px;
+  }
+  .trial b{font-weight:700}
+  .trial a{color:var(--on); white-space:nowrap}
+
+  button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
+  .mini{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:8px 12px; font-size:13px; min-height:40px; white-space:nowrap;
+  }
+  .mini.live{border-color:var(--ok); color:var(--ok)}
+
+  .meter{padding:7px 14px; border-bottom:1px solid var(--line); background:#141922}
+  .meterrow{display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); flex-wrap:wrap; min-height:18px}
+  .meterrow b{color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums}
+  .hold{color:var(--on); font-weight:700}
+
+  main{flex:1; min-height:0; overflow:hidden; padding:10px 12px; position:relative}
+  .grid{height:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(3,minmax(0,1fr)); gap:8px; position:relative}
+  .cell{
+    position:relative; min-width:0; min-height:0; overflow:hidden;
+    background:#182130; border:3px solid #26344a; border-radius:18px; color:#DCE6F5; padding:6px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-size:clamp(20px,6vw,42px); font-weight:800; line-height:1.2; letter-spacing:-.02em; word-break:keep-all;
+    transition:background .1s, border-color .1s, color .1s;
+  }
+  .cell.call{background:#301416; border-color:#5A2226; color:#FFD9D9; font-size:clamp(17px,4.8vw,34px)}
+  .cell.hit{background:#3A3212; border-color:var(--on); color:#FFF3CF}
+  .cell.call.hit{background:#5A1E22; border-color:var(--warn)}
+  .cell.picked{background:#123020 !important; border-color:var(--ok) !important}
+  .cell.miss{background:#3A1416 !important; border-color:var(--warn) !important}
+  .cell.target{box-shadow:inset 0 0 0 6px var(--blue); animation:tgt 1s ease-in-out infinite}
+  .cell.target::before{content:"여기"; position:absolute; top:6px; left:10px; font-size:clamp(12px,3.2vw,16px); font-weight:700; color:#9CC2FF}
+  @keyframes tgt{ 0%,100%{box-shadow:inset 0 0 0 6px var(--blue)} 50%{box-shadow:inset 0 0 0 10px #8FB8FF} }
+  /* 머무르기 고리 */
+  .ring{
+    position:absolute; top:6px; right:6px; width:clamp(40px,11vw,70px); aspect-ratio:1; border-radius:50%;
+    background:conic-gradient(var(--ok) calc(var(--p,0) * 360deg), rgba(255,255,255,.14) 0);
+    -webkit-mask:radial-gradient(circle, transparent 52%, #000 54%); mask:radial-gradient(circle, transparent 52%, #000 54%);
+    pointer-events:none;
+  }
+  /* 지금 눈길 (점) */
+  #gdot{
+    position:absolute; left:0; top:0; width:26px; height:26px; margin:-13px 0 0 -13px; border-radius:50%; z-index:5;
+    background:rgba(91,155,255,.85); box-shadow:0 0 0 4px rgba(91,155,255,.25), 0 0 16px rgba(91,155,255,.7);
+    pointer-events:none; transition:opacity .2s;
+  }
+  #gdot.frozen{background:rgba(255,210,74,.85)}
+  /* 「멀어요·가까워요·정면」 알림 */
+  #hint{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:6; width:min(92%,520px);
+    background:rgba(42,36,16,.96); border:3px solid var(--on); border-radius:20px; padding:16px 14px; text-align:center;
+    font-size:clamp(24px,7vw,40px); font-weight:800; color:#FFE7A3; line-height:1.3; word-break:keep-all; pointer-events:none;
+  }
+  #hint small{display:block; font-size:clamp(15px,4.4vw,20px); font-weight:500; color:#E8D9A8; margin-top:6px}
+  /* 정확도 시험 줄 */
+  #accBar{
+    position:absolute; left:12px; right:12px; top:10px; z-index:4; pointer-events:none; display:flex; justify-content:center;
+  }
+  #accBar span{background:rgba(22,35,58,.95); border:2px solid var(--blue); color:#DCE8FF; border-radius:12px; padding:4px 12px; font-size:clamp(14px,4vw,18px); font-weight:700}
+
+  footer{
+    padding:10px 12px; padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid var(--line); display:flex; gap:8px; align-items:center; flex:none; min-width:0;
+  }
+  .say{flex:1; min-width:0; font-size:14px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .big{min-height:48px; font-size:16px; font-weight:700; border-radius:10px; padding:6px 12px; background:#16233A; border:2px solid var(--blue); color:#DCE8FF; white-space:nowrap}
+
+  /* 맞추기 화면 — 글은 점이 없는 쪽(위 또는 아래)에 둔다 */
+  #cal{position:fixed; inset:0; background:#0B0E12; z-index:50; display:none}
+  #cal.show{display:block}
+  #calPanel{
+    position:absolute; left:0; right:0; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;
+    padding:calc(12px + env(safe-area-inset-top, 0px)) 16px 10px; max-height:46vh; overflow:hidden;
+  }
+  #calPanel.top{top:0}
+  #calPanel.bottom{bottom:0; padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px))}
+  #calStep{font-size:18px; font-weight:700; color:#C9D1DC; letter-spacing:.04em; font-variant-numeric:tabular-nums}
+  #calMsg{font-size:clamp(26px,7.4vw,42px); font-weight:800; line-height:1.25; letter-spacing:-.02em; word-break:keep-all; color:#fff}
+  #calSub{font-size:clamp(16px,4.4vw,20px); color:#C9D1DC; line-height:1.45; word-break:keep-all; max-width:26em}
+  #calPrompt{
+    width:min(100%,520px); font-size:clamp(19px,5.4vw,26px); font-weight:800; line-height:1.35; color:#FFE7A3; word-break:keep-all;
+    background:#2A2410; border:2px solid #7A6420; border-radius:16px; padding:10px 14px; animation:calGlow 2.2s ease-in-out infinite;
+  }
+  #calPrompt small{display:block; font-size:15px; font-weight:500; color:#E8D9A8; margin-top:2px}
+  @keyframes calGlow{ 0%,100%{border-color:#7A6420} 50%{border-color:var(--on)} }
+  #calCount{font-size:clamp(56px,16vw,90px); font-weight:800; color:var(--on); line-height:1}
+  #calProg{width:min(100%,480px); height:20px; background:#232a34; border-radius:99px; overflow:hidden}
+  #calProg i{display:block; height:100%; width:0; background:var(--ok)}
+  #calDone{font-size:clamp(56px,16vw,90px); font-weight:800; color:var(--ok); line-height:1}
+  #calVal{font-size:16px; color:#C9D1DC; min-height:1.2em; word-break:keep-all}
+  #calBtns{display:flex; gap:8px; width:min(100%,520px)}
+  #calBtns button{flex:1; min-height:52px; font-size:18px; font-weight:700; border-radius:14px; background:var(--panel); border:2px solid #3A4454; color:var(--ink)}
+  #calDot{
+    position:fixed; width:52px; height:52px; margin:-26px 0 0 -26px; border-radius:50%;
+    background:var(--blue); box-shadow:0 0 0 10px rgba(91,155,255,.22), 0 0 40px rgba(91,155,255,.6);
+    display:none; z-index:60; transition:top .6s cubic-bezier(.4,0,.2,1), left .6s cubic-bezier(.4,0,.2,1);
+    animation:calPulse 1.1s ease-in-out infinite;
+  }
+  #calDot::after{content:""; position:absolute; left:50%; top:50%; width:10px; height:10px; margin:-5px; border-radius:50%; background:#fff}
+  #calDot.show{display:block}
+  @keyframes calPulse{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+
+  /* 소개 · 시험 결과 */
+  .sheet{
+    position:fixed; inset:0; z-index:70; background:#0B0E12; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:16px; padding:24px 18px; text-align:center; overflow:auto;
+  }
+  .sheet .ibig{font-size:clamp(28px,8vw,46px); font-weight:800; line-height:1.25; word-break:keep-all}
+  .sheet p{font-size:clamp(17px,4.6vw,22px); line-height:1.6; color:#C9D1DC; margin:0; max-width:24em; word-break:keep-all}
+  .go{font-size:clamp(22px,6.4vw,30px); font-weight:800; color:#FFE7A3; background:#2A2410; border:2px solid var(--on); border-radius:18px; padding:14px 20px; width:min(100%,480px)}
+  #accPct{font-size:clamp(64px,22vw,120px); font-weight:800; color:var(--on); line-height:1}
+  #accDetail{font-size:16px; color:#C9D1DC; line-height:1.6; max-width:30em; word-break:keep-all}
+
+  dialog{border:0; border-radius:16px; background:var(--panel); color:var(--ink); padding:18px; width:min(460px,94vw); max-height:88dvh}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  label{display:block; font-size:13px; color:var(--muted); margin:14px 0 6px}
+  input[type=range]{width:100%}
+  .val{color:var(--on); font-weight:600}
+  .row{display:flex; gap:8px; margin-top:16px; flex-wrap:wrap}
+  .row .mini{flex:1; text-align:center}
+  .seg{display:flex; gap:6px}
+  .seg .mini{flex:1; padding:8px 4px; white-space:normal}
+  .seg .mini.sel{border-color:var(--on); color:var(--on); background:#2A2410}
+  .note{font-size:12px; color:var(--muted); line-height:1.6}
+  video{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>말해요 · 눈으로 9칸</h1>
+  <span class="tag">시험판 4</span>
+  <span class="spacer"></span>
+  <button class="mini" id="setBtn">설정</button>
+  <button class="mini" id="camBtn">카메라 켜기</button>
+</header>
+
+<div class="trial">
+  <span><b>시험판 4 — 거리·고개 보정 9칸</b></span>
+  <span class="spacer"></span>
+  <a href="../head/">고개 판 →</a>
+  <a href="../eye4/">눈 4방향 →</a>
+</div>
+
+<div class="meter">
+  <div class="meterrow">
+    <span id="valTxt">—</span>
+    <span id="holdTxt" class="hold"></span>
+    <span class="spacer"></span>
+    <span id="stat">카메라 꺼짐</span>
+  </div>
+</div>
+
+<main id="main">
+  <div class="grid" id="grid"></div>
+  <div id="gdot" hidden></div>
+  <div id="hint" hidden></div>
+  <div id="accBar" hidden><span id="accTxt"></span></div>
+</main>
+
+<footer>
+  <div class="say" id="say">준비됨</div>
+  <button class="big" id="accBtn">🎯 정확도 시험</button>
+  <button class="mini" id="calBtn2">다시 맞추기</button>
+</footer>
+
+<div class="sheet" id="intro" hidden>
+  <div class="ibig">말해요 · 눈으로 9칸</div>
+  <p>눈길로 아홉 칸 가운데 하나를 고르는 시험판입니다. 처음에 점 아홉 개를 하나씩 천천히 보면서 눈을 맞춥니다. 영상은 이 기기 안에서만 처리합니다.</p>
+  <div class="go" id="introGo">화면을 누르면 시작합니다</div>
+</div>
+
+<div class="sheet" id="accRes" hidden>
+  <div class="ibig">정확도 시험 결과</div>
+  <div id="accPct">—</div>
+  <p id="accLine"></p>
+  <div id="accDetail"></div>
+  <div class="go" id="accClose">닫기</div>
+</div>
+
+<video id="vid" playsinline muted></video>
+
+<div id="cal">
+  <div id="calDot"></div>
+  <div id="calPanel" class="top">
+    <div id="calStep"></div>
+    <div id="calMsg">준비</div>
+    <div id="calSub"></div>
+    <div id="calPrompt" hidden></div>
+    <div id="calCount" hidden></div>
+    <div id="calProg" hidden><i></i></div>
+    <div id="calDone" hidden>✓</div>
+    <div id="calVal"></div>
+    <div id="calBtns">
+      <button id="calRedo">↺ 다시</button>
+      <button id="calRestart">처음부터</button>
+      <button id="calQuit">그만</button>
+    </div>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <h1 style="font-size:16px;margin:0 0 4px">설정</h1>
+  <p class="note">바꾸면 바로 반영됩니다. 이 시험판의 설정은 다른 판과 따로 저장됩니다.</p>
+
+  <label>고르는 방법</label>
+  <div class="seg" id="selSeg">
+    <button class="mini" data-v="dwell">머무르기</button>
+    <button class="mini" data-v="blink">보고 눈 감기</button>
+  </div>
+  <p class="note"><b>머무르기</b> — 칸을 보고 있으면 고리가 차오르고, 다 차면 말합니다. 같은 칸을 또 고르려면 눈을 다른 칸으로 옮겼다 오세요.<br>
+  <b>보고 눈 감기</b> — 칸을 본 채로 눈을 꾹 감고 있으면 그 칸을 말합니다.</p>
+  <div id="dwellRow">
+    <label>머무르기 시간 — <span class="val" id="dwellV"></span>초</label>
+    <input type="range" id="dwell" min="0.8" max="3" step="0.1">
+  </div>
+  <div id="blinkRows">
+    <label>몇 초 감아야 선택 — <span class="val" id="holdV"></span>초</label>
+    <input type="range" id="hold" min="0.6" max="2" step="0.1">
+  </div>
+  <label>눈 감았다고 볼 기준 — <span class="val" id="thrV"></span></label>
+  <input type="range" id="thr" min="0.2" max="0.9" step="0.02">
+  <label>흔들림 줄이기 — <span class="val" id="steadyV"></span></label>
+  <input type="range" id="steady" min="1" max="10" step="1">
+  <p class="note">높이면 점이 덜 떨리지만 늦게 따라옵니다.</p>
+  <label>말한 뒤 쉬는 시간 — <span class="val" id="coolV"></span>초</label>
+  <input type="range" id="cool" min="0" max="4" step="0.5">
+
+  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+
+  <label>눈길 셈 방식 (정확도 시험으로 비교해 보세요)</label>
+  <div class="seg" id="modeSeg">
+    <button class="mini" data-v="full">거리·고개 보정</button>
+    <button class="mini" data-v="noDist">고개만 보정</button>
+    <button class="mini" data-v="eye">눈만 (예전)</button>
+  </div>
+  <p class="note">한 번 맞추면 세 가지가 다 만들어집니다. 다시 맞출 필요 없이 바꿔서 시험할 수 있습니다.</p>
+
+  <div class="row">
+    <button class="mini" id="dotBtn">눈길 점 보이기: 켬</button>
+    <button class="mini" id="voiceBtn">말로 안내: 켬</button>
+  </div>
+  <div class="row">
+    <button class="mini" id="hoverBtn">보는 칸 이름 읽기: 끔</button>
+    <button class="mini" id="waitBtn">맞출 때 단계마다 기다리기: 켬</button>
+  </div>
+
+  <div class="row">
+    <button class="mini" id="calBtn">다시 맞추기</button>
+  </div>
+  <p class="note" id="calInfo"></p>
+  <p class="note">점 아홉 개 → 점을 보며 고개 좌우 → 고개 위아래 순서로 맞춥니다. 단계마다 말로 알려 드리고, 준비되면 화면을 누르세요(눈을 1초 꾹 감아도 됩니다). 그러면 3·2·1 뒤에 잽니다. 폰 위치·자세·안경·불빛이 많이 바뀌면 다시 맞추세요.</p>
+
+  <label>정확도 시험 기록 (최근 것 위)</label>
+  <div class="note" id="accHist">아직 없음</div>
+
+  <p class="note" style="margin-top:14px">
+    써 보시고 불편한 점이나 있었으면 하는 기능이 있으면 알려 주세요. 메일 앱이 열립니다.<br>
+    <a data-fb="눈으로 9칸" href="mailto:vis555540@gmail.com" style="color:var(--on)">의견 보내기 (메일)</a>
+  </p>
+  <p class="note"><a href="../head/" style="color:var(--on)">고개로 고르기(시험판 3)</a> · <a href="../eye4/" style="color:var(--on)">눈 4방향(시험판 2)</a></p>
+
+  <div class="row">
+    <button class="mini" id="closeDlg">닫기</button>
+  </div>
+</dialog>
+
+<script type="module">
+/* 말해요 · 눈으로 9칸 (시험판 4, 2026-10-19)
+   형 생각: 진짜 시선추적기처럼 ① 얼굴까지 거리(두 눈 사이 크기) ② 고개 방향·기울기를 먼저 빼고,
+   ③ 그다음 눈 틀 안 눈동자로 눈길을 셈 → 4~6칸이 아니라 9칸을 고를 수 있게.
+   셈은 gaze.js 에 따로 있다 (node 로 시험함). 이 파일은 화면·카메라·맞추기·고르기만. */
+import * as G from "./gaze.js?v=2";
+
+const TEST = new URLSearchParams(location.search).get("test") === "1";
+let FaceLandmarker = null, FilesetResolver = null;
+const CDN = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
+/* ───────── 아홉 칸 (첫 화면 말해요 판에서 쓰는 말) ───────── */
+const CELLS = [
+  { label:"예" }, { label:"아니요" }, { label:"아파요" },
+  { label:"물 조금", say:"물 조금 주세요" }, { label:"석션 해주세요" }, { label:"자세 바꿔주세요" },
+  { label:"추워요" }, { label:"더워요" }, { label:"🔔 사람 불러주세요", kind:"call" }
+];
+const POS = ["왼쪽 위","가운데 위","오른쪽 위","왼쪽","가운데","오른쪽","왼쪽 아래","가운데 아래","오른쪽 아래"];
+
+/* ───────── 설정 ───────── */
+const cfgDefault = {
+  sel:"dwell", dwell:1.5, hold:1.0, thr:0.45, steady:4, cool:1.5, mode:"full",
+  showDot:true, voice:true, hoverSay:false, calWait:true, introSeen:false, accHist:[]
+};
+let cfg = { ...cfgDefault };
+try{ cfg = { ...cfgDefault, ...JSON.parse(localStorage.getItem("malhae_eye9")||"{}") }; }catch(e){}
+const saveCfg = () => { try{ localStorage.setItem("malhae_eye9", JSON.stringify(cfg)); }catch(e){} };
+let model = null;   // 맞춘 결과 (gaze.js fit)
+try{ model = JSON.parse(localStorage.getItem("malhae_eye9_model")||"null"); if(model && model.ver !== 1) model = null; }catch(e){ model = null; }
+const saveModel = () => { try{ localStorage.setItem("malhae_eye9_model", JSON.stringify(model)); }catch(e){} };
+
+/* ───────── 소리 ───────── */
+let voice = null;
+const pickVoice = () => {
+  const vs = speechSynthesis.getVoices();
+  voice = vs.find(v=>/ko(-|_)?KR/i.test(v.lang)) || vs.find(v=>/ko/i.test(v.lang)) || null;
+};
+try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
+const said = [], guideSaid = [];
+let coolUntil = 0;
+function utter(t, rate = .95, vol = 1, cancel = true){
+  try{
+    if(cancel) speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = "ko-KR"; if(voice) u.voice = voice; u.rate = rate; u.volume = vol;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function speak(t){                // 고른 말 — 늘 소리 냄
+  if(!t) return;
+  said.push(t); utter(t);
+  $("say").textContent = t;
+  coolUntil = performance.now() + cfg.cool*1000;
+}
+function guide(t, soft = false){  // 안내 말 — 설정으로 끌 수 있음
+  if(!t || !cfg.voice) return;
+  if(soft){ try{ if(speechSynthesis.speaking) return; }catch(e){} }
+  guideSaid.push(t); utter(t, soft ? 1 : .88, soft ? .6 : 1, !soft);
+}
+let ac = null;
+function tone(f, ms = 160, vol = .25){
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==="suspended") ac.resume();
+    const o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime;
+    o.frequency.value = f; g.gain.setValueAtTime(vol, t0); g.gain.linearRampToValueAtTime(0, t0 + ms/1000);
+    o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + ms/1000 + .02);
+  }catch(e){}
+}
+function alarm(){
+  said.push("[알람]");
+  coolUntil = performance.now() + Math.max(cfg.cool, 3)*1000;
+  for(let i=0;i<6;i++) setTimeout(()=>tone(i%2 ? 880 : 1320, 240, .5), i*280);
+  $("say").textContent = "사람을 부르는 중…";
+  setTimeout(()=>speak("불러주세요. 도와주세요."), 1900);
+}
+
+/* ───────── 칸 그리기 ───────── */
+const $ = id => document.getElementById(id);
+const gridEl = $("grid"), mainEl = $("main"), gdot = $("gdot"), hintEl = $("hint");
+CELLS.forEach((c, i) => {
+  const b = document.createElement("button");
+  b.className = "cell" + (c.kind==="call" ? " call" : "");
+  b.textContent = c.label;
+  b.onclick = () => choose(i, true);   // 옆에서 돌봐주시는 분이 손으로도
+  gridEl.appendChild(b);
+});
+const cellEls = [...gridEl.children];
+function flash(i, cls = "picked"){ const el = cellEls[i]; if(!el) return; el.classList.add(cls); setTimeout(()=>el.classList.remove(cls), 500); }
+
+function choose(i, byHand = false){
+  if(i < 0) return;
+  if(acc){ accPick(i, byHand); return; }
+  flash(i);
+  const c = CELLS[i];
+  if(c.kind === "call") alarm(); else speak(c.say || c.label);
+}
+
+/* ───────── 얼굴 읽기 ───────── */
+const vid = $("vid"), valTxt = $("valTxt"), holdTxt = $("holdTxt"), stat = $("stat"), camBtn = $("camBtn");
+let landmarker = null, running = false, wakeLock = null;
+let fake;   // ?test=1: 밖에서 넣는 measure() 모양 값 (null = 얼굴 없음)
+function frame(now){
+  if(TEST && fake !== undefined) return fake ? { ...fake } : null;
+  if(!landmarker || !vid.srcObject) return null;
+  try{
+    const r = landmarker.detectForVideo(vid, now);
+    const lm = r.faceLandmarks && r.faceLandmarks[0];
+    if(!lm) return null;
+    const bs = r.faceBlendshapes && r.faceBlendshapes[0];
+    const m = {}; if(bs) for(const c of bs.categories) m[c.categoryName] = c.score;
+    const M = r.facialTransformationMatrixes && r.facialTransformationMatrixes[0];
+    return G.measure(lm, m, M && M.data, vid.videoWidth || 640, vid.videoHeight || 480);
+  }catch(e){ return null; }
+}
+
+/* ───────── 눈길 → 칸 ───────── */
+const fu = new G.OneEuro(), fv = new G.OneEuro();
+const steadyCut = () => 2.0 / cfg.steady;   // 1 → 2Hz(빠름), 10 → 0.2Hz(단단)
+let gaze = null, cell = -1, cellSince = 0, lockCell = -1, hintNow = null, hintSaidAt = -1e9;
+const cellHist = [{ t:0, c:-1 }];
+function setCell(c, now){
+  if(c === cell) return;
+  cell = c; cellSince = now;
+  cellHist.push({ t:now, c }); if(cellHist.length > 60) cellHist.shift();
+  for(let i=0;i<9;i++) cellEls[i].classList.toggle("hit", i===c);
+  if(c >= 0 && cfg.hoverSay && !acc) guide(CELLS[c].label.replace(/^🔔\s*/,""), true);
+}
+const cellAt = t => { for(let i=cellHist.length-1;i>=0;i--) if(cellHist[i].t <= t) return cellHist[i].c; return -1; };
+
+let ringEl = null, dwellP = 0;
+function showRing(i, p){
+  dwellP = p;
+  if(i < 0 || p <= 0){ if(ringEl){ ringEl.remove(); ringEl = null; } return; }
+  const el = cellEls[i];
+  if(!ringEl || ringEl.parentNode !== el){ if(ringEl) ringEl.remove(); ringEl = document.createElement("i"); ringEl.className = "ring"; el.appendChild(ringEl); }
+  ringEl.style.setProperty("--p", Math.min(1, p).toFixed(3));
+}
+function paintDot(){
+  if(!gaze || !cfg.showDot){ gdot.hidden = true; return; }
+  const g = gridEl.getBoundingClientRect(), m = mainEl.getBoundingClientRect();
+  const u = Math.max(-0.03, Math.min(1.03, gaze.u)), v = Math.max(-0.03, Math.min(1.03, gaze.v));
+  gdot.hidden = false;
+  gdot.style.left = (g.left - m.left + u*g.width) + "px";
+  gdot.style.top = (g.top - m.top + v*g.height) + "px";
+}
+const HINTS = {
+  face:["얼굴이 안 보여요","화면 앞에 얼굴을 두세요"],
+  far: ["얼굴이 멀어요","조금 가까이 와 주세요"],
+  near:["얼굴이 가까워요","조금 떨어져 주세요"],
+  pose:["정면을 봐 주세요","고개를 화면 쪽으로 돌려 주세요"],
+  rot: ["화면 방향이 바뀌었어요","처음 맞출 때처럼 두거나 다시 맞추세요"]
+};
+function showHint(k, now){
+  if(k === hintNow) return;
+  hintNow = k;
+  if(!k){ hintEl.hidden = true; return; }
+  hintEl.innerHTML = `${HINTS[k][0]}<small>${HINTS[k][1]}</small>`;
+  hintEl.hidden = false;
+  if(now - hintSaidAt > 6000){ hintSaidAt = now; guide(HINTS[k][0] + ". " + HINTS[k][1] + "."); }
+}
+function rotated(){
+  if(!model || !model.screen) return false;
+  const g = gridEl.getBoundingClientRect();
+  return (g.width > g.height) !== (model.screen.w > model.screen.h);
+}
+
+let closedSince = null, fired = false, armCell = -1;
+let dwellCell = -1, dwellStart = 0, awaySince = 0;
+let missSince = 0;   // 얼굴이 잠깐(0.4초) 안 보이는 건 넘긴다
+
+function tick(now){
+  const m = frame(now);
+  if(calBusy){ calTick(m, now); return; }
+  if(acc) accTick(now);
+  if(m){
+    const h = model ? G.headAng(m, model) : null;
+    valTxt.innerHTML = h ? `고개 <b>${Math.round(h.hx/G.D2R)+0}° ${Math.round(h.hy/G.D2R)+0}°</b> 거리 <b>${Math.round(model.ref.iod / m.iod * 100)}%</b>` : "얼굴 보임";
+  }else valTxt.textContent = "얼굴 안 보임";
+
+  if(!model){ stat.textContent = "먼저 맞추기"; return; }
+  if(!m){
+    if(!missSince) missSince = now;
+    if(now - missSince > 400){ showHint("face", now); setCell(-1, now); showRing(-1, 0); gaze = null; paintDot(); closedSince = null; }
+    return;
+  }
+  missSince = 0;
+  const hk = rotated() ? "rot" : G.hint(model, m);
+
+  // 눈 감음: 눈길은 멈춘다 (감으면 아래를 보는 것처럼 읽힌다)
+  const closed = m.v >= cfg.thr;
+  if(closed){
+    gdot.classList.add("frozen");
+    if(cfg.sel === "blink" && !hk){
+      if(closedSince === null){ closedSince = now; fired = false; armCell = cellAt(now - 200); }
+      const held = (now - closedSince)/1000;
+      if(!fired) holdTxt.textContent = `감은 채 ${held.toFixed(1)}초` + (armCell >= 0 ? ` → ${CELLS[armCell].label.replace(/^🔔\s*/,"")}` : "");
+      showRing(armCell, held / cfg.hold);
+      if(!fired && held >= cfg.hold){
+        fired = true; showRing(-1, 0); holdTxt.textContent = armCell >= 0 ? "선택!" : "칸 밖 — 고르지 않음";
+        if(now >= coolUntil || acc) choose(armCell);
+      }
+    }
+    return;
+  }
+  gdot.classList.remove("frozen");
+  if(closedSince !== null){ closedSince = null; showRing(-1, 0); if(holdTxt.textContent !== "선택!") holdTxt.textContent = ""; }
+  if(m.v > cfg.thr * 0.75) return;   // 반쯤 감기는 중에도 멈춤
+
+  const p = G.predict(model, m, cfg.mode);
+  const t = now / 1000;
+  fu.minCut = fv.minCut = steadyCut();
+  gaze = { u: fu.filter(p.u, t), v: fv.filter(p.v, t) };
+  paintDot();
+  setCell(G.stickyCell(cell, gaze.u, gaze.v), now);
+  showHint(hk, now);
+  stat.textContent = hk ? "멈춤" : (acc ? "시험 중" : "보는 중");
+
+  // 고른 칸은 다른 칸으로 0.3초 넘게 옮겨 가야 다시 고를 수 있다 (잠깐 흔들린 건 옮긴 걸로 안 침)
+  if(lockCell >= 0 && cell !== lockCell && now - cellSince > 300) lockCell = -1;
+
+  if(cfg.sel === "dwell"){
+    // 머무르는 칸: 다른 칸으로 0.25초 안에 돌아오면 고리를 이어서 채운다
+    if(cell !== dwellCell){
+      if(!awaySince) awaySince = now;
+      if(now - awaySince > 250){ dwellCell = cell; dwellStart = now; awaySince = 0; }
+    }else awaySince = 0;
+    const c = dwellCell;
+    if(hk || c < 0 || c === lockCell){ showRing(-1, 0); dwellStart = now; if(c === lockCell && c >= 0) holdTxt.textContent = "다른 칸으로 옮기면 또 고를 수 있어요"; return; }
+    if(now < coolUntil && !acc){ showRing(-1, 0); holdTxt.textContent = "잠깐 쉬어요"; dwellStart = now; return; }
+    const pr = (now - dwellStart) / (cfg.dwell*1000);
+    showRing(c, pr);
+    holdTxt.textContent = `${(Math.min(cfg.dwell, (now-dwellStart)/1000)).toFixed(1)} / ${(+cfg.dwell).toFixed(1)}초`;
+    if(pr >= 1){ lockCell = c; showRing(-1, 0); holdTxt.textContent = "선택!"; choose(c); }
+  }
+}
+
+function loop(){
+  if(!running) return;
+  tick(performance.now());
+  requestAnimationFrame(loop);
+}
+
+async function startCam(){
+  try{
+    stat.textContent = "준비 중…";
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:"user", width:{ideal:1280}, height:{ideal:720} }, audio:false
+    });
+    vid.srcObject = stream; await vid.play();
+    if(!landmarker){
+      if(!FaceLandmarker) ({ FaceLandmarker, FilesetResolver } = await import(CDN + "/vision_bundle.mjs"));
+      const vision = await FilesetResolver.forVisionTasks(CDN + "/wasm");
+      const opts = delegate => ({
+        baseOptions:{ modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task", delegate },
+        outputFaceBlendshapes:true, outputFacialTransformationMatrixes:true, runningMode:"VIDEO", numFaces:1
+      });
+      // 그래픽 칩(GPU)이 더 빠르다. 안 되는 기기는 CPU 로
+      try{ landmarker = await FaceLandmarker.createFromOptions(vision, opts("GPU")); }
+      catch(e){ landmarker = await FaceLandmarker.createFromOptions(vision, opts("CPU")); }
+    }
+    try{ wakeLock = await navigator.wakeLock.request("screen"); }catch(e){}
+    running = true;
+    camBtn.textContent = "카메라 끄기"; camBtn.classList.add("live");
+    stat.textContent = "보는 중";
+    loop();
+    if(!model) calibrate();
+  }catch(e){
+    stat.textContent = "카메라 안 됨: " + (e && e.name ? e.name : e);
+  }
+}
+function stopCam(){
+  running = false;
+  if(vid.srcObject){ vid.srcObject.getTracks().forEach(t=>t.stop()); vid.srcObject = null; }
+  if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
+  camBtn.textContent = "카메라 켜기"; camBtn.classList.remove("live");
+  stat.textContent = "카메라 꺼짐"; valTxt.textContent = "—"; holdTxt.textContent = "";
+  showRing(-1, 0); setCell(-1, performance.now()); gaze = null; paintDot(); showHint(null, 0);
+  if(acc) accEnd(true);
+}
+camBtn.onclick = () => running ? stopCam() : startCam();
+
+/* ───────── 맞추기 ─────────
+   형 말(10/17) 「너무 빠르고 따라가기 어려워」 → 한 단계씩:
+   말로 읽어 줌 → 「준비됐으면 누르세요」(눈 1초 감아도 됨)에서 기다림 → 3·2·1 → 2.5초 재기 → ✓ → 다음.
+   점은 진짜 칸 가운데에 뜬다. 글은 점이 없는 쪽(위·아래)에 둔다. */
+const calEl=$("cal"), calPanel=$("calPanel"), calMsg=$("calMsg"), calSub=$("calSub"), calVal=$("calVal"), calStep=$("calStep"),
+      calPrompt=$("calPrompt"), calCount=$("calCount"), calProg=$("calProg"), calDone=$("calDone"), calDot=$("calDot");
+let sample = null, calScale = 1, calBusy = false, calAuto = false, calPhase = "", calEv = null, calClosed = null, calOpenSeen = false, calNote = "", lastCal = null, curStep = null;
+const wait = ms => new Promise(r=>setTimeout(r, ms));
+function calSend(e){ if(calEv){ const f = calEv; calEv = null; f(e); } }
+const calNext = () => new Promise(r => { calEv = r; });
+function calShow(phase){
+  calPhase = phase;
+  calPrompt.hidden = !(phase==="wait" || phase==="result");
+  calCount.hidden = phase!=="count";
+  calProg.hidden = phase!=="rec";
+  calDone.hidden = phase!=="done";
+  $("calRedo").hidden = phase==="result";
+  $("calQuit").textContent = phase==="result" ? "닫기" : "그만";
+  // 재는 동안은 글을 흐리게 — 점만 보시도록
+  calMsg.style.opacity = calSub.style.opacity = (phase==="rec" || phase==="count") ? .45 : 1;
+}
+const cellCenter = i => ({ u:(i%3 + .5)/3, v:(Math.floor(i/3) + .5)/3 });
+function setDot(i){
+  if(i === null || i === undefined){ calDot.classList.remove("show"); calPanel.className = "top"; return; }
+  const r = cellEls[i].getBoundingClientRect();
+  calDot.style.left = (r.left + r.width/2) + "px"; calDot.style.top = (r.top + r.height/2) + "px";
+  calDot.classList.add("show");
+  calPanel.className = Math.floor(i/3) === 0 ? "bottom" : "top";
+}
+// 순서: 가운데부터 시계 방향으로 한 바퀴 (점이 옆 칸으로만 옮겨 가서 따라가기 쉽다)
+const ORDER = [4, 0, 1, 2, 5, 8, 7, 6, 3];
+function calSteps(){
+  const s = ORDER.map(i => ({ k:"p"+i, cell:i, name:POS[i], msg:`${POS[i]} 점을 보세요`, say:`${POS[i]} 점을 보세요.`,
+    sub:"고개는 편하게 두고, 눈으로 점 가운데 하얀 곳을 보세요", ms:2500 }));
+  s.push({ k:"wigX", cell:4, name:"고개 좌우", msg:"점을 보면서 고개만 좌우로", sub:"눈은 가운데 점에 두고, 고개만 천천히 왼쪽·오른쪽으로 두세 번",
+    say:"가운데 점에서 눈을 떼지 말고, 고개만 천천히 왼쪽 오른쪽으로 두세 번 돌리세요.", ms:4500 });
+  s.push({ k:"wigY", cell:4, name:"고개 위아래", msg:"점을 보면서 고개만 위아래로", sub:"눈은 가운데 점에 두고, 고개만 천천히 끄덕이듯 두세 번",
+    say:"이번에는 점을 보면서 고개만 천천히 위아래로 끄덕이세요.", ms:4500 });
+  if(cfg.sel === "blink") s.push({ k:"blk", cell:null, name:"감기", msg:"눈을 꾹 감으세요", sub:"막대가 다 찰 때까지 감고 계세요", say:"숫자가 끝나면 눈을 꾹 감고 계세요.", ms:2000 });
+  return s;
+}
+function calTick(m, now){
+  if(sample){ if(m) sample.push({ ...m }); return; }
+  if(calPhase !== "wait") return;
+  if(m && m.v >= cfg.thr){
+    if(!calOpenSeen) return;           // 이 단계에서 눈을 한 번 뜬 뒤부터 센다
+    if(calClosed === null) calClosed = now;
+    const h = (now - calClosed)/1000;
+    calVal.textContent = `눈 감음 ${Math.min(1, h).toFixed(1)} / 1.0초`;
+    if(h >= 1){ calClosed = null; calOpenSeen = false; calSend("ready"); }
+  }else{
+    if(calClosed !== null){ calClosed = null; calVal.textContent = ""; }
+    if(m) calOpenSeen = true;
+  }
+}
+async function runStep(s, i, total){
+  curStep = s;
+  calStep.textContent = `${i+1} / ${total}`;
+  calMsg.textContent = s.msg; calSub.textContent = s.sub;
+  setDot(s.cell);
+  calShow("wait");
+  calPrompt.innerHTML = cfg.calWait ? "준비됐으면 화면을 누르세요<small>눈을 1초 꾹 감아도 됩니다</small>" : "곧 시작합니다";
+  calVal.textContent = calNote; calNote = "";
+  calClosed = null; calOpenSeen = false;
+  guide(s.say || s.msg);
+  const autoMs = calAuto ? 150 : (cfg.calWait ? 0 : 3500);
+  const ev = await (autoMs ? Promise.race([calNext(), wait(autoMs).then(()=>"ready")]) : calNext());
+  if(ev !== "ready") return ev;
+
+  const evP = calNext();
+  const pause = ms => Promise.race([wait(ms).then(()=>null), evP]);
+  calShow("count"); calVal.textContent = "";
+  for(let k=3; k>=1; k--){ calCount.textContent = k; const r = await pause(1000*calScale); if(r) return r; }
+
+  calShow("rec");
+  const bar = calProg.firstElementChild, ms = s.ms*calScale, t0 = performance.now();
+  bar.style.width = "0%"; sample = [];
+  while(performance.now() - t0 < ms){
+    bar.style.width = Math.min(100, (performance.now()-t0)/ms*100) + "%";
+    calVal.textContent = sample.length ? "그대로 계세요" : "얼굴을 찾는 중…";
+    const r = await pause(50); if(r){ sample = null; return r; }
+  }
+  bar.style.width = "100%";
+  let got = sample; sample = null;
+  if(s.k.startsWith("p")) got = got.slice(Math.floor(got.length*0.3)).filter(m => m.v < cfg.thr);   // 눈이 점에 닿는 동안(앞 30%)과 깜빡임은 버림
+  else if(s.k !== "blk") got = got.filter(m => m.v < cfg.thr);
+  if(got.length < 5){ calNote = "얼굴이 잘 안 보였어요. 기기 위치를 맞추고 다시 눌러 주세요"; tone(330); return "redo"; }
+  tone(988, 120, .15);
+  calShow("done"); calVal.textContent = "";
+  const r = await pause(800*calScale); if(r) return r;
+  calEv = null;
+  return got;
+}
+function calFinish(R){
+  const points = ORDER.filter(i => R["p"+i]).map(i => ({ ...cellCenter(i), frames:R["p"+i] }));
+  const M = G.fit({ points, wigX:R.wigX||[], wigY:R.wigY||[] });
+  const msg = []; let ok = !!M;
+  if(!M){ msg.push("점을 거의 못 읽었어요"); return { ok, msg }; }
+  const g = gridEl.getBoundingClientRect();
+  M.screen = { w:g.width, h:g.height }; M.date = new Date().toISOString().slice(0,16);
+  model = M; saveModel();
+  msg.push(`맞춤 오차 ${(M.trainErr*100).toFixed(0)}%`);
+  if(!M.vorOk.x || !M.vorOk.y){ msg.push("고개 흔들기가 작아서 " + (!M.vorOk.x && !M.vorOk.y ? "좌우·위아래" : !M.vorOk.x ? "좌우" : "위아래") + "는 기본값을 썼어요"); }
+  if(R.blk){
+    const mids = R.p4 || [];
+    const base = mids.length ? G.median(mids.map(m=>m.v)) : 0.1;
+    const peak = G.median(R.blk.slice(Math.floor(R.blk.length*0.3)).map(m=>m.v));
+    if(peak - base >= 0.08){ cfg.thr = Math.min(0.9, Math.max(0.15, base + (peak-base)*0.45)); msg.push("감기 ✔"); }
+    else { msg.push("감기 ✖ (기준 그대로)"); }
+  }
+  if(M.trainErr > 0.12) ok = false;
+  saveCfg(); syncCfg();
+  return { ok, msg };
+}
+async function calibrate(){
+  if(calBusy) return; calBusy = true;
+  if(acc) accEnd(true);
+  const steps = calSteps();
+  setCell(-1, performance.now()); showRing(-1, 0); showHint(null, 0); gaze = null; paintDot();
+  calEl.classList.add("show");
+  let R = {}, i = 0, end = "close";
+  for(;;){
+    while(i < steps.length){
+      const r = await runStep(steps[i], i, steps.length);
+      if(r === "cancel"){ end = "cancel"; break; }
+      if(r === "restart"){ i = 0; R = {}; calNote = ""; continue; }
+      if(r === "redo") continue;
+      R[steps[i].k] = r; i++;
+    }
+    if(end === "cancel") break;
+    const { ok, msg } = calFinish(R);
+    lastCal = { ok, msg:msg.slice(), notes: model ? model.notes.slice() : [] };
+    curStep = null; setDot(null); calStep.textContent = "";
+    calMsg.textContent = ok ? "다 맞췄습니다" : "잘 안 맞았어요";
+    calSub.textContent = ok
+      ? (cfg.sel==="dwell" ? "이제 칸을 보고 고리가 다 찰 때까지 보면 말합니다. 「🎯 정확도 시험」으로 얼마나 맞는지 볼 수 있어요" : "이제 칸을 보고 눈을 꾹 감으면 말합니다")
+      : "「처음부터」 다시 해 보세요. 점을 끝까지 보고, 고개는 편하게 두세요";
+    calShow("result");
+    calPrompt.innerHTML = "화면을 누르면 닫힙니다";
+    calVal.textContent = msg.join(" · ");
+    guide(ok ? "다 맞췄습니다. 화면을 누르면 닫힙니다." : "잘 안 맞았어요. 처음부터 다시 할 수 있어요.");
+    const ev = await (calAuto ? Promise.race([calNext(), wait(150).then(()=>"ready")]) : calNext());
+    if(ev === "restart"){ i = 0; R = {}; continue; }
+    break;
+  }
+  sample = null; calEv = null; calShow(""); setDot(null); curStep = null;
+  calEl.classList.remove("show");
+  fu.reset(); fv.reset();
+  calBusy = false;
+  syncCfg();
+}
+calEl.addEventListener("click", e => {
+  if(e.target.closest("button")) return;
+  if(calPhase==="wait" || calPhase==="result") calSend("ready");
+});
+$("calRedo").onclick = ()=>calSend("redo");
+$("calRestart").onclick = ()=>calSend("restart");
+$("calQuit").onclick = ()=>calSend("cancel");
+
+/* ───────── 정확도 시험 ─────────
+   아홉 칸을 두 번씩(18번) 섞어서 파란 테두리로 보여 준다. 평소처럼 골라서 맞으면 맞음.
+   한 번에 10초 안에 못 고르면 틀림. 끝나면 몇 %인지 보여 주고 읽어 준다. 기록은 설정에 남는다. */
+const ACC_N = 18, ACC_TIMEOUT = 10000;
+let acc = null;
+function shuffle(R = Math.random){
+  for(let tries=0; tries<50; tries++){
+    const a = [...Array(9).keys(), ...Array(9).keys()];
+    for(let i=a.length-1;i>0;i--){ const j = Math.floor(R()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+    if(a.every((x,i)=>i===0 || x!==a[i-1])) return a;
+  }
+  return [0,4,8,2,6,1,5,3,7,4,0,8,2,6,1,7,3,5];
+}
+function accStart(){
+  if(!model){ alert("먼저 맞추기를 해 주세요."); return; }
+  if(!running){ alert("먼저 오른쪽 위 '카메라 켜기'를 눌러 주세요."); return; }
+  acc = { order:shuffle(), i:-1, res:[], t0:0, next:performance.now() + 2500, mode:cfg.mode, sel:cfg.sel };
+  $("accBar").hidden = false; $("accTxt").textContent = "곧 시작합니다";
+  $("accBtn").textContent = "시험 그만";
+  guide("정확도 시험을 시작합니다. 파란 테두리 칸을 보고, 평소처럼 고르세요. 열여덟 번 합니다.");
+}
+function accShow(){
+  for(let i=0;i<9;i++) cellEls[i].classList.toggle("target", acc && acc.i >= 0 && acc.t0 && i === acc.order[acc.i]);
+  if(acc) $("accTxt").textContent = acc.i < 0 ? "곧 시작합니다" : `시험 ${Math.min(acc.i+1, ACC_N)} / ${ACC_N} · 맞음 ${acc.res.filter(r=>r.ok).length}`;
+}
+function accTick(now){
+  if(!acc) return;
+  if(acc.next && now >= acc.next){          // 다음 칸 내기
+    acc.next = 0; acc.i++;
+    if(acc.i >= ACC_N){ accEnd(); return; }
+    acc.t0 = now; lockCell = dwellCell >= 0 ? dwellCell : cell;   // 지금 보고 있던 칸은 바로 안 골라지게
+    tone(660, 90, .12);
+    accShow();
+    return;
+  }
+  if(acc.t0 && now - acc.t0 > ACC_TIMEOUT) accPick(-1);
+}
+function accPick(i, byHand = false){
+  if(!acc || !acc.t0) return;
+  const want = acc.order[acc.i], now = performance.now();
+  const ok = i === want;
+  acc.res.push({ want, got:i, ok, ms:Math.round(now - acc.t0), byHand });
+  if(i >= 0) flash(i, ok ? "picked" : "miss");
+  tone(ok ? 1046 : 220, ok ? 140 : 260, .2);
+  acc.t0 = 0; acc.next = now + 1200;
+  accShow();
+}
+function accEnd(quiet = false){
+  const a = acc; acc = null;
+  $("accBar").hidden = true; $("accBtn").textContent = "🎯 정확도 시험";
+  accShow();
+  if(!a || quiet || a.res.length < ACC_N) return;
+  const hits = a.res.filter(r=>r.ok).length, pct = Math.round(hits/ACC_N*100);
+  const okMs = a.res.filter(r=>r.ok).map(r=>r.ms);
+  const avgS = okMs.length ? (okMs.reduce((s,x)=>s+x,0)/okMs.length/1000).toFixed(1) : "—";
+  const miss = a.res.filter(r=>!r.ok).map(r => `${CELLS[r.want].label.replace(/^🔔\s*/,"")} → ${r.got < 0 ? "시간 초과" : CELLS[r.got].label.replace(/^🔔\s*/,"")}`);
+  const MODE_KO = { full:"거리·고개 보정", noDist:"고개만 보정", eye:"눈만" };
+  const rec = { date:new Date().toISOString().slice(5,16).replace("T"," "), pct, hits, n:ACC_N, mode:a.mode, sel:a.sel, avgS };
+  cfg.accHist = [rec, ...(cfg.accHist||[])].slice(0, 10); saveCfg(); syncCfg();
+  $("accPct").textContent = pct + "%";
+  $("accLine").textContent = `${ACC_N}번 중 ${hits}번 맞음 · 맞힌 것 평균 ${avgS}초 · ${MODE_KO[a.mode]} · ${a.sel==="dwell" ? "머무르기 " + cfg.dwell + "초" : "눈 감기"}`;
+  $("accDetail").innerHTML = miss.length ? "틀린 것: " + miss.join(", ") : "다 맞았습니다";
+  $("accRes").hidden = false;
+  lastAcc = { ...rec, res:a.res };
+  guide(`${ACC_N}번 중 ${hits}번 맞았어요. ${pct}퍼센트입니다.`);
+}
+let lastAcc = null;
+$("accBtn").onclick = () => acc ? accEnd(true) : accStart();
+$("accClose").onclick = () => { $("accRes").hidden = true; };
+
+/* ───────── 설정 화면 ───────── */
+const dlg = $("dlg");
+const SLIDERS = [["dwell",1],["hold",1],["thr",2],["steady",0],["cool",1]];
+function syncCfg(){
+  for(const [k,d] of SLIDERS){ $(k).value = cfg[k]; $(k+"V").textContent = (+cfg[k]).toFixed(d); }
+  for(const b of $("selSeg").children) b.classList.toggle("sel", b.dataset.v===cfg.sel);
+  for(const b of $("modeSeg").children) b.classList.toggle("sel", b.dataset.v===cfg.mode);
+  $("dwellRow").hidden = cfg.sel!=="dwell"; $("blinkRows").hidden = cfg.sel!=="blink";
+  const onoff = (id, txt, v) => { $(id).textContent = txt + ": " + (v ? "켬" : "끔"); $(id).classList.toggle("live", !!v); };
+  onoff("dotBtn", "눈길 점 보이기", cfg.showDot);
+  onoff("voiceBtn", "말로 안내", cfg.voice);
+  onoff("hoverBtn", "보는 칸 이름 읽기", cfg.hoverSay);
+  onoff("waitBtn", "맞출 때 단계마다 기다리기", cfg.calWait);
+  $("calInfo").textContent = model ? `맞춘 때 ${model.date ? model.date.replace("T"," ") : "-"} · 맞춤 오차 ${(model.trainErr*100).toFixed(0)}%` + (model.notes && model.notes.length ? ` · 메모 ${model.notes.join(",")}` : "") : "아직 안 맞춤";
+  const MODE_KO = { full:"보정", noDist:"고개만", eye:"눈만" };
+  $("accHist").innerHTML = (cfg.accHist||[]).length
+    ? cfg.accHist.map(r => `${r.date} — <b>${r.pct}%</b> (${r.hits}/${r.n}) · ${MODE_KO[r.mode]||r.mode} · ${r.sel==="dwell"?"머무르기":"감기"} · ${r.avgS}초`).join("<br>")
+    : "아직 없음";
+  if(!cfg.showDot) gdot.hidden = true;
+}
+for(const [k,d] of SLIDERS) $(k).oninput = ()=>{ cfg[k] = parseFloat($(k).value); $(k+"V").textContent = cfg[k].toFixed(d); saveCfg(); };
+for(const b of $("selSeg").children) b.onclick = ()=>{ cfg.sel = b.dataset.v; saveCfg(); syncCfg(); showRing(-1,0); lockCell = -1; };
+for(const b of $("modeSeg").children) b.onclick = ()=>{ cfg.mode = b.dataset.v; saveCfg(); syncCfg(); fu.reset(); fv.reset(); };
+const tog = k => ()=>{ cfg[k] = !cfg[k]; saveCfg(); syncCfg(); };
+$("dotBtn").onclick = tog("showDot"); $("voiceBtn").onclick = tog("voice"); $("hoverBtn").onclick = tog("hoverSay"); $("waitBtn").onclick = tog("calWait");
+$("setBtn").onclick = ()=>dlg.showModal();
+$("closeDlg").onclick = ()=>dlg.close();
+const recal = ()=>{
+  if(!running){ alert("먼저 오른쪽 위 '카메라 켜기'를 눌러 주세요."); return; }
+  dlg.close(); calibrate();
+};
+$("calBtn").onclick = recal; $("calBtn2").onclick = recal;
+
+document.addEventListener("visibilitychange", async ()=>{
+  if(document.visibilityState==="visible" && running && !wakeLock){
+    try{ wakeLock = await navigator.wakeLock.request("screen"); }catch(e){}
+  }
+});
+
+/* 처음 열 때 */
+const introEl = $("intro");
+introEl.addEventListener("click", ()=>{
+  introEl.hidden = true; cfg.introSeen = true; saveCfg();
+  if(!TEST && !running) startCam();
+});
+
+/* ───────── 시험용 (?test=1) ─────────
+   진짜 얼굴은 자동 시험이 안 되니, measure() 모양의 가짜 값을 밖에서 넣는다. 카메라는 안 켠다. */
+if(TEST){
+  window.__eye9 = {
+    G,
+    set(m){ fake = m; },
+    start(){ if(!running){ running = true; stat.textContent = "시험 모드"; loop(); } },
+    calibrate(scale, auto){ calScale = scale || 1; calAuto = !!auto; return calibrate(); },
+    next(){ if(calPhase==="wait" || calPhase==="result") calSend("ready"); },
+    calCmd(e){ calSend(e); },
+    // 지금 맞추기 단계가 보라고 하는 것 (가짜 얼굴이 따라 하도록)
+    calTarget: () => !calBusy || !curStep ? null : { k:curStep.k, phase:calPhase, ...(curStep.cell !== null ? cellCenter(curStep.cell) : {}) },
+    calUI: () => ({ busy:calBusy, phase:calPhase, step:calStep.textContent, msg:calMsg.textContent, panel:calPanel.className,
+      dot: calDot.classList.contains("show") ? [parseFloat(calDot.style.left), parseFloat(calDot.style.top)] : null }),
+    accStart, accEnd,
+    accState: () => acc ? { i:acc.i, want: acc.t0 ? acc.order[acc.i] : -1, n:acc.res.length } : null,
+    lastAcc: () => lastAcc,
+    model: () => model,
+    cfg: () => JSON.parse(JSON.stringify(cfg)),
+    set_cfg(o){ Object.assign(cfg, o); syncCfg(); },
+    state: () => ({ cell, gaze, hint:hintNow, said:said.slice(), guide:guideSaid.slice(), dwellP, lockCell, lastCal,
+      hit: cellEls.findIndex(e=>e.classList.contains("hit")), dot: gdot.hidden ? null : [gdot.style.left, gdot.style.top] })
+  };
+}
+
+/* ───────── 시작 ───────── */
+syncCfg();
+if(!cfg.introSeen && !TEST){ introEl.hidden = false; guide("말해요, 눈으로 아홉 칸입니다. 화면을 누르면 시작합니다."); }
+</script>
+<script src="../feedback.js?v=1"></script>
+</body>
+</html>
