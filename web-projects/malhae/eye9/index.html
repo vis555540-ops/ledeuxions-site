@@ -238,9 +238,11 @@
   <div class="seg" id="selSeg">
     <button class="mini" data-v="dwell">머무르기</button>
     <button class="mini" data-v="blink">보고 눈 감기</button>
+    <button class="mini" data-v="key">보고 단추 누르기</button>
   </div>
   <p class="note"><b>머무르기</b> — 칸을 보고 있으면 고리가 차오르고, 다 차면 말합니다. 같은 칸을 또 고르려면 눈을 다른 칸으로 옮겼다 오세요.<br>
-  <b>보고 눈 감기</b> — 칸을 본 채로 눈을 꾹 감고 있으면 그 칸을 말합니다.</p>
+  <b>보고 눈 감기</b> — 칸을 본 채로 눈을 꾹 감고 있으면 그 칸을 말합니다.<br>
+  <b>보고 단추 누르기</b> — 눈으로 칸을 고르고, 블루투스 단추(PPT 리모컨·셀카 리모컨·자판 아무 키)를 누르면 말합니다. 쳐다보기만 해서 잘못 골리는 일이 없습니다. (다른 방법일 때도 단추를 누르면 바로 골라집니다)</p>
   <div id="dwellRow">
     <label>머무르기 시간 — <span class="val" id="dwellV"></span>초</label>
     <input type="range" id="dwell" min="0.8" max="3" step="0.1">
@@ -533,6 +535,19 @@ function tick(now){
   }
 }
 
+// 블루투스 단추·자판 = 지금 보는 칸 고르기 (2026-10-19 형: 「아이트래킹이랑 블루투스 섞어 볼까」)
+//   PPT 리모컨은 PageDown/→, 셀카 리모컨은 Enter·볼륨 등을 보낸다. 설정 창에서 글 쓰는 중이면 무시.
+let keyAt = 0;
+addEventListener("keydown", e => {
+  const t = e.target; if(t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+  if(["Tab","Shift","Control","Alt","Meta","Escape"].includes(e.key)) return;
+  if(!running || !model || calBusy) return;
+  e.preventDefault();
+  const now = performance.now(); if(now - keyAt < 600) return; keyAt = now;   // 꾹 눌러 반복되는 것 막기
+  const c = cell; if(c < 0){ holdTxt.textContent = "칸 밖 — 칸을 보고 누르세요"; return; }
+  lockCell = c; showRing(-1, 0); holdTxt.textContent = "선택!"; choose(c);
+}, { passive:false });
+
 function loop(){
   if(!running) return;
   tick(performance.now());
@@ -714,7 +729,7 @@ async function calibrate(){
     curStep = null; setDot(null); calStep.textContent = "";
     calMsg.textContent = ok ? "다 맞췄습니다" : "잘 안 맞았어요";
     calSub.textContent = ok
-      ? (cfg.sel==="dwell" ? "이제 칸을 보고 고리가 다 찰 때까지 보면 말합니다. 「🎯 정확도 시험」으로 얼마나 맞는지 볼 수 있어요" : "이제 칸을 보고 눈을 꾹 감으면 말합니다")
+      ? (cfg.sel==="dwell" ? "이제 칸을 보고 고리가 다 찰 때까지 보면 말합니다. 「🎯 정확도 시험」으로 얼마나 맞는지 볼 수 있어요" : cfg.sel==="key" ? "이제 칸을 보고 단추를 누르면 말합니다" : "이제 칸을 보고 눈을 꾹 감으면 말합니다")
       : "「처음부터」 다시 해 보세요. 점을 끝까지 보고, 고개는 편하게 두세요";
     calShow("result");
     calPrompt.innerHTML = "화면을 누르면 닫힙니다";

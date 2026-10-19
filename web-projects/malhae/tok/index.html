@@ -160,6 +160,12 @@ function tap(e){
   pick();
 }
 document.addEventListener('pointerdown', tap, {passive:false});
+// 블루투스 단추(PPT·셀카 리모컨)·자판 아무 키 = 톡 (2026-10-19)
+document.addEventListener('keydown', function(e){
+  if (['Tab','Shift','Control','Alt','Meta','Escape'].indexOf(e.key) >= 0) return;
+  if ($('start').style.display !== 'none' || $('set').style.display === 'flex') return;
+  e.preventDefault(); tap({ target: document.body, preventDefault: function(){} });
+});
 
 function setUI(){ $('sp').value = S.sp; $('spV').textContent = S.sp; $('voice').checked = S.voice; $('db').value = S.db; $('dbV').textContent = S.db;
   $('hd').value = S.hd; $('hdV').textContent = S.hd; $('th').value = S.th; $('thV').textContent = S.th; }
