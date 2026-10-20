@@ -8,6 +8,39 @@
 
   function drawHat(c, hat, now) {
     switch (hat) {
+      case 'spiky': for (var si = 0; si < 5; si++) { var sa = -2.6 + si * 0.48, sx = Math.cos(sa) * 11, sy = Math.sin(sa) * 11 - 2; c.fillStyle = INK; c.beginPath(); c.moveTo(sx - 5, sy + 3); c.lineTo(sx * 1.9, sy * 1.9 - 4); c.lineTo(sx + 5, sy + 3); c.fill(); c.fillStyle = '#ffe14d'; c.beginPath(); c.moveTo(sx - 3, sy + 2); c.lineTo(sx * 1.8, sy * 1.8 - 3); c.lineTo(sx + 3, sy + 2); c.fill(); }
+        if (((now * 6) | 0) % 3 === 0) { c.strokeStyle = '#bff0ff'; c.lineWidth = 2; c.beginPath(); c.moveTo(12, -22); c.lineTo(17, -27); c.lineTo(14, -28); c.lineTo(20, -34); c.stroke(); } break;
+      case 'longhair': c.fillStyle = INK; c.beginPath(); c.moveTo(-6, -14); c.quadraticCurveTo(-30, -8 + Math.sin(now * 5) * 3, -40, 10 + Math.sin(now * 4) * 4); c.quadraticCurveTo(-22, 4, -10, 6); c.closePath(); c.fill(); c.beginPath(); c.arc(0, -3, 14, Math.PI * 0.95, TAU * 0.98); c.fill();
+        c.fillStyle = '#5b3fb3'; c.beginPath(); c.moveTo(-6, -11); c.quadraticCurveTo(-28, -6 + Math.sin(now * 5) * 3, -36, 8 + Math.sin(now * 4) * 4); c.quadraticCurveTo(-21, 2, -10, 3); c.closePath(); c.fill(); c.beginPath(); c.arc(0, -3, 11.5, Math.PI, TAU * 0.97); c.fill(); break;
+      case 'scarf': c.strokeStyle = INK; c.lineWidth = 8; c.lineCap = 'round'; c.beginPath(); c.moveTo(-4, 11); c.quadraticCurveTo(-18, 12 + Math.sin(now * 9) * 4, -34, 6 + Math.sin(now * 7) * 6); c.stroke(); c.strokeStyle = '#e63946'; c.lineWidth = 4.5; c.stroke();
+        c.strokeStyle = INK; c.lineWidth = 7; c.beginPath(); c.moveTo(-12, -6); c.lineTo(12, -6); c.stroke(); c.strokeStyle = '#2b2d52'; c.lineWidth = 4; c.stroke(); break;
+      case 'gourd': c.strokeStyle = INK; c.lineWidth = 3; c.beginPath(); c.moveTo(-9, -9); c.lineTo(-17, -1); c.stroke(); c.fillStyle = INK; c.beginPath(); c.arc(-19, 4, 7, 0, TAU); c.arc(-18, -4, 5, 0, TAU); c.fill();
+        c.fillStyle = '#e8a33d'; c.beginPath(); c.arc(-19, 4, 5, 0, TAU); c.arc(-18, -4, 3.4, 0, TAU); c.fill(); c.fillStyle = '#e63946'; c.fillRect(-20, -1, 4, 2); break;
+      case 'headset': c.strokeStyle = INK; c.lineWidth = 5; c.beginPath(); c.arc(0, -2, 14, Math.PI * 1.05, TAU * 0.97); c.stroke(); c.strokeStyle = '#ff70b8'; c.lineWidth = 2.5; c.stroke();
+        c.fillStyle = INK; c.beginPath(); c.arc(12, -1, 4.5, 0, TAU); c.fill(); c.strokeStyle = INK; c.lineWidth = 2; c.beginPath(); c.moveTo(13, 1); c.quadraticCurveTo(14, 9, 8, 10); c.stroke(); c.fillStyle = '#ffd23f'; star5(c, -4, -18, 5); break;
+      case 'flame': for (var fl = 0; fl < 3; fl++) { var fx2 = -8 + fl * 8, fh = 16 + 6 * Math.sin(now * 12 + fl * 2); c.fillStyle = INK; c.beginPath(); c.moveTo(fx2 - 7, -8); c.quadraticCurveTo(fx2 - 5, -8 - fh, fx2 + 1, -10 - fh - 4); c.quadraticCurveTo(fx2 + 6, -8 - fh * 0.6, fx2 + 7, -8); c.fill(); c.fillStyle = fl === 1 ? '#ffd23f' : '#ff5a4f'; c.beginPath(); c.moveTo(fx2 - 5, -8); c.quadraticCurveTo(fx2 - 3, -8 - fh * 0.85, fx2 + 1, -9 - fh); c.quadraticCurveTo(fx2 + 4, -8 - fh * 0.5, fx2 + 5, -8); c.fill(); } break;
+      case 'catears': for (var ce = -1; ce <= 1; ce += 2) { c.fillStyle = INK; c.beginPath(); c.moveTo(ce * 3, -11); c.lineTo(ce * 13, -27); c.lineTo(ce * 15, -6); c.fill(); c.fillStyle = '#ff8fd0'; c.beginPath(); c.moveTo(ce * 6, -11); c.lineTo(ce * 12, -21); c.lineTo(ce * 12.5, -9); c.fill(); } break;
+      case 'shades': c.fillStyle = INK; c.fillRect(-4, -5, 17, 3); c.beginPath(); c.ellipse(1.5, -1.5, 4.5, 3.4, 0, 0, TAU); c.ellipse(9.5, -1.5, 4.5, 3.4, 0, 0, TAU); c.fill(); c.fillStyle = 'rgba(255,255,255,0.5)'; c.fillRect(0, -3.5, 2, 1.5); c.fillRect(8, -3.5, 2, 1.5); break;
+      case 'antenna': for (var an = -1; an <= 1; an += 2) { var aw = Math.sin(now * 6 + an) * 3; c.strokeStyle = INK; c.lineWidth = 2.5; c.beginPath(); c.moveTo(an * 5, -12); c.quadraticCurveTo(an * 8, -24, an * 10 + aw, -30); c.stroke(); c.fillStyle = INK; c.beginPath(); c.arc(an * 10 + aw, -30, 4.5, 0, TAU); c.fill(); c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(an * 10 + aw, -30, 3, 0, TAU); c.fill(); }
+        c.strokeStyle = 'rgba(27,27,47,0.55)'; c.lineWidth = 3; c.beginPath(); c.moveTo(-12, 2); c.lineTo(12, 2); c.moveTo(-13, 7); c.lineTo(13, 7); c.stroke(); break;
+      case 'cloud': c.fillStyle = INK; c.beginPath(); c.arc(-9, -12, 9, 0, TAU); c.arc(2, -17, 11, 0, TAU); c.arc(12, -11, 8, 0, TAU); c.fill(); c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-9, -12, 7, 0, TAU); c.arc(2, -17, 9, 0, TAU); c.arc(12, -11, 6, 0, TAU); c.fill(); break;
+      case 'goggles': c.strokeStyle = INK; c.lineWidth = 6; c.beginPath(); c.moveTo(-13, -9); c.lineTo(13, -9); c.stroke(); c.strokeStyle = '#8a5a2b'; c.lineWidth = 3.5; c.stroke();
+        for (var gg = 0; gg < 2; gg++) { c.fillStyle = INK; c.beginPath(); c.arc(-1 + gg * 10, -11, 5.5, 0, TAU); c.fill(); c.fillStyle = '#6ecbff'; c.beginPath(); c.arc(-1 + gg * 10, -11, 3.6, 0, TAU); c.fill(); } break;
+      case 'star': c.strokeStyle = INK; c.lineWidth = 7; c.beginPath(); c.moveTo(-12, -7); c.lineTo(12, -7); c.stroke(); c.strokeStyle = '#ff5a4f'; c.lineWidth = 4; c.stroke();
+        c.save(); c.translate(0, -16); c.rotate(Math.sin(now * 3) * 0.15); c.fillStyle = INK; star5(c, 0, 0, 12); c.fillStyle = '#ffd23f'; star5(c, 0, 0, 8.5); c.restore(); break;
+      case 'flower': c.strokeStyle = INK; c.lineWidth = 6; c.beginPath(); c.arc(0, 0, 13, Math.PI * 1.1, Math.PI * 1.9); c.stroke(); c.strokeStyle = '#8ee53f'; c.lineWidth = 3; c.stroke();
+        var fc = ['#ff8fd0', '#ffd23f', '#6ecbff']; for (var fi = 0; fi < 3; fi++) { var fx = -9 + fi * 9, fy = -12 - (fi === 1 ? 4 : 0); c.fillStyle = INK; c.beginPath(); c.arc(fx, fy, 6.5, 0, TAU); c.fill(); c.fillStyle = fc[fi]; c.beginPath(); c.arc(fx, fy, 4.6, 0, TAU); c.fill(); c.fillStyle = '#fff3b0'; c.beginPath(); c.arc(fx, fy, 1.8, 0, TAU); c.fill(); } break;
+      case 'wizard': c.fillStyle = INK; c.beginPath(); c.moveTo(-18, -5); c.lineTo(18, -5); c.lineTo(14, -10); c.lineTo(4, -44); c.lineTo(-14, -10); c.closePath(); c.fill();
+        c.fillStyle = '#6a3fd1'; c.beginPath(); c.moveTo(-14, -8); c.lineTo(14, -8); c.lineTo(11, -11); c.lineTo(4, -39); c.lineTo(-11, -11); c.closePath(); c.fill();
+        c.fillStyle = '#ffd23f'; star5(c, -2, -20, 4.5); star5(c, 5, -30, 3); break;
+      case 'pirate': c.fillStyle = INK; c.beginPath(); c.moveTo(-20, -6); c.quadraticCurveTo(0, -38, 20, -6); c.quadraticCurveTo(0, -14, -20, -6); c.fill();
+        c.fillStyle = '#2b2d52'; c.beginPath(); c.moveTo(-16, -8); c.quadraticCurveTo(0, -33, 16, -8); c.quadraticCurveTo(0, -15, -16, -8); c.fill();
+        c.fillStyle = '#fff'; c.beginPath(); c.arc(0, -18, 3.4, 0, TAU); c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(-4, -12); c.lineTo(4, -15); c.moveTo(4, -12); c.lineTo(-4, -15); c.stroke(); break;
+      case 'viking': for (var vh = -1; vh <= 1; vh += 2) { c.fillStyle = INK; c.beginPath(); c.moveTo(vh * 10, -8); c.quadraticCurveTo(vh * 24, -12, vh * 22, -30); c.quadraticCurveTo(vh * 17, -17, vh * 6, -13); c.fill(); c.fillStyle = '#fff3d6'; c.beginPath(); c.moveTo(vh * 10, -10); c.quadraticCurveTo(vh * 21, -13, vh * 20.5, -26); c.quadraticCurveTo(vh * 16, -17, vh * 8, -13); c.fill(); }
+        c.fillStyle = INK; c.beginPath(); c.arc(0, -3, 14.5, Math.PI, TAU); c.fill(); c.fillStyle = '#aab4c3'; c.beginPath(); c.arc(0, -4, 12, Math.PI, TAU); c.fill(); c.fillStyle = '#c9a227'; c.fillRect(-12, -7, 24, 3.5); break;
+      case 'goldcrown': c.fillStyle = INK; c.beginPath(); c.moveTo(-15, -5); c.lineTo(-17, -30); c.lineTo(-8, -19); c.lineTo(0, -35); c.lineTo(8, -19); c.lineTo(17, -30); c.lineTo(15, -5); c.fill();
+        c.fillStyle = '#ffd23f'; c.beginPath(); c.moveTo(-12, -8); c.lineTo(-13.5, -25); c.lineTo(-7, -16); c.lineTo(0, -30); c.lineTo(7, -16); c.lineTo(13.5, -25); c.lineTo(12, -8); c.fill();
+        var gl = 0.5 + 0.5 * Math.sin(now * 6); c.fillStyle = 'rgba(255,255,255,' + (0.4 + 0.5 * gl) + ')'; star5(c, 0, -22, 3 + gl * 2); c.fillStyle = '#ff5a4f'; c.beginPath(); c.arc(-7, -11, 2.4, 0, TAU); c.arc(7, -11, 2.4, 0, TAU); c.fill(); c.fillStyle = '#6ecbff'; c.beginPath(); c.arc(0, -11, 2.6, 0, TAU); c.fill(); break;
       case 'cap': c.fillStyle = INK; c.beginPath(); c.arc(0, -3, 13.5, Math.PI, TAU); c.fill(); c.fillRect(0, -6.5, 22, 6); c.fillStyle = '#e63946'; c.beginPath(); c.arc(0, -4, 11.5, Math.PI, TAU); c.fill(); c.fillRect(2, -6, 18, 3); c.fillStyle = '#fff'; c.beginPath(); c.arc(0, -15, 2, 0, TAU); c.fill(); break;
       case 'band': c.strokeStyle = INK; c.lineWidth = 8; c.beginPath(); c.moveTo(-11, -5); c.lineTo(11, -5); c.stroke(); c.strokeStyle = '#e63946'; c.lineWidth = 5; c.beginPath(); c.moveTo(-11, -5); c.lineTo(11, -5); c.stroke(); c.lineWidth = 4; c.beginPath(); var w = Math.sin(now * 9) * 4; c.moveTo(-11, -5); c.quadraticCurveTo(-20, -8 + w, -27, -2 + w); c.moveTo(-11, -5); c.quadraticCurveTo(-19, 0 - w, -24, 7 - w); c.stroke(); break;
       case 'party': c.fillStyle = INK; c.beginPath(); c.moveTo(-11, -7); c.lineTo(2, -36); c.lineTo(12, -7); c.fill(); c.fillStyle = '#4cc9f0'; c.beginPath(); c.moveTo(-8, -8); c.lineTo(2, -32); c.lineTo(9, -8); c.fill(); c.fillStyle = '#ffd166'; c.fillRect(-5, -14, 12, 3); c.beginPath(); c.arc(2, -34, 4, 0, TAU); c.fill(); break;
@@ -24,6 +57,8 @@
       case 'crown': c.fillStyle = INK; c.beginPath(); c.moveTo(-13, -5); c.lineTo(-15, -26); c.lineTo(-6, -17); c.lineTo(0, -29); c.lineTo(6, -17); c.lineTo(15, -26); c.lineTo(13, -5); c.fill(); c.fillStyle = '#ffc400'; c.beginPath(); c.moveTo(-10.5, -7.5); c.lineTo(-12, -20); c.lineTo(-5.5, -13.5); c.lineTo(0, -24); c.lineTo(5.5, -13.5); c.lineTo(12, -20); c.lineTo(10.5, -7.5); c.fill(); c.fillStyle = '#e63946'; c.beginPath(); c.arc(0, -12, 2.4, 0, TAU); c.fill(); break;
     }
   }
+  function star5(c, x, y, r) { c.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * 0.45 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fill(); }
+  G.drawHat = drawHat;
   var P = new Float32Array(22);
   function drawBody(c, b, uni, now) {
     var i, z = b.sc, col = b.flash > 0 ? '#ffffff' : b.skin, out = INK, th = b.th || 1, hs = b.hs || 1, zt = z * th;
@@ -127,12 +162,12 @@
     var k = V.k, SW = V.SW;
     if (!bg || bgK !== k) buildBg(k);
     c.setTransform(1, 0, 0, 1, 0, 0);
-    var sx = 0, sy = 0; if (M && M.shake > 0.3) { sx = (Math.random() - 0.5) * M.shake * 1.4; sy = (Math.random() - 0.5) * M.shake * 1.4; }
+    var sx = 0, sy = 0; if (M && M.shake > 0.3 && !G.lite) { sx = (Math.random() - 0.5) * M.shake * 1.4; sy = (Math.random() - 0.5) * M.shake * 1.4; }
     c.setTransform(k, 0, 0, k, (-V.camX + sx) * k, sy * k);
     c.drawImage(bg, 0, 0, W, H);
     // crowd heads
     var hype = M ? M.crowd : 0;
-    for (var i = 0; i < fans.length; i++) { var f = fans[i], j = Math.abs(Math.sin(now * (3 + hype * 6) + f.ph)) * (3 + hype * 14); c.fillStyle = INK; c.beginPath(); c.arc(f.x, f.y - j, 13, 0, TAU); c.fill(); c.fillStyle = f.c; c.beginPath(); c.arc(f.x, f.y - j, 10, 0, TAU); c.fill(); if (hype > 0.4) { c.strokeStyle = INK; c.lineWidth = 4; c.beginPath(); c.moveTo(f.x - 9, f.y - j + 8); c.lineTo(f.x - 15, f.y - j - 10); c.moveTo(f.x + 9, f.y - j + 8); c.lineTo(f.x + 15, f.y - j - 10); c.stroke(); } }
+    for (var i = 0; i < fans.length; i += G.lite ? 2 : 1) { var f = fans[i], j = Math.abs(Math.sin(now * (3 + hype * 6) + f.ph)) * (3 + hype * 14); c.fillStyle = INK; c.beginPath(); c.arc(f.x, f.y - j, 13, 0, TAU); c.fill(); c.fillStyle = f.c; c.beginPath(); c.arc(f.x, f.y - j, 10, 0, TAU); c.fill(); if (hype > 0.4) { c.strokeStyle = INK; c.lineWidth = 4; c.beginPath(); c.moveTo(f.x - 9, f.y - j + 8); c.lineTo(f.x - 15, f.y - j - 10); c.moveTo(f.x + 9, f.y - j + 8); c.lineTo(f.x + 15, f.y - j - 10); c.stroke(); } }
     if (!M) return;
     var ents = [], b;
     M.bodies.forEach(function (o) { ents.push({ z: o.z, b: o }); });
@@ -240,16 +275,45 @@
       c.strokeStyle = '#ffd23f'; c.lineWidth = 3; rr(c, (SW - tw) / 2, py - 22, tw, 44, 22); c.stroke();
       fitLabel(c, txt, SW / 2, py, 26, '#fff', 'center', tw - 24, true);
     }
+    if (M.guide || M.waitInput) guideHud(c, M, now, view);
     // first-match hint
-    if (M.hint && view.touch && M.round === 1 && M.time > G.ROUND_T - 9 && M.state !== 'intro') {
+    if (M.hint && !M.guide && view.touch && M.round === 1 && M.time > G.ROUND_T - 9 && M.state !== 'intro') {
       var ht = view.touch ? G.t('hintT') : G.t('hintK'); c.font = '700 15px ' + G.FONT; var hw = Math.min(SW - 30, c.measureText(ht).width + 30);
       c.fillStyle = 'rgba(16,12,40,0.82)'; rr(c, (SW - hw) / 2, H - 50, hw, 36, 12); c.fill(); fitLabel(c, ht, SW / 2, H - 32, 15, '#fff', 'center', hw - 20);
     }
   }
+  // guided first match: one short line in context, big and readable; what to press depends on keyboard / touch
+  G.guideTip = function (M, touch) {
+    if (M.waitInput) return touch ? 'gTapStart' : 'gKeyStart';
+    if (M.state !== 'play' || M.ctrl < 0) return null;
+    var me = M.bodies[M.ctrl], g = M.guide;
+    if (M.guideSlow) return touch ? 'gCatchT' : 'gCatchK';
+    if (me.hold && M.meter[0] >= 1 && g.thr < 6) return touch ? 'gSpT' : 'gSpK';
+    if (me.hold && g.thr < 3) return me.charging ? 'gRelease' : touch ? 'gThrowT' : 'gThrowK';
+    if (!me.hold && M.ball.st === 'loose' && g.thr < 3 && M.chaser[0] === null && Math.abs(M.ball.x - me.x) < 500) return touch ? 'gGetT' : 'gGetK';
+    return null;
+  };
+  function guideHud(c, M, now, view) {
+    var SW = view.SW, key = G.guideTip(M, view.touch);
+    if (M.waitInput) {
+      c.fillStyle = 'rgba(13,11,30,0.45)'; c.fillRect(0, 0, SW, H);
+      var pu = 1 + 0.06 * Math.sin(now * 6);
+      c.save(); c.translate(SW / 2, H * 0.4); c.scale(pu, pu); fitLabel(c, G.t(key), 0, 0, 64, '#ffd23f', 'center', SW * 0.9, true); c.restore();
+      fitLabel(c, G.t(view.touch ? 'gHowT' : 'gHowK'), SW / 2, H * 0.4 + 70, 26, '#fff', 'center', SW * 0.92);
+      return;
+    }
+    if (!key) return;
+    var txt = G.t(key), urgent = key === 'gCatchT' || key === 'gCatchK', fs = urgent ? 40 : 30, y = urgent ? H * 0.27 : H - 62;
+    c.font = 'italic 900 ' + fs + 'px ' + G.FONT; var tw = Math.min(SW - 24, c.measureText(txt).width + 50);
+    var pu2 = 0.5 + 0.5 * Math.sin(now * 10);
+    c.fillStyle = urgent ? 'rgba(46,160,90,' + (0.85 + 0.15 * pu2) + ')' : 'rgba(16,12,40,0.86)'; rr(c, (SW - tw) / 2, y - fs * 0.85, tw, fs * 1.7, 18); c.fill();
+    c.strokeStyle = '#ffd23f'; c.lineWidth = 3; rr(c, (SW - tw) / 2, y - fs * 0.85, tw, fs * 1.7, 18); c.stroke();
+    fitLabel(c, txt, SW / 2, y, fs, '#fff', 'center', tw - 28, true);
+  }
   G.drawBody = drawBody;
   // a character portrait into a 2d context: feet at (x, y), height px tall; team decides the jersey colour
-  G.drawChar = function (c, ch, x, y, hpx, now, uni, cheer, flip) {
-    var b = G.posed(ch, 0, now, cheer), s = hpx / 135;
+  G.drawChar = function (c, ch, x, y, hpx, now, uni, cheer, flip, hat) {
+    var b = G.posed(ch, 0, now, cheer), s = hpx / 135; if (hat) b.hat = hat;
     c.save(); c.translate(x, y); c.scale(flip ? -s : s, s); drawBody(c, b, uni || '#2a7fd4', now); c.restore();
   };
 })();

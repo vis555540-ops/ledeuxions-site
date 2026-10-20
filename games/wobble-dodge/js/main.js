@@ -3,7 +3,7 @@
   'use strict';
   // ★ online room server (Cloudflare Worker "wobble-dodge-rooms", source in ../server). Change only this line to move it.
   var ROOM_SERVER = 'wss://wobble-dodge-rooms.vis555540.workers.dev';
-  var G = window.G, A = G.audio, DT = G.DT, W = G.W, H = G.H, NETM = G.net;
+  var G = window.G, A = G.audio, DT = G.DT, W = G.W, H = G.H, NETM = G.net, Sdk = G.sdk, Save = G.save, MT = G.meta;
   G.ROOM_SERVER = ROOM_SERVER;
   function $(id) { return document.getElementById(id); }
   var cv = $('cv'), ctx = cv.getContext('2d');
@@ -13,12 +13,12 @@
   var WD = window.__wd = { auto: false, speed: 1, errors: [], log: [] };
 
   /* ---------- save ---------- */
-  var KEY = 'wobbledodge_v1', save = { beaten: 0, mute: false, lang: null, played: 0, n: 5, easy: false, keys: null, picks: [] };
-  try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); for (var k in o) save[k] = o[k]; } } catch (e) { }
-  if (G.TEAM_SIZES.indexOf(save.n) < 0) save.n = 5;
-  function commit() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) { } }
-  if (save.lang === 'ko' || save.lang === 'en') G.lang = save.lang;
-  A.muted = !!save.mute;
+  // G.save (sdk.js): CrazyGames data module when there, else localStorage. Same key as the site version.
+  Save.loadLocal(); var save = Save.data;
+  function commit() { Save.data = save; Save.commit(); }
+  function applySave() { if (save.lang === 'ko' || save.lang === 'en') G.lang = save.lang; A.muted = !!save.mute; G.lite = !!save.lite; }
+  applySave();
+  var bootEv = MT.login(save, MT.now()); MT.ensureDaily(save, MT.now()); commit();   // login streak + daily gift (none on the very first day)
 
   /* ---------- layout ---------- */
   // right-thumb cluster: [id, size, angle(deg, 180 = left of THROW, 90 = above), radius] in units of u
@@ -29,7 +29,7 @@
     if (!port) { V.SW = 1280; w = Math.min(vw, vh * 16 / 9); h = w * 9 / 16; l = (vw - w) / 2; t = (vh - h) / 2; }
     else { V.SW = 680; w = vw; h = w * 720 / 680; if (h > vh * 0.6) { h = vh * 0.6; w = h * 680 / 720; } l = (vw - w) / 2; t = 0; }
     cv.style.left = l + 'px'; cv.style.top = t + 'px'; cv.style.width = w + 'px'; cv.style.height = h + 'px';
-    var dpr = Math.min(window.devicePixelRatio || 1, 2), pw = Math.min(1920, Math.max(320, Math.round(w * dpr)));
+    var dpr = G.lite ? 1 : Math.min(window.devicePixelRatio || 1, 2), pw = Math.min(1920, Math.max(320, Math.round(w * dpr)));
     if (cv.width !== pw) { cv.width = pw; cv.height = Math.round(pw * h / w); }
     V.k = cv.width / V.SW;
     $('pad').classList.toggle('on', port);
@@ -67,8 +67,9 @@
   var keys = {}, press = { catchP: false, jumpP: false, thrP: false }, tch = { mx: 0, mz: 0, thr: false };
   var KM = { KeyA: 'l', ArrowLeft: 'l', KeyD: 'r', ArrowRight: 'r', KeyW: 'u', ArrowUp: 'u', KeyS: 'd', ArrowDown: 'd',
     KeyJ: 'thr', KeyZ: 'thr', KeyK: 'cat', KeyX: 'cat', Space: 'jmp', KeyC: 'jmp' };
+  function guideGo() { if (M && M.waitInput && state === 'play') { M.waitInput = false; A.unlock(); Sdk.gameplayStart(); WD.log.push('guideGo'); } }
   window.addEventListener('keydown', function (e) {
-    A.unlock();
+    A.unlock(); if (state === 'play' && M && M.waitInput && !e.repeat && e.code !== 'Escape' && e.code !== 'KeyP') guideGo();
     if (e.target && e.target.tagName === 'INPUT') { if (e.code === 'Enter' || e.code === 'NumpadEnter') { var bj = $('bJoinGo'); if (bj) bj.click(); } return; }
     if (state === 'pick') { pickKey(e); return; }
     var a = KM[e.code];
@@ -91,7 +92,7 @@
   function clearPress() { press.catchP = press.jumpP = press.thrP = false; }
   function setTouch(on) { touchOn = on; V.touch = on; $('touch').classList.toggle('on', on && (state === 'play' || state === 'pause')); if (on) TBTN.forEach(function (id) { fitBtn($(id)); }); keyGuide(); }
   function keysOn() { return save.keys != null ? !!save.keys : save.played <= 3; }
-  function keyGuide() { var on = state === 'play' && !touchOn && keysOn() && !!M; $('keys').style.display = on ? 'block' : 'none'; if (on) $('keys').innerHTML = esc(G.t('hintK')) + ' <span>(' + esc(G.t('keyHelp')) + ')</span>'; }
+  function keyGuide() { var on = state === 'play' && !touchOn && keysOn() && !!M && !M.guide; $('keys').style.display = on ? 'block' : 'none'; if (on) $('keys').innerHTML = esc(G.t('hintK')) + ' <span>(' + esc(G.t('keyHelp')) + ')</span>'; }
   (function () {
     var stick = $('stick'), base = $('stickBase'), knob = $('stickKnob'), sid = null, ox = 0, oy = 0;
     function mv(e) { var r = base.getBoundingClientRect(), rad = r.width / 2, dx = (e.clientX - ox) / rad, dy = (e.clientY - oy) / rad, l = Math.sqrt(dx * dx + dy * dy); if (l > 1) { dx /= l; dy /= l; }
@@ -107,37 +108,64 @@
     function tb(id, fn, upfn) { var el = $(id); el.addEventListener('pointerdown', function (e) { e.preventDefault(); A.unlock(); el.classList.add('dn'); try { el.setPointerCapture(e.pointerId); } catch (x) { } fn(); }); function up() { el.classList.remove('dn'); if (upfn) upfn(); } el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); }
     tb('tThrow', function () { tch.thr = true; press.thrP = true; }, function () { tch.thr = false; });
     tb('tGrab', function () { press.catchP = true; }); tb('tJump', function () { press.jumpP = true; });
-    window.addEventListener('pointerdown', function (e) { A.unlock(); if (e.pointerType === 'touch' && !touchOn) setTouch(true); }, true);
+    window.addEventListener('pointerdown', function (e) { A.unlock(); if (e.pointerType === 'touch' && !touchOn) setTouch(true); if (!(e.target && e.target.id === 'btnPause')) guideGo(); }, true);
     document.addEventListener('contextmenu', function (e) { if (!(e.target && e.target.tagName === 'INPUT')) e.preventDefault(); });
   })();
   if (window.matchMedia && window.matchMedia('(pointer:coarse)').matches) setTouch(true);
 
   /* ---------- screens ---------- */
-  function show(id) { ['menu', 'result', 'pause', 'net', 'pick'].forEach(function (s) { $(s).classList.toggle('on', s === id); }); $('tops').style.display = (id === 'menu' || id === 'pause' || id === 'net' || id === 'pick') ? 'flex' : 'none'; if (id !== null) $('keys').style.display = 'none'; }
+  function show(id) { ['menu', 'result', 'pause', 'net', 'pick'].forEach(function (s) { $(s).classList.toggle('on', s === id); }); $('tops').style.display = (id === 'menu' || id === 'pause' || id === 'net' || id === 'pick') ? 'flex' : 'none'; if (id !== null) $('keys').style.display = 'none'; if (id !== 'menu') $('gift').classList.remove('on'); }
   function ruleLabel() { return save.easy ? G.t('ruleEasy') : G.t('ruleAm'); }
   function sizeLabel() { return G.t('teamSize') + ': ' + G.t('vs', save.n, save.n); }
+  function teamName(lvl) { var tm = G.teamOf(lvl); return G.t(tm.key) + (tm.star ? ' ★' : ''); }
+  function dailyText(c) { return G.t('d_' + c.id, c.k); }
+  function hatName(h) { return h ? G.t('h_' + h) : G.t('hatOwn'); }
+  function tierOf() { return save.beaten >= 5 ? 1 : 0; }
   function refreshMenu() {
     G.applyI18n();
     $('bLang').textContent = G.t('lang'); $('bMute').textContent = G.t('sound') + ': ' + (A.muted ? G.t('off') : G.t('on'));
     $('bSize').textContent = sizeLabel(); $('bRule').textContent = ruleLabel(); $('bRule').classList.toggle('green', !!save.easy);
+    // progress strip: level, streak, today's challenge, hat
+    var L = MT.level(save.xp), c = MT.ensureDaily(save, MT.now());
+    $('mLv').textContent = G.t('lv', L.lvl); $('mXpFill').style.width = (100 * L.cur / L.need).toFixed(1) + '%'; $('mXp').textContent = L.cur + ' / ' + L.need;
+    $('mStreak').textContent = '🔥 ' + G.t('streakN', Math.max(1, save.login.streak));
+    $('mDaily').innerHTML = '<b>' + esc(G.t('daily')) + '</b> ' + esc(dailyText(c)) + (save.daily.done ? ' <span class="ok">✓ ' + esc(G.t('done')) + '</span>' : ' <span class="xp">+150 XP</span>');
+    $('bLite').textContent = G.t('lite') + ': ' + (save.lite ? G.t('on') : G.t('off'));
+    $('bHat').textContent = G.t('hat') + ': ' + hatName(save.hat) + '  (' + save.hats.length + '/' + MT.HATS.length + ')';
+    $('mChars').textContent = G.t('charsN', save.unl.length, G.CHARS.length);
     var lad = $('ladder'); lad.innerHTML = '';
-    sel = Math.min(sel, save.beaten);
-    G.TEAMS.forEach(function (tm, i) {
-      var el = document.createElement('button'), lock = i > save.beaten, done = i < save.beaten;
+    var T0 = tierOf() * 5; sel = Math.max(T0, Math.min(sel, save.beaten, G.LADDER - 1));
+    for (var i = T0; i < T0 + 5; i++) (function (i) {
+      var tm = G.teamOf(i), el = document.createElement('button'), lock = i > save.beaten, done = i < save.beaten;
       el.className = 'team' + (lock ? ' lock' : '') + (done ? ' done' : '') + (i === sel ? ' sel' : '');
-      el.innerHTML = '<span class="n">' + (i + 1) + '</span><span>' + G.t(tm.key) + '</span><span class="dots">' + tm.skins.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + '</span><span class="st">' + (lock ? G.t('locked') : done ? G.t('beaten') : G.t('next')) + '</span>';
+      el.innerHTML = '<span class="n">' + (i + 1) + '</span><span>' + esc(teamName(i)) + '</span><span class="dots">' + tm.skins.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + '</span><span class="st">' + (lock ? G.t('locked') : done ? G.t('beaten') : G.t('next')) + '</span>';
       if (!lock) el.onclick = function () { sel = i; A.unlock(); G.sfx('click'); refreshMenu(); };
       lad.appendChild(el);
-    });
-    $('help').innerHTML = G.t(save.easy ? 'helpEasy' : 'help') + '<br><span style="color:#ffd23f">' + (touchOn ? G.t('hintT') : G.t('hintK') + '<br>' + G.t('keyHelp')) + '</span>' + (save.beaten >= 5 ? '<br><b>' + G.t('champion') + '</b> ' + G.t('allClear') : '');
+    })(i);
+    $('help').innerHTML = G.t(save.easy ? 'helpEasy' : 'help') + '<br><span style="color:#ffd23f">' + (touchOn ? G.t('hintT') : G.t('hintK') + '<br>' + G.t('keyHelp')) + '</span>' + (save.beaten >= 5 ? '<br><b>' + G.t('champion') + '</b> ' + G.t(save.beaten >= G.LADDER ? 'allClear' : 'tier2') : '');
     if (state === 'net' && netView) netView();
     if (state === 'pick') pickRefresh();
   }
-  function enterPlay() { state = 'play'; ovl = false; show(null); $('btnPause').style.display = 'block'; setTouch(touchOn); acc = 0; resT = 0; gAcc = 0; V.camX = 0; layout(); keyGuide(); }
+  var shot = null, slowT = 0, slowN = 0;
+  function enterPlay() { shot = null; state = 'play'; ovl = false; show(null); $('btnPause').style.display = 'block'; setTouch(touchOn); acc = 0; resT = 0; gAcc = 0; V.camX = 0; layout(); keyGuide(); if (!(M && M.waitInput)) Sdk.gameplayStart(); }
+  // my team for a quick start: saved picks that are unlocked, then random unlocked, then (bigger teams than the roster) borrowed ones
+  function unlocked(i) { return save.unl.indexOf(i) >= 0; }
+  function myTeam(n, keep) {
+    var out = cleanPicks(keep || save.picks, n).filter(unlocked), pool = save.unl.filter(function (c) { return out.indexOf(c) < 0; });
+    while (out.length < n && pool.length) out.push(pool.splice((Math.random() * pool.length) | 0, 1)[0]);
+    return G.randomChars(n, out);
+  }
   function start(lvl, chars) {   // chars: [myTeam, foeTeam] character ids (missing ones are random)
     A.unlock(); sel = lvl;
-    M = G.M = G.newMatch({ lvl: lvl, auto: WD.auto, hint: save.played < 3, n: save.n, chars: chars, easy: save.easy });
+    M = G.M = G.newMatch({ lvl: lvl, auto: WD.auto, hint: save.played < 3, n: save.n, chars: chars, easy: save.easy, hat: save.hat || null });
     save.played++; commit();
+    enterPlay();
+  }
+  // first visit: straight into a short guided 3 vs 3 (one round, weak rivals, hints in context, waits for the first touch/key)
+  function startGuide() {
+    sel = 0; var mine = [0].concat(myTeam(3, [0]).filter(function (c) { return c !== 0; })).slice(0, 3);
+    M = G.M = G.newMatch({ lvl: 0, n: 3, guide: true, waitInput: true, need: 1, roundT: 75, chars: [mine, null], easy: false });
+    save.played++; commit(); WD.log.push('guide');
     enterPlay();
   }
   var vsChars = null;
@@ -148,35 +176,149 @@
     enterPlay();
   }
   function leaveNet() { if (NET) { NETM.rec = false; NETM.close(); } NET = null; ovl = false; }
-  function toMenu() { leaveNet(); state = 'menu'; M = G.M = null; netView = null; show('menu'); $('btnPause').style.display = 'none'; $('touch').classList.remove('on'); A.intensity = 0; refreshMenu(); }
+  function toMenu() { Sdk.gameplayStop(); leaveNet(); state = 'menu'; M = G.M = null; netView = null; show('menu'); $('btnPause').style.display = 'none'; $('touch').classList.remove('on'); A.intensity = 0; refreshMenu(); if (giftQ.length) { showGift(giftQ); giftQ = []; } }
   function pause() {
     if (state !== 'play') return;
     $('pauseHelp').innerHTML = touchOn ? G.t('hintT') : G.t('hintK');
+    Sdk.gameplayStop();
     if (NET) { ovl = true; show('pause'); return; }   // online: the game keeps running underneath
     state = 'pause'; refreshMenu(); show('pause');
   }
-  function resume() { if (ovl) { ovl = false; show(null); keyGuide(); return; } if (state !== 'pause') return; state = 'play'; show(null); last = performance.now(); keyGuide(); }
+  function resume() { if (ovl) { ovl = false; show(null); keyGuide(); Sdk.gameplayStart(); return; } if (state !== 'pause') return; state = 'play'; show(null); last = performance.now(); keyGuide(); if (!(M && M.waitInput)) Sdk.gameplayStart(); }
+
+  /* ---------- result: rewards, unlocks, "come back tomorrow" ---------- */
+  var adGate = { n: 0, t: performance.now() }, adBusy = false, resCards = [], giftQ = [];
   function result() {
+    Sdk.gameplayStop();
     state = 'result'; ovl = false; $('btnPause').style.display = 'none'; $('touch').classList.remove('on');
+    resCards = []; ['resXp', 'resUnl', 'resDaily', 'resTease'].forEach(function (id) { $(id).innerHTML = ''; $(id).style.display = 'none'; });
     if (NET) {
       var my = M.myTeam || 0, w = M.winner === my;
       var dr = M.winner < 0; $('resTitle').textContent = dr ? G.t('draw') : w ? G.t('vsWin') : G.t('vsLose'); $('resTitle').style.color = dr ? '#fff' : w ? '#8ef0a8' : '#ff9d5c';
       $('resSub').innerHTML = G.t('pHost') + ' ' + M.score[0] + ' : ' + M.score[1] + ' ' + G.t('pGuest') + (NET === 'guest' ? '<br>' + G.t('waitHost') : '');
-      $('bNext').style.display = 'none'; $('bRetry').style.display = NET === 'host' ? '' : 'none'; $('bRetry').textContent = G.t('rematch');
+      $('bNext').style.display = 'none'; $('bTeam').style.display = 'none'; $('bShare').style.display = 'none'; $('bRetry').style.display = NET === 'host' ? '' : 'none'; $('bRetry').textContent = G.t('rematch');
       show('result'); G.sfx(w || dr ? 'win' : 'lose'); return;
     }
-    $('bRetry').style.display = ''; $('bRetry').textContent = G.t('retry');
-    var won = M.winner === 0, tn = G.t(M.team.key), unlocked = false;
-    if (won && M.lvl === save.beaten && save.beaten < 5) { save.beaten++; unlocked = save.beaten < 5; commit(); }
-    $('resTitle').textContent = won ? G.t('win') : M.winner < 0 ? G.t('draw') : G.t('lose');
-    $('resTitle').style.color = won ? '#8ef0a8' : M.winner < 0 ? '#fff' : '#ff9d5c';
-    $('resSub').innerHTML = (won ? G.t('winSub', tn) : G.t('loseSub', tn)) + '<br>' + M.score[0] + ' : ' + M.score[1] + (unlocked ? '<br><b style="color:#ffd23f">' + G.t('unlocked') + '</b>' : '') + (won && save.beaten >= 5 && M.lvl === 4 ? '<br><b style="color:#ffd23f">' + G.t('champion') + '</b> ' + G.t('allClear') : '');
-    $('bNext').style.display = won && M.lvl < 4 ? '' : 'none';
+    $('bRetry').style.display = ''; $('bRetry').textContent = G.t('rematch'); $('bTeam').style.display = '';
+    var won = M.winner === 0, draw = M.winner < 0, tn = teamName(M.lvl), firstBeat = false, guide = !!M.guide;
+    if (won && M.lvl === save.beaten && save.beaten < G.LADDER) { save.beaten++; firstBeat = true; }
+    var now = MT.now(), ev = MT.login(save, now);   // the day may have changed while playing
+    var st = { won: won, draw: draw, lvl: M.lvl, firstBeat: firstBeat, hit: M.me.hit, cat: M.me.cat, sp: M.me.sp, spKO: M.me.spKO, leftMax: M.me.leftMax, flaw: M.me.flaw, n: M.n, guide: guide };
+    var r = MT.reward(save, st, now); ev = ev.concat(r.ev);
+    // personal records: most catches / hits in a match, longest win streak
+    var rc = save.rec, newRec = [];
+    if (st.cat > rc.cat && st.cat >= 2) { rc.cat = st.cat; newRec.push(G.t('recCat', st.cat)); }
+    if (st.hit > rc.hit && st.hit >= 2) { rc.hit = st.hit; newRec.push(G.t('recHit', st.hit)); }
+    rc.cur = won ? rc.cur + 1 : 0; if (rc.cur > rc.streak && rc.cur >= 2) { rc.streak = rc.cur; newRec.push(G.t('recStreak', rc.cur)); }
+    if (guide) save.firstDone = 1;
+    commit(); adGate.n++;
+    WD.lastReward = { st: st, xp: r.xp, ev: ev.map(function (e) { return e.k + (e.ch != null ? ':' + e.ch : e.hat ? ':' + e.hat : e.to ? ':' + e.to : ''); }), daily: r.daily, dailyNow: r.dailyNow };
+    if (firstBeat || r.dailyNow) Sdk.happytime();   // big moments only: a new team beaten, today's challenge done
+    $('resTitle').textContent = won ? G.t('win') : draw ? G.t('draw') : G.t('lose');
+    $('resTitle').style.color = won ? '#8ef0a8' : draw ? '#fff' : '#ff9d5c';
+    var champ = won && firstBeat && (save.beaten === 5 || save.beaten === G.LADDER);
+    $('resSub').innerHTML = (won ? G.t('winSub', tn) : G.t('loseSub', tn)) + ' ' + M.score[0] + ' : ' + M.score[1] + (firstBeat && save.beaten < G.LADDER && !champ ? '<br><b style="color:#ffd23f">' + G.t('unlocked') + '</b>' : '') + (champ ? '<br><b style="color:#ffd23f">' + G.t('champion') + '</b> ' + G.t(save.beaten >= G.LADDER ? 'allClear' : 'tier2') : '');
+    $('bNext').style.display = won && M.lvl < G.LADDER - 1 ? '' : 'none';
+    $('bNext').textContent = G.t('nextTeam');
     show('result'); G.sfx(won ? 'win' : 'lose');
+    rewards(r, ev); tease(r);
+    newRec.forEach(function (t, i) { card('blue', G.t('newRec'), t, null, null, 0.4 + 0.3 * i); });
+    $('bShare').style.display = shot ? '' : 'none';
+    if (won) cheerFx();
   }
+  function card(cls, title, sub, ch, hat, delay) {
+    var e = document.createElement('div'); e.className = 'card ' + cls; e.style.animationDelay = delay + 's';
+    e.innerHTML = (ch != null || hat ? '<canvas></canvas>' : '') + '<div><b>' + esc(title) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
+    $('resUnl').appendChild(e); $('resUnl').style.display = 'flex';
+    if (ch != null || hat) resCards.push({ cv: e.firstChild, ch: ch == null ? 0 : ch, hat: hat || null, sil: false });
+    setTimeout(function () { if (state === 'result') G.sfx(cls === 'gold' ? 'revive' : 'ready'); }, delay * 1000);
+  }
+  function rewards(r, ev) {
+    var box = $('resXp'); box.style.display = 'block';
+    box.innerHTML = '<div class="lvrow"><span class="lv" id="rLv"></span><div class="xpbar"><i id="rXpFill"></i></div><span class="gain" id="rXp">+0 XP</span></div><div class="parts">' +
+      r.parts.map(function (p) { return '<span>' + esc(G.t(p[0])) + ' +' + p[1] + '</span>'; }).join('') + '</div>';
+    var fill = $('rXpFill'), lv = $('rLv'), b = r.before, a = r.after;
+    lv.textContent = G.t('lv', b.lvl); fill.style.transition = 'none'; fill.style.width = (100 * b.cur / b.need) + '%';
+    var t0 = performance.now(), dur = 900;
+    (function count() { var k = Math.min(1, (performance.now() - t0) / dur); if ($('rXp')) $('rXp').textContent = '+' + Math.round(r.xp * k) + ' XP'; if (k < 1 && state === 'result') requestAnimationFrame(count); })();
+    setTimeout(function () {
+      fill.style.transition = 'width .7s ease-out';
+      if (a.lvl > b.lvl) { fill.style.width = '100%'; setTimeout(function () { lv.textContent = G.t('lv', a.lvl); lv.classList.add('up'); fill.style.transition = 'none'; fill.style.width = '0%'; G.sfx('revive'); setTimeout(function () { fill.style.transition = 'width .5s ease-out'; fill.style.width = (100 * a.cur / a.need) + '%'; }, 30); }, 750); }
+      else fill.style.width = (100 * a.cur / a.need) + '%';
+    }, 120);
+    var d = 0.5;
+    ev.forEach(function (e) {
+      if (e.k === 'char') { card('gold', G.t('newChar'), G.t('ch' + e.ch) + ' · ' + G.t('sp_' + G.CHARS[e.ch].sp), e.ch, null, d); d += 0.45; }
+      else if (e.k === 'hat') { card('gold', G.t('newHat'), G.t('h_' + e.hat), 0, e.hat, d); d += 0.45; }
+      else if (e.k === 'lvl') { card('blue', G.t('lvUp', e.to), null, null, null, d); d += 0.35; }
+      else if (e.k === 'daily') { card('green', G.t('dailyDone'), dailyText(e.c) + ' · +150 XP', null, null, d); d += 0.35; }
+      else if (e.k === 'streak') { card('blue', G.t('streakDay', e.n), '+' + e.xp + ' XP', null, null, d); d += 0.35; }
+    });
+    if (!r.dailyNow) {
+      var c = r.daily, dd = $('resDaily'); dd.style.display = 'block';
+      dd.innerHTML = '<b>' + esc(G.t('daily')) + '</b> ' + esc(dailyText(c)) + (save.daily.done ? ' <span class="ok">✓</span>' : ' <span class="xp">+150 XP</span>');
+    }
+  }
+  function tease(r) {
+    var now = MT.now(), tm = MT.tomorrow(save, now), h = Math.max(1, Math.ceil(tm.ms / 3600000)), wn = MT.winsToNext(save), nl = MT.nextLocked(save), box = $('resTease');
+    var lines = [];
+    if (nl >= 0 && wn > 0) lines.push(G.t('winsToChar', wn));
+    lines.push(G.t('teaseDaily', dailyText(tm.challenge)));
+    lines.push('🔥 ' + G.t('teaseStreak', tm.streak));
+    box.innerHTML = (nl >= 0 ? '<canvas id="teaseCv"></canvas>' : '') + '<div><b>' + esc(G.t('tease', h)) + '</b>' + (nl >= 0 ? '<span>🎁 ' + esc(G.t('teaseGift')) + '</span>' : '') + lines.map(function (l) { return '<span>' + esc(l) + '</span>'; }).join('') + '</div>';
+    box.style.display = 'flex';
+    if (nl >= 0) resCards.push({ cv: $('teaseCv'), ch: nl, hat: null, sil: true });
+  }
+  // share the deciding moment: Web Share with the image when the device can, else download the PNG (no external links)
+  function shareShot() {
+    if (!shot) return; var name = 'wobble-dodgeball.png';
+    function dl() { var a = document.createElement('a'); a.href = shot; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+    try {
+      var bin = atob(shot.split(',')[1]), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+      var f = new File([u], name, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f], title: G.t('title1') + ' ' + G.t('title2') }).catch(function () { }); return; }
+    } catch (e) { }
+    dl();
+  }
+  function cheerFx() { if (M) M.bodies.forEach(function (b) { if (b.team === 0 && b.mode === 'stand') b.cheer = true; }); }
+  function drawCards(now) {
+    for (var i = 0; i < resCards.length; i++) {
+      var o = resCards[i], cv = o.cv; if (!cv || !cv.isConnected) continue; sizeCv(cv); var c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
+      G.drawChar(c, o.ch, cv.width / 2, cv.height * 0.96, cv.height * 0.84, now + i, MYUNI, !o.sil, false, o.hat);
+      if (o.sil) { c.globalCompositeOperation = 'source-in'; c.fillStyle = '#1b1b2f'; c.fillRect(0, 0, cv.width, cv.height); c.globalCompositeOperation = 'source-over'; c.fillStyle = '#ffd23f'; c.font = '900 ' + Math.round(cv.height * 0.4) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('?', cv.width / 2, cv.height * 0.45); }
+    }
+  }
+  // welcome-back gifts (login streak / daily gift) shown over the menu
+  function showGift(ev) {
+    var box = $('giftList'); box.innerHTML = ''; resCards = resCards.filter(function (o) { return o.cv && o.cv.isConnected && !box.contains(o.cv); });
+    ev.forEach(function (e) {
+      var t = e.k === 'streak' ? G.t('streakDay', e.n) + ' +' + e.xp + ' XP' : e.k === 'char' ? G.t('newChar') + ' ' + G.t('ch' + e.ch) : e.k === 'hat' ? G.t('newHat') + ' ' + G.t('h_' + e.hat) : null;
+      if (!t) return; var d = document.createElement('div'); d.className = 'card ' + (e.k === 'streak' ? 'blue' : 'gold');
+      d.innerHTML = (e.k === 'char' || e.k === 'hat' ? '<canvas></canvas>' : '') + '<div><b>' + esc(t) + '</b></div>'; box.appendChild(d);
+      if (e.k === 'char' || e.k === 'hat') resCards.push({ cv: d.firstChild, ch: e.k === 'char' ? e.ch : 0, hat: e.hat || null, sil: false });
+    });
+    if (!box.children.length) return;
+    $('giftTitle').textContent = G.t('welcome'); $('bGiftOk').textContent = G.t('ok');
+    $('gift').classList.add('on'); G.sfx('ready'); WD.log.push('gift');
+  }
+  // between matches: a midgame ad only after 2 finished matches and 2.5 min since the last one (never before or inside the first match)
+  function between(fn) {
+    if (NET || adBusy) { if (!adBusy) fn(); return; }
+    var now = performance.now();
+    if (Sdk.ok && Sdk.adsOk && adGate.n >= 2 && now - adGate.t > (WD.adGapMs != null ? WD.adGapMs : 150000)) {
+      adBusy = true; adGate.n = 0; adGate.t = now; WD.log.push('midgame');
+      Sdk.midgame(function () { adGate.t = performance.now(); adBusy = false; if (state === 'result') fn(); });
+    } else fn();
+  }
+  function nextLvl() { return Math.min(G.LADDER - 1, M ? M.lvl + 1 : save.beaten); }
   $('bPlay').onclick = function () { A.unlock(); G.sfx('click'); openPick('single', save.n, sel); };
-  $('bNext').onclick = function () { openPick('single', save.n, Math.min(4, M.lvl + 1)); };
-  $('bRetry').onclick = function () { if (NET === 'host') startVersus(); else if (!NET) openPick('single', save.n, M.lvl); };
+  $('bNext').onclick = function () { var l = nextLvl(); between(function () { start(l, [myTeam(save.n), null]); }); };
+  $('bRetry').onclick = function () { if (NET === 'host') startVersus(); else if (!NET) { var l = M.lvl, mine = WD.chars() ? WD.chars()[0] : null; between(function () { start(l, [myTeam(save.n, mine), null]); }); } };
+  $('bTeam').onclick = function () { var l = M && M.winner === 0 ? nextLvl() : M ? M.lvl : sel; between(function () { openPick('single', save.n, l); }); };
+  $('bLite').onclick = function () { A.unlock(); G.sfx('click'); save.lite = save.lite ? 0 : 1; commit(); applySave(); layout(); refreshMenu(); };
+  $('bShare').onclick = function () { A.unlock(); shareShot(); };
+  $('bGiftOk').onclick = function () { A.unlock(); G.sfx('click'); $('gift').classList.remove('on'); };
+  $('bHat').onclick = function () { A.unlock(); G.sfx('click'); var l = [''].concat(MT.HATS.map(function (h) { return h.id; }).filter(function (h) { return save.hats.indexOf(h) >= 0; })); save.hat = l[(l.indexOf(save.hat) + 1) % l.length]; commit(); refreshMenu(); };
   $('bRule').onclick = function () { A.unlock(); G.sfx('click'); save.easy = !save.easy; commit(); refreshMenu(); };
   $('bResMenu').onclick = toMenu; $('bQuit').onclick = toMenu; $('bResume').onclick = resume; $('btnPause').onclick = function () { A.unlock(); pause(); };
   $('bLang').onclick = function () { G.lang = G.lang === 'ko' ? 'en' : 'ko'; save.lang = G.lang; commit(); refreshMenu(); layout(); };
@@ -188,7 +330,7 @@
   /* ---------- online: screens ---------- */
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function netPanel(title, body, btns) {   // btns: [[id, i18nKey, cls, fn]]
-    state = 'net'; show('net'); $('btnPause').style.display = 'none'; $('touch').classList.remove('on');
+    Sdk.gameplayStop(); state = 'net'; show('net'); $('btnPause').style.display = 'none'; $('touch').classList.remove('on');
     $('netTitle').textContent = title; $('netBody').innerHTML = body;
     var row = $('netBtns'); row.innerHTML = '';
     btns.forEach(function (b) { var e = document.createElement('button'); e.className = 'btn ' + (b[2] || ''); e.id = b[0]; e.textContent = G.t(b[1]); e.onclick = function () { A.unlock(); G.sfx('click'); b[3](); }; row.appendChild(e); });
@@ -204,7 +346,8 @@
     netView = function () { netPanel(G.t('online'), '<div class="help netmsg" id="netMsg">' + esc(G.t(key)) + '</div>', [['bNm', 'menu', 'pri', toMenu]]); };
     netView(); WD.log.push('netMsg:' + key);
   }
-  function roomLink(code) { return location.origin + location.pathname + '?room=' + code; }
+  // on CrazyGames the invite link must come from the SDK (no raw links to the game files)
+  function roomLink(code) { return Sdk.inviteLink({ room: code }) || location.origin + location.pathname + '?room=' + code; }
   function hostRoom() {
     hostTries = 0; tryHost();
   }
@@ -264,6 +407,13 @@
     else if (m.t === 'neterr') netMsg('netErr');
   }
 
+  // guided match: the button to press now pulses
+  var gTip = null;
+  function guideButtons() {
+    var k = G.guideTip(M, touchOn); if (k === gTip) return; gTip = k;
+    $('tThrow').classList.toggle('guide', k === 'gThrowT' || k === 'gSpT'); $('tGrab').classList.toggle('guide', k === 'gCatchT'); $('tJump').classList.toggle('guide', k === 'gSpT');
+    if (k) WD.log.push('tip:' + k);
+  }
   function setPassLabel(hold, full) {
     var e = $('tGrab'), t = hold ? G.t('tPass') : G.t('tGrab'); if (e.textContent !== t) { e.textContent = t; if (touchOn) fitBtn(e); }
     e.classList.toggle('pass', !!hold); $('tThrow').classList.toggle('full', !!full); $('tJump').classList.toggle('full', !!full);
@@ -273,10 +423,10 @@
   var PK = { mode: 'single', n: 5, lvl: 0, picks: [], cur: 0, ready: false, foeReady: false, foePicks: null, cd: 0, teams: null, easy: false, cols: 6, cells: [] };
   function cleanPicks(a, n) { var o = []; (Array.isArray(a) ? a : []).forEach(function (c) { c = c | 0; if (c >= 0 && c < G.CHARS.length && o.indexOf(c) < 0 && o.length < n) o.push(c); }); return o; }
   function openPick(mode, n, lvl) {
-    A.unlock(); state = 'pick'; show('pick'); $('btnPause').style.display = 'none'; $('touch').classList.remove('on');
+    A.unlock(); Sdk.gameplayStop(); state = 'pick'; show('pick'); $('btnPause').style.display = 'none'; $('touch').classList.remove('on');
     PK.mode = mode; PK.n = n; PK.lvl = lvl; PK.ready = false; PK.foeReady = false; PK.foePicks = null; PK.cd = 0; PK.teams = null;
     if (mode !== 'guest') PK.easy = save.easy;
-    PK.picks = cleanPicks(save.picks, n); PK.cur = PK.picks.length ? PK.picks[PK.picks.length - 1] : 0;
+    PK.picks = cleanPicks(save.picks, n); if (mode === 'single') PK.picks = PK.picks.filter(unlocked); PK.cur = PK.picks.length ? PK.picks[PK.picks.length - 1] : 0;
     var g = $('pkGrid'); if (!g.children.length) {
       G.CHARS.forEach(function (C, i) {
         var e = document.createElement('button'); e.className = 'pkCell'; e.dataset.i = i; e.innerHTML = '<canvas></canvas><span class="nm"></span><span class="no"></span>';
@@ -288,8 +438,10 @@
     $('pkCd').classList.remove('on');
     pickLayout(); pickRefresh(); WD.log.push('pick:' + mode);
   }
+  function pickLocked(i) { return PK.mode === 'single' && !unlocked(i); }
   function togglePick(i) {
     if (PK.ready) return;
+    if (pickLocked(i)) { G.sfx('bounce'); var wn = MT.winsToNext(save); $('pkHint').textContent = wn > 0 ? G.t('lockHint', wn) : G.t('lockHint2'); PK.hintT = performance.now(); return; }
     var k = PK.picks.indexOf(i);
     if (k >= 0) { PK.picks.splice(k, 1); G.sfx('poof'); }
     else if (PK.picks.length < PK.n) { PK.picks.push(i); G.sfx('catch'); }
@@ -299,7 +451,7 @@
   function pickReady() {
     if (PK.ready) return;
     PK.ready = true; G.sfx('ready');
-    var mine = G.randomChars(PK.n, PK.picks); PK.picks = mine;
+    var mine = PK.mode === 'single' ? myTeam(PK.n, PK.picks) : G.randomChars(PK.n, PK.picks); PK.picks = mine;
     if (PK.mode === 'single') { startCountdown(mine, G.randomChars(PK.n)); return; }
     NETM.send({ t: 'pk', c: mine, r: 1 });
     pickRefresh(); hostMaybeGo();
@@ -327,7 +479,7 @@
     var mv = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1, ArrowUp: -cols, KeyW: -cols, ArrowDown: cols, KeyS: cols }[c];
     if (mv) { e.preventDefault(); PK.cur = (PK.cur + mv + n) % n; G.sfx('click'); pickRefresh(); return; }
     if (e.repeat) return;
-    if (c === 'Enter' || c === 'KeyJ' || c === 'NumpadEnter') { e.preventDefault(); if (PK.picks.length >= PK.n && PK.picks.indexOf(PK.cur) < 0) pickReady(); else togglePick(PK.cur); }
+    if (c === 'Enter' || c === 'KeyJ' || c === 'NumpadEnter') { e.preventDefault(); if (PK.picks.length >= PK.n && PK.picks.indexOf(PK.cur) < 0 && !pickLocked(PK.cur)) pickReady(); else togglePick(PK.cur); }
     else if (c === 'KeyK' || c === 'Backspace') { e.preventDefault(); if (!PK.ready && PK.picks.length) { PK.picks.pop(); save.picks = PK.picks.slice(); commit(); G.sfx('poof'); pickRefresh(); } }
     else if (c === 'Space') { e.preventDefault(); pickReady(); }
   }
@@ -341,17 +493,17 @@
     $('pkName').textContent = G.t('ch' + PK.cur);
     $('pkStats').innerHTML = [['stPow', C.st[0]], ['stSpd', C.st[1]], ['stCat', C.st[2]]].map(function (r) { return '<div class="st"><b>' + esc(G.t(r[0])) + '</b><span class="bar">' + bar(r[1]) + '</span></div>'; }).join('');
     $('pkSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + '<br><small>' + esc(G.t('ss_' + C.sp)) + '</small>';
-    for (i = 0; i < PK.cells.length; i++) { var e = PK.cells[i], k = PK.picks.indexOf(i); e.classList.toggle('cur', i === PK.cur); e.classList.toggle('sel', k >= 0); e.querySelector('.no').textContent = k >= 0 ? k + 1 : ''; e.querySelector('.nm').textContent = G.t('ch' + i); }
+    for (i = 0; i < PK.cells.length; i++) { var e = PK.cells[i], k = PK.picks.indexOf(i); e.classList.toggle('cur', i === PK.cur); e.classList.toggle('lock', pickLocked(i)); e.classList.toggle('sel', k >= 0); e.querySelector('.no').textContent = k >= 0 ? k + 1 : ''; e.querySelector('.nm').textContent = G.t('ch' + i); }
     $('pkMine').textContent = G.t('pickMine', PK.picks.length, PK.n);
     $('pkFoe').textContent = PK.mode === 'single' ? '' : PK.ready && !PK.foeReady ? G.t('waitFoe') : PK.foeReady ? G.t('foeReady') : G.t('foePick');
     $('pkRnd').textContent = G.t('pickRandom'); $('pkUndo').textContent = G.t('pickUndo'); $('pkGo').textContent = G.t('pickReady'); $('pkBack').textContent = G.t('pickBack');
     $('pkGo').disabled = PK.ready; $('pkRnd').disabled = PK.ready; $('pkUndo').disabled = PK.ready || !PK.picks.length;
     $('pkGo').classList.toggle('pulse', PK.picks.length >= PK.n && !PK.ready);
-    $('pkHint').textContent = touchOn ? G.t('pickHint') : G.t('pickHint') + '  ·  ' + G.t('pickHintK');
+    if (!(PK.hintT && performance.now() - PK.hintT < 2500)) $('pkHint').textContent = touchOn ? G.t('pickHint') : G.t('pickHint') + '  ·  ' + G.t('pickHintK');
   }
   function sizeCv(cv) { var r = cv.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2), w = Math.max(1, Math.round(r.width * d)), h = Math.max(1, Math.round(r.height * d)); if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; } return d; }
   function pickLayout() {
-    var port = window.innerHeight > window.innerWidth * 1.05; PK.cols = port ? 4 : 6;
+    var port = window.innerHeight > window.innerWidth * 1.05; PK.cols = port ? 6 : 8;
     $('pick').classList.toggle('port', port);
     PK.cells = Array.prototype.slice.call(document.querySelectorAll('.pkCell'));
     var sl = $('pkSlots'); if (sl.children.length !== PK.n) { sl.innerHTML = ''; for (var i = 0; i < PK.n; i++) { var c = document.createElement('canvas'); c.className = 'slot'; sl.appendChild(c); } }
@@ -363,7 +515,8 @@
   }
   function drawPick(now) {
     var i, cv, c, d;
-    for (i = 0; i < PK.cells.length; i++) { cv = PK.cells[i].firstChild; d = sizeCv(cv); c = cv.getContext('2d'); cell(c, cv.width, cv.height, i, now + i * 0.37, MYUNI, PK.picks.indexOf(i) >= 0 && ((now * 2 + i) | 0) % 4 === 0); }
+    for (i = 0; i < PK.cells.length; i++) { cv = PK.cells[i].firstChild; d = sizeCv(cv); c = cv.getContext('2d'); cell(c, cv.width, cv.height, i, now + i * 0.37, MYUNI, PK.picks.indexOf(i) >= 0 && ((now * 2 + i) | 0) % 4 === 0);
+      if (pickLocked(i)) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = 'rgba(20,16,40,0.78)'; c.fillRect(0, 0, cv.width, cv.height); c.globalCompositeOperation = 'source-over'; c.font = '900 ' + Math.round(cv.height * 0.3) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#ffd23f'; c.fillText('\uD83D\uDD12', cv.width / 2, cv.height * 0.5); } }
     cv = $('pkCv'); sizeCv(cv); c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
     var g = c.createRadialGradient(cv.width / 2, cv.height * 0.7, 4, cv.width / 2, cv.height * 0.7, cv.width * 0.6); g.addColorStop(0, G.CHARS[PK.cur].skin); g.addColorStop(1, 'rgba(0,0,0,0)'); c.globalAlpha = 0.35; c.fillStyle = g; c.fillRect(0, 0, cv.width, cv.height); c.globalAlpha = 1;
     G.drawChar(c, PK.cur, cv.width / 2, cv.height * 0.95, cv.height * 0.8, now, MYUNI, PK.picks.indexOf(PK.cur) >= 0);
@@ -384,7 +537,7 @@
     else { row(T2[0], w * 0.02, w * 0.46, h * 0.82, MYUNI, false); row(T2[1], w * 0.54, w * 0.98, h * 0.82, FOEUNI, true); }
     var fs = Math.min(w, h) * 0.07;
     function txt(s, x, y, size, col) { c.font = 'italic 900 ' + Math.round(size) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.strokeStyle = '#1b1b2f'; c.lineWidth = size * 0.22; c.strokeText(s, x, y); c.fillStyle = col; c.fillText(s, x, y); }
-    var myName = PK.mode === 'single' ? G.t('my') : PK.mode === 'host' ? G.t('pHost') : G.t('pGuest'), foeName = PK.mode === 'single' ? G.t(G.TEAMS[PK.lvl].key) : PK.mode === 'host' ? G.t('pGuest') : G.t('pHost');
+    var myName = PK.mode === 'single' ? G.t('my') : PK.mode === 'host' ? G.t('pHost') : G.t('pGuest'), foeName = PK.mode === 'single' ? teamName(PK.lvl) : PK.mode === 'host' ? G.t('pGuest') : G.t('pHost');
     if (port) { txt(myName, w / 2, h * 0.08, fs * 0.8, '#6ecbff'); txt(foeName, w / 2, h * 0.58, fs * 0.8, '#ff9d5c'); }
     else { txt(myName, w * 0.25, h * 0.12, fs * 0.8, '#6ecbff'); txt(foeName, w * 0.75, h * 0.12, fs * 0.8, '#ff9d5c'); }
     var cy = port ? h * 0.47 : h * 0.38, big, k;
@@ -397,7 +550,7 @@
   }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   $('pkGo').onclick = function () { A.unlock(); pickReady(); };
-  $('pkRnd').onclick = function () { A.unlock(); if (PK.ready) return; PK.picks = G.randomChars(PK.n); save.picks = PK.picks.slice(); commit(); G.sfx('click'); pickRefresh(); };
+  $('pkRnd').onclick = function () { A.unlock(); if (PK.ready) return; PK.picks = PK.mode === 'single' ? myTeam(PK.n, []).filter(unlocked) : G.randomChars(PK.n); save.picks = PK.picks.slice(); commit(); G.sfx('click'); pickRefresh(); };
   $('pkUndo').onclick = function () { A.unlock(); if (PK.ready || !PK.picks.length) return; PK.picks.pop(); save.picks = PK.picks.slice(); commit(); G.sfx('poof'); pickRefresh(); };
   $('pkBack').onclick = function () { A.unlock(); G.sfx('click'); pickBack(); };
 
@@ -415,14 +568,15 @@
   function frame(ts) {
     requestAnimationFrame(frame);
     var dt = Math.min(0.05, (ts - (last || ts)) / 1000); last = ts;
+    if (state === 'play' && !save.lite && slowN < 300) { slowN++; if (dt > 0.034) slowT++; if (slowN === 300 && slowT > 120) { save.lite = 1; commit(); applySave(); layout(); WD.log.push('autoLite'); } }
     try {
       var now = performance.now();
       if (NET === 'guest' && (state === 'play' || state === 'result') && NETM.gotSnap) guestFrame(dt, now);
-      else if (state === 'play' && M) {
+      else if (state === 'play' && M && !Sdk.adPlaying) {
         var my = M.myTeam || 0;
         if (M.hitstop > 0) { M.hitstop -= dt; if (M.shake > 0) M.shake *= 0.92; }
         else {
-          var scale = M.slow > 0 ? 0.3 : M.nearSlow ? 0.4 : 1; if (M.slow > 0) M.slow -= dt;
+          var scale = M.slow > 0 ? 0.3 : M.nearSlow ? 0.4 : M.guideSlow ? 0.45 : 1; if (M.slow > 0) M.slow -= dt;
           acc += dt * scale * WD.speed; var n = 0, inp = readInput(), cap = 12 * WD.speed, inp2 = NET === 'host' ? NETM.gin : null;
           while (acc >= DT && n < cap) {
             G.step(M, inp, inp2);
@@ -433,6 +587,8 @@
         }
         if (M.shake > 0) M.shake = Math.max(0, M.shake - dt * 45); if (M.flash > 0) M.flash -= dt;
         setPassLabel(M.ctrl >= 0 && M.bodies[M.ctrl].hold, M.meter[my] >= 1);
+        if (M.guide) guideButtons();
+        if (M.state === 'ko' && !shot && M.st > 0.15 && M.roundWin >= 0 && M.score[M.roundWin] + 1 >= M.need) { try { shot = cv.toDataURL('image/png'); } catch (e) { shot = null; } }
         if (M.state === 'over') { resT += dt; if (resT > 0.4 || WD.speed > 1) result(); }
         // portrait camera follows the ball
         if (V.port) { var tx = Math.max(0, Math.min(W - V.SW, M.ball.x - V.SW / 2)); V.camX += (tx - V.camX) * Math.min(1, dt * 4); } else V.camX = 0;
@@ -440,6 +596,7 @@
       if (NET === 'host' && M && (state === 'play' || state === 'result')) NETM.hostSend(M, now);
       if (NET && (state === 'play' || state === 'result' || state === 'pick') && NETM.timedOut(now)) netMsg('lost');
       if (state === 'pick') drawPick(ts / 1000);
+      if (resCards.length && (state === 'result' || state === 'menu')) drawCards(ts / 1000);
       G.render(ctx, state === 'menu' || state === 'net' || state === 'pick' ? null : M, ts / 1000, V);
       A.tick();
     } catch (e) { WD.errors.push(String(e && e.stack || e)); if (WD.errors.length > 20) WD.errors.shift(); }
@@ -460,9 +617,32 @@
   WD.toMenu = toMenu;
   WD.size = function (n) { save.n = n; commit(); refreshMenu(); };
 
+  WD.save = function () { return save; };
+  WD.meta = MT; WD.sdk = Sdk;
+  WD.setNow = function (ms) { G.fakeNow = ms; };
+  WD.relogin = function () { var ev = MT.login(save, MT.now()); MT.ensureDaily(save, MT.now()); commit(); if (state === 'menu') { refreshMenu(); if (ev.length) showGift(ev); } return ev; };
+  WD.guide = function () { return M && M.guide ? { wait: !!M.waitInput, thr: M.guide.thr, cat: M.guide.cat, slowN: M.guide.slowN, spGiven: M.guide.spGiven, me: M.me, tip: G.guideTip(M, touchOn) } : null; };
+  WD.startGuide = startGuide;
+  WD.roomLink = roomLink;
+
   layout(); refreshMenu(); show('menu');
   // ?room=1234 in the link -> join straight away
   var qm = /[?&]room=(\d{4})(?:&|$)/.exec(location.search);
   if (qm) { try { history.replaceState(null, '', location.pathname); } catch (e) { } joinRoom(qm[1]); }
+  else if (!save.firstDone && !/[?&]menu/.test(location.search)) startGuide();   // first visit: land in gameplay
+  else if (bootEv.length) showGift(bootEv);
   requestAnimationFrame(frame);
+  Sdk.onReady = function () {
+    Sdk.loadingStart();
+    if (Save.loadSdk()) {
+      save = Save.data; applySave(); var ev = MT.login(save, MT.now()); MT.ensureDaily(save, MT.now()); commit();
+      if (save.firstDone && M && M.guide && M.waitInput) toMenu();   // returning player on a new device: no tutorial
+      else if (state === 'menu') refreshMenu();
+      if (ev.length) { if (state === 'menu') showGift(ev); else giftQ = ev; }
+    }
+    Sdk.loadingStop(); Sdk.syncPlaying();
+    var ir = Sdk.inviteParam('room'); if (ir && /^\d{4}$/.test(ir) && !NET) joinRoom(ir);
+  };
+  Sdk.onLateAd = function () { if (state === 'play') pause(); };
+  Sdk.init();
 })();

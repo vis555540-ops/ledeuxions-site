@@ -22,8 +22,13 @@
       started = true; nextT = c.currentTime + 0.08; applyMute();
     } catch (e) { A.ctx = null; }
   };
-  function applyMute() { if (master) master.gain.setTargetAtTime(A.muted ? 0 : 1, A.ctx.currentTime, 0.03); }
+  // three reasons to be silent: the player's sound button, an ad on screen, the CrazyGames site mute setting
+  function silent() { return A.muted || A.adMute || A.extMute; }
+  A.silent = silent;
+  function applyMute() { if (master) master.gain.setTargetAtTime(silent() ? 0 : 1, A.ctx.currentTime, 0.03); }
   A.setMute = function (v) { A.muted = v; applyMute(); };
+  A.setAdMute = function (v) { A.adMute = !!v; applyMute(); };
+  A.setExternalMute = function (v) { A.extMute = !!v; applyMute(); };
   A.suspend = function () { if (A.ctx && A.ctx.state === 'running') A.ctx.suspend().catch(function () { }); };
   A.resume = function () { if (A.ctx && A.ctx.state === 'suspended') { A.ctx.resume().catch(function () { }); nextT = 0; } };
 
@@ -97,15 +102,19 @@
     ah2: function () { wob(520, 0.35, 'triangle', 0.28, 620, 5, 12); },
     achoo: function () { tone(700, 0.08, 'square', 0.25, 300); noise(0.4, 1, 3000, 'highpass', 0.04, null, 900); },
     sp_bouncy: function () { tone(170, 0.26, 'sine', 0.4, 540); tone(340, 0.26, 'triangle', 0.14, 1080); },
-    boing: function () { tone(200, 0.16, 'sine', 0.35, 600); }
+    boing: function () { tone(200, 0.16, 'sine', 0.35, 600); },
+    sp_zap: function () { for (var i = 0; i < 4; i++) tone(1800 - i * 300, 0.05, 'sawtooth', 0.12, 2400, i * 0.06); noise(0.2, 0.3, 4000, 'highpass'); },
+    zapStep: function () { tone(2200, 0.03, 'square', 0.06, 1400); },
+    sp_sway: function () { wob(300, 0.9, 'triangle', 0.25, 220, 3, 60); },
+    sp_fireball: function () { noise(0.6, 0.6, 400, 'lowpass', 0, null, 1600); tone(110, 0.5, 'sawtooth', 0.3, 220); }
   };
   var lastPlay = {};
   A.sfx = function (name) {
-    if (!A.ctx || !started || A.ctx.state !== 'running' || A.muted || !SFX[name]) return;
+    if (!A.ctx || !started || A.ctx.state !== 'running' || silent() || !SFX[name]) return;
     var now = A.ctx.currentTime; if (lastPlay[name] && now - lastPlay[name] < 0.04) return; lastPlay[name] = now;
     try { SFX[name](); } catch (e) { }
   };
-  A.buzz = function (ms) { if (A.muted) return; try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { } };
+  A.buzz = function (ms) { if (silent()) return; try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { } };
   G.sfx = A.sfx;
 
   /* ---------- music: 8-bar loop, 16th-note steps ---------- */
@@ -134,7 +143,7 @@
     s.connect(f); f.connect(g2); g2.connect(mGain); s.start(t, Math.random()); s.stop(t + 0.14);
   }
   A.tick = function () {
-    var c = A.ctx; if (!c || !started || c.state !== 'running' || A.muted) { nextT = 0; return; }
+    var c = A.ctx; if (!c || !started || c.state !== 'running' || silent()) { nextT = 0; return; }
     if (nextT < c.currentTime - 0.2 || nextT === 0) nextT = c.currentTime + 0.05;
     var full = A.intensity > 0;
     while (nextT < c.currentTime + 0.14) {

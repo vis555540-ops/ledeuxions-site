@@ -35,9 +35,12 @@
     { key: 't3', skins: ['#aab4c3', '#c9d1dc', '#8f9aab'], hats: ['chef', 'top', 'chef'], uni: '#5b6b80', L: 3 },
     { key: 't4', skins: ['#a77bff', '#c3a3ff', '#8a5cf0'], hats: ['crown', 'top', 'crown'], uni: '#6a3fd1', L: 4 }
   ];
+  // ladder: 5 teams, then the same 5 again stronger (tier 2, "★")
+  G.LADDER = 10;
+  G.teamOf = function (lvl) { var b = G.TEAMS[lvl % 5]; if (lvl < 5) return b; return { key: b.key, skins: b.skins, hats: b.hats, uni: b.uni, L: b.L + 1.1, star: true }; };
   G.MYTEAM = { key: 'my', skins: ['#3fa9ff', '#8ee53f', '#4cd9c0'], hats: ['cap', 'band', 'prop'], uni: '#2a7fd4' };
   G.FRIEND = { key: 'pGuest', skins: ['#ff9d5c', '#ffb37a', '#f07c3a'], hats: ['cap', 'band', 'cap'], uni: '#e8692b', L: 2 };
-  G.SPECIALS = ['banana', 'fart', 'chicken', 'giant', 'clone', 'slow', 'boomer', 'zigzag', 'ghost', 'flip', 'sneeze', 'bouncy'];
+  G.SPECIALS = ['banana', 'fart', 'chicken', 'giant', 'clone', 'slow', 'boomer', 'zigzag', 'ghost', 'flip', 'sneeze', 'bouncy', 'zap', 'sway', 'fireball'];
   // original roster: look (skin, hat, head size hs, limb thickness th), stats [power, speed, catch] 1..5, own special shot
   G.CHARS = [
     { skin: '#ff8fd0', hat: 'party', hs: 1.0, th: 1.0, st: [3, 3, 3], sp: 'banana' },
@@ -51,7 +54,20 @@
     { skin: '#e8e9f5', hat: 'halo', hs: 1.05, th: 0.9, st: [3, 4, 2], sp: 'ghost' },
     { skin: '#ff5a4f', hat: 'horns', hs: 0.95, th: 1.05, st: [4, 4, 1], sp: 'flip' },
     { skin: '#c7a27c', hat: 'beanie', hs: 1.1, th: 1.0, st: [3, 2, 4], sp: 'sneeze' },
-    { skin: '#d4ff5c', hat: 'bow', hs: 0.9, th: 0.95, st: [3, 3, 3], sp: 'bouncy' }
+    { skin: '#d4ff5c', hat: 'bow', hs: 0.9, th: 0.95, st: [3, 3, 3], sp: 'bouncy' },
+    // v2 roster (12-23): each borrows at most ONE generic archetype trait, drawn as a head item
+    { skin: '#7fd3ff', hat: 'spiky', hs: 0.95, th: 0.9, st: [3, 5, 2], sp: 'zap' },        // 12 spiky electric hair
+    { skin: '#f2f2f7', hat: 'longhair', hs: 1.0, th: 0.9, st: [4, 4, 2], sp: 'banana' },   // 13 long-hair cool rival
+    { skin: '#5b6b80', hat: 'scarf', hs: 0.9, th: 0.85, st: [3, 5, 2], sp: 'ghost' },      // 14 ninja scarf
+    { skin: '#ffb37a', hat: 'none', hs: 0.95, th: 1.6, st: [5, 1, 4], sp: 'giant' },       // 15 big wrestler build
+    { skin: '#e0d2b4', hat: 'gourd', hs: 1.05, th: 0.85, st: [2, 2, 5], sp: 'sway' },      // 16 old master with a gourd
+    { skin: '#ffc4e1', hat: 'headset', hs: 1.05, th: 0.9, st: [2, 4, 3], sp: 'bouncy' },   // 17 cheerful idol
+    { skin: '#ff7b3d', hat: 'flame', hs: 1.0, th: 1.1, st: [5, 3, 1], sp: 'fireball' },    // 18 fire (flaming hair)
+    { skin: '#ffe9a8', hat: 'catears', hs: 1.0, th: 0.85, st: [2, 5, 3], sp: 'zigzag' },
+    { skin: '#4a4e69', hat: 'shades', hs: 1.0, th: 1.0, st: [4, 3, 2], sp: 'boomer' },
+    { skin: '#ffd23f', hat: 'antenna', hs: 0.9, th: 0.85, st: [2, 4, 4], sp: 'zap' },
+    { skin: '#c9f0ff', hat: 'cloud', hs: 1.15, th: 1.05, st: [3, 2, 4], sp: 'slow' },
+    { skin: '#9be564', hat: 'goggles', hs: 1.0, th: 1.0, st: [3, 4, 3], sp: 'flip' }
   ];
   G.randomChars = function (n, keep) {   // keep the given picks, fill the rest with different random characters
     var out = (keep || []).filter(function (c, i, a) { return c >= 0 && c < G.CHARS.length && a.indexOf(c) === i; }).slice(0, n), pool = [];
@@ -208,7 +224,7 @@
   function mkBall() { return { x: CX, z: 0.5, h: 11, vx: 0, vz: 0, vh: 0, st: 'loose', holder: null, team: -1, thrower: null, sp: null, t: 0, path: null, prog: 0, r: 11, fake: false, pass: false, side: {}, alive: true, trail: [], id: 0, spin: 0, pow: 0, lx: 0, lz: 0, lh: 0 }; }
   function giveBall(M, B, b) {
     B.st = 'held'; B.holder = b; B.path = null; B.sp = null; B.pass = false; B.team = b.team; B.r = 11; B.trail = []; B.fakeLook = null;
-    b.hold = true; b.charging = false; b.charge = 0; b.ai.holdT = null; b.catchT = 0;
+    b.hold = true; b.charging = false; b.charge = 0; b.ai.holdT = null; b.catchT = 0; b.heldT = 0;
     if (b.team === 0 && M.ctrl >= 0) M.ctrl = b.id;
     if (b.team === 1 && M.ctrl2 >= 0) M.ctrl2 = b.id;
     M.fakes.forEach(function (f) { f.alive = false; });
@@ -217,6 +233,7 @@
     var best = null, bd = 1e9, cands = M.bodies.filter(function (o) { return o.team !== b.team && o.role === 'in' && !o.pendingOut && o.mode === 'stand'; });
     if (!cands.length) return null;
     var human = isHuman(M, b);
+    if (M.guide && !human && b.team === 1 && M.guide.aim > 0 && M.ctrl >= 0) { var me = M.bodies[M.ctrl]; if (cands.indexOf(me) >= 0) return me; }
     cands.forEach(function (o) { var d = Math.abs(o.x - b.x) + 2.2 * Math.abs(o.z - b.z) * ZPX + (human ? 0 : rnd(0, 160) + (o.cv - 3) * 60); if (d < bd) { bd = d; best = o; } });
     return best;
   }
@@ -236,6 +253,7 @@
     if (tg) { x1 = tg.x + tg.vx * 0.12; z1 = tg.z + tg.vz / ZPX * 0.12; h1 = 52 * tg.sc; }
     else { x1 = b.team ? 250 : 1030; z1 = b.z; h1 = 45; }
     if (!human) { z1 += rnd(-P.err, P.err); x1 += rnd(-1, 1) * P.err * 180; }
+    if (M.guide && !human && b.team === 1 && tg && tg.id === M.ctrl) M.guide.aim--;
     z1 = clamp(z1, 0, 1);
     var v = spId ? 1050 : (650 + 850 * Math.min(1.3, charge)) * (0.88 + 0.04 * b.pw); B.pow = charge * (0.85 + 0.05 * b.pw);
     mkPath(B, x0, z0, h0, x1, z1, h1, v, spId ? 0 : 10 + (1 - Math.min(1, charge)) * 40);
@@ -245,7 +263,9 @@
       M.spFired[spId] = (M.spFired[spId] || 0) + 1; M.meter[b.team] = 0;
       M.ban = { txt: T('sp_' + spId), sub: T('ss_' + spId), k: 'sp_' + spId, ks: 'ss_' + spId, col: S.col, t: 0, dur: 1.5, sp: spId, team: b.team };
       M.flash = 0.22; M.shake = Math.max(M.shake, 6); G.sfx('special'); G.sfx('sp_' + spId); crowd(M, 1);
+      if (human && b.team === 0) M.me.sp++;
     } else G.sfx('throw');
+    if (human && b.team === 0) { M.me.thr++; if (M.guide) M.guide.thr++; if (M.guide && !spId && !M.guide.spGiven) { M.guide.spGiven = 1; meterAdd(M, 0, 1); } }
     if (human && b.role === 'out') { var n = nearestIn(M, b.team, b); if (n) setCtrl(M, b.team, n.id); }
   }
   function isHuman(M, b) { return b.id === M.ctrl || b.id === M.ctrl2; }
@@ -302,6 +322,10 @@
         return 0; }
       return 3.2;
     } },
+    // v2: lightning steps sideways in jerks / a lazy wide sway / a straight fast fireball with a flame trail
+    zap: { col: '#7fd3ff', dm: 1.15, off: function (M, B, u, q) { var st = Math.floor(u * 7); q[1] += (st % 2 ? 0.22 : -0.22) * Math.sin(Math.PI * u); if (st !== B.bn) { B.bn = st; G.sfx('zapStep'); sparks(M, B.x, bsy(B), 5, '#bff0ff', 220); } } },
+    sway: { col: '#e0d2b4', dm: 1.5, off: function (M, B, u, q) { q[1] += 0.42 * Math.sin(u * Math.PI * 2.5) * Math.sin(Math.PI * u); q[2] += 26 * Math.sin(u * Math.PI * 5); } },
+    fireball: { col: '#ff7b3d', dm: 0.75, arc: 0, tick: function (M, B) { B.r = 15; if (Math.random() < 0.9) puff(M, B.x - B.path.dir * 10, bsy(B), 1, Math.random() < 0.5 ? '#ff7b3d' : '#ffd23f', 12, 40); } },
     bouncy: { col: '#ff70a6', dm: 1.4, off: function (M, B, u, q) {
       var s = Math.abs(Math.sin(Math.PI * (0.5 + u * 3))); q[2] = B.r + (B.path.h1 + 40 - B.r) * s;
       var bn = Math.floor(0.5 + u * 3); if (bn !== B.bn) { B.bn = bn; G.sfx('boing'); puff(M, B.x, FY(B.z), 3, '#fff', 8, 40); }
@@ -377,6 +401,8 @@
     var dir = Math.abs(B.vx) > 30 ? sgn(B.vx) : (b.team ? 1 : -1);
     var hy = bsy(B);
     launch(b, dir, pw); b.pendingOut = true; b.outAt = ++M.outSeq; M.hits[B.team]++; STAT.hit++;
+    if (B.thrower && B.team === 0 && isHuman(M, B.thrower)) M.me.hit++;
+    M.lastSp = B.team === 0 && !!B.sp;
     // the hit feel: hit-stop, shake, white body flash, impact ring + sparks, crunchy thump
     M.hitstop = 0.06 + 0.06 * pw; M.shake = Math.max(M.shake, 8 + 9 * pw); M.flash = Math.max(M.flash, 0.06 + 0.05 * pw);
     M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.28, col: '#fff', s: 20 + 30 * pw });
@@ -394,7 +420,8 @@
   }
   function catchBall(M, B, b) {
     var th = B.thrower;
-    giveBall(M, B, b); b.throwT = 0; STAT.cat++;
+    giveBall(M, B, b); b.throwT = 0; STAT.cat++; M.lastSp = false;
+    if (b.team === 0 && isHuman(M, b)) { M.me.cat++; if (M.guide) M.guide.cat++; }
     G.sfx('catch'); pop(M, b.x, FY(b.z) - 150 * b.sc, T('catch'), '#8ef0a8', 34); meterAdd(M, b.team, 0.4);
     M.hitstop = 0.08; M.shake = Math.max(M.shake, 6); crowd(M, 0.8); sparks(M, B.x, bsy(B), 8, '#8ef0a8', 300);
     M.fx.push({ k: 'ring', x: B.x, y: bsy(B), life: 0, max: 0.25, col: '#8ef0a8', s: 40 });
@@ -444,14 +471,14 @@
     if (M.state !== 'play') return;
     var c = counts(M);
     if (c[0] && c[1]) { matchPointCheck(M, c); return; }
-    var w = c[0] ? 0 : 1; M.state = 'ko'; M.st = 0; M.roundWin = w; M.slow = M.score[w] >= 1 ? 1.6 : 1.0; G.sfx('whistle2');
+    var w = c[0] ? 0 : 1; if (w === 0 && M.lastSp) M.me.spKO++; M.state = 'ko'; M.st = 0; M.roundWin = w; M.slow = M.score[w] >= 1 ? 1.6 : 1.0; G.sfx('whistle2');
   }
   function matchPointCheck(M, c) {
     for (var t = 0; t < 2; t++) if (c[t] === 1 && M.score[1 - t] >= 1 && M.mp !== M.round) { M.mp = M.round; M.mpTeam = t; M.ban = { txt: T('matchPoint'), k: 'matchPoint', col: '#ff5a4f', t: 0, dur: 1.3 }; G.sfx('ready'); }
   }
 
-  G.posed = function (ch, t, animT, cheer) {   // a standing character at (0,0) for portraits (feet at y=0, about 130 tall)
-    var b = mkBody({ n: 0 }, t || 0, 0, ch); b.animT = animT || 0; b.cheer = !!cheer; b.rx = 0; b.ry = 0; b.sc = 1; b.face = 1; pose(b);
+  G.posed = function (ch, t, animT, cheer, o) {   // a standing character at (0,0) for portraits (feet at y=0, about 130 tall); o: extra fields (cover art)
+    var b = mkBody({ n: 0 }, t || 0, 0, ch); b.animT = animT || 0; b.cheer = !!cheer; b.rx = 0; b.ry = 0; b.sc = 1; b.face = 1; if (o) for (var ok in o) b[ok] = o[ok]; pose(b);
     for (var k = 0; k < 11; k++) { b.pts[k].x = b.tg[k * 2]; b.pts[k].y = b.tg[k * 2 + 1]; }
     return b;
   };
@@ -541,12 +568,16 @@
   /* ---------- match / round ---------- */
   G.newMatch = function (opt) {
     var N = G.TEAM_SIZES.indexOf(opt.n) >= 0 ? opt.n : 5;
-    var tm = opt.versus ? G.FRIEND : G.TEAMS[opt.lvl], chs = [G.randomChars(N, opt.chars && opt.chars[0]), G.randomChars(N, opt.chars && opt.chars[1])];
+    var tm = opt.versus ? G.FRIEND : G.teamOf(opt.lvl), chs = [G.randomChars(N, opt.chars && opt.chars[0]), G.randomChars(N, opt.chars && opt.chars[1])];
     var M = { lvl: opt.lvl, team: tm, chars: chs, easy: !!opt.easy, outSeq: 0, round: 1, score: [0, 0], state: 'intro', st: 0, time: ROUND_T, bodies: [], ball: mkBall(), fakes: [],
       meter: [0, 0], nextSp: [G.CHARS[chs[0][0]].sp, G.CHARS[chs[1][0]].sp], fx: [], pops: [], wows: [], ban: null, shake: 0, hitstop: 0, slow: 0, flash: 0, crowd: 0,
-      n: N, ctrl: opt.auto ? -1 : 0, ctrl2: opt.versus ? N : -1, versus: !!opt.versus, auto: !!opt.auto, P: [params(1.8), params(opt.versus ? 1.8 : tm.L)], spFired: {}, hits: [0, 0], mp: 0, roundWin: -1, serve: 0, ballId: 0, passRR: 0, chaser: [null, null], winner: -1, hint: !!opt.hint, nearSlow: 0, frame: 0 };
-    for (var t = 0; t < 2; t++) for (var i = 0; i < N; i++) M.bodies.push(mkBody(M, t, i, chs[t][i]));
+      n: N, ctrl: opt.auto ? -1 : 0, ctrl2: opt.versus ? N : -1, versus: !!opt.versus, auto: !!opt.auto, P: [params(1.8), params(opt.versus ? 1.8 : tm.L)], spFired: {}, hits: [0, 0], mp: 0, roundWin: -1, serve: 0, ballId: 0, passRR: 0, chaser: [null, null], winner: -1, hint: !!opt.hint, nearSlow: 0, frame: 0,
+      need: opt.need || 2, roundT: opt.roundT || ROUND_T, guide: opt.guide ? { thr: 0, cat: 0, slowN: 0, slowId: -1, aim: 2, spGiven: 0 } : null, waitInput: !!opt.waitInput, guideSlow: 0,
+      me: { thr: 0, hit: 0, cat: 0, sp: 0, spKO: 0, flaw: 0, leftMax: 0 }, lastSp: false };
+    if (opt.guide) M.P[1] = params(-0.7);
+    for (var t = 0; t < 2; t++) for (var i = 0; i < N; i++) { var bb = mkBody(M, t, i, chs[t][i]); if (t === 0 && opt.hat) bb.hat = opt.hat; M.bodies.push(bb); }
     setupRound(M);
+    if (M.waitInput) M.ban = null;
     return M;
   };
   // starting spots per team size: x on the left half (mirrored for the right team), z depth
@@ -557,7 +588,7 @@
   function setupRound(M) {
     var F = FORM[M.n], X0 = F[0], Z0 = F[1];
     M.bodies.forEach(function (b) { place(b, b.team ? W - X0[b.i] : X0[b.i], Z0[b.i]); });
-    M.ball = mkBall(); M.fakes = []; M.outSeq = 0; M.time = ROUND_T; M.state = 'intro'; M.st = 0; M.roundWin = -1; M.slow = 0; M.nearSlow = 0;
+    M.ball = mkBall(); M.fakes = []; M.outSeq = 0; M.time = M.roundT; M.state = 'intro'; M.st = 0; M.roundWin = -1; M.slow = 0; M.nearSlow = 0;
     giveBall(M, M.ball, M.bodies[M.serve * M.n]);
     if (M.ctrl >= 0) M.ctrl = 0;
     if (M.ctrl2 >= 0) M.ctrl2 = M.n;
@@ -565,8 +596,9 @@
     G.sfx('beep');
   }
   function endRound(M, w, timeUp) {
-    M.state = 'roundEnd'; M.st = 0; M.roundWin = w; (G.rlog = G.rlog || []).push({ lvl: M.lvl, len: Math.round(ROUND_T - M.time), w: w });
+    M.state = 'roundEnd'; M.st = 0; M.roundWin = w; (G.rlog = G.rlog || []).push({ lvl: M.lvl, len: Math.round(M.roundT - M.time), w: w });
     if (w >= 0) M.score[w]++;
+    if (w === 0) { var cc = counts(M); M.me.leftMax = Math.max(M.me.leftMax, cc[0]); if (cc[0] >= M.n) M.me.flaw++; }
     M.bodies.forEach(function (b) { b.cheer = w >= 0 && b.team === w && b.mode === 'stand'; b.charging = false; });
     var tk = w < 0 ? 'draw' : w === 0 ? 'roundWin' : 'roundLose', txt = T(tk);
     M.ban = { txt: timeUp ? T('timeUp') : txt, sub: timeUp ? txt : null, k: timeUp ? 'timeUp' : tk, ks: timeUp ? tk : null, col: w === 0 ? '#8ef0a8' : w === 1 ? '#ff9d5c' : '#fff', t: 0, dur: 2.4 };
@@ -576,7 +608,7 @@
   G.step = function (M, inp, inp2) {
     var i, b, bs = M.bodies;
     M.frame++;
-    if (M.state === 'intro') { M.st += DT; if (M.st > 1.5) { M.state = 'play'; M.ban = { txt: T('go'), k: 'go', col: '#ff5a4f', t: 0, dur: 0.9 }; G.sfx('whistle'); G.audio.intensity = 1; } }
+    if (M.state === 'intro') { M.st += DT; if (M.waitInput && M.st > 1.2) M.st = 1.2; if (M.st > 1.5) { M.state = 'play'; M.ban = { txt: T('go'), k: 'go', col: '#ff5a4f', t: 0, dur: 0.9 }; G.sfx('whistle'); G.audio.intensity = 1; } }
     else if (M.state === 'play') {
       M.time -= DT;
       if (M.time <= 0) { var c = counts(M), w = c[0] > c[1] ? 0 : c[1] > c[0] ? 1 : M.hits[0] > M.hits[1] ? 0 : M.hits[1] > M.hits[0] ? 1 : -1; endRound(M, w, true); }
@@ -584,7 +616,7 @@
     else if (M.state === 'roundEnd') {
       M.st += DT;
       if (M.st > 2.6) {
-        if (M.score[0] >= 2 || M.score[1] >= 2 || M.round >= 5) { M.state = 'over'; M.winner = M.score[0] > M.score[1] ? 0 : M.score[1] > M.score[0] ? 1 : -1; G.audio.intensity = 0; }
+        if (M.score[0] >= M.need || M.score[1] >= M.need || M.round >= 2 * M.need + 1) { M.state = 'over'; M.winner = M.score[0] > M.score[1] ? 0 : M.score[1] > M.score[0] ? 1 : -1; G.audio.intensity = 0; }
         else { M.round++; M.hits = [0, 0]; setupRound(M); }
       }
     }
@@ -620,6 +652,12 @@
     // match-point slow-mo: the deciding ball closing in on the last one standing
     M.nearSlow = 0;
     if (M.mp === M.round && M.state === 'play') { var last = bs.filter(function (x) { return x.team === M.mpTeam && alive(x) && x.mode === 'stand'; })[0], tht = last && threat(M, last); if (tht && tht.tt < 0.3 && tht.miss < 40) M.nearSlow = 1; }
+    // guided first match: slow the first incoming balls so the player can try a catch
+    M.guideSlow = 0;
+    if (M.guide && M.state === 'play' && M.ctrl >= 0 && M.guide.cat < 2 && M.guide.slowN < 4) {
+      var mb = bs[M.ctrl], gt = mb.role === 'in' && mb.mode === 'stand' ? threat(M, mb) : null;
+      if (gt && gt.tt < 0.6 && gt.B.team === 1) { M.guideSlow = 1; if (M.guide.slowId !== gt.B.id) { M.guide.slowId = gt.B.id; M.guide.slowN++; } }
+    }
     stepFx(M);
   };
   function catchWin(b) { return 0.3 + 0.04 * b.cv; }
@@ -628,6 +666,9 @@
     inp = inp || {};
     var o = { mx: inp.mx || 0, mz: inp.mz || 0, jump: !!inp.jumpP }, grab = inp.catchP || inp.passP;
     if (b.hold) {
+      // shot clock: a player who keeps the ball too long throws it anyway (the match never stalls)
+      b.heldT = (b.heldT || 0) + DT;
+      if (b.heldT > (M.guide ? 9 : 12) && !b.charging && M.state === 'play') { throwBall(M, b, 0.6); return o; }
       if (grab) pass(M, b);
       else if (inp.throwHeld) { if (!b.charging) { b.charging = true; b.charge = 0; } }
       else if (b.charging) { if (b.h > 1 && M.meter[b.team] >= 1) special(M, b, b.sp); else throwBall(M, b, Math.max(0.12, b.charge)); }
@@ -638,7 +679,7 @@
   function stepFx(M) {
     var i, f;
     for (i = M.fx.length - 1; i >= 0; i--) { f = M.fx[i]; f.life += DT; if (f.life > f.max) { M.fx.splice(i, 1); continue; } f.x += (f.vx || 0) * DT; f.y += (f.vy || 0) * DT; if (f.k === 'spark' || f.k === 'drop') f.vy += 900 * DT; if (f.k === 'feather') { f.vy += 60 * DT; f.vx *= 0.99; f.rot += DT * 4; } }
-    if (M.fx.length > 220) M.fx.splice(0, M.fx.length - 220);
+    var fxCap = G.lite ? 70 : 220; if (M.fx.length > fxCap) M.fx.splice(0, M.fx.length - fxCap);
     for (i = M.pops.length - 1; i >= 0; i--) { M.pops[i].t += DT; if (M.pops[i].t > 1.0) M.pops.splice(i, 1); }
     for (i = M.wows.length - 1; i >= 0; i--) { M.wows[i].t += DT; if (M.wows[i].t > 1.1) M.wows.splice(i, 1); }
     if (M.ban) { M.ban.t += DT; if (M.ban.t > M.ban.dur) M.ban = null; }
