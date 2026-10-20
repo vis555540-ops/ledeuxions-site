@@ -89,7 +89,8 @@
     return { rev: 0, beaten: 0, mute: false, lang: '', played: 0, n: 5, easy: false, keys: null, picks: [],
       firstDone: 0, wins: 0, losses: 0, xp: 0, unl: [0, 3, 5, 7], hats: [], hat: '', gifts: 0,
       login: { last: '', streak: 0, best: 0, days: 0 }, daily: { date: '', done: false }, dailyN: 0, seen: { lvl: 1 },
-      lite: 0, rec: { cat: 0, hit: 0, streak: 0, cur: 0 } };
+      lite: 0, rec: { cat: 0, hit: 0, streak: 0, cur: 0 },
+      ach: { hit: 0, cat: 0, sp: 0, rev: 0, ban: 0, outsBest: 0, spBest: 0, noHit: 0, w7: 0, flipAir: 0, mpCatch: 0, hulkWin: 0, airCat: 0, passBest: 0, code: 0 } };   // goal counters for player unlocks (meta.js MT.UNLOCKS)
   }
   G.saveDefaults = defaults;
   function parse(str) { try { var o = JSON.parse(str); return (o && typeof o === 'object' && !Array.isArray(o)) ? o : null; } catch (e) { return null; } }
@@ -112,6 +113,9 @@
     d.unl = d.unl.filter(function (c, i, a) { return c >= 0 && c < 24 && (c | 0) === c && a.indexOf(c) === i; });
     d.beaten = Math.max(0, Math.min(10, d.beaten | 0)); d.xp = Math.max(0, Math.floor(d.xp));
     if (G.TEAM_SIZES && G.TEAM_SIZES.indexOf(d.n) < 0) d.n = 5;
+    // older saves (daily-gift / win-count unlocks): every player already unlocked stays unlocked; goal counters start at 0
+    // except what the save already knows (wins, ladder, days, best catches/hits in a match)
+    if (o.ach === undefined) { d.ach.cat = Math.max(d.ach.cat, d.rec.cat); d.ach.hit = Math.max(d.ach.hit, d.rec.hit); }
     return d;
   }
   G.mergeSave = merge;

@@ -47,27 +47,27 @@
     { skin: '#9be564', hat: 'crown', hs: 1.15, th: 1.15, st: [4, 2, 3], sp: 'fart' },
     { skin: '#fff1c9', hat: 'band', hs: 0.9, th: 0.85, st: [2, 4, 3], sp: 'chicken' },
     { skin: '#ff9d5c', hat: 'chef', hs: 1.3, th: 1.35, st: [5, 1, 3], sp: 'giant' },
-    { skin: '#b388ff', hat: 'top', hs: 1.0, th: 0.95, st: [3, 3, 3], sp: 'clone' },
+    { skin: '#b388ff', hat: 'top', hs: 1.0, th: 0.95, st: [3, 4, 3], sp: 'clone' },
     { skin: '#6ecbff', hat: 'sprout', hs: 1.2, th: 1.1, st: [3, 1, 5], sp: 'slow' },
-    { skin: '#ffd23f', hat: 'prop', hs: 0.95, th: 0.9, st: [2, 4, 3], sp: 'boomer' },
+    { skin: '#ffd23f', hat: 'prop', hs: 0.95, th: 0.9, st: [1, 5, 3], sp: 'boomer' },
     { skin: '#4cd9c0', hat: 'cap', hs: 0.85, th: 0.8, st: [2, 5, 2], sp: 'zigzag' },
     { skin: '#e8e9f5', hat: 'halo', hs: 1.05, th: 0.9, st: [3, 4, 2], sp: 'ghost' },
     { skin: '#ff5a4f', hat: 'horns', hs: 0.95, th: 1.05, st: [4, 4, 1], sp: 'flip' },
     { skin: '#c7a27c', hat: 'beanie', hs: 1.1, th: 1.0, st: [3, 2, 4], sp: 'sneeze' },
-    { skin: '#d4ff5c', hat: 'bow', hs: 0.9, th: 0.95, st: [3, 3, 3], sp: 'bouncy' },
+    { skin: '#d4ff5c', hat: 'bow', hs: 0.9, th: 0.95, st: [2, 3, 4], sp: 'bouncy' },
     // v2 roster (12-23): each borrows at most ONE generic archetype trait, drawn as a head item
-    { skin: '#7fd3ff', hat: 'spiky', hs: 0.95, th: 0.9, st: [3, 5, 2], sp: 'zap' },        // 12 spiky electric hair
-    { skin: '#f2f2f7', hat: 'longhair', hs: 1.0, th: 0.9, st: [4, 4, 2], sp: 'banana' },   // 13 long-hair cool rival
-    { skin: '#5b6b80', hat: 'scarf', hs: 0.9, th: 0.85, st: [3, 5, 2], sp: 'ghost' },      // 14 ninja scarf
-    { skin: '#ffb37a', hat: 'none', hs: 0.95, th: 1.6, st: [5, 1, 4], sp: 'giant' },       // 15 big wrestler build
+    { skin: '#7fd3ff', hat: 'spiky', hs: 0.95, th: 0.9, st: [3, 5, 1], sp: 'zap' },        // 12 spiky electric hair
+    { skin: '#f2f2f7', hat: 'longhair', hs: 1.0, th: 0.9, st: [5, 3, 2], sp: 'banana' },   // 13 long-hair cool rival
+    { skin: '#5b6b80', hat: 'scarf', hs: 0.9, th: 0.85, st: [4, 5, 1], sp: 'ghost' },      // 14 ninja scarf
+    { skin: '#ffb37a', hat: 'none', hs: 0.95, th: 1.6, st: [4, 1, 5], sp: 'giant' },       // 15 big wrestler build
     { skin: '#e0d2b4', hat: 'gourd', hs: 1.05, th: 0.85, st: [2, 2, 5], sp: 'sway' },      // 16 old master with a gourd
-    { skin: '#ffc4e1', hat: 'headset', hs: 1.05, th: 0.9, st: [2, 4, 3], sp: 'bouncy' },   // 17 cheerful idol
+    { skin: '#ffc4e1', hat: 'headset', hs: 1.05, th: 0.9, st: [1, 4, 5], sp: 'bouncy' },   // 17 cheerful idol
     { skin: '#ff7b3d', hat: 'flame', hs: 1.0, th: 1.1, st: [5, 3, 1], sp: 'fireball' },    // 18 fire (flaming hair)
-    { skin: '#ffe9a8', hat: 'catears', hs: 1.0, th: 0.85, st: [2, 5, 3], sp: 'zigzag' },
+    { skin: '#ffe9a8', hat: 'catears', hs: 1.0, th: 0.85, st: [2, 3, 5], sp: 'zigzag' },
     { skin: '#4a4e69', hat: 'shades', hs: 1.0, th: 1.0, st: [4, 3, 2], sp: 'boomer' },
     { skin: '#ffd23f', hat: 'antenna', hs: 0.9, th: 0.85, st: [2, 4, 4], sp: 'zap' },
-    { skin: '#c9f0ff', hat: 'cloud', hs: 1.15, th: 1.05, st: [3, 2, 4], sp: 'slow' },
-    { skin: '#9be564', hat: 'goggles', hs: 1.0, th: 1.0, st: [3, 4, 3], sp: 'flip' }
+    { skin: '#c9f0ff', hat: 'cloud', hs: 1.15, th: 1.05, st: [4, 2, 4], sp: 'slow' },
+    { skin: '#9be564', hat: 'goggles', hs: 1.0, th: 1.0, st: [3, 3, 4], sp: 'flip' }
   ];
   G.randomChars = function (n, keep) {   // keep the given picks, fill the rest with different random characters
     var out = (keep || []).filter(function (c, i, a) { return c >= 0 && c < G.CHARS.length && a.indexOf(c) === i; }).slice(0, n), pool = [];
@@ -226,6 +226,7 @@
     B.st = 'held'; B.holder = b; B.path = null; B.sp = null; B.pass = false; B.team = b.team; B.r = 11; B.trail = []; B.fakeLook = null;
     b.hold = true; b.charging = false; b.charge = 0; b.ai.holdT = null; b.catchT = 0; b.heldT = 0;
     if (b.team === 0 && M.ctrl >= 0) M.ctrl = b.id;
+    if (b.team !== 0 && M.me) M.me.pr = 0;
     if (b.team === 1 && M.ctrl2 >= 0) M.ctrl2 = b.id;
     M.fakes.forEach(function (f) { f.alive = false; });
   }
@@ -246,6 +247,7 @@
   function throwBall(M, b, charge, spId) {
     var B = M.ball, tg = pickTarget(M, b), P = M.P[b.team], human = isHuman(M, b);
     if (b.h > 20 && !spId) charge = Math.min(1.3, charge + 0.35);   // jump-throw: extra power
+    if (b.team === 0 && M.me) M.me.pr = 0;
     STAT.thr++; B.st = 'fly'; B.holder = null; B.team = b.team; B.thrower = b; B.pow = charge; B.sp = spId || null; B.pass = false; B.r = 11; B.id = ++M.ballId; B.side = {}; B.trail = [];
     B.boost = 0; B.ph = 0; B.co = 0; B.fake = false; B.bn = 0; B.bk = 0;
     b.hold = false; b.charging = false; b.charge = 0; b.throwT = 0.22; b.noPick = 0.5;
@@ -276,6 +278,7 @@
     var mates = M.bodies.filter(function (o) { return o.team === b.team && o !== b && o.mode === 'stand' && (o.role === 'in' || o.role === 'out') && !o.pendingOut; });
     if (!mates.length) return false;
     var outs = mates.filter(function (o) { return o.role === 'out'; }), r = b.role === 'in' && outs.length ? outs[0] : mates[(M.passRR++) % mates.length];
+    if (b.team === 0 && isHuman(M, b)) { M.me.pr++; M.me.passBest = Math.max(M.me.passBest, M.me.pr); }
     var B = M.ball; B.st = 'fly'; B.pass = true; B.recv = r; B.holder = null; B.team = b.team; B.thrower = b; B.sp = null; B.id = ++M.ballId; B.trail = []; B.side = {};
     b.hold = false; b.charging = false; b.throwT = 0.18; b.noPick = 0.4;
     mkPath(B, B.x, b.z, Math.max(30, B.h), r.x, r.z, 60 * r.sc, 1100, 90);
@@ -399,9 +402,11 @@
   function hitBody(M, B, b) {
     var pw = B.sp ? (B.sp === 'giant' ? 2.5 : 1.8) : 0.55 + Math.min(1.3, B.pow) * 1.05;
     var dir = Math.abs(B.vx) > 30 ? sgn(B.vx) : (b.team ? 1 : -1);
-    var hy = bsy(B);
+    var hy = bsy(B), wasAir = b.h > 1;
     launch(b, dir, pw); b.pendingOut = true; b.outAt = ++M.outSeq; M.hits[B.team]++; STAT.hit++;
-    if (B.thrower && B.team === 0 && isHuman(M, B.thrower)) M.me.hit++;
+    if (B.thrower && B.team === 0 && isHuman(M, B.thrower)) { M.me.hit++; M.me.outs++; if (B.sp === 'banana') M.me.ban++; if (B.sp === 'flip' && wasAir) M.me.flipAir++; }
+    if (b.team === 0 && isHuman(M, b)) M.me.hurt++;
+    M.lastCatchMe = false;
     M.lastSp = B.team === 0 && !!B.sp;
     // the hit feel: hit-stop, shake, white body flash, impact ring + sparks, crunchy thump
     M.hitstop = 0.06 + 0.06 * pw; M.shake = Math.max(M.shake, 8 + 9 * pw); M.flash = Math.max(M.flash, 0.06 + 0.05 * pw);
@@ -421,7 +426,8 @@
   function catchBall(M, B, b) {
     var th = B.thrower;
     giveBall(M, B, b); b.throwT = 0; STAT.cat++; M.lastSp = false;
-    if (b.team === 0 && isHuman(M, b)) { M.me.cat++; if (M.guide) M.guide.cat++; }
+    var meC = b.team === 0 && isHuman(M, b); M.lastCatchMe = meC;
+    if (meC) { M.me.cat++; if (b.h > 1) M.me.airCat++; if (M.guide) M.guide.cat++; }
     G.sfx('catch'); pop(M, b.x, FY(b.z) - 150 * b.sc, T('catch'), '#8ef0a8', 34); meterAdd(M, b.team, 0.4);
     M.hitstop = 0.08; M.shake = Math.max(M.shake, 6); crowd(M, 0.8); sparks(M, B.x, bsy(B), 8, '#8ef0a8', 300);
     M.fx.push({ k: 'ring', x: B.x, y: bsy(B), life: 0, max: 0.25, col: '#8ef0a8', s: 40 });
@@ -430,10 +436,11 @@
     if (th && th.team !== b.team && th.role === 'in' && !th.pendingOut) {
       th.outAt = ++M.outSeq; STAT.caughtOut = (STAT.caughtOut || 0) + 1;
       if (th.mode === 'rag') th.pendingOut = true; else goOut(th);
+      if (meC) M.me.outs++;
       pop(M, th.x, FY(th.z) - 150 * th.sc, T('caughtOut'), '#ff5a4f', 30);
       if (isHuman(M, th)) { var n = nearestIn(M, th.team, th); if (n) setCtrl(M, th.team, n.id); }
     }
-    revive(M, b.team);
+    if (revive(M, b.team) && meC) M.me.rev++;
     checkRoundEnd(M);
   }
   function revive(M, t) {   // first out, first back
@@ -471,7 +478,7 @@
     if (M.state !== 'play') return;
     var c = counts(M);
     if (c[0] && c[1]) { matchPointCheck(M, c); return; }
-    var w = c[0] ? 0 : 1; if (w === 0 && M.lastSp) M.me.spKO++; M.state = 'ko'; M.st = 0; M.roundWin = w; M.slow = M.score[w] >= 1 ? 1.6 : 1.0; G.sfx('whistle2');
+    var w = c[0] ? 0 : 1; if (w === 0 && M.lastSp) M.me.spKO++; if (w === 0 && M.lastCatchMe && M.score[0] + 1 >= M.need) M.me.mpCatch++; M.state = 'ko'; M.st = 0; M.roundWin = w; M.slow = M.score[w] >= 1 ? 1.6 : 1.0; G.sfx('whistle2');
   }
   function matchPointCheck(M, c) {
     for (var t = 0; t < 2; t++) if (c[t] === 1 && M.score[1 - t] >= 1 && M.mp !== M.round) { M.mp = M.round; M.mpTeam = t; M.ban = { txt: T('matchPoint'), k: 'matchPoint', col: '#ff5a4f', t: 0, dur: 1.3 }; G.sfx('ready'); }
@@ -573,7 +580,7 @@
       meter: [0, 0], nextSp: [G.CHARS[chs[0][0]].sp, G.CHARS[chs[1][0]].sp], fx: [], pops: [], wows: [], ban: null, shake: 0, hitstop: 0, slow: 0, flash: 0, crowd: 0,
       n: N, ctrl: opt.auto ? -1 : 0, ctrl2: opt.versus ? N : -1, versus: !!opt.versus, auto: !!opt.auto, P: [params(1.8), params(opt.versus ? 1.8 : tm.L)], spFired: {}, hits: [0, 0], mp: 0, roundWin: -1, serve: 0, ballId: 0, passRR: 0, chaser: [null, null], winner: -1, hint: !!opt.hint, nearSlow: 0, frame: 0,
       need: opt.need || 2, roundT: opt.roundT || ROUND_T, guide: opt.guide ? { thr: 0, cat: 0, slowN: 0, slowId: -1, aim: 2, spGiven: 0 } : null, waitInput: !!opt.waitInput, guideSlow: 0,
-      me: { thr: 0, hit: 0, cat: 0, sp: 0, spKO: 0, flaw: 0, leftMax: 0 }, lastSp: false };
+      me: { thr: 0, hit: 0, cat: 0, sp: 0, spKO: 0, flaw: 0, leftMax: 0, outs: 0, hurt: 0, rev: 0, ban: 0, flipAir: 0, airCat: 0, mpCatch: 0, pr: 0, passBest: 0 }, lastSp: false, lastCatchMe: false };
     if (opt.guide) M.P[1] = params(-0.7);
     for (var t = 0; t < 2; t++) for (var i = 0; i < N; i++) { var bb = mkBody(M, t, i, chs[t][i]); if (t === 0 && opt.hat) bb.hat = opt.hat; M.bodies.push(bb); }
     setupRound(M);

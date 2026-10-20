@@ -71,6 +71,8 @@
   window.addEventListener('keydown', function (e) {
     A.unlock(); if (state === 'play' && M && M.waitInput && !e.repeat && e.code !== 'Escape' && e.code !== 'KeyP') guideGo();
     if (e.target && e.target.tagName === 'INPUT') { if (e.code === 'Enter' || e.code === 'NumpadEnter') { var bj = $('bJoinGo'); if (bj) bj.click(); } return; }
+    if (popOpen()) { if (!e.repeat && (e.code === 'Enter' || e.code === 'Space' || e.code === 'Escape' || e.code === 'KeyJ')) { e.preventDefault(); popNext(); } return; }
+    if (state === 'menu' && /^Key[A-Z]$/.test(e.code)) { typed = (typed + e.code.slice(3)).slice(-6); if (typed === 'WOBBLE') { typed = ''; secretFound(); } }
     if (state === 'pick') { pickKey(e); return; }
     var a = KM[e.code];
     if (a && state === 'play') e.preventDefault();
@@ -203,7 +205,8 @@
     var won = M.winner === 0, draw = M.winner < 0, tn = teamName(M.lvl), firstBeat = false, guide = !!M.guide;
     if (won && M.lvl === save.beaten && save.beaten < G.LADDER) { save.beaten++; firstBeat = true; }
     var now = MT.now(), ev = MT.login(save, now);   // the day may have changed while playing
-    var st = { won: won, draw: draw, lvl: M.lvl, firstBeat: firstBeat, hit: M.me.hit, cat: M.me.cat, sp: M.me.sp, spKO: M.me.spKO, leftMax: M.me.leftMax, flaw: M.me.flaw, n: M.n, guide: guide };
+    var st = { won: won, draw: draw, lvl: M.lvl, firstBeat: firstBeat, hit: M.me.hit, cat: M.me.cat, sp: M.me.sp, spKO: M.me.spKO, leftMax: M.me.leftMax, flaw: M.me.flaw, n: M.n, guide: guide,
+      outs: M.me.outs, hurt: M.me.hurt, rev: M.me.rev, ban: M.me.ban, flipAir: M.me.flipAir, airCat: M.me.airCat, mpCatch: M.me.mpCatch, passBest: M.me.passBest, chars: (M.chars && M.chars[0] || []).slice() };
     var r = MT.reward(save, st, now); ev = ev.concat(r.ev);
     // personal records: most catches / hits in a match, longest win streak
     var rc = save.rec, newRec = [];
@@ -246,26 +249,27 @@
       if (a.lvl > b.lvl) { fill.style.width = '100%'; setTimeout(function () { lv.textContent = G.t('lv', a.lvl); lv.classList.add('up'); fill.style.transition = 'none'; fill.style.width = '0%'; G.sfx('revive'); setTimeout(function () { fill.style.transition = 'width .5s ease-out'; fill.style.width = (100 * a.cur / a.need) + '%'; }, 30); }, 750); }
       else fill.style.width = (100 * a.cur / a.need) + '%';
     }, 120);
-    var d = 0.5;
+    var d = 0.5, unlQ = [];
     ev.forEach(function (e) {
-      if (e.k === 'char') { card('gold', G.t('newChar'), G.t('ch' + e.ch) + ' · ' + G.t('sp_' + G.CHARS[e.ch].sp), e.ch, null, d); d += 0.45; }
+      if (e.k === 'char') { card('gold', G.t('newChar'), G.t('ch' + e.ch) + ' · ' + G.t('sp_' + G.CHARS[e.ch].sp), e.ch, null, d); d += 0.45; unlQ.push(e.ch); }
       else if (e.k === 'hat') { card('gold', G.t('newHat'), G.t('h_' + e.hat), 0, e.hat, d); d += 0.45; }
       else if (e.k === 'lvl') { card('blue', G.t('lvUp', e.to), null, null, null, d); d += 0.35; }
       else if (e.k === 'daily') { card('green', G.t('dailyDone'), dailyText(e.c) + ' · +150 XP', null, null, d); d += 0.35; }
       else if (e.k === 'streak') { card('blue', G.t('streakDay', e.n), '+' + e.xp + ' XP', null, null, d); d += 0.35; }
     });
+    if (unlQ.length) setTimeout(function () { if (state === 'result') unlPop(unlQ); }, 700);
     if (!r.dailyNow) {
       var c = r.daily, dd = $('resDaily'); dd.style.display = 'block';
       dd.innerHTML = '<b>' + esc(G.t('daily')) + '</b> ' + esc(dailyText(c)) + (save.daily.done ? ' <span class="ok">✓</span>' : ' <span class="xp">+150 XP</span>');
     }
   }
   function tease(r) {
-    var now = MT.now(), tm = MT.tomorrow(save, now), h = Math.max(1, Math.ceil(tm.ms / 3600000)), wn = MT.winsToNext(save), nl = MT.nextLocked(save), box = $('resTease');
-    var lines = [];
-    if (nl >= 0 && wn > 0) lines.push(G.t('winsToChar', wn));
+    var now = MT.now(), tm = MT.tomorrow(save, now), h = Math.max(1, Math.ceil(tm.ms / 3600000)), nl = MT.nextLocked(save), box = $('resTease'), dg = MT.daysToGift(save);
+    var lines = [], g = nl >= 0 ? goalText(nl) : null;
+    if (dg > 0) lines.push('🎁 ' + G.t('teaseDays', dg));
     lines.push(G.t('teaseDaily', dailyText(tm.challenge)));
     lines.push('🔥 ' + G.t('teaseStreak', tm.streak));
-    box.innerHTML = (nl >= 0 ? '<canvas id="teaseCv"></canvas>' : '') + '<div><b>' + esc(G.t('tease', h)) + '</b>' + (nl >= 0 ? '<span>🎁 ' + esc(G.t('teaseGift')) + '</span>' : '') + lines.map(function (l) { return '<span>' + esc(l) + '</span>'; }).join('') + '</div>';
+    box.innerHTML = (nl >= 0 ? '<canvas id="teaseCv"></canvas>' : '') + '<div>' + (g ? '<b class="nx" id="resNext">' + esc(G.t('nextUnl', g.txt)) + '</b>' + (g.bar ? '<span class="pgb"><i style="width:' + (100 * g.s.frac).toFixed(0) + '%"></i></span>' : '') : '') + '<b>' + esc(G.t('tease', h)) + '</b>' + lines.map(function (l) { return '<span>' + esc(l) + '</span>'; }).join('') + '</div>';
     box.style.display = 'flex';
     if (nl >= 0) resCards.push({ cv: $('teaseCv'), ch: nl, hat: null, sil: true });
   }
@@ -288,6 +292,51 @@
       if (o.sil) { c.globalCompositeOperation = 'source-in'; c.fillStyle = '#1b1b2f'; c.fillRect(0, 0, cv.width, cv.height); c.globalCompositeOperation = 'source-over'; c.fillStyle = '#ffd23f'; c.font = '900 ' + Math.round(cv.height * 0.4) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('?', cv.width / 2, cv.height * 0.45); }
     }
   }
+  // a locked player's goal for the UI: hidden goals (chain not open yet / secret) only show a vague line
+  function goalText(ch) {
+    var s = MT.status(save, ch); if (!s) return null;
+    var u = s.u, key = u.v === 'wins' && u.n === 1 ? 'u_wins1' : 'u_' + u.v;
+    if (s.open) return { txt: G.t(key, u.n, u.n), s: s };
+    if (s.chained) return { txt: G.t('u_req', G.t('ch' + u.req)), s: s, hidden: true };
+    if (s.secret) return { txt: G.t('s_' + u.v), s: s, hidden: true };
+    return { txt: G.t(key, s.cur, s.n), s: s, bar: u.n > 1 };
+  }
+  WD.goalText = goalText;
+  // the big "NEW PLAYER!" pop-up (one player at a time; tap / OK / Enter for the next)
+  var popQ = [], popCh = -1;
+  function unlPop(list) {
+    list.forEach(function (c) { if (popQ.indexOf(c) < 0 && c !== popCh) popQ.push(c); });
+    if (popCh < 0) popNext();
+  }
+  function popNext() {
+    var box = $('unlPop');
+    if (!popQ.length) { popCh = -1; box.classList.remove('on'); return; }
+    var ch = popCh = popQ.shift(), C = G.CHARS[ch], g = goalText(ch);
+    $('upTag').textContent = G.t('unlTitle'); $('upName').textContent = G.t('ch' + ch);
+    $('upSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + ' <small>' + esc(G.t('ss_' + C.sp)) + '</small>';
+    $('upStyle').textContent = '▶ ' + G.t('ps' + ch);
+    $('upHow').textContent = g ? G.t('unlHow', g.txt) : '';
+    $('bUpOk').textContent = G.t('unlOk');
+    var pb = $('upPanel'); pb.style.animation = 'none'; void pb.offsetWidth; pb.style.animation = '';
+    resCards = resCards.filter(function (o) { return o.cv !== $('upCv'); }); resCards.push({ cv: $('upCv'), ch: ch, hat: null, sil: false });
+    box.classList.add('on'); G.sfx('revive'); setTimeout(function () { G.sfx('win'); }, 250); WD.log.push('unlPop:' + ch);
+  }
+  function popOpen() { return popCh >= 0; }
+  WD.popOpen = function () { return popCh; };
+  $('bUpOk').onclick = function (e) { e.stopPropagation(); A.unlock(); G.sfx('click'); popNext(); };
+  $('unlPop').onclick = function () { popNext(); };
+  // secret: tap the title 5 times quickly, or type WOBBLE on the menu
+  var tickle = [], typed = '';
+  function secretFound() {
+    var ev = MT.secretCode(save); if (!ev.length) return; commit(); refreshMenu(); G.sfx('special'); WD.log.push('secret');
+    unlPop(ev.filter(function (e) { return e.k === 'char'; }).map(function (e) { return e.ch; }));
+  }
+  $('logo').addEventListener('click', function () {
+    if (state !== 'menu') return; var t = performance.now(); tickle = tickle.filter(function (x) { return t - x < 2500; }); tickle.push(t);
+    $('logo').classList.remove('wig'); void $('logo').offsetWidth; $('logo').classList.add('wig');
+    if (tickle.length >= 5) { tickle = []; secretFound(); }
+  });
+  WD.secret = secretFound;
   // welcome-back gifts (login streak / daily gift) shown over the menu
   function showGift(ev) {
     var box = $('giftList'); box.innerHTML = ''; resCards = resCards.filter(function (o) { return o.cv && o.cv.isConnected && !box.contains(o.cv); });
@@ -297,6 +346,8 @@
       d.innerHTML = (e.k === 'char' || e.k === 'hat' ? '<canvas></canvas>' : '') + '<div><b>' + esc(t) + '</b></div>'; box.appendChild(d);
       if (e.k === 'char' || e.k === 'hat') resCards.push({ cv: d.firstChild, ch: e.k === 'char' ? e.ch : 0, hat: e.hat || null, sil: false });
     });
+    var chs = ev.filter(function (e) { return e.k === 'char'; }).map(function (e) { return e.ch; });
+    if (chs.length) setTimeout(function () { unlPop(chs); }, 400);
     if (!box.children.length) return;
     $('giftTitle').textContent = G.t('welcome'); $('bGiftOk').textContent = G.t('ok');
     $('gift').classList.add('on'); G.sfx('ready'); WD.log.push('gift');
@@ -429,7 +480,7 @@
     PK.picks = cleanPicks(save.picks, n); if (mode === 'single') PK.picks = PK.picks.filter(unlocked); PK.cur = PK.picks.length ? PK.picks[PK.picks.length - 1] : 0;
     var g = $('pkGrid'); if (!g.children.length) {
       G.CHARS.forEach(function (C, i) {
-        var e = document.createElement('button'); e.className = 'pkCell'; e.dataset.i = i; e.innerHTML = '<canvas></canvas><span class="nm"></span><span class="no"></span>';
+        var e = document.createElement('button'); e.className = 'pkCell'; e.dataset.i = i; e.innerHTML = '<canvas></canvas><span class="nm"></span><span class="no"></span><span class="pg"><i></i></span>';
         e.onclick = function () { A.unlock(); PK.cur = i; togglePick(i); };
         e.onpointerenter = function (ev) { if (ev.pointerType === 'mouse') { PK.cur = i; pickRefresh(); } };
         g.appendChild(e);
@@ -441,7 +492,7 @@
   function pickLocked(i) { return PK.mode === 'single' && !unlocked(i); }
   function togglePick(i) {
     if (PK.ready) return;
-    if (pickLocked(i)) { G.sfx('bounce'); var wn = MT.winsToNext(save); $('pkHint').textContent = wn > 0 ? G.t('lockHint', wn) : G.t('lockHint2'); PK.hintT = performance.now(); return; }
+    if (pickLocked(i)) { G.sfx('bounce'); var gl = goalText(i); $('pkHint').textContent = G.t('lockHow', gl ? gl.txt : '?'); PK.hintT = performance.now(); pickRefresh(); return; }
     var k = PK.picks.indexOf(i);
     if (k >= 0) { PK.picks.splice(k, 1); G.sfx('poof'); }
     else if (PK.picks.length < PK.n) { PK.picks.push(i); G.sfx('catch'); }
@@ -490,10 +541,23 @@
     var C = G.CHARS[PK.cur], i;
     $('pkTitle').textContent = G.t('pickTitle');
     $('pkRule').textContent = PK.easy ? G.t('ruleEasy') : G.t('ruleAm');
-    $('pkName').textContent = G.t('ch' + PK.cur);
-    $('pkStats').innerHTML = [['stPow', C.st[0]], ['stSpd', C.st[1]], ['stCat', C.st[2]]].map(function (r) { return '<div class="st"><b>' + esc(G.t(r[0])) + '</b><span class="bar">' + bar(r[1]) + '</span></div>'; }).join('');
-    $('pkSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + '<br><small>' + esc(G.t('ss_' + C.sp)) + '</small>';
-    for (i = 0; i < PK.cells.length; i++) { var e = PK.cells[i], k = PK.picks.indexOf(i); e.classList.toggle('cur', i === PK.cur); e.classList.toggle('lock', pickLocked(i)); e.classList.toggle('sel', k >= 0); e.querySelector('.no').textContent = k >= 0 ? k + 1 : ''; e.querySelector('.nm').textContent = G.t('ch' + i); }
+    var lk = pickLocked(PK.cur), gl = lk ? goalText(PK.cur) : null;
+    $('pkName').textContent = lk && gl && gl.hidden ? G.t('u_secret') : G.t('ch' + PK.cur);
+    if (lk) {
+      // locked: the goal (with a progress bar for counting goals) instead of the stats; the play style as a teaser
+      $('pkStats').innerHTML = '<div class="goal">🔒 ' + esc(gl ? gl.txt : '?') + '</div>' + (gl && gl.bar ? '<div class="pgb"><i style="width:' + (100 * gl.s.frac).toFixed(0) + '%"></i></div>' : '');
+      $('pkSp').innerHTML = gl && gl.hidden ? '' : '<small>▶ ' + esc(G.t('ps' + PK.cur)) + '</small>';
+    } else {
+      $('pkStats').innerHTML = [['stPow', C.st[0]], ['stSpd', C.st[1]], ['stCat', C.st[2]]].map(function (r) { return '<div class="st"><b>' + esc(G.t(r[0])) + '</b><span class="bar">' + bar(r[1]) + '</span></div>'; }).join('');
+      $('pkSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + '<br><small>' + esc(G.t('ss_' + C.sp)) + '</small><br><small class="ps">▶ ' + esc(G.t('ps' + PK.cur)) + '</small>';
+    }
+    for (i = 0; i < PK.cells.length; i++) {
+      var e = PK.cells[i], k = PK.picks.indexOf(i), L = pickLocked(i), gi = L ? goalText(i) : null;
+      e.classList.toggle('cur', i === PK.cur); e.classList.toggle('lock', L); e.classList.toggle('sel', k >= 0); e.querySelector('.no').textContent = k >= 0 ? k + 1 : '';
+      e.querySelector('.nm').textContent = gi && gi.hidden ? G.t('u_secret') : G.t('ch' + i);
+      var pg = e.querySelector('.pg'); pg.style.display = gi && gi.bar ? 'block' : 'none'; if (gi && gi.bar) pg.firstChild.style.width = (100 * gi.s.frac).toFixed(0) + '%';
+      e.title = gi ? gi.txt : '';
+    }
     $('pkMine').textContent = G.t('pickMine', PK.picks.length, PK.n);
     $('pkFoe').textContent = PK.mode === 'single' ? '' : PK.ready && !PK.foeReady ? G.t('waitFoe') : PK.foeReady ? G.t('foeReady') : G.t('foePick');
     $('pkRnd').textContent = G.t('pickRandom'); $('pkUndo').textContent = G.t('pickUndo'); $('pkGo').textContent = G.t('pickReady'); $('pkBack').textContent = G.t('pickBack');
@@ -513,13 +577,18 @@
     c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, w, h);
     G.drawChar(c, ch, w / 2, h * 0.94, h * 0.78, now, uni, cheer, flip);
   }
+  function silhouette(c, w, h, mark, fs) {
+    c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#14102a'; c.fillRect(0, 0, w, h); c.globalCompositeOperation = 'source-over';
+    c.font = '900 ' + Math.round(h * fs) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#ffd23f'; c.fillText(mark, w / 2, h * 0.5);
+  }
   function drawPick(now) {
     var i, cv, c, d;
     for (i = 0; i < PK.cells.length; i++) { cv = PK.cells[i].firstChild; d = sizeCv(cv); c = cv.getContext('2d'); cell(c, cv.width, cv.height, i, now + i * 0.37, MYUNI, PK.picks.indexOf(i) >= 0 && ((now * 2 + i) | 0) % 4 === 0);
-      if (pickLocked(i)) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = 'rgba(20,16,40,0.78)'; c.fillRect(0, 0, cv.width, cv.height); c.globalCompositeOperation = 'source-over'; c.font = '900 ' + Math.round(cv.height * 0.3) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#ffd23f'; c.fillText('\uD83D\uDD12', cv.width / 2, cv.height * 0.5); } }
+      if (pickLocked(i)) { var hid = MT.status(save, i); hid = hid && !hid.shown; silhouette(c, cv.width, cv.height, hid ? '?' : '\uD83D\uDD12', hid ? 0.42 : 0.26); } }
     cv = $('pkCv'); sizeCv(cv); c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
     var g = c.createRadialGradient(cv.width / 2, cv.height * 0.7, 4, cv.width / 2, cv.height * 0.7, cv.width * 0.6); g.addColorStop(0, G.CHARS[PK.cur].skin); g.addColorStop(1, 'rgba(0,0,0,0)'); c.globalAlpha = 0.35; c.fillStyle = g; c.fillRect(0, 0, cv.width, cv.height); c.globalAlpha = 1;
     G.drawChar(c, PK.cur, cv.width / 2, cv.height * 0.95, cv.height * 0.8, now, MYUNI, PK.picks.indexOf(PK.cur) >= 0);
+    if (pickLocked(PK.cur)) silhouette(c, cv.width, cv.height, '?', 0.3);
     var sl = $('pkSlots').children;
     for (i = 0; i < sl.length; i++) { cv = sl[i]; sizeCv(cv); c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
       if (i < PK.picks.length) cell(c, cv.width, cv.height, PK.picks[i], now + i, MYUNI, PK.ready);
@@ -614,7 +683,7 @@
   WD.give = function (team) { if (!M || NET === 'guest') return false; return G.giveTo(M, team ? M.ctrl2 : M.ctrl); };
   WD.net = function () { return { role: NET, code: NETM.code, open: NETM.open, stats: NETM.stats, lag: NETM.lagMs(), screen: state, msg: ($('netMsg') || {}).textContent || '' }; };
   WD.specials = G.SPECIALS;
-  WD.toMenu = toMenu;
+  WD.toMenu = toMenu; WD.openPick = function () { openPick('single', save.n, sel); };
   WD.size = function (n) { save.n = n; commit(); refreshMenu(); };
 
   WD.save = function () { return save; };

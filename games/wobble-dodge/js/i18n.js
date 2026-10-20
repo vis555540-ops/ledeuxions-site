@@ -118,6 +118,45 @@
       toot: '뿌웅!', zoom: '슝!', bawk: '꼬꼬댁!', ah: '에...', achoo: '에취!!'
     }
   };
+
+  // player goals (meta.js MT.UNLOCKS) + one-line play styles
+  var U = {
+    en: {
+      u_wins1: 'Win 1 match', u_wins: 'Win matches {0}/{1}', u_hit: 'Hit opponents {0}/{1}', u_sp: 'Use special shots {0}/{1}',
+      u_outsBest: 'Put {1} out in ONE match (best {0}/{1})', u_cat: 'Catch balls {0}/{1}', u_spBest: '{1} specials in ONE match (best {0}/{1})',
+      u_rev: 'Catch to bring teammates back {0}/{1}', u_ban: 'Hit with the BANANA SHOT {0}/{1}', u_noHit: 'Win without getting hit',
+      u_days: 'Come and play on 3 days {0}/{1}', u_w7: 'Win a 7 vs 7 match', u_flipAir: 'FLIP METEOR a jumping enemy',
+      u_mpCatch: 'Win the match with a catch on match point', u_beaten: 'Beat ladder team 5 ({0}/{1})', u_hulkWin: 'Win with Hulky on your team',
+      u_airCat: 'Catch a ball while jumping', u_passBest: 'Pass {1} times in a row without throwing (best {0}/{1})', u_code: 'Tickle the title',
+      s_airCat: 'Secret: cats hunt in mid-air...', s_passBest: 'Secret: buzz buzz, teammate to teammate...', s_code: 'Secret: the title looks ticklish...',
+      u_req: 'Unlock {0} first...', u_secret: '???', unlTitle: 'NEW PLAYER!', unlHow: 'Unlocked: {0}', unlOk: 'NICE!',
+      nextUnl: 'Next player: {0}', lockHow: 'Locked: {0}', teaseDays: 'Come back on {0} more day(s): a new player', charsNew: 'NEW',
+      ps0: 'All-rounder: good at everything', ps1: 'Big cannon, a bit slow', ps2: 'Light on its feet: run and dodge', ps3: 'Strongest arm, turtle feet',
+      ps4: 'Quick trickster: only one ball is real', ps5: 'Catching expert, takes it slow', ps6: 'Fastest feet, weakest arm: boomerang from behind', ps7: 'Quick dodger, zigzags to confuse',
+      ps8: 'Nimble, throws a ball you cannot see', ps9: 'All attack: cannot catch at all', ps10: 'Steady defender who catches well', ps11: 'Helper: catch to bring friends back',
+      ps12: 'So fast it is a dodge master, poor catcher', ps13: 'Fastball rival with a curving shot', ps14: 'Hit-and-run ninja: fast and strong, no catching', ps15: 'Catches like a wall, moves slow',
+      ps16: 'Best hands; the wobbly shot fools everyone', ps17: 'Weak arm, but catches everything', ps18: 'Blazing power, forget catching', ps19: 'Jump and snatch, cat style',
+      ps20: 'Cool and strong boomerang', ps21: 'Busy bee: pass, pass, ZAP', ps22: 'Heavy, sturdy cloud', ps23: 'Pilot who hunts jumpers'
+    },
+    ko: {
+      u_wins1: '한 판 이기기', u_wins: '이기기 {0}/{1}', u_hit: '상대 맞히기 {0}/{1}', u_sp: '필살기 쓰기 {0}/{1}',
+      u_outsBest: '한 판에 {1}명 아웃시키기 (최고 {0}/{1})', u_cat: '공 잡기 {0}/{1}', u_spBest: '한 판에 필살기 {1}번 (최고 {0}/{1})',
+      u_rev: '잡아서 우리 편 살리기 {0}/{1}', u_ban: '바나나 슛으로 맞히기 {0}/{1}', u_noHit: '한 번도 안 맞고 이기기',
+      u_days: '3일 놀러 오기 {0}/{1}', u_w7: '7대7에서 이기기', u_flipAir: '점프한 상대를 공중제비 슛으로 맞히기',
+      u_mpCatch: '매치 포인트에서 잡아서 끝내기', u_beaten: '사다리 5번째 팀 이기기 ({0}/{1})', u_hulkWin: '우람이와 함께 이기기',
+      u_airCat: '점프한 채로 공 잡기', u_passBest: '안 던지고 {1}번 연속 패스 (최고 {0}/{1})', u_code: '제목 간질이기',
+      s_airCat: '비밀: 고양이는 하늘에서 사냥해요…', s_passBest: '비밀: 윙윙, 동료에게서 동료에게…', s_code: '비밀: 제목이 간지럽대요…',
+      u_req: '{0} 열면 보여요…', u_secret: '???', unlTitle: '새 선수!', unlHow: '해낸 것: {0}', unlOk: '좋아!',
+      nextUnl: '다음 선수: {0}', lockHow: '잠김: {0}', teaseDays: '{0}일 더 오면 새 선수', charsNew: '새',
+      ps0: '뭐든 무난한 올라운더', ps1: '힘센 대포, 조금 굼뜸', ps2: '가볍게 뛰며 피하기', ps3: '최강 힘, 거북이 걸음',
+      ps4: '재빠른 속임수꾼, 진짜 공은 하나', ps5: '잡기 장인, 느긋하게 버팀', ps6: '제일 빠르고 힘은 제일 약함, 부메랑으로 뒤를 노림', ps7: '재빠르게 피하고 지그재그로 헷갈리게',
+      ps8: '날쌔고, 안 보이는 공', ps9: '공격만! 받기는 꽝', ps10: '잘 받고 버티는 수비수', ps11: '잡아서 친구 살리는 도우미',
+      ps12: '빨라서 피하기 달인, 받기는 서툼', ps13: '강속구 라이벌, 휘는 공', ps14: '치고 빠지는 닌자: 빠르고 세지만 못 받음', ps15: '공 잡기 힘세게, 느림',
+      ps16: '받기 최고, 흔들 공으로 속임', ps17: '힘은 약해도 다 받아내는 응원단', ps18: '불처럼 세게, 받기는 포기', ps19: '점프해서 낚아채는 고양이',
+      ps20: '멋있고 센 부메랑', ps21: '부지런히 패스하는 일벌, 찌릿!', ps22: '묵직하게 버티는 구름', ps23: '점프한 상대를 노리는 비행사'
+    }
+  };
+  for (var lk in U) for (var kk in U[lk]) T[lk][kk] = U[lk][kk];
   var nav = (navigator.language || 'en').toLowerCase();
   G.lang = nav.indexOf('ko') === 0 ? 'ko' : 'en';
   G.t = function (k) {

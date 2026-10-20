@@ -1,4 +1,4 @@
-/* Progression (no DOM): login streak + daily gift, daily challenge (seeded by the local date), XP / level, character + hat unlocks.
+/* Progression (no DOM): login streak + daily gift, daily challenge (seeded by the local date), XP / level, character goal unlocks (MT.UNLOCKS) + hat unlocks.
    Every function takes the save object `d` and, where it matters, a Date, so tests can drive it with fake dates. */
 (function () {
   'use strict';
@@ -13,16 +13,70 @@
 
   /* ---------- characters / hats ---------- */
   MT.STARTERS = [0, 3, 5, 7];
-  // 20 to unlock: one free player a day (login gift) + one at these win counts -> a new one every 1-2 sessions for about two weeks
-  MT.UNLOCK_ORDER = [2, 12, 1, 16, 4, 13, 6, 18, 8, 14, 9, 19, 10, 15, 11, 17, 20, 21, 22, 23];
-  MT.WIN_UNLOCKS = [1, 3, 5, 8, 11, 15, 20, 26, 33];   // wins that unlock the next character
+  /* Vampire-Survivors-style unlocks: every locked player has its own goal tied to play.
+     v = the counter in d.ach (or d.wins / d.beaten / d.login.days), n = goal. Per-match goals keep the best match in d.ach.
+     req = a chain: the goal stays hidden ("unlock X first") until X is unlocked. sec = secret: only a vague hint until done.
+     Pace: the first three fall in the first ~15 min (first win, 5 hits, 3 specials); the rest are spaced over 1-2 weeks of casual play. */
+  MT.UNLOCKS = [
+    { ch: 2, v: 'wins', n: 1 },                 // first win (the guided match)
+    { ch: 12, v: 'hit', n: 5 },                 // hit 5 opponents in total
+    { ch: 1, v: 'sp', n: 3 },                   // use 3 special shots in total
+    { ch: 4, v: 'outsBest', n: 5 },             // put 5 out (hits + catch-outs) in one match
+    { ch: 6, v: 'cat', n: 10 },                 // catch 10 balls in total
+    { ch: 18, v: 'spBest', n: 3, req: 12 },     // chain after Zappy: 3 specials in one match (the fire one)
+    { ch: 8, v: 'rev', n: 5 },                  // bring 5 teammates back with catches (the halo one)
+    { ch: 13, v: 'ban', n: 5 },                 // hit 5 times with the BANANA SHOT
+    { ch: 14, v: 'noHit', n: 1 },               // win a match without getting hit (the ninja)
+    { ch: 10, v: 'days', n: 3 },                // the one login unlock: play on 3 different days
+    { ch: 9, v: 'w7', n: 1 },                   // win a 7 vs 7 match
+    { ch: 23, v: 'flipAir', n: 1, req: 9 },     // chain after the horned one: FLIP shot hits a jumping enemy
+    { ch: 11, v: 'mpCatch', n: 1 },             // finish a match with a catch on match point
+    { ch: 16, v: 'cat', n: 20 },                // the old master: 20 catches in total
+    { ch: 15, v: 'beaten', n: 5 },              // beat ladder team 5
+    { ch: 20, v: 'hulkWin', n: 1, req: 15 },    // chain after Hulky: win with Hulky on the team
+    { ch: 17, v: 'wins', n: 20 },               // 20 wins in total (the idol)
+    { ch: 19, v: 'airCat', n: 1, sec: 1 },      // secret: catch a ball in mid-air (the cat)
+    { ch: 21, v: 'passBest', n: 8, sec: 1 },    // secret: 8 passes in a row without throwing (the bee)
+    { ch: 22, v: 'code', n: 1, sec: 1 }         // secret: tickle the title (tap it 5x, or type WOBBLE on the menu)
+  ];
+  MT.ACH = { hit: 0, cat: 0, sp: 0, rev: 0, ban: 0, outsBest: 0, spBest: 0, noHit: 0, w7: 0, flipAir: 0, mpCatch: 0, hulkWin: 0, airCat: 0, passBest: 0, code: 0 };
+  MT.uOf = function (ch) { for (var i = 0; i < MT.UNLOCKS.length; i++) if (MT.UNLOCKS[i].ch === ch) return MT.UNLOCKS[i]; return null; };
+  function ach(d) { if (!d.ach || typeof d.ach !== 'object') d.ach = {}; for (var k in MT.ACH) if (typeof d.ach[k] !== 'number') d.ach[k] = 0; return d.ach; }
+  MT.val = function (d, u) { return u.v === 'wins' ? d.wins : u.v === 'beaten' ? d.beaten : u.v === 'days' ? d.login.days : (ach(d)[u.v] || 0); };
+  // what the select screen / results show for a locked player: { ch, u, cur, n, frac, shown: false when chained or secret }
+  MT.status = function (d, ch) {
+    var u = MT.uOf(ch); if (!u) return null;
+    var cur = Math.min(u.n, MT.val(d, u)), open = d.unl.indexOf(ch) >= 0, chained = !!(u.req != null && d.unl.indexOf(u.req) < 0);
+    return { ch: ch, u: u, cur: cur, n: u.n, frac: u.n ? cur / u.n : 0, open: open, chained: chained, secret: !!u.sec, shown: !chained && !u.sec };
+  };
+  // unlock everything whose goal is met (chains: only once the earlier one is open). Returns the events.
+  MT.check = function (d, ev, why) {
+    ev = ev || []; var again = true;
+    while (again) {
+      again = false;
+      MT.UNLOCKS.forEach(function (u) {
+        if (d.unl.indexOf(u.ch) >= 0 || (u.req != null && d.unl.indexOf(u.req) < 0) || MT.val(d, u) < u.n) return;
+        d.unl.push(u.ch); ev.push({ k: 'char', ch: u.ch, why: why || u.v }); again = true;
+      });
+    }
+    return ev;
+  };
+  // the locked player closest to opening (only goals the player can see; counters first) -> drives "one more match"
+  MT.nextLocked = function (d) {
+    var best = null;
+    MT.UNLOCKS.forEach(function (u) {
+      var s = MT.status(d, u.ch); if (s.open || !s.shown || u.v === 'days') return;
+      var sc = s.frac + (u.n > 1 ? 0.001 : -0.5);   // a counting goal with progress beats a yes/no goal
+      if (!best || sc > best.sc) best = { ch: u.ch, sc: sc, s: s };
+    });
+    return best ? best.ch : -1;
+  };
+  MT.secretCode = function (d) { var ev = []; if (!ach(d).code) { d.ach.code = 1; MT.check(d, ev, 'code'); } return ev; };
   // cosmetic hats: id -> how it is earned
   MT.HATS = [
     { id: 'star', how: 'lvl', v: 3 }, { id: 'flower', how: 'streak', v: 3 }, { id: 'wizard', how: 'lvl', v: 5 },
     { id: 'pirate', how: 'wins', v: 10 }, { id: 'viking', how: 'streak', v: 7 }, { id: 'goldcrown', how: 'champ', v: 5 }
   ];
-  MT.nextLocked = function (d) { for (var i = 0; i < MT.UNLOCK_ORDER.length; i++) if (d.unl.indexOf(MT.UNLOCK_ORDER[i]) < 0) return MT.UNLOCK_ORDER[i]; return -1; };
-  function unlockNext(d, ev, why) { var c = MT.nextLocked(d); if (c < 0) return -1; d.unl.push(c); ev.push({ k: 'char', ch: c, why: why }); return c; }
   function hatCheck(d, ev) {
     var L = MT.level(d.xp).lvl;
     MT.HATS.forEach(function (h) {
@@ -41,16 +95,16 @@
   // call on boot and whenever the day may have changed. Returns events (empty if already counted today).
   MT.login = function (d, dt) {
     var ev = [], t = dayKey(dt), last = keyNum(d.login.last), now = dayNum(dt);
-    if (d.login.last === t) return ev;
+    if (d.login.last === t) return MT.check(d, ev, 'boot');   // same day: only goals already met (e.g. an older save) open
     var first = !d.login.last;
     if (last !== null && now - last === 1) d.login.streak++; else d.login.streak = 1;
     d.login.last = t; d.login.days++; d.login.best = Math.max(d.login.best, d.login.streak);
     if (!first) {
       var bonus = 25 * Math.min(7, d.login.streak); d.xp += bonus;
       ev.push({ k: 'streak', n: d.login.streak, xp: bonus });
-      if (unlockNext(d, ev, 'gift') >= 0) d.gifts++;
       hatCheck(d, ev);
     }
+    MT.check(d, ev, 'days');   // the one login-based player (3 days)
     return ev;
   };
 
@@ -86,7 +140,7 @@
   };
 
   /* ---------- match rewards ---------- */
-  // st: { won, draw, lvl, firstBeat, hit, cat, sp, spKO, leftMax, flaw, n, guide }
+  // st: { won, draw, lvl, firstBeat, hit, cat, sp, spKO, leftMax, flaw, n, guide, outs, hurt, rev, ban, flipAir, airCat, mpCatch, passBest, chars }
   MT.reward = function (d, st, dt) {
     var ev = [], xp = 0, parts = [];
     var before = MT.level(d.xp);
@@ -97,7 +151,15 @@
     if (!d.daily.done && MT.meets(c, st)) { d.daily.done = true; d.dailyN++; xp += 150; parts.push(['xpDaily', 150]); dailyNow = true; ev.push({ k: 'daily', c: c }); }
     d.played = d.played; if (st.won) d.wins++; else if (!st.draw) d.losses++;
     d.xp += xp;
-    if (st.won && MT.WIN_UNLOCKS.indexOf(d.wins) >= 0) unlockNext(d, ev, 'wins');
+    // lifetime counters + best-in-a-match records for the player goals, then unlock what is met
+    var A = ach(d);
+    A.hit += st.hit | 0; A.cat += st.cat | 0; A.sp += st.sp | 0; A.rev += st.rev | 0; A.ban += st.ban | 0;
+    if (!st.guide) {   // one-match feats don't count in the guided first match (its rivals are too weak)
+      A.outsBest = Math.max(A.outsBest, st.outs | 0); A.spBest = Math.max(A.spBest, st.sp | 0); A.passBest = Math.max(A.passBest, st.passBest | 0);
+      A.flipAir += st.flipAir | 0; A.airCat += st.airCat | 0;
+      if (st.won) { if (!st.hurt) A.noHit++; if (st.n === 7) A.w7++; if (st.mpCatch) A.mpCatch++; if ((st.chars || []).indexOf(15) >= 0) A.hulkWin++; }
+    }
+    MT.check(d, ev, 'match');
     var after = MT.level(d.xp);
     if (after.lvl > before.lvl) ev.push({ k: 'lvl', from: before.lvl, to: after.lvl });
     hatCheck(d, ev);
@@ -108,6 +170,6 @@
     var t = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + 1, 0, 0, 0);
     return { ch: MT.nextLocked(d), challenge: MT.challenge(t), streak: d.login.last === dayKey(dt) ? d.login.streak + 1 : 1, ms: t - dt };
   };
-  // wins needed for the next win-unlock (or -1)
-  MT.winsToNext = function (d) { for (var i = 0; i < MT.WIN_UNLOCKS.length; i++) if (MT.WIN_UNLOCKS[i] > d.wins) return MT.WIN_UNLOCKS[i] - d.wins; return -1; };
+  // the login player still to come? -> days left (for the "tomorrow" teaser), else 0
+  MT.daysToGift = function (d) { var u = MT.uOf(10); return u && d.unl.indexOf(10) < 0 ? Math.max(0, u.n - d.login.days) : 0; };
 })();
