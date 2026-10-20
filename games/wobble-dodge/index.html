@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Wobble Dodgeball</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;background:#0d0b1e;overflow:hidden;touch-action:none;overscroll-behavior:none}
+body{font-family:"Arial Black","Segoe UI","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;font-weight:900;color:#fff}
+#cv{position:absolute;display:block;background:#17132f}
+.screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:10}
+.screen.on{display:flex}
+.dim{background:rgba(13,11,30,.78)}
+.ink{-webkit-text-stroke:.12em #1b1b2f;paint-order:stroke fill}
+.btn{font:inherit;color:#1b1b2f;background:#fff;border:3px solid #1b1b2f;border-radius:14px;box-shadow:0 5px 0 #1b1b2f;padding:0 16px;height:48px;font-size:18px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #1b1b2f}
+.btn.pri{background:#ffd23f}.btn.blue{background:#6ecbff}.btn.green{background:#8ef0a8}.btn.pink{background:#ff9ecb}
+.btn.big{height:72px;font-size:34px;font-style:italic;border-radius:20px;padding:0 34px}
+.btn.sm{height:38px;font-size:15px;padding:0 12px;box-shadow:0 3px 0 #1b1b2f}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.panel{background:#2b2d52;border:4px solid #1b1b2f;border-radius:24px;box-shadow:0 8px 0 #1b1b2f;padding:22px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:stretch;width:min(560px,92vw);max-height:94vh;overflow:auto}
+.panel h2{margin:0;font-size:clamp(34px,7vw,56px);font-style:italic;color:#ffd23f}
+.panel .help{font-size:14px;font-weight:700;color:#c9cbe0;line-height:1.5}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.row .btn{flex:1}
+#menu{background:radial-gradient(ellipse at 50% 30%,#2b2d6a 0%,#17132f 60%,#0d0b1e 100%);flex-direction:column;gap:14px;padding:14px;overflow:auto;justify-content:flex-start}
+#logo{text-align:center;line-height:.95;transform:rotate(-3deg);margin-top:max(2vh,8px)}
+@media (max-aspect-ratio:1/1){#logo{margin-top:64px}}
+#logo .l1{font-size:clamp(44px,10vw,92px);font-style:italic;color:#fff}
+#logo .l2{font-size:clamp(44px,10vw,92px);font-style:italic;color:#ff5a4f}
+#logo .l3{font-size:clamp(14px,2.6vw,20px);margin-top:8px;color:#9be7ff;-webkit-text-stroke:4px #1b1b2f;paint-order:stroke fill}
+#ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:min(900px,96vw)}
+@media (max-aspect-ratio:1/1){#ladder{grid-template-columns:1fr}}
+.team{background:#2b2d52;border:3px solid #1b1b2f;border-radius:16px;padding:8px 6px;text-align:center;cursor:pointer;font-size:14px;box-shadow:0 4px 0 #1b1b2f;color:#fff;font-family:inherit;font-weight:900;display:flex;flex-direction:column;align-items:center;gap:4px}
+@media (max-aspect-ratio:1/1){.team{flex-direction:row;justify-content:space-between;padding:8px 14px}}
+.team .n{font-size:12px;color:#ffd23f}.team .st{font-size:11px;color:#c9cbe0}
+.team.sel{border-color:#ffd23f;background:#3f4a8a}.team.lock{opacity:.45;cursor:default}.team.done .st{color:#8ef0a8}
+.team .dots{display:flex;gap:3px}.team .dots i{width:14px;height:14px;border-radius:50%;border:2px solid #1b1b2f;display:block}
+#help{font-size:13px;font-weight:700;color:#c9cbe0;text-align:center;line-height:1.55;max-width:900px}
+#help b{color:#ffd23f}
+#tops{position:fixed;right:10px;top:10px;display:flex;gap:8px;z-index:11}
+#btnPause{position:fixed;width:44px;height:38px;padding:0;display:none;z-index:6;right:8px;top:8px}
+#touch{position:absolute;display:none;pointer-events:none;z-index:5}
+#touch.on{display:block}
+#stick{position:absolute;pointer-events:auto}
+#stickBase{position:absolute;border-radius:50%;background:rgba(255,255,255,.12);border:3px solid rgba(255,255,255,.4);pointer-events:none}
+#stickKnob{position:absolute;left:50%;top:50%;width:44%;height:44%;margin:-22% 0 0 -22%;border-radius:50%;background:rgba(255,255,255,.75);border:3px solid #1b1b2f}
+.tb{position:absolute;pointer-events:auto;overflow:hidden;word-break:keep-all;padding:2px;border-radius:50%;border:3px solid #1b1b2f;display:flex;align-items:center;justify-content:center;color:#1b1b2f;opacity:.85;text-align:center;line-height:1;box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.tb.dn{opacity:1;transform:scale(.92)}
+#tThrow{background:#ffd23f}#tCatch{background:#8ef0a8}#tJump{background:#6ecbff}#tPass{background:#ff9ecb}
+#tSp{background:#8d8fa8;color:#2b2d42}
+#tSp.full{background:#ff5a4f;color:#fff;opacity:1;animation:glow .5s ease-in-out infinite alternate}
+@keyframes glow{from{box-shadow:0 0 0 0 #ffd23f}to{box-shadow:0 0 0 8px #ffd23f}}
+#pad{position:absolute;inset:0;background:#120f26;display:none}
+#menuRow{width:min(560px,92vw)}#menuRow .btn{height:54px;font-size:19px}
+#net .panel{width:min(460px,92vw)}
+#netBody{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+#netBtns{flex-direction:column}#netBtns .btn{flex:none;height:56px;font-size:20px}
+.code{font-size:clamp(64px,18vw,96px);letter-spacing:.12em;color:#ffd23f;font-style:italic;line-height:1.05}
+input{user-select:text;-webkit-user-select:text;font:inherit;border:3px solid #1b1b2f;border-radius:14px;text-align:center;color:#1b1b2f;background:#fff}
+.codein{font-size:44px;height:72px;letter-spacing:.3em;width:100%}
+.link{font-size:13px;height:38px;width:100%;font-weight:700;color:#3a3c5a}
+.help.err{color:#ff9d5c;min-height:1.2em}.help.wait{color:#9be7ff}.help.netmsg{font-size:20px;color:#fff;padding:12px 0}
+#pad.on{display:block}
+</style>
+</head>
+<body>
+<div id="pad"></div>
+<canvas id="cv"></canvas>
+<div id="touch">
+  <div id="stick"><div id="stickBase"><div id="stickKnob"></div></div></div>
+  <div class="tb" id="tThrow" data-i18n="tThrow"></div>
+  <div class="tb" id="tCatch" data-i18n="tCatch"></div>
+  <div class="tb" id="tJump" data-i18n="tJump"></div>
+  <div class="tb" id="tPass" data-i18n="tPass"></div>
+  <div class="tb" id="tSp" data-i18n="tSp"></div>
+</div>
+<button class="btn sm" id="btnPause" aria-label="Pause">II</button>
+
+<div id="menu" class="screen on">
+  <div id="logo"><div class="l1 ink" data-i18n="title1"></div><div class="l2 ink" data-i18n="title2"></div><div class="l3" data-i18n="sub"></div></div>
+  <div id="ladder"></div>
+  <button class="btn pri big" id="bPlay" data-i18n="play"></button>
+  <div class="row" id="menuRow"><button class="btn" id="bSize"></button><button class="btn blue" id="bOnline" data-i18n="online"></button></div>
+  <div id="help"></div>
+</div>
+<div id="tops"><button class="btn sm" id="bLang"></button><button class="btn sm" id="bMute"></button></div>
+
+<div id="result" class="screen dim">
+  <div class="panel">
+    <h2 class="ink" id="resTitle"></h2>
+    <div class="help" id="resSub"></div>
+    <div class="row">
+      <button class="btn pri" id="bNext" data-i18n="nextTeam"></button>
+      <button class="btn green" id="bRetry" data-i18n="retry"></button>
+    </div>
+    <button class="btn" id="bResMenu" data-i18n="menu"></button>
+  </div>
+</div>
+<div id="net" class="screen dim">
+  <div class="panel">
+    <h2 class="ink" id="netTitle"></h2>
+    <div id="netBody"></div>
+    <div class="row" id="netBtns"></div>
+  </div>
+</div>
+<div id="pause" class="screen dim">
+  <div class="panel">
+    <h2 class="ink" data-i18n="paused"></h2>
+    <button class="btn pri" id="bResume" data-i18n="resume"></button>
+    <div class="help" id="pauseHelp"></div>
+    <button class="btn" id="bQuit" data-i18n="menu"></button>
+  </div>
+</div>
+<script src="js/i18n.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+<script src="js/render.js"></script>
+<script src="js/net.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
