@@ -138,6 +138,8 @@ cv.addEventListener('touchstart',function(ev){ ev.preventDefault(); },{passive:f
 cv.addEventListener('contextmenu',function(e){ e.preventDefault(); });
 try{ if('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(function(){}); }catch(e){}
 requestAnimationFrame(fit);
+// 와이파이 없는 병실에서도 열리게 — 한 번 열어 두면 기기에 저장된다 (말해요 공용 sw)
+try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js'); }catch(e){}
 })();
 </script>
 </body>
