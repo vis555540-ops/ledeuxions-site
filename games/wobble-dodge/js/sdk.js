@@ -90,6 +90,7 @@
       firstDone: 0, wins: 0, losses: 0, xp: 0, unl: [0, 3, 5, 7], hats: [], hat: '', gifts: 0,
       login: { last: '', streak: 0, best: 0, days: 0 }, daily: { date: '', done: false }, dailyN: 0, seen: { lvl: 1 },
       lite: 0, rec: { cat: 0, hit: 0, streak: 0, cur: 0 },
+      sto: { seen: '', fails: 0, sf: 0, badge: 0, sc: 0, end: 0, season: 0, dl: 0, train: 0 }, free: { n: 3, lvl: 0 },   // story: comics seen (',id,'), 1 vs 1 losses, SUPER CATCH owned, ending seen, title-defence season + match, trainings done
       ach: { hit: 0, cat: 0, sp: 0, rev: 0, ban: 0, outsBest: 0, spBest: 0, noHit: 0, w7: 0, flipAir: 0, mpCatch: 0, hulkWin: 0, airCat: 0, passBest: 0, code: 0 } };   // goal counters for player unlocks (meta.js MT.UNLOCKS)
   }
   G.saveDefaults = defaults;

@@ -106,6 +106,7 @@
     sp_zap: function () { for (var i = 0; i < 4; i++) tone(1800 - i * 300, 0.05, 'sawtooth', 0.12, 2400, i * 0.06); noise(0.2, 0.3, 4000, 'highpass'); },
     zapStep: function () { tone(2200, 0.03, 'square', 0.06, 1400); },
     sp_sway: function () { wob(300, 0.9, 'triangle', 0.25, 220, 3, 60); },
+    babam: function () { tone(392, 0.1, 'sawtooth', 0.2, 0, 0); tone(523, 0.1, 'sawtooth', 0.12, 0, 0); var n = [523, 659, 784, 1047]; for (var i = 0; i < 4; i++) tone(n[i], 0.55, i % 2 ? 'square' : 'sawtooth', 0.11, 0, 0.16); noise(0.5, 0.35, 5000, 'highpass', 0.16); tone(130, 0.35, 'sine', 0.5, 65, 0.16); },
     sp_fireball: function () { noise(0.6, 0.6, 400, 'lowpass', 0, null, 1600); tone(110, 0.5, 'sawtooth', 0.3, 220); }
   };
   var lastPlay = {};

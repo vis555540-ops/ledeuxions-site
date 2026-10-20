@@ -155,6 +155,7 @@
 
   function label(c, txt, x, y, size, col, align, italic) { c.font = (italic ? 'italic ' : '') + '900 ' + size + 'px ' + G.FONT; c.textAlign = align || 'left'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.strokeStyle = INK; c.lineWidth = size * 0.26; c.strokeText(txt, x, y); c.fillStyle = col; c.fillText(txt, x, y); }
   function fitLabel(c, txt, x, y, size, col, align, maxW, italic) { c.font = (italic ? 'italic ' : '') + '900 ' + size + 'px ' + G.FONT; var w = c.measureText(txt).width; if (w > maxW) size = Math.max(10, Math.floor(size * maxW / w)); label(c, txt, x, y, size, col, align, italic); }
+  G.fitLabel = fitLabel;
   function easeOutBack(t) { t = clamp(t, 0, 1); var s = 1.9; t -= 1; return t * t * ((s + 1) * t + s) + 1; }
 
   /* ---------- main render ---------- */
@@ -182,7 +183,7 @@
     ents.sort(function (a, b2) { return a.z - b2.z; });
     for (i = 0; i < ents.length; i++) {
       var e = ents[i];
-      if (e.b) { var td = e.b.team ? M.team : G.MYTEAM; drawBody(c, e.b, td.uni, now); }
+      if (e.b) { var td = e.b.team ? M.team : M.myTm || G.MYTEAM; drawBody(c, e.b, td.uni, now); }
       else if (e.B.alive && !(e.B.st === 'held' && e.B.holder.mode === 'rag')) drawBall(c, e.B, now);
     }
     // my marker + catch timing ring
@@ -221,7 +222,7 @@
   function star(c, x, y, r, rot) { c.beginPath(); for (var i = 0; i < 16; i++) { var a = rot + i * Math.PI / 8, q = i % 2 ? r * 0.4 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fill(); }
 
   function teamPanel(c, M, t, x, w, alignR, now) {
-    var td = t ? M.team : G.MYTEAM, nm = t ? G.t(td.key) : G.t(M.versus ? 'pHost' : 'my');
+    var td = t ? M.team : M.myTm || G.MYTEAM, nm = t || M.myTm ? G.t(td.key) : G.t(M.versus ? 'pHost' : 'my');
     c.fillStyle = 'rgba(27,27,47,0.88)'; rr(c, x, 10, w, 92, 16); c.fill();
     var l = alignR ? x + w - 14 : x + 14;
     fitLabel(c, nm, l, 30, 20, t ? '#ff9d5c' : '#6ecbff', alignR ? 'right' : 'left', w - 36 - Math.min(30, (w * 0.62) / (M.bodies.length / 2)) * M.bodies.length / 2);
@@ -290,6 +291,7 @@
     if (M.guideSlow) return touch ? 'gCatchT' : 'gCatchK';
     if (me.hold && M.meter[0] >= 1 && g.thr < 6) return touch ? 'gSpT' : 'gSpK';
     if (me.hold && g.thr < 3) return me.charging ? 'gRelease' : touch ? 'gThrowT' : 'gThrowK';
+    if (me.hold && !me.charging && g.thr >= 2 && g.thr < 6 && !g.pass && M.bodies.some(function (o) { return o.team === 0 && o !== me && o.role === 'in' && !o.pendingOut; })) return touch ? 'gPassT' : 'gPassK';
     if (!me.hold && M.ball.st === 'loose' && g.thr < 3 && M.chaser[0] === null && Math.abs(M.ball.x - me.x) < 500) return touch ? 'gGetT' : 'gGetK';
     return null;
   };

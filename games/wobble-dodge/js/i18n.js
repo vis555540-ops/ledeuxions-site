@@ -9,7 +9,7 @@
       gThrowT: 'Hold THROW... then let go!', gThrowK: 'Hold J... then let go to throw!', gRelease: 'Let go to throw!',
       gCatchT: 'Ball coming! Tap CATCH!', gCatchK: 'Ball coming! Press K to catch!',
       gSpT: 'SPECIAL! Tap JUMP, then THROW in the air!', gSpK: 'SPECIAL! Space to jump, then J in the air!',
-      gGetT: 'Walk over the ball to grab it', gGetK: 'Walk over the ball to grab it',
+      gGetT: 'Walk over the ball to grab it', gGetK: 'Walk over the ball to grab it', gPassT: 'Tap CATCH while holding = PASS to your teammate', gPassK: 'K while holding = PASS to your teammate',
       lite: 'LITE MODE', shareShot: 'SHARE', newRec: 'NEW RECORD!', recCat: '{0} catches in one match', recHit: '{0} hits in one match', recStreak: '{0} wins in a row',
       lv: 'LV {0}', streakN: 'Day {0}', daily: 'TODAY:', done: 'DONE', hat: 'HAT', hatOwn: 'own hats', charsN: 'Players {0}/{1}',
       h_star: 'Star Band', h_flower: 'Flower Crown', h_wizard: 'Wizard Hat', h_pirate: 'Pirate Hat', h_viking: 'Viking Helmet', h_goldcrown: 'Champion Crown',
@@ -66,7 +66,7 @@
       gThrowT: '던지기 꾹 눌렀다가... 떼기!', gThrowK: 'J를 꾹 눌렀다가 떼면 던져요!', gRelease: '떼면 던져요!',
       gCatchT: '공이 와요! 잡기!', gCatchK: '공이 와요! K로 잡기!',
       gSpT: '필살기! 점프 누르고 공중에서 던지기!', gSpK: '필살기! Space로 점프, 공중에서 J!',
-      gGetT: '공 위로 걸어가면 주워요', gGetK: '공 위로 걸어가면 주워요',
+      gGetT: '공 위로 걸어가면 주워요', gGetK: '공 위로 걸어가면 주워요', gPassT: '공 들고 잡기 = 친구에게 패스', gPassK: '공 들고 K = 친구에게 패스',
       lite: '가볍게', shareShot: '공유', newRec: '새 기록!', recCat: '한 판에 {0}번 잡기', recHit: '한 판에 {0}명 맞히기', recStreak: '{0}연승',
       lv: 'LV {0}', streakN: '{0}일째', daily: '오늘:', done: '완료', hat: '모자', hatOwn: '기본 모자', charsN: '선수 {0}/{1}',
       h_star: '별 머리띠', h_flower: '꽃 왕관', h_wizard: '마법사 모자', h_pirate: '해적 모자', h_viking: '바이킹 투구', h_goldcrown: '챔피언 왕관',
@@ -129,7 +129,7 @@
       u_mpCatch: 'Win the match with a catch on match point', u_beaten: 'Beat ladder team 5 ({0}/{1})', u_hulkWin: 'Win with Hulky on your team',
       u_airCat: 'Catch a ball while jumping', u_passBest: 'Pass {1} times in a row without throwing (best {0}/{1})', u_code: 'Tickle the title',
       s_airCat: 'Secret: cats hunt in mid-air...', s_passBest: 'Secret: buzz buzz, teammate to teammate...', s_code: 'Secret: the title looks ticklish...',
-      u_req: 'Unlock {0} first...', u_secret: '???', unlTitle: 'NEW PLAYER!', unlHow: 'Unlocked: {0}', unlOk: 'NICE!',
+      babam: 'TA-DA!', freeBtn: 'FREE PLAY', u_req: 'Unlock {0} first...', u_secret: '???', unlTitle: 'NEW PLAYER!', unlHow: 'Unlocked: {0}', unlOk: 'NICE!',
       nextUnl: 'Next player: {0}', lockHow: 'Locked: {0}', teaseDays: 'Come back on {0} more day(s): a new player', charsNew: 'NEW',
       ps0: 'All-rounder: good at everything', ps1: 'Big cannon, a bit slow', ps2: 'Light on its feet: run and dodge', ps3: 'Strongest arm, turtle feet',
       ps4: 'Quick trickster: only one ball is real', ps5: 'Catching expert, takes it slow', ps6: 'Fastest feet, weakest arm: boomerang from behind', ps7: 'Quick dodger, zigzags to confuse',
@@ -146,7 +146,7 @@
       u_mpCatch: '매치 포인트에서 잡아서 끝내기', u_beaten: '사다리 5번째 팀 이기기 ({0}/{1})', u_hulkWin: '우람이와 함께 이기기',
       u_airCat: '점프한 채로 공 잡기', u_passBest: '안 던지고 {1}번 연속 패스 (최고 {0}/{1})', u_code: '제목 간질이기',
       s_airCat: '비밀: 고양이는 하늘에서 사냥해요…', s_passBest: '비밀: 윙윙, 동료에게서 동료에게…', s_code: '비밀: 제목이 간지럽대요…',
-      u_req: '{0} 열면 보여요…', u_secret: '???', unlTitle: '새 선수!', unlHow: '해낸 것: {0}', unlOk: '좋아!',
+      babam: '빠밤!', freeBtn: '프리 게임', u_req: '{0} 열면 보여요…', u_secret: '???', unlTitle: '새 선수!', unlHow: '해낸 것: {0}', unlOk: '좋아!',
       nextUnl: '다음 선수: {0}', lockHow: '잠김: {0}', teaseDays: '{0}일 더 오면 새 선수', charsNew: '새',
       ps0: '뭐든 무난한 올라운더', ps1: '힘센 대포, 조금 굼뜸', ps2: '가볍게 뛰며 피하기', ps3: '최강 힘, 거북이 걸음',
       ps4: '재빠른 속임수꾼, 진짜 공은 하나', ps5: '잡기 장인, 느긋하게 버팀', ps6: '제일 빠르고 힘은 제일 약함, 부메랑으로 뒤를 노림', ps7: '재빠르게 피하고 지그재그로 헷갈리게',
@@ -157,6 +157,7 @@
     }
   };
   for (var lk in U) for (var kk in U[lk]) T[lk][kk] = U[lk][kk];
+  G.addStr = function (o) { for (var l in o) for (var k in o[l]) if (T[l]) T[l][k] = o[l][k]; };   // more strings from other files (story.js)
   var nav = (navigator.language || 'en').toLowerCase();
   G.lang = nav.indexOf('ko') === 0 ? 'ko' : 'en';
   G.t = function (k) {

@@ -37,7 +37,8 @@
   ];
   // ladder: 5 teams, then the same 5 again stronger (tier 2, "★")
   G.LADDER = 10;
-  G.teamOf = function (lvl) { var b = G.TEAMS[lvl % 5]; if (lvl < 5) return b; return { key: b.key, skins: b.skins, hats: b.hats, uni: b.uni, L: b.L + 1.1, star: true }; };
+  G.BOSS = { key: 'tBoss', skins: ['#e9e4d4', '#d8c9a3', '#f2efe6'], hats: ['shades', 'top', 'shades'], uni: '#c9a227', L: 5.1, star: true, boss: true };   // story final: the developer's sponsored elite team
+  G.teamOf = function (lvl) { if (lvl === 9) return G.BOSS; var b = G.TEAMS[lvl % 5]; if (lvl < 5) return b; return { key: b.key, skins: b.skins, hats: b.hats, uni: b.uni, L: b.L + 1.1, star: true }; };
   G.MYTEAM = { key: 'my', skins: ['#3fa9ff', '#8ee53f', '#4cd9c0'], hats: ['cap', 'band', 'prop'], uni: '#2a7fd4' };
   G.FRIEND = { key: 'pGuest', skins: ['#ff9d5c', '#ffb37a', '#f07c3a'], hats: ['cap', 'band', 'cap'], uni: '#e8692b', L: 2 };
   G.SPECIALS = ['banana', 'fart', 'chicken', 'giant', 'clone', 'slow', 'boomer', 'zigzag', 'ghost', 'flip', 'sneeze', 'bouncy', 'zap', 'sway', 'fireball'];
@@ -263,9 +264,10 @@
     if (spId) {
       var S = SPEC[spId]; B.path.D = Math.max(0.6, B.path.D) * (S.dm || 1); if (S.arc != null) B.path.arc = S.arc; if (S.start) S.start(M, B, b);
       M.spFired[spId] = (M.spFired[spId] || 0) + 1; M.meter[b.team] = 0;
+      if (M.story === 'pov' && b.team === 1 && b.i === 0) { var spl = G.SPECIALS.filter(function (x) { return x !== spId; }); b.sp = spl[(Math.random() * spl.length) | 0]; }   // the final boss has every special
       M.ban = { txt: T('sp_' + spId), sub: T('ss_' + spId), k: 'sp_' + spId, ks: 'ss_' + spId, col: S.col, t: 0, dur: 1.5, sp: spId, team: b.team };
       M.flash = 0.22; M.shake = Math.max(M.shake, 6); G.sfx('special'); G.sfx('sp_' + spId); crowd(M, 1);
-      if (human && b.team === 0) M.me.sp++;
+      if (human && b.team === 0) M.me.sp++; ev(M, b.team === 0 ? 'sp' : 'spFoe');
     } else G.sfx('throw');
     if (human && b.team === 0) { M.me.thr++; if (M.guide) M.guide.thr++; if (M.guide && !spId && !M.guide.spGiven) { M.guide.spGiven = 1; meterAdd(M, 0, 1); } }
     if (human && b.role === 'out') { var n = nearestIn(M, b.team, b); if (n) setCtrl(M, b.team, n.id); }
@@ -282,7 +284,7 @@
     var B = M.ball; B.st = 'fly'; B.pass = true; B.recv = r; B.holder = null; B.team = b.team; B.thrower = b; B.sp = null; B.id = ++M.ballId; B.trail = []; B.side = {};
     b.hold = false; b.charging = false; b.throwT = 0.18; b.noPick = 0.4;
     mkPath(B, B.x, b.z, Math.max(30, B.h), r.x, r.z, 60 * r.sc, 1100, 90);
-    r.ai.t = 0.6; G.sfx('pass');
+    r.ai.t = 0.6; G.sfx('pass'); if (M.guide && isHuman(M, b)) M.guide.pass = (M.guide.pass || 0) + 1;
     return true;
   }
 
@@ -386,6 +388,7 @@
       var sc = b.sc, r = B.r, dx = Math.abs(B.x - b.x), dz = Math.abs(B.z - b.z) * ZPX, top = b.h + BODY_H * sc;
       // generous catch: bigger box, while the catch window is open
       var ck = 0.85 + 0.05 * b.cv;
+      if (((M.sc > 0 && b.team === 0 && b.id === M.ctrl) || (M.sc2 > 0 && b.team === 1 && b.i === 0)) && !B.fake && dx < (40 * sc + r) && dz < (36 + r) && B.h - r < top + 24 && B.h + r > b.h - 4) { catchBall(M, B, b); ev(M, 'scCatch'); return; }   // SUPER CATCH: every ball that reaches me is caught
       if (b.catchT > 0 && !B.fake && B.sp !== 'giant' && dx < (34 * sc + r) * ck && dz < (32 + r) * ck && B.h - r < top + 20 && B.h + r > b.h) { catchBall(M, B, b); return; }
       if (dx < 16 * sc + r && dz < 15 + r * 0.8 && B.h - r < top && B.h + r > b.h + 4) {
         if (B.fake) { dead(M, B); return; }
@@ -394,7 +397,7 @@
       }
       if (!B.fake && B.side[b.id] && sgn(b.x - B.x) !== B.side[b.id]) {
         B.side[b.id] = 0;
-        if (dz < 70 + r || (dx < 40 && b.h > 20)) { meterAdd(M, b.team, 0.17); STAT.dOk++; pop(M, b.x, FY(b.z) - b.h - 125 * sc, T('dodge'), '#9be7ff', 26); G.sfx('dodge'); }
+        if (dz < 70 + r || (dx < 40 && b.h > 20)) { meterAdd(M, b.team, 0.17); STAT.dOk++; pop(M, b.x, FY(b.z) - b.h - 125 * sc, T('dodge'), '#9be7ff', 26); G.sfx('dodge'); if (b.team === 0) ev(M, 'dodge'); }
       }
     }
   }
@@ -415,7 +418,7 @@
     sparks(M, B.x, hy, 10 + (pw * 6 | 0), '#ffe45c', 380 + 260 * pw);
     G.sfx(pw > 1.2 ? 'bigHit' : 'hit'); if (pw > 1.2) G.audio.buzz(40);
     crowd(M, pw);
-    pop(M, b.x, FY(b.z) - 150 * b.sc, T('out'), '#ff5a4f', 30 + pw * 8);
+    pop(M, b.x, FY(b.z) - 150 * b.sc, T('out'), '#ff5a4f', 30 + pw * 8); ev(M, b.team === 0 ? 'hitMe' : 'hit', pw, b);
     meterAdd(M, B.team, 0.15);
     var th = B.thrower; if (th && th.role === 'out' && th.mode === 'stand') { goIn(th); pop(M, th.x, FY(th.z) - 150, T('backIn'), '#8ef0a8', 30); G.sfx('revive'); }
     B.path = null; B.st = 'loose'; B.team = -1; B.sp = null; B.r = 11; B.vx = -B.vx * 0.22; B.vz *= 0.3; B.vh = 380;
@@ -428,7 +431,7 @@
     giveBall(M, B, b); b.throwT = 0; STAT.cat++; M.lastSp = false;
     var meC = b.team === 0 && isHuman(M, b); M.lastCatchMe = meC;
     if (meC) { M.me.cat++; if (b.h > 1) M.me.airCat++; if (M.guide) M.guide.cat++; }
-    G.sfx('catch'); pop(M, b.x, FY(b.z) - 150 * b.sc, T('catch'), '#8ef0a8', 34); meterAdd(M, b.team, 0.4);
+    G.sfx('catch'); pop(M, b.x, FY(b.z) - 150 * b.sc, T('catch'), '#8ef0a8', 34); meterAdd(M, b.team, 0.4); ev(M, b.team === 0 ? 'catch' : 'catchFoe');
     M.hitstop = 0.08; M.shake = Math.max(M.shake, 6); crowd(M, 0.8); sparks(M, B.x, bsy(B), 8, '#8ef0a8', 300);
     M.fx.push({ k: 'ring', x: B.x, y: bsy(B), life: 0, max: 0.25, col: '#8ef0a8', s: 40 });
     if (M.easy) return;   // easy rules: a catch only keeps the ball
@@ -449,7 +452,7 @@
     q.sort(function (a, c) { return a.outAt - c.outAt; });
     var r = q[0]; STAT.revive = (STAT.revive || 0) + 1;
     if (r.pendingOut) r.pendingOut = false; else goIn(r);
-    pop(M, r.x, FY(r.z) - 150 * r.sc, T('backIn'), '#8ef0a8', 30); G.sfx('revive');
+    pop(M, r.x, FY(r.z) - 150 * r.sc, T('backIn'), '#8ef0a8', 30); G.sfx('revive'); ev(M, t === 0 ? 'rev' : 'revFoe');
     return r;
   }
   G.revive = revive;
@@ -464,6 +467,9 @@
     if (t < 0) return; var was = M.meter[t]; M.meter[t] = Math.min(1, M.meter[t] + v);
     if (was < 1 && M.meter[t] >= 1) { G.sfx('ready'); pop(M, t ? 1000 : 280, 330, T('spReady'), '#ffd23f', 30); }
   }
+  function ev(M, k, a) { if (G.onEv) try { G.onEv(M, k, a); } catch (e) { } }   // story announcer hook (story.js)
+  // SUPER CATCH (story skill): 30 s of guaranteed catches for the player, once per match
+  G.superCatch = function (M) { if (!M.scOk || M.scUsed || M.state !== 'play' || M.ctrl < 0) return false; M.scUsed = 1; M.sc = 30; var b = M.bodies[M.ctrl]; pop(M, b.x, FY(b.z) - 170, T('skPop'), '#ffd23f', 34); G.sfx('ready'); ev(M, 'sc'); return true; };
   function pop(M, x, y, txt, col, size) { M.pops.push({ x: x, y: y, txt: txt, col: col || '#ffe45c', size: size || 30, t: 0 }); if (M.pops.length > 10) M.pops.shift(); }
   G.pop = pop;
   function crowd(M, p) {
@@ -478,10 +484,11 @@
     if (M.state !== 'play') return;
     var c = counts(M);
     if (c[0] && c[1]) { matchPointCheck(M, c); return; }
-    var w = c[0] ? 0 : 1; if (w === 0 && M.lastSp) M.me.spKO++; if (w === 0 && M.lastCatchMe && M.score[0] + 1 >= M.need) M.me.mpCatch++; M.state = 'ko'; M.st = 0; M.roundWin = w; M.slow = M.score[w] >= 1 ? 1.6 : 1.0; G.sfx('whistle2');
+    if (M.guide && c[0] && !c[1] && !M.me.sp && !M.guide.extra) { M.guide.extra = 1; if (revive(M, 1)) { M.meter[0] = 1; return; } }   // tutorial: one rival gets back up so the player gets to try the SPECIAL
+    var w = c[0] ? 0 : 1; if (w === 0 && M.lastSp) M.me.spKO++; if (w === 0 && M.lastCatchMe && M.score[0] + 1 >= M.need) M.me.mpCatch++; M.state = 'ko'; M.st = 0; M.roundWin = w; M.slow = M.score[w] >= 1 ? 1.6 : 1.0; G.sfx('whistle2'); ev(M, w === 0 ? 'koWin' : 'koLose');
   }
   function matchPointCheck(M, c) {
-    for (var t = 0; t < 2; t++) if (c[t] === 1 && M.score[1 - t] >= 1 && M.mp !== M.round) { M.mp = M.round; M.mpTeam = t; M.ban = { txt: T('matchPoint'), k: 'matchPoint', col: '#ff5a4f', t: 0, dur: 1.3 }; G.sfx('ready'); }
+    for (var t = 0; t < 2; t++) if (c[t] === 1 && M.score[1 - t] >= 1 && M.mp !== M.round) { M.mp = M.round; M.mpTeam = t; M.ban = { txt: T('matchPoint'), k: 'matchPoint', col: '#ff5a4f', t: 0, dur: 1.3 }; G.sfx('ready'); ev(M, 'mp'); }
   }
 
   G.posed = function (ch, t, animT, cheer, o) {   // a standing character at (0,0) for portraits (feet at y=0, about 130 tall); o: extra fields (cover art)
@@ -574,13 +581,13 @@
 
   /* ---------- match / round ---------- */
   G.newMatch = function (opt) {
-    var N = G.TEAM_SIZES.indexOf(opt.n) >= 0 ? opt.n : 5;
-    var tm = opt.versus ? G.FRIEND : G.teamOf(opt.lvl), chs = [G.randomChars(N, opt.chars && opt.chars[0]), G.randomChars(N, opt.chars && opt.chars[1])];
+    var N = G.TEAM_SIZES.indexOf(opt.n) >= 0 || (opt.n >= 1 && opt.n <= 7 && (opt.n | 0) === opt.n) ? opt.n : 5;   // 1-7 (story 1 vs 1, 2 vs 2 tutorial, free play)
+    var tm = opt.versus ? G.FRIEND : opt.tm || G.teamOf(opt.lvl), chs = [G.randomChars(N, opt.chars && opt.chars[0]), G.randomChars(N, opt.chars && opt.chars[1])];
     var M = { lvl: opt.lvl, team: tm, chars: chs, easy: !!opt.easy, outSeq: 0, round: 1, score: [0, 0], state: 'intro', st: 0, time: ROUND_T, bodies: [], ball: mkBall(), fakes: [],
       meter: [0, 0], nextSp: [G.CHARS[chs[0][0]].sp, G.CHARS[chs[1][0]].sp], fx: [], pops: [], wows: [], ban: null, shake: 0, hitstop: 0, slow: 0, flash: 0, crowd: 0,
-      n: N, ctrl: opt.auto ? -1 : 0, ctrl2: opt.versus ? N : -1, versus: !!opt.versus, auto: !!opt.auto, P: [params(1.8), params(opt.versus ? 1.8 : tm.L)], spFired: {}, hits: [0, 0], mp: 0, roundWin: -1, serve: 0, ballId: 0, passRR: 0, chaser: [null, null], winner: -1, hint: !!opt.hint, nearSlow: 0, frame: 0,
+      n: N, ctrl: opt.auto ? -1 : 0, ctrl2: opt.versus ? N : -1, versus: !!opt.versus, auto: !!opt.auto, P: [params(1.8), params(opt.versus ? 1.8 : tm.L + (opt.boost || 0))], spFired: {}, hits: [0, 0], mp: 0, roundWin: -1, serve: 0, ballId: 0, passRR: 0, chaser: [null, null], winner: -1, hint: !!opt.hint, nearSlow: 0, frame: 0,
       need: opt.need || 2, roundT: opt.roundT || ROUND_T, guide: opt.guide ? { thr: 0, cat: 0, slowN: 0, slowId: -1, aim: 2, spGiven: 0 } : null, waitInput: !!opt.waitInput, guideSlow: 0,
-      me: { thr: 0, hit: 0, cat: 0, sp: 0, spKO: 0, flaw: 0, leftMax: 0, outs: 0, hurt: 0, rev: 0, ban: 0, flipAir: 0, airCat: 0, mpCatch: 0, pr: 0, passBest: 0 }, lastSp: false, lastCatchMe: false };
+      me: { thr: 0, hit: 0, cat: 0, sp: 0, spKO: 0, flaw: 0, leftMax: 0, outs: 0, hurt: 0, rev: 0, ban: 0, flipAir: 0, airCat: 0, mpCatch: 0, pr: 0, passBest: 0 }, lastSp: false, lastCatchMe: false, story: opt.story || null, defend: !!opt.defend, free: !!opt.free, boss: !!opt.boss, sc: 0, scUsed: 0, scOk: !!opt.superCatch, sc2: 0, sc2Used: 0, ann: null };
     if (opt.guide) M.P[1] = params(-0.7);
     for (var t = 0; t < 2; t++) for (var i = 0; i < N; i++) { var bb = mkBody(M, t, i, chs[t][i]); if (t === 0 && opt.hat) bb.hat = opt.hat; M.bodies.push(bb); }
     setupRound(M);
@@ -588,7 +595,7 @@
     return M;
   };
   // starting spots per team size: x on the left half (mirrored for the right team), z depth
-  var FORM = { 3: [[470, 330, 330], [0.5, 0.18, 0.82]],
+  var FORM = { 1: [[440], [0.5]], 2: [[450, 330], [0.3, 0.7]], 4: [[480, 380, 380, 260], [0.5, 0.15, 0.85, 0.5]], 6: [[490, 400, 400, 290, 290, 200], [0.5, 0.12, 0.88, 0.3, 0.7, 0.5]], 3: [[470, 330, 330], [0.5, 0.18, 0.82]],
     5: [[480, 390, 390, 250, 250], [0.5, 0.14, 0.86, 0.36, 0.64]],
     7: [[490, 410, 410, 300, 300, 200, 200], [0.5, 0.12, 0.88, 0.32, 0.68, 0.1, 0.9]] };
   G.TEAM_SIZES = [3, 5, 7];
@@ -617,7 +624,11 @@
     M.frame++;
     if (M.state === 'intro') { M.st += DT; if (M.waitInput && M.st > 1.2) M.st = 1.2; if (M.st > 1.5) { M.state = 'play'; M.ban = { txt: T('go'), k: 'go', col: '#ff5a4f', t: 0, dur: 0.9 }; G.sfx('whistle'); G.audio.intensity = 1; } }
     else if (M.state === 'play') {
-      M.time -= DT;
+      M.time -= DT; if (M.sc > 0) M.sc = Math.max(0, M.sc - DT); if (M.sc2 > 0) M.sc2 = Math.max(0, M.sc2 - DT);
+      if (M.story === 'pov' && alive(M.bodies[M.n])) {   // final chapter: the grown-up hero (rival side) runs SUPER CATCH 30 s on / 10 s off, all match long
+        var sc2 = M.scCyc || (M.scCyc = { on: false, t: 6 }); sc2.t -= DT;
+        if (sc2.t <= 0) { sc2.on = !sc2.on; sc2.t = sc2.on ? 30 : 10; M.sc2 = sc2.on ? 30 : 0; var sb = M.bodies[M.n]; if (sc2.on) { pop(M, sb.x, FY(sb.z) - 170, T('skPop'), '#ffd23f', 34); G.sfx('ready'); ev(M, 'heroSc'); } else ev(M, 'heroCd'); }
+      }
       if (M.time <= 0) { var c = counts(M), w = c[0] > c[1] ? 0 : c[1] > c[0] ? 1 : M.hits[0] > M.hits[1] ? 0 : M.hits[1] > M.hits[0] ? 1 : -1; endRound(M, w, true); }
     } else if (M.state === 'ko') { M.st += DT; if (M.st > 1.7) endRound(M, M.roundWin, false); }
     else if (M.state === 'roundEnd') {
