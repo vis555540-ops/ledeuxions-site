@@ -48,9 +48,9 @@ body{font-family:"Arial Black","Segoe UI","Apple SD Gothic Neo","Malgun Gothic",
 #stickKnob{position:absolute;left:50%;top:50%;width:44%;height:44%;margin:-22% 0 0 -22%;border-radius:50%;background:rgba(255,255,255,.75);border:3px solid #1b1b2f}
 .tb{position:absolute;pointer-events:auto;overflow:hidden;word-break:keep-all;padding:2px;border-radius:50%;border:3px solid #1b1b2f;display:flex;align-items:center;justify-content:center;color:#1b1b2f;opacity:.85;text-align:center;line-height:1;box-shadow:0 4px 0 rgba(0,0,0,.4)}
 .tb.dn{opacity:1;transform:scale(.92)}
-#tThrow{background:#ffd23f}#tCatch{background:#8ef0a8}#tJump{background:#6ecbff}#tPass{background:#ff9ecb}
-#tSp{background:#8d8fa8;color:#2b2d42}
-#tSp.full{background:#ff5a4f;color:#fff;opacity:1;animation:glow .5s ease-in-out infinite alternate}
+#tThrow{background:#ffd23f}#tGrab{background:#8ef0a8}#tGrab.pass{background:#ff9ecb}#tJump{background:#6ecbff}
+#tThrow.full,#tJump.full{opacity:1;animation:glow .5s ease-in-out infinite alternate}
+#tThrow.full{background:#ff5a4f;color:#fff}
 @keyframes glow{from{box-shadow:0 0 0 0 #ffd23f}to{box-shadow:0 0 0 8px #ffd23f}}
 #pad{position:absolute;inset:0;background:#120f26;display:none}
 #menuRow{width:min(560px,92vw)}#menuRow .btn{height:54px;font-size:19px}
@@ -63,6 +63,47 @@ input{user-select:text;-webkit-user-select:text;font:inherit;border:3px solid #1
 .link{font-size:13px;height:38px;width:100%;font-weight:700;color:#3a3c5a}
 .help.err{color:#ff9d5c;min-height:1.2em}.help.wait{color:#9be7ff}.help.netmsg{font-size:20px;color:#fff;padding:12px 0}
 #pad.on{display:block}
+#keys{position:fixed;display:none;z-index:6;pointer-events:none;background:rgba(16,12,40,.82);border:2px solid #1b1b2f;border-radius:10px;padding:5px 10px;font-size:13px;font-weight:700;color:#fff;line-height:1.35}
+#keys span{color:#9be7ff;font-size:11px}
+#menuRow2{width:min(560px,92vw)}#menuRow2 .btn{height:44px;font-size:16px}
+#pick{background:radial-gradient(ellipse at 50% 20%,#2b2d6a 0%,#17132f 65%,#0d0b1e 100%);padding:max(8px,env(safe-area-inset-top)) 10px 8px}
+#pkWrap{width:min(1180px,100%);height:100%;display:flex;flex-direction:column;gap:8px;min-height:0}
+#pkTop{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-right:200px;min-height:40px}
+#pkTitle{margin:0;font-size:clamp(24px,4.4vw,40px);font-style:italic;color:#ffd23f}
+#pkRule{font-size:12px;color:#c9cbe0;background:#2b2d52;border:2px solid #1b1b2f;border-radius:10px;padding:3px 8px}
+#pkFoe{font-size:15px;color:#9be7ff}
+#pkMain{flex:1;display:flex;gap:10px;min-height:0}
+#pkPrev{width:32%;min-width:0;display:flex;flex-direction:column;background:#2b2d52;border:3px solid #1b1b2f;border-radius:18px;box-shadow:0 5px 0 #1b1b2f;padding:8px;gap:4px}
+#pkCv{flex:1;width:100%;min-height:0;display:block}
+#pkName{font-size:clamp(20px,3vw,32px);font-style:italic;text-align:center;color:#fff}
+#pkStats .st{display:flex;align-items:center;gap:8px;font-size:13px}#pkStats b{width:3.6em;color:#c9cbe0;text-align:right}
+.bar{display:flex;gap:3px}.bar i{width:16px;height:10px;border-radius:3px;background:#4a4e69;border:1.5px solid #1b1b2f;display:block}.bar i.on{background:#ffd23f}
+#pkSp{font-size:13px;color:#fff;line-height:1.3;text-align:center}#pkSp b{color:#ff9ecb}#pkSp small{color:#c9cbe0;font-weight:700}
+#pkGrid{flex:1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:6px;min-height:0}
+.pkCell{position:relative;font:inherit;padding:0;background:#3a3c6a;border:3px solid #1b1b2f;border-radius:14px;box-shadow:0 4px 0 #1b1b2f;cursor:pointer;overflow:hidden;min-height:0}
+.pkCell canvas{position:absolute;left:0;top:0;width:100%;height:82%;display:block}
+.pkCell .nm{position:absolute;left:0;right:0;bottom:3px;font-size:clamp(10px,1.4vw,14px);color:#fff;-webkit-text-stroke:3px #1b1b2f;paint-order:stroke fill;white-space:nowrap;overflow:hidden}
+.pkCell .no{position:absolute;right:4px;top:3px;min-width:20px;height:20px;border-radius:10px;background:#ffd23f;color:#1b1b2f;font-size:13px;line-height:20px;display:none}
+.pkCell.sel{background:#5464b8;border-color:#ffd23f}.pkCell.sel .no{display:block}
+.pkCell.cur{outline:4px solid #fff;outline-offset:-2px}
+#pkBottom{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#pkMine{font-size:15px;color:#6ecbff;white-space:nowrap}
+#pkSlots{display:flex;gap:4px;flex:1;min-width:0}
+#pkSlots canvas{flex:1;max-width:58px;min-width:30px;height:52px;background:#2b2d52;border:2px solid #1b1b2f;border-radius:10px;min-width:0}
+#pkBtns{display:flex;gap:8px;justify-content:flex-end}#pkBtns .btn{height:46px}
+#pkGo{font-size:22px;font-style:italic;min-width:120px}
+#pkGo.pulse{animation:glow .5s ease-in-out infinite alternate}
+#pkHint{font-size:12px;font-weight:700;color:#c9cbe0;text-align:center}
+#pkCd{position:absolute;inset:0;display:none;z-index:2}#pkCd.on{display:block}#cdCv{width:100%;height:100%;display:block}
+#pick.port #pkTop{padding-right:0;padding-top:46px}
+#pick.port #pkMain{flex-direction:column}
+#pick.port #pkPrev{width:100%;flex:0 0 26%;flex-direction:row;align-items:center}
+#pick.port #pkCv{height:100%;width:40%;flex:none}
+#pick.port #pkInfo{flex:1;display:flex;flex-direction:column;gap:4px}
+#pick.port #pkGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+#pick.port #pkBtns{width:100%}#pick.port #pkBtns .btn{flex:1 1 0;min-width:0;padding:0 4px;font-size:15px;overflow:hidden}#pick.port #pkGo{font-size:19px;min-width:0;flex-grow:1.4}
+@media (max-width:760px){#pkBtns .btn{padding:0 9px;font-size:15px}#pkGo{min-width:0;font-size:18px}#pkMine{font-size:13px}}
+@media (max-height:460px){#pkHint{display:none}#pkTop{min-height:32px}#pkBtns .btn{height:40px}#pkSlots canvas{height:42px}#pkStats .st{font-size:11px}#pkSp{font-size:11px}}
 </style>
 </head>
 <body>
@@ -71,11 +112,10 @@ input{user-select:text;-webkit-user-select:text;font:inherit;border:3px solid #1
 <div id="touch">
   <div id="stick"><div id="stickBase"><div id="stickKnob"></div></div></div>
   <div class="tb" id="tThrow" data-i18n="tThrow"></div>
-  <div class="tb" id="tCatch" data-i18n="tCatch"></div>
+  <div class="tb" id="tGrab" data-i18n="tGrab"></div>
   <div class="tb" id="tJump" data-i18n="tJump"></div>
-  <div class="tb" id="tPass" data-i18n="tPass"></div>
-  <div class="tb" id="tSp" data-i18n="tSp"></div>
 </div>
+<div id="keys"></div>
 <button class="btn sm" id="btnPause" aria-label="Pause">II</button>
 
 <div id="menu" class="screen on">
@@ -83,7 +123,21 @@ input{user-select:text;-webkit-user-select:text;font:inherit;border:3px solid #1
   <div id="ladder"></div>
   <button class="btn pri big" id="bPlay" data-i18n="play"></button>
   <div class="row" id="menuRow"><button class="btn" id="bSize"></button><button class="btn blue" id="bOnline" data-i18n="online"></button></div>
+  <div class="row" id="menuRow2"><button class="btn" id="bRule"></button></div>
   <div id="help"></div>
+</div>
+<div id="pick" class="screen">
+  <div id="pkWrap">
+    <div id="pkTop"><h2 class="ink" id="pkTitle"></h2><span id="pkRule"></span><span id="pkFoe"></span></div>
+    <div id="pkMain">
+      <div id="pkPrev"><canvas id="pkCv"></canvas><div id="pkInfo"><div class="ink" id="pkName"></div><div id="pkStats"></div><div id="pkSp"></div></div></div>
+      <div id="pkGrid"></div>
+    </div>
+    <div id="pkBottom"><span id="pkMine"></span><div id="pkSlots"></div>
+      <div id="pkBtns"><button class="btn sm" id="pkBack"></button><button class="btn" id="pkRnd"></button><button class="btn pink" id="pkUndo"></button><button class="btn pri" id="pkGo"></button></div></div>
+    <div id="pkHint"></div>
+  </div>
+  <div id="pkCd"><canvas id="cdCv"></canvas></div>
 </div>
 <div id="tops"><button class="btn sm" id="bLang"></button><button class="btn sm" id="bMute"></button></div>
 
@@ -113,11 +167,11 @@ input{user-select:text;-webkit-user-select:text;font:inherit;border:3px solid #1
     <button class="btn" id="bQuit" data-i18n="menu"></button>
   </div>
 </div>
-<script src="js/i18n.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/game.js"></script>
-<script src="js/render.js"></script>
-<script src="js/net.js"></script>
-<script src="js/main.js"></script>
+<script src="js/i18n.js?v=2"></script>
+<script src="js/audio.js?v=2"></script>
+<script src="js/game.js?v=2"></script>
+<script src="js/render.js?v=2"></script>
+<script src="js/net.js?v=2"></script>
+<script src="js/main.js?v=2"></script>
 </body>
 </html>

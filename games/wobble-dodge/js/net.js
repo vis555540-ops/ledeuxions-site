@@ -89,7 +89,7 @@
     send({ t: 's', n: ++N.seq, ht: Math.round(now), L: G.lang,
       g: [STATES.indexOf(M.state), M.round, M.score[0], M.score[1], Math.round(M.time * 10), Math.round(M.meter[0] * 100), Math.round(M.meter[1] * 100), G.SPECIALS.indexOf(M.nextSp[0]), G.SPECIALS.indexOf(M.nextSp[1]),
         Math.round(M.shake), Math.round(M.flash * 100), Math.round(M.crowd * 100), M.slow > 0 ? 1 : 0, M.nearSlow ? 1 : 0, M.ctrl, M.ctrl2, M.winner, M.mp === M.round ? 1 : 0],
-      b: M.bodies.map(encBody), B: encBall(M.ball), F: M.fakes.filter(function (f) { return f.alive; }).map(encBall), e: e });
+      C: M.bodies.map(function (b) { return b.ch; }), b: M.bodies.map(encBody), B: encBall(M.ball), F: M.fakes.filter(function (f) { return f.alive; }).map(encBall), e: e });
   };
 
   /* ---------- guest: input ---------- */
@@ -165,6 +165,8 @@
     V.ctrl = g[15]; V.ctrl2 = -1; V.winner = g[16]; V.mp = g[17] ? V.round : 0;
     if (s0.b.length !== V.bodies.length) s0 = s1;
     if (s1.b.length !== V.bodies.length) s1 = s0;
+    // character looks (optional field C: one character id per body)
+    if (s0.C && s0.C.length === V.bodies.length && s0.C.join() !== V.cIds) { V.cIds = s0.C.join(); V.bodies.forEach(function (o, k) { var C = G.CHARS[s0.C[k]]; if (!C) return; o.ch = s0.C[k]; o.skin = C.skin; o.hat = C.hat; o.hs = C.hs; o.th = C.th; o.sp = C.sp; }); }
     for (var k = 0; k < V.bodies.length; k++) decBody(V.bodies[k], s0.b[k], s1.b[k], u);
     var pb = V.ball.st;
     decBall(V.ball, s0.B, s1.B, u, V);
