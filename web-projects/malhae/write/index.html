@@ -32,14 +32,27 @@
   #big.on{display:block}
   #big img{width:100%; height:100%; object-fit:contain}
   #big span{position:absolute; left:0; right:0; bottom:16px; text-align:center; color:#555; font-size:18px}
+  #logB{background:#2B3440; color:#E9F0F8}
+  #log{position:fixed; inset:0; z-index:6; background:#0B0E12; display:none; flex-direction:column}
+  #log.on{display:flex}
+  #log header{display:flex; gap:8px; align-items:center; padding:10px; border-bottom:1px solid #28313D}
+  #log header b{flex:1; font-size:20px}
+  #log header button{font:inherit; font-size:17px; font-weight:700; padding:10px 14px; border-radius:12px; border:0; background:#2B3440; color:#E9F0F8}
+  #logL{flex:1; overflow:auto; padding:10px; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px; align-items:start; align-content:start; -webkit-user-select:text; user-select:text}
+  .li{background:#141A22; border:1px solid #28313D; border-radius:14px; padding:8px; display:flex; flex-direction:column; gap:6px}
+  .li img{width:100%; background:#fffdf5; border-radius:10px}
+  .li .tt{font-size:14px; color:#93A2B5}
+  .li .tx{font-size:20px; font-weight:800}
+  .li a{font-size:16px; font-weight:700; color:#06210f; background:#3DD68C; border-radius:10px; padding:8px; text-align:center; text-decoration:none}
 </style>
 </head>
 <body>
-<div id="sent"><div id="sentT"></div><button id="say" type="button">🔊 말하기</button><button id="back" type="button">⌫</button><button id="full" type="button" title="전체 화면">⛶</button></div>
+<div id="sent"><div id="sentT"></div><button id="say" type="button">🔊 말하기</button><button id="back" type="button">⌫</button><button id="logB" type="button" title="쓴 기록">📒</button><button id="full" type="button" title="전체 화면">⛶</button></div>
 <div id="top"><button id="cand" class="idle" type="button">✍️ 손 전체로 문질러 써도 돼요 · 화면 맨 아래는 종이로 가리고 쓰세요</button><button id="clr" type="button">다 지우기</button></div>
 <div id="alts"></div>
 <canvas id="ink"></canvas>
 <div id="big"><img alt="쓴 글씨 크게"><span>톡 하면 닫힘</span></div>
+<div id="log"><header><b>📒 쓴 기록 (이 기기 안에만)</b><button id="logClose" type="button">닫기</button></header><div id="logL"></div></div>
 <script>
 (function(){
 'use strict';
@@ -52,11 +65,43 @@ var HINT='✍️ 손 전체로 문질러 써도 돼요 · 화면 맨 아래는 �
 // 문장 이어 쓰기 (형 10/19 「잘 인식되니까 글자 수 늘려 달라고」) — 글자로 바뀐 뒤 다시 쓰기 시작하면 그 말이 위 줄에 붙고 칸이 비워진다
 var sent=[], sentT=document.getElementById('sentT');
 function drawSent(){ sentT.textContent = sent.join(' '); }
-function commit(){ if(cand.classList.contains('idle')) return; sent.push(cand.textContent); drawSent(); strokes=[]; cur=null; P.clear(); seq++; redraw(); setCand([], true); }
+// 쓴 기록 (형 10/19 「아버지 쓴 거 저장 좀 해 줘」) — 칸을 비우기 직전마다 그림+글자를 이 기기 안(localStorage)에 남긴다. 밖으로는 안 보낸다
+var LOGK='malhae_write_log';
+function loadLog(){ try{ return JSON.parse(localStorage.getItem(LOGK)||'[]'); }catch(e){ return []; } }
+var keptSig='';
+function keep(why){
+  if(!strokes || !strokes.length) return;
+  var ls=strokes[strokes.length-1], sig=strokes.length+':'+ls[0].length+':'+Math.round(ls[0][ls[0].length-1]); if(sig===keptSig) return; keptSig=sig;   // 같은 그림 두 번 안 남김
+  try{
+    var sc=Math.min(1, 700/Math.max(W,H)), c=document.createElement('canvas'); c.width=Math.round(W*sc); c.height=Math.round(H*sc);
+    var g=c.getContext('2d'); g.fillStyle='#fffdf5'; g.fillRect(0,0,c.width,c.height); g.drawImage(cv,0,0,c.width,c.height);
+    var item={ t:Date.now(), img:c.toDataURL('image/jpeg',0.7), tx: cand.classList.contains('idle') ? '' : cand.textContent, s: sent.join(' ') };
+    var L=loadLog(); L.push(item);
+    for(;;){ try{ localStorage.setItem(LOGK, JSON.stringify(L.slice(-300))); break; }catch(e){ if(L.length<=1) break; L.shift(); } }
+  }catch(e){}
+}
+function showLog(){
+  var L=loadLog().slice().reverse(), box=document.getElementById('logL'); box.innerHTML='';
+  if(!L.length){ box.innerHTML='<p style="color:#93A2B5;font-size:18px">아직 기록이 없어요. 쓰고 나서 지우거나 다음 글자를 쓰면 여기 남아요.</p>'; }
+  L.forEach(function(it){
+    var d=new Date(it.t), when=(d.getMonth()+1)+'/'+d.getDate()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+    var el=document.createElement('div'); el.className='li';
+    el.innerHTML='<div class="tt"></div><img alt="쓴 그림"><div class="tx"></div><a>📥 사진으로 저장</a>';
+    el.querySelector('.tt').textContent=when + (it.s ? ' · 문장: '+it.s : '');
+    el.querySelector('img').src=it.img; el.querySelector('.tx').textContent=it.tx || '(글자로 못 바꿈 — 그림을 보세요)';
+    var a=el.querySelector('a'); a.href=it.img; a.download='말해요_'+d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2)+'_'+('0'+d.getHours()).slice(-2)+('0'+d.getMinutes()).slice(-2)+('0'+d.getSeconds()).slice(-2)+'.jpg';
+    box.appendChild(el);
+  });
+  document.getElementById('log').classList.add('on');
+}
+document.getElementById('logB').onclick=function(){ keep('look'); showLog(); };
+document.getElementById('logClose').onclick=function(){ document.getElementById('log').classList.remove('on'); };
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='hidden') keep('hide'); });
+function commit(){ if(cand.classList.contains('idle')) return; keep('next'); sent.push(cand.textContent); drawSent(); strokes=[]; cur=null; P.clear(); seq++; redraw(); setCand([], true); }
 // 전체 화면 (형 10/19: 「밑에 닫기 칸 같은 게 나와서 글자 쓰는 데 방해돼」 — 브라우저 아래 줄을 숨긴다)
 document.getElementById('full').onclick=function(){ var d=document.documentElement; try{ if(document.fullscreenElement) document.exitFullscreen(); else (d.requestFullscreen||d.webkitRequestFullscreen).call(d); }catch(e){} };
 document.getElementById('say').onclick=function(){ var t=sent.join(' '); if(!cand.classList.contains('idle')) t=(t+' '+cand.textContent).trim(); if(t) speak(t); };
-document.getElementById('back').onclick=function(){ if(!cand.classList.contains('idle')){ strokes=[]; redraw(); setCand([], true); return; } sent.pop(); drawSent(); };
+document.getElementById('back').onclick=function(){ if(!cand.classList.contains('idle')){ keep('back'); strokes=[]; redraw(); setCand([], true); return; } sent.pop(); drawSent(); };
 var strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null, P=new Map(), off=[0,0];
 
 function speak(t){ try{ speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='ko-KR'; u.rate=0.9; speechSynthesis.speak(u); }catch(e){} }
@@ -82,7 +127,7 @@ function setCand(list, quiet){
 }
 function showBig(){ if(!strokes.length) return; big.querySelector('img').src=cv.toDataURL(); big.classList.add('on'); }
 big.onclick=function(){ big.classList.remove('on'); };
-function clear(){ strokes=[]; cur=null; P.clear(); seq++; clearTimeout(timer); if(ctl)try{ctl.abort();}catch(e){} redraw(); setCand([]); sent=[]; drawSent(); }
+function clear(){ keep('clear'); strokes=[]; cur=null; P.clear(); seq++; clearTimeout(timer); if(ctl)try{ctl.abort();}catch(e){} redraw(); setCand([]); sent=[]; drawSent(); }
 document.getElementById('clr').onclick=clear;
 cand.onclick=function(){ if(!cand.classList.contains('idle')) speak(cand.textContent); else showBig(); };
 
