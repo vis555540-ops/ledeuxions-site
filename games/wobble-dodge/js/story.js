@@ -236,7 +236,7 @@
   /* ---------- opening video (media/opening.mp4, 62 s): created only when chapter 1 starts or from the menu, never in the first load ---------- */
   G.addStr({ en: { opBtn: '🎬 WATCH OPENING', opSkip: 'SKIP ▶▶', opPlay: '▶', opSound: 'TAP FOR SOUND' }, ko: { opBtn: '🎬 오프닝 다시 보기', opSkip: '건너뛰기 ▶▶', opPlay: '▶', opSound: '눌러서 소리 켜기' } });
   var OP = null, preV = null;
-  function mkVideo(src) { var v = document.createElement('video'); v.src = src; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', ''); v.disablePictureInPicture = true; return v; }
+  function mkVideo(src) { var v = document.createElement('video'); v.src = src; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', ''); v.disablePictureInPicture = true; v.defaultPlaybackRate = 1.25; v.playbackRate = 1.25; v.addEventListener('loadedmetadata', function () { v.playbackRate = 1.25; }); return v; }
   S.prefetchOpening = function (src) { if (preV || OP) return; try { preV = mkVideo(src); preV.preload = 'auto'; preV.onerror = function () { preV = null; }; preV.load(); } catch (e) { preV = null; } };   // results screen of the first match
   S.openingOpen = function () { return !!OP; };
   S.openingState = function () { return OP ? { t: OP.v.currentTime, paused: OP.v.paused, muted: OP.v.muted, skip: OP.skip.style.opacity !== '0', play: OP.play.style.display !== 'none', ready: OP.v.readyState } : null; };
