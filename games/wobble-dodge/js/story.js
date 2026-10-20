@@ -233,6 +233,57 @@
   S.comicClose = function () { if (!CM) return; var d = CM.done; CM = null; G.sfx('click'); if (d) d(); };
   S.comicState = function () { return CM ? { id: CM.id, shown: CM.shown, n: CM.panels.length } : null; };
 
+  /* ---------- opening video (media/opening.mp4, 62 s): created only when chapter 1 starts or from the menu, never in the first load ---------- */
+  G.addStr({ en: { opBtn: '🎬 WATCH OPENING', opSkip: 'SKIP ▶▶', opPlay: '▶', opSound: 'TAP FOR SOUND' }, ko: { opBtn: '🎬 오프닝 다시 보기', opSkip: '건너뛰기 ▶▶', opPlay: '▶', opSound: '눌러서 소리 켜기' } });
+  var OP = null, preV = null;
+  function mkVideo(src) { var v = document.createElement('video'); v.src = src; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', ''); v.disablePictureInPicture = true; return v; }
+  S.prefetchOpening = function (src) { if (preV || OP) return; try { preV = mkVideo(src); preV.preload = 'auto'; preV.onerror = function () { preV = null; }; preV.load(); } catch (e) { preV = null; } };   // results screen of the first match
+  S.openingOpen = function () { return !!OP; };
+  S.openingState = function () { return OP ? { t: OP.v.currentTime, paused: OP.v.paused, muted: OP.v.muted, skip: OP.skip.style.opacity !== '0', play: OP.play.style.display !== 'none', ready: OP.v.readyState } : null; };
+  // done(how): how = 'ended' | 'skip' | 'error'. o.muted: start without sound (game sound off / site mute)
+  S.playOpening = function (src, o, done) {
+    if (OP) return; o = o || {};
+    var v = preV && preV.getAttribute('src') === src ? preV : mkVideo(src); preV = null;
+    var box = document.createElement('div'), skip = document.createElement('button'), play = document.createElement('button'), hideT = 0, guard = 0;
+    box.id = 'opening'; box.style.cssText = 'position:fixed;inset:0;z-index:20;background:#000;touch-action:none;cursor:pointer';
+    v.preload = 'auto'; v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;pointer-events:none';
+    skip.id = 'opSkip'; skip.className = 'btn pri'; skip.textContent = G.t('opSkip');
+    skip.style.cssText = 'position:absolute;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));height:64px;font-size:24px;font-style:italic;padding:0 26px;z-index:2;transition:opacity .3s';
+    play.id = 'opPlay'; play.className = 'btn'; play.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:auto;min-width:120px;height:120px;border-radius:60px;font-size:54px;padding:0 30px;z-index:2;display:none;flex-direction:column;gap:0;line-height:1';
+    box.appendChild(v); box.appendChild(play); box.appendChild(skip); document.body.appendChild(box);
+    OP = { v: v, box: box, skip: skip, play: play };
+    function showSkip() { skip.style.opacity = '1'; skip.style.pointerEvents = 'auto'; clearTimeout(hideT); hideT = setTimeout(function () { if (OP && !v.paused) { skip.style.opacity = '0'; skip.style.pointerEvents = 'none'; } }, 4000); }
+    function askPlay(sound) { play.innerHTML = G.t('opPlay') + (sound ? '<span style="font-size:15px;font-style:normal">' + G.t('opSound') + '</span>' : ''); play.style.display = 'inline-flex'; showSkip(); }
+    function end(how) {
+      if (!OP) return; clearTimeout(hideT); clearTimeout(guard); OP = null;
+      v.onended = v.onerror = v.onplaying = null; try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) { }
+      if (box.parentNode) box.parentNode.removeChild(box);
+      if (done) done(how);
+    }
+    v.onended = function () { end('ended'); };
+    v.onerror = function () { end('error'); };   // offline / blocked / unsupported: straight on to the comic, no message
+    v.onplaying = function () { clearTimeout(guard); };
+    guard = setTimeout(function () { if (OP && v.readyState === 0 && play.style.display === 'none') end('error'); }, 12000);   // nothing arrived at all
+    skip.onclick = function (e) { e.stopPropagation(); end('skip'); };
+    play.onclick = function (e) {
+      e.stopPropagation(); play.style.display = 'none';
+      if (v.muted && !o.muted) { v.muted = false; if (!v.paused) { v.currentTime = 0; showSkip(); return; } }
+      v.play().then(showSkip).catch(function () { askPlay(false); });
+    };
+    box.addEventListener('pointerdown', function (e) { if (e.target === box) showSkip(); });
+    S.openingKey = function (code) { if (code === 'Escape' || code === 'Enter' || code === 'NumpadEnter') end('skip'); else if (code === 'Space' && play.style.display !== 'none') play.click(); else showSkip(); };
+    v.muted = !!o.muted; showSkip();
+    var pr; try { pr = v.play(); } catch (e) { pr = null; }
+    if (pr && pr.catch) pr.catch(function (err) {
+      if (!OP || (err && err.name === 'AbortError')) return;
+      if (err && err.name === 'NotSupportedError') return end('error');
+      // autoplay with sound blocked: play muted underneath and offer a big ▶ (tap = sound on, from the start)
+      v.muted = true; askPlay(!o.muted);
+      v.play().catch(function (e2) { if (OP && e2 && e2.name === 'NotSupportedError') end('error'); });
+    });
+  };
+  S.closeOpening = function () { if (OP) OP.skip.click(); };
+
   function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
   function txt(c, s, x, y, size, col, align, ital, lw) { c.font = (ital ? 'italic ' : '') + '900 ' + Math.round(size) + 'px ' + G.FONT; c.textAlign = align || 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.strokeStyle = INK; c.lineWidth = size * (lw || 0.24); c.strokeText(s, x, y); c.fillStyle = col; c.fillText(s, x, y); }
   function wrap(c, s, maxW) {   // word wrap (falls back to characters for very long words)

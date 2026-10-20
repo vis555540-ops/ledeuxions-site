@@ -82,6 +82,7 @@
     A.unlock(); if (state === 'play' && M && M.waitInput && !e.repeat && e.code !== 'Escape' && e.code !== 'KeyP') guideGo();
     if (e.target && e.target.tagName === 'INPUT') { if (e.code === 'Enter' || e.code === 'NumpadEnter') { var bj = $('bJoinGo'); if (bj) bj.click(); } return; }
     if (popOpen()) { if (!e.repeat && (e.code === 'Enter' || e.code === 'Space' || e.code === 'Escape' || e.code === 'KeyJ')) { e.preventDefault(); popNext(); } return; }
+    if (state === 'opening') { if (!e.repeat) { e.preventDefault(); S.openingKey(e.code); } return; }
     if (state === 'comic') { if (!e.repeat) { e.preventDefault(); if (e.code === 'Escape') S.comicClose(); else if (/^(Enter|Space|KeyJ|KeyK|NumpadEnter|ArrowRight)$/.test(e.code)) S.comicTap(); } return; }
     if (state === 'train' && e.code === 'Escape') { S.endTrain(); return; }
     if (state === 'menu' && /^Key[A-Z]$/.test(e.code)) { typed = (typed + e.code.slice(3)).slice(-6); if (typed === 'WOBBLE') { typed = ''; secretFound(); } }
@@ -149,6 +150,7 @@
     $('mChars').textContent = G.t('charsN', save.unl.length, G.CHARS.length);
     var dfOn = STORY && (save.sto.end || save.beaten >= G.LADDER); $('bDefend').style.display = dfOn ? '' : 'none'; if (dfOn) $('bDefend').textContent = save.sto.end ? G.t('dfBtn', save.sto.season + 1, save.sto.dl + 1) : G.t('stLast');
     $('bFree').style.display = save.firstDone ? '' : 'none'; $('bFree').textContent = G.t('freeBtn');
+    var opOn = storyOn() && !!S.playOpening && !!save.firstDone; $('bOpening').style.display = opOn ? '' : 'none'; if (opOn) $('bOpening').textContent = G.t('opBtn');
     if (save.sto.badge) $('mChars').textContent += '  \uD83C\uDFC5';
     var lad = $('ladder'); lad.innerHTML = '';
     var T0 = tierOf() * 5; sel = Math.max(T0, Math.min(sel, save.beaten, G.LADDER - 1));
@@ -198,11 +200,19 @@
     storyScreen(true, false);
     S.openComic(id, function () { storyScreen(false); then(); });
   }
+  // the opening video (story.js makes the <video> only now; nothing in the first load). Game sound off while it plays, CrazyGames gameplay stopped.
+  var OPSRC = 'media/opening.mp4' + VQ;
+  function opening(then) {
+    if (!S || !S.playOpening) return then();
+    Sdk.gameplayStop(); state = 'opening'; show(null); $('btnPause').style.display = 'none'; $('touch').classList.remove('on'); $('keys').style.display = 'none';
+    var prevExt = !!A.extMute; A.setExternalMute(true); WD.log.push('opening');
+    S.playOpening(OPSRC, { muted: A.muted || prevExt }, function (how) { A.setExternalMute(prevExt); WD.log.push('openingEnd:' + how); then(); });
+  }
   // every single-player match goes through here: story beats first, then the match
   function play(lvl, chars, o) {
     var need = o && o.defend ? null : storyNeed(lvl);
     if (!need) return start(lvl, chars, o);
-    if (need === 'rival') { if (!seen('pro')) comic('pro', startRival); else startRival(); return; }
+    if (need === 'rival') { if (!seen('pro')) opening(function () { comic('pro', startRival); }); else startRival(); return; }   // chapter 1: opening video, then the comic
     comic(need, function () { play(lvl, chars, o); });
   }
   // the must-win 1 vs 1 against the old friend: easier after every loss, and after 3 losses the story moves on anyway
@@ -290,7 +300,7 @@
     if (st.cat > rc.cat && st.cat >= 2) { rc.cat = st.cat; newRec.push(G.t('recCat', st.cat)); }
     if (st.hit > rc.hit && st.hit >= 2) { rc.hit = st.hit; newRec.push(G.t('recHit', st.hit)); }
     rc.cur = won ? rc.cur + 1 : 0; if (rc.cur > rc.streak && rc.cur >= 2) { rc.streak = rc.cur; newRec.push(G.t('recStreak', rc.cur)); }
-    if (guide) save.firstDone = 1;
+    if (guide) { save.firstDone = 1; if (storyOn() && !seen('pro') && S.prefetchOpening) S.prefetchOpening(OPSRC); }   // warm up the opening while the player reads the rewards
     commit(); adGate.n++;
     WD.lastReward = { st: st, xp: r.xp, ev: ev.map(function (e) { return e.k + (e.ch != null ? ':' + e.ch : e.hat ? ':' + e.hat : e.to ? ':' + e.to : ''); }), daily: r.daily, dailyNow: r.dailyNow };
     if (firstBeat || r.dailyNow || extra.some(function (x) { return x.k === 'skill' || x.k === 'badge'; })) Sdk.happytime();   // big moments only: a new team beaten, today's challenge done
@@ -476,6 +486,7 @@
   $('bTrain').onclick = function () { A.unlock(); G.sfx('click'); startTrain(); };
   $('bDefend').onclick = function () { A.unlock(); G.sfx('click'); if (save.sto.end) playDefend(); else if (storyOn()) storyFinale(); };
   $('bSkipEnd').onclick = function () { A.unlock(); G.sfx('click'); WD.log.push('skipEnd'); storyEnd(function () { toMenu(); reveal([{ k: 'defOpen' }]); }); };
+  $('bOpening').onclick = function () { A.unlock(); G.sfx('click'); if (storyOn()) opening(toMenu); };
   $('bFree').onclick = function () { A.unlock(); G.sfx('click'); openPick('free', save.free.n, save.free.lvl); };
   $('pkSize').onclick = function () { A.unlock(); G.sfx('click'); if (PK.ready) return; PK.n = PK.n % 7 + 1; save.free.n = PK.n; PK.picks = PK.picks.slice(0, PK.n); commit(); pickLayout(); pickRefresh(); };
   $('pkVs').onclick = function () { A.unlock(); G.sfx('click'); if (PK.ready) return; PK.lvl = (PK.lvl + 1) % G.LADDER; save.free.lvl = PK.lvl; commit(); pickRefresh(); };
@@ -823,6 +834,7 @@
     ann: function () { return M && M.ann ? M.ann.txt : null; }, annLog: function () { return S ? S.log || (S.log = []) : []; }, superCatch: function () { return M ? G.superCatch(M) : false; }, sc: function () { return M ? { ok: M.scOk, used: M.scUsed, t: M.sc } : null; },
     reveal: function () { return { open: popCh, q: popQ.length, tag: $('upTag').textContent, name: $('upName').textContent, quote: $('upQuote').textContent }; } };
   WD.roomLink = roomLink;
+  WD.opening = function () { return S && S.openingState ? S.openingState() : null; };
 
   layout(); refreshMenu(); show('menu');
   // ?room=1234 in the link -> join straight away
