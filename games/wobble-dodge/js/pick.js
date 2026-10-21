@@ -30,7 +30,10 @@
     '#pkWrap{width:min(1180px,100%);height:100%;display:flex;flex-direction:column;gap:8px;min-height:0}',
     '#pkTop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-right:190px;min-height:40px}',
     '#pkTitle{margin:0;font-size:clamp(22px,3.4vw,36px);font-style:italic;color:#ffd23f}',
-    '#pkRule{font-size:12px;color:#c9cbe0;background:#2b2d52;border:2px solid #1b1b2f;border-radius:10px;padding:3px 8px}',
+    '#pkHead{display:flex;align-items:center;gap:10px;min-width:0}',
+    '#pkChars{font-size:12px;color:#c9cbe0;white-space:nowrap}',
+    '#pkOpts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}#pkOpts .btn{height:34px;font-size:14px;padding:0 10px;box-shadow:0 3px 0 #1b1b2f}',
+    '#pkOpts .btn.st{background:#2b2d52;color:#c9cbe0;border-width:2px;box-shadow:none;cursor:default}',
     '#pkFoe{font-size:14px;color:#9be7ff}',
     '#pkMain{flex:1;display:flex;gap:12px;min-height:0}',
     '#pkPrev{position:relative;flex:0 0 29%;min-width:0;display:flex;flex-direction:column;gap:6px}',
@@ -85,10 +88,15 @@
     '#pkGo{font-size:22px;font-style:italic;min-width:120px}',
     '#pkGo.pulse{animation:glow .5s ease-in-out 3 alternate}',
     '#pkHint{font-size:12px;font-weight:700;color:#c9cbe0;text-align:center;min-height:1.2em}',
-    '#pick.port #pkTop{padding-right:176px;min-height:36px;flex-wrap:nowrap}#pick.port #pkTitle{font-size:min(20px,4.6vw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}#pick.port #pkRule{display:none}',
+    '#pick.port #pkTop{min-height:36px;gap:6px}#pick.port #pkHead{flex:1 1 100%;padding-right:var(--tw)}#pick.port #pkTitle{font-size:min(20px,4.6vw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}',
+    '#pick.port #pkHead{min-height:44px}#pick.port #pkOpts{flex:1 1 100%;min-width:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px}',
+    '#pick.port #pkOpts .btn{width:100%;min-width:0;padding:0 4px;font-size:12px;height:34px;overflow:hidden;white-space:normal;line-height:1.05;word-break:keep-all}',
+    '#pkArt #pkHat{position:absolute;right:4px;top:4px;z-index:4;height:28px;min-width:32px;padding:0 4px;font-size:14px;border-width:2px;box-shadow:0 2px 0 #1b1b2f}',
+    '#pick.port #pkInfo{overflow:hidden}@media (max-height:700px){#pick.port #pkSp small,#pick.port #pkSp br{display:none}}',
     '#pick.port #pkBand{bottom:4px;padding:2px 12px}#pick.port #pkName{font-size:17px}',
     '#pick.port #pkMain{flex-direction:column;gap:8px}',
-    '#pick.port #pkPrev{flex:1 1 auto;flex-direction:row;align-items:stretch;min-height:96px}',
+    '#pick.port #pkPrev{flex:1 1 auto;flex-direction:row;align-items:stretch;min-height:80px}',
+    '#pick.port #pkHint{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}',
     '#pick.port #pkArt{flex:none;aspect-ratio:1;height:100%}',
     '#pick.port #pkInfo{flex:1;min-width:0;justify-content:center}',
     '#pick.port #pkSay{left:auto;right:0;width:calc(100% - var(--aw) - 10px);top:0}',
@@ -119,7 +127,8 @@
   ].join('\n');
 
   var HTML = '<div id="pkWrap">' +
-    '<div id="pkTop"><h2 class="ink" id="pkTitle"></h2><span id="pkRule"></span><button class="btn sm blue" id="pkSize" style="display:none"></button><button class="btn sm pink" id="pkVs" style="display:none"></button><span id="pkFoe"></span></div>' +
+    '<div id="pkTop"><div id="pkHead"><h2 class="ink" id="pkTitle"></h2><span id="pkChars"></span><span id="pkFoe"></span></div>' +
+      '<div id="pkOpts"><button class="btn sm blue" id="pkSize" style="display:none"></button><button class="btn sm" id="pkRule"></button><button class="btn sm pink" id="pkVs" style="display:none"></button><button class="btn sm" id="pkHat" style="display:none"></button></div></div>' +
     '<div id="pkMain">' +
       '<div id="pkPrev"><div id="pkArt"><div id="pkGlow"></div><div id="pkImgBox"></div><div id="pkLk"></div><div id="pkBand"><span class="ink" id="pkName"></span></div></div>' +
         '<div id="pkInfo"><div id="pkStats"></div><div id="pkSp"></div></div><div id="pkSay"></div></div>' +
@@ -236,7 +245,8 @@
     function layout() {
       var P = port(); PK.cols = P ? 4 : 6; var rows = Math.ceil(G.CHARS.length / PK.cols), gap = 6;
       root.classList.toggle('port', P); root.classList.toggle('lite', lite());
-      var tp = $('tops'); $('pkTop').style.paddingRight = (tp && tp.offsetWidth ? tp.offsetWidth + 14 : 190) + 'px';   // keep clear of the language / sound buttons
+      var tp = $('tops'), tw = (tp && tp.offsetWidth ? tp.offsetWidth + 14 : 70); root.style.setProperty('--tw', tw + 'px'); $('pkTop').style.paddingRight = P ? '0px' : tw + 'px';   // keep clear of the ⚙ button
+      var hb = $('pkHat'), hp = P ? $('pkArt') : $('pkOpts'); if (hb.parentNode !== hp) hp.appendChild(hb);
       var sl = $('pkSlots'); if (sl.children.length !== PK.n) { sl.innerHTML = ''; for (var i = 0; i < PK.n; i++) { var c = document.createElement('div'); c.className = 'slot'; c.innerHTML = '<b>' + (i + 1) + '</b><i class="fc"></i>'; sl.appendChild(c); } }
       // slot size first (bottom bar), then the grid gets what is left
       var W = $('pkWrap').clientWidth, slW = P ? W : W - $('pkBtns').offsetWidth - $('pkMine').offsetWidth - 30;
@@ -247,6 +257,7 @@
         cw = Math.floor((mw - gap * (PK.cols - 1)) / PK.cols);
         ch = Math.floor((mh - 8 - 190 - gap * (rows - 1)) / rows); ch = Math.max(56, Math.min(ch, cw, 76));
         if ((mh - 8 - rows * ch - gap * (rows - 1)) < 96) ch = Math.max(56, Math.floor((mh - 8 - 96 - gap * (rows - 1)) / rows));
+        if ((mh - 8 - rows * ch - gap * (rows - 1)) < 80) ch = Math.max(40, Math.floor((mh - 8 - 80 - gap * (rows - 1)) / rows));   // short phones (360x640): smaller faces, never under the buttons
         var ah = mh - 8 - rows * ch - gap * (rows - 1); root.style.setProperty('--aw', Math.max(0, ah) + 'px');
       } else {
         var gw = mw - main.children[0].offsetWidth - $('pkFoeBox').offsetWidth - 24;
@@ -305,9 +316,15 @@
       if (X.getState() !== 'pick') return;
       var i, sg = PK.mode === 'single' || PK.mode === 'free';
       $('pkTitle').textContent = PK.mode === 'free' ? G.t('freeBtn') : G.t('pickTitle');
-      var fr = PK.mode === 'free'; $('pkSize').style.display = fr ? '' : 'none'; $('pkVs').style.display = fr ? '' : 'none';
-      if (fr) { $('pkSize').textContent = G.t('teamSize') + ': ' + G.t('vs', PK.n, PK.n) + ' ▸'; $('pkVs').textContent = 'VS ' + X.teamName(PK.lvl) + ' ▸'; }
-      $('pkRule').textContent = PK.easy ? G.t('ruleEasy') : G.t('ruleAm');
+      // options live here now (not on the main menu): players, rules, rival, hat. Online: the host set them before the room, shown only.
+      var fr = PK.mode === 'free', sv = X.save(), lvMax = Math.min(sv.beaten, G.LADDER - 1), vsOn = fr || (PK.mode === 'single' && lvMax > 0);
+      $('pkSize').style.display = sg ? '' : 'none'; $('pkVs').style.display = vsOn ? '' : 'none';
+      $('pkSize').textContent = G.t('vs', PK.n, PK.n) + ' ▸'; $('pkSize').title = G.t('teamSize');
+      if (vsOn) $('pkVs').textContent = 'VS ' + X.teamName(PK.lvl) + ' ▸';
+      var rb = $('pkRule'); rb.textContent = X.ruleShort(PK.easy) + (sg ? ' ▸' : ''); rb.classList.toggle('st', !sg); rb.classList.toggle('green', sg && !!PK.easy); rb.title = PK.easy ? G.t('ruleEasy') : G.t('ruleAm');
+      var hOn = sg && sv.hats && sv.hats.length > 0; $('pkHat').style.display = hOn ? '' : 'none';
+      if (hOn) { var hl = G.t('hatShort', X.hatName(sv.hat)); $('pkHat').textContent = port() ? '🎩' : hl + ' (' + sv.hats.length + '/' + G.meta.HATS.length + ') ▸'; $('pkHat').title = hl; }
+      $('pkChars').textContent = sg ? G.t('charsN', sv.unl.length, G.CHARS.length) + (sv.sto && sv.sto.badge ? ' \uD83C\uDFC5' : '') : '';
       preview();
       for (i = 0; i < PK.cells.length; i++) {
         var e = PK.cells[i], k = PK.picks.indexOf(i), L = locked(i), gi = L ? X.goalText(i) : null;
@@ -464,8 +481,22 @@
     $('pkRnd').onclick = function () { X.A.unlock(); random(); };
     $('pkUndo').onclick = function () { X.A.unlock(); undo(); };
     $('pkBack').onclick = function () { X.A.unlock(); G.sfx('click'); back(); };
-    $('pkSize').onclick = function () { X.A.unlock(); G.sfx('click'); if (PK.ready) return; PK.n = PK.n % 7 + 1; X.save().free.n = PK.n; PK.picks = PK.picks.slice(0, PK.n); X.commit(); rollFoe(); layout(); refresh(); };
-    $('pkVs').onclick = function () { X.A.unlock(); G.sfx('click'); if (PK.ready) return; PK.lvl = (PK.lvl + 1) % G.LADDER; X.save().free.lvl = PK.lvl; X.commit(); rollFoe(); refresh(); };
+    // free play: 1-7 a side, any rival. Story: 3/5/7 (the saved team size), the next team or any team already beaten.
+    $('pkSize').onclick = function () {
+      X.A.unlock(); G.sfx('click'); if (PK.ready || PK.cd) return; var sv = X.save();
+      if (PK.mode === 'free') { PK.n = PK.n % 7 + 1; sv.free.n = PK.n; } else { var l = G.TEAM_SIZES; PK.n = sv.n = l[(l.indexOf(sv.n) + 1) % l.length]; }
+      PK.picks = PK.picks.slice(0, PK.n); X.commit(); rollFoe(); layout(); refresh();
+    };
+    $('pkVs').onclick = function () {
+      X.A.unlock(); G.sfx('click'); if (PK.ready || PK.cd) return; var sv = X.save();
+      if (PK.mode === 'free') { PK.lvl = (PK.lvl + 1) % G.LADDER; sv.free.lvl = PK.lvl; } else PK.lvl = (PK.lvl + 1) % (Math.min(sv.beaten, G.LADDER - 1) + 1);
+      X.commit(); rollFoe(); refresh();
+    };
+    $('pkRule').onclick = function () { if (PK.mode !== 'single' && PK.mode !== 'free') return; X.A.unlock(); G.sfx('click'); if (PK.ready || PK.cd) return; var sv = X.save(); sv.easy = !sv.easy; PK.easy = sv.easy; X.commit(); refresh(); };
+    $('pkHat').onclick = function () {
+      X.A.unlock(); G.sfx('click'); if (PK.ready || PK.cd) return; var sv = X.save();
+      var l = [''].concat(G.meta.HATS.map(function (h) { return h.id; }).filter(function (h) { return sv.hats.indexOf(h) >= 0; })); sv.hat = l[(l.indexOf(sv.hat) + 1) % l.length]; X.commit(); refresh(); if (port()) hint(G.t('hatShort', X.hatName(sv.hat)));
+    };
 
     // warm the sheet while idle (44 KB, one request for all 24 icons)
     (window.requestIdleCallback || function (f) { setTimeout(f, 300); })(function () { var s = new Image(); s.src = SHEET; });

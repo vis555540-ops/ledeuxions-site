@@ -59,6 +59,58 @@
   }
   function star5(c, x, y, r) { c.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * 0.45 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fill(); }
   G.drawHat = drawHat;
+  /* ---------- in-match face heads: one small sprite sheet (art_game/faces/heads_64.png ~25 KB, or heads_96.png on hi-dpi; made by art/faces/gen_ingame.py).
+     Cell = 3.2R square, face circle centre at (1.6R, 2.1R), radius R, 6 x 4 cells in G.CHARS order. Not fetched before the first
+     input, so it never competes with the first "TAP TO PLAY"; a match decides once (before the ball is live) whether it
+     shows faces, so heads never pop mid-rally. G.faceHeads = false -> the old drawn heads (A/B and fallback). */
+  var HD = { ok: false, img: null, white: null, cell: 64, n: 24 }, FR = 13.5 * 1.4, COSM = { star: 1, flower: 1, wizard: 1, pirate: 1, viking: 1, goldcrown: 1 };
+  // tight box of each face inside its cell, in 1/64 cell units (x, y, w, h): only these pixels are drawn (about half the cell = half the raster work)
+  var HBOX = [12,4,40,60,10,9,44,55,0,20,58,44,10,4,44,60,6,4,52,60,13,12,38,52,11,14,42,50,7,17,57,47,11,12,42,52,12,20,41,44,11,14,41,50,5,12,53,52,11,8,42,56,0,20,50,44,9,20,52,44,10,20,44,44,0,20,53,44,10,14,47,50,13,6,40,58,13,21,38,43,14,28,37,36,12,0,40,64,12,14,44,50,13,28,38,36];
+  G.faceHeads = true; G.headSheet = HD;
+  (function () {
+    var vq = (/\?v=[^&#]*/.exec((document.currentScript && document.currentScript.src) || '') || [''])[0];
+    function go() {
+      var im = new Image(); im.decoding = 'async';
+      im.onload = function () {
+        function fin() {
+          try {   // flash variant baked once: the sprite washed white (hit flash), no per-frame filters
+            var w = document.createElement('canvas'); w.width = im.width; w.height = im.height; var g = w.getContext('2d');
+            g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,255,255,0.78)'; g.fillRect(0, 0, w.width, w.height);
+            HD.white = w;
+          } catch (e) { HD.white = im; }
+          HD.img = im; HD.cell = im.width / 6; HD.ok = true;
+        }
+        if (im.decode) im.decode().then(fin, fin); else fin();
+      };
+      // 64 px cells (face R 20) for 1x screens / LITE (the slow-laptop case); 96 px cells (R 30, ~42 KB) on hi-dpi so faces stay sharp
+      im.src = 'art_game/faces/heads_' + ((window.devicePixelRatio || 1) >= 1.5 && !G.lite ? 96 : 64) + '.png' + vq;
+    }
+    // first load stays untouched (검증/select_kof: no face art before the first tap): fetch on the first input, or when a match
+    // that is not the waiting tutorial gets drawn. The tap that starts the tutorial leaves ~0.3 s of intro, usually enough.
+    var started = false, EV = ['pointerdown', 'keydown', 'touchstart'];
+    function kick() { if (started) return; started = true; EV.forEach(function (n) { window.removeEventListener(n, kick, true); }); setTimeout(go, 0); }
+    EV.forEach(function (n) { window.addEventListener(n, kick, { capture: true, passive: true }); });
+    HD.kick = kick;
+  })();
+  function useFaces(M) {
+    if (!M.waitInput) HD.kick();
+    if (M.fh === undefined) { if (HD.ok && G.faceHeads) M.fh = 1; else if (M.state === 'play' && !M.waitInput) M.fh = 0; }
+    return M.fh === 1 && G.faceHeads;
+  }
+  function headSprite(c, b, e, now) {   // in head space (origin = head centre, x = facing, 1 unit = z*hs)
+    var ch = b.ch, cs = HD.cell, R = FR, u = cs / 64, d = 0.05 * R, j = ch * 4, bx = HBOX[j], by = HBOX[j + 1], bw = HBOX[j + 2], bh = HBOX[j + 3];
+    if (e === 1 || e === 2) c.scale(1.07, 0.9);   // hit / KO squash
+    c.drawImage(b.flash > 0 ? HD.white : HD.img, (ch % 6) * cs + bx * u, ((ch / 6) | 0) * cs + by * u, bw * u, bh * u, -1.6 * R + bx * d, -2.1 * R + by * d, bw * d, bh * d);
+    if (e === 2 || e === 1) {   // KO = X eyes, hit = > < eyes, stuck on over the art's eyes
+      var ex = 0.33 * R, ey = 0.16 * R, er = 0.27 * R, q = 0.17 * R;
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(-ex, ey, er, 0, TAU); c.arc(ex, ey, er, 0, TAU); c.fill();
+      c.strokeStyle = INK; c.lineWidth = 0.13 * R; c.lineCap = 'round'; c.beginPath();
+      if (e === 2) for (var i = -1; i <= 1; i += 2) { var x = i * ex; c.moveTo(x - q, ey - q); c.lineTo(x + q, ey + q); c.moveTo(x + q, ey - q); c.lineTo(x - q, ey + q); }
+      else { c.moveTo(-ex - q, ey - q); c.lineTo(-ex + q, ey); c.lineTo(-ex - q, ey + q); c.moveTo(ex + q, ey - q); c.lineTo(ex - q, ey); c.lineTo(ex + q, ey + q); }
+      c.stroke();
+    }
+    if (COSM[b.hat]) { c.save(); c.translate(0, -R * 0.62); c.scale(1.05, 1.05); drawHat(c, b.hat, now); c.restore(); }   // earned cosmetic hat on top of the art
+  }
   var P = new Float32Array(22), SHADE = {};
   function shade(h) {   // h under rgba(0,0,20,.25)
     var r = SHADE[h]; if (r) return r;
@@ -66,8 +118,9 @@
     if (x.length !== 7 || isNaN(n)) return (SHADE[h] = h);
     return (SHADE[h] = 'rgb(' + Math.round((n >> 16) * 0.75) + ',' + Math.round(((n >> 8) & 255) * 0.75) + ',' + Math.round((n & 255) * 0.75 + 5) + ')');
   }
-  function drawBody(c, b, uni, now) {
+  function drawBody(c, b, uni, now, fh) {
     var i, z = b.sc, col = b.flash > 0 ? '#ffffff' : b.skin, out = INK, th = b.th || 1, hs = b.hs || 1, zt = z * th;
+    fh = fh && b.ch >= 0 && b.ch < HD.n;
     for (i = 0; i < 11; i++) { P[i * 2] = b.pts[i].x; P[i * 2 + 1] = b.pts[i].y; }
     var p = P;
     c.save(); if (b.role === 'toOut' || b.role === 'toIn') c.globalAlpha = 0.55;
@@ -77,13 +130,18 @@
     c.strokeStyle = out; c.lineWidth = 12.5 * zt; c.beginPath(); back(); c.stroke();
     c.strokeStyle = shade(col); c.lineWidth = 7.5 * zt; c.beginPath(); back(); c.stroke();
     c.strokeStyle = out; c.lineWidth = 12.5 * zt; c.beginPath(); front(); c.stroke();
-    c.fillStyle = out; c.beginPath(); c.arc(p[0], p[1], 13.5 * z * hs, 0, TAU); c.fill();
+    if (!fh) { c.fillStyle = out; c.beginPath(); c.arc(p[0], p[1], 13.5 * z * hs, 0, TAU); c.fill(); }
     c.strokeStyle = col; c.lineWidth = 7.5 * zt; c.beginPath(); front(); c.stroke();
     // team jersey: a thick stripe on the torso
     c.strokeStyle = out; c.lineWidth = 15 * zt; c.beginPath(); c.moveTo(p[2], p[3] + 3 * z); c.lineTo(p[4], p[5] - 4 * z); c.stroke();
     c.strokeStyle = b.flash > 0 ? '#fff' : uni; c.lineWidth = 10 * zt; c.beginPath(); c.moveTo(p[2], p[3] + 3 * z); c.lineTo(p[4], p[5] - 4 * z); c.stroke();
-    c.fillStyle = col; c.beginPath(); c.arc(p[0], p[1], (13.5 * hs - 2.5) * z, 0, TAU); c.fill();
     var tilt = Math.atan2(p[1] - p[3], p[0] - p[2]) + Math.PI / 2;
+    if (fh) {   // 2D face art: one drawImage (team = the jersey stripe, as before)
+      c.save(); c.translate(p[0], p[1]); c.rotate(tilt); c.scale(b.face * z * hs, z * hs);
+      headSprite(c, b, b.eyes, now);
+      c.restore(); c.restore(); return;
+    }
+    c.fillStyle = col; c.beginPath(); c.arc(p[0], p[1], (13.5 * hs - 2.5) * z, 0, TAU); c.fill();
     c.save(); c.translate(p[0], p[1]); c.rotate(tilt); c.scale(b.face * z * hs, z * hs);
     c.fillStyle = INK; c.strokeStyle = INK; c.lineWidth = 2.2;
     var e = b.eyes;
@@ -251,9 +309,10 @@
     var me = M.ctrl >= 0 ? M.bodies[M.ctrl] : null;
     if (me && me.hold && M.state === 'play') { var tg = G.pickTarget(M, me); if (tg) { c.strokeStyle = '#ff3b3b'; c.lineWidth = 4; c.beginPath(); c.ellipse(tg.x, FY(tg.z), 30 * tg.sc, 10 * tg.sc, 0, 0, TAU); c.stroke(); } }
     ents.sort(bySortZ);
+    var fh = useFaces(M);
     for (i = 0; i < ents.length; i++) {
       var e = ents[i];
-      if (e.b) { var td = e.b.team ? M.team : M.myTm || G.MYTEAM; drawBody(c, e.b, td.uni, now); }
+      if (e.b) { var td = e.b.team ? M.team : M.myTm || G.MYTEAM; drawBody(c, e.b, td.uni, now, fh); }
       else if (e.B.alive && !(e.B.st === 'held' && e.B.holder.mode === 'rag')) drawBall(c, e.B, now);
     }
     // my marker + catch timing ring
@@ -297,10 +356,11 @@
     var l = alignR ? x + w - 14 : x + 14;
     fitLabel(c, nm, l, 30, 20, t ? '#ff9d5c' : '#6ecbff', alignR ? 'right' : 'left', w - 36 - Math.min(30, (w * 0.62) / (M.bodies.length / 2)) * M.bodies.length / 2);
     // heads: alive / out
-    var n = M.bodies.length / 2, hs = Math.min(30, (w * 0.62) / n), hr = Math.min(12, hs * 0.42);
+    var n = M.bodies.length / 2, hs = Math.min(30, (w * 0.62) / n), hr = Math.min(12, hs * 0.42), fh = M.fh === 1 && G.faceHeads;
     for (var i = 0; i < n; i++) {
       var b = M.bodies[t * n + i], hx = alignR ? x + 12 + hr + i * hs : x + w - 12 - hr - i * hs, al = G.alive(b);
-      c.fillStyle = INK; c.beginPath(); c.arc(hx, 30, hr, 0, TAU); c.fill(); c.fillStyle = al ? b.skin : '#4a4e69'; c.beginPath(); c.arc(hx, 30, hr * 0.75, 0, TAU); c.fill();
+      c.fillStyle = INK; c.beginPath(); c.arc(hx, 30, hr, 0, TAU); c.fill(); c.fillStyle = al ? (fh ? '#3a3c5a' : b.skin) : '#4a4e69'; c.beginPath(); c.arc(hx, 30, hr * 0.75, 0, TAU); c.fill();
+      if (fh && b.ch >= 0 && b.ch < HD.n) { var fr = hr * 0.9, cs = HD.cell; if (!al) c.globalAlpha = 0.4; c.drawImage(HD.img, (b.ch % 6) * cs, ((b.ch / 6) | 0) * cs, cs, cs, hx - 1.6 * fr, 30 - 2.1 * fr, 3.2 * fr, 3.2 * fr); c.globalAlpha = 1; }
       if (!al) { var q = hr * 0.5; c.strokeStyle = '#ff5a4f'; c.lineWidth = 3; c.beginPath(); c.moveTo(hx - q, 30 - q); c.lineTo(hx + q, 30 + q); c.moveTo(hx + q, 30 - q); c.lineTo(hx - q, 30 + q); c.stroke(); }
     }
     // special meter

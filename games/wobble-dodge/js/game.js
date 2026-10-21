@@ -362,7 +362,7 @@
     else {
       B.vh -= GB * DT; B.x += B.vx * DT; B.z += B.vz / ZPX * DT; B.h += B.vh * DT;
       if (B.h < B.r) {
-        B.h = B.r; if (B.st === 'fly') dead(M, B);
+        B.h = B.r; if (B.st === 'fly') { if (!B.fake) puff(M, B.x, bsy(B), 7, '#e9dcb8', 13, 75); dead(M, B); }   // floor first = dead ball: a dust puff shows the bounce
         if (B.vh < -140) { B.vh = -B.vh * 0.55; if (!B.fake) G.sfx('bounce'); } else B.vh = 0;
         B.vx *= 0.85; B.vz *= 0.85;
       }

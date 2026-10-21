@@ -92,16 +92,18 @@
     A.unlock(); if (state === 'play' && M && M.waitInput && !e.repeat && e.code !== 'Escape' && e.code !== 'KeyP') guideGo();
     if (e.target && e.target.tagName === 'INPUT') { if (e.code === 'Enter' || e.code === 'NumpadEnter') { var bj = $('bJoinGo'); if (bj) bj.click(); } return; }
     if (popOpen()) { if (!e.repeat && (e.code === 'Enter' || e.code === 'Space' || e.code === 'Escape' || e.code === 'KeyJ')) { e.preventDefault(); popNext(); } return; }
+    if (setIsOpen()) { if (!navKey(e) && e.code === 'Escape') setOpen(false); return; }
     if (state === 'opening') { if (!e.repeat) { e.preventDefault(); S.openingKey(e.code); } return; }
     if (state === 'comic') { if (!e.repeat) { e.preventDefault(); if (e.code === 'Escape') S.comicClose(); else if (/^(Enter|Space|KeyJ|KeyK|NumpadEnter|ArrowRight)$/.test(e.code)) S.comicTap(); } return; }
     if (state === 'train' && e.code === 'Escape') { S.endTrain(); return; }
     if (state === 'menu' && /^Key[A-Z]$/.test(e.code)) { typed = (typed + e.code.slice(3)).slice(-8); if (/(WOBBLE|UNDERDOG)$/.test(typed)) { typed = ''; secretFound(); } }
     if (state === 'pick') { if (PU) PU.key(e); return; }
+    if (state === 'menu' && navKey(e)) return;
     var a = KM[e.code];
     if (a && state === 'play') e.preventDefault();
     if (e.code === 'KeyH' && !e.repeat) { save.keys = !keysOn(); commit(); keyGuide(); return; }
     if (e.code === 'Escape' || e.code === 'KeyP') { if (state === 'play' && !ovl) pause(); else if (state === 'pause' || ovl) resume(); return; }
-    if (e.code === 'Enter') { if (state === 'menu') $('bPlay').click(); else if (state === 'result' && !NET) ($('bNext').style.display !== 'none' ? $('bNext') : $('bRetry')).click(); return; }
+    if (e.code === 'Enter') { if (state === 'result' && !NET) ($('bNext').style.display !== 'none' ? $('bNext') : $('bRetry')).click(); return; }
     if (!a || e.repeat) return;
     if (touchOn) setTouch(false);
     keys[a] = true;
@@ -133,47 +135,63 @@
     function tb(id, fn, upfn) { var el = $(id); el.addEventListener('pointerdown', function (e) { e.preventDefault(); A.unlock(); el.classList.add('dn'); try { el.setPointerCapture(e.pointerId); } catch (x) { } fn(); }); function up() { el.classList.remove('dn'); if (upfn) upfn(); } el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); }
     tb('tThrow', function () { tch.thr = true; press.thrP = true; }, function () { tch.thr = false; });
     tb('tGrab', function () { press.catchP = true; tch.cat = true; }, function () { tch.cat = false; }); tb('tJump', function () { press.jumpP = true; });
-    window.addEventListener('pointerdown', function (e) { A.unlock(); if (e.pointerType === 'touch' && !touchOn) setTouch(true); if (!(e.target && e.target.id === 'btnPause')) guideGo(); }, true);
+    window.addEventListener('pointerdown', function (e) { if (kbd) { kbd = false; menuFocus(); } A.unlock(); if (e.pointerType === 'touch' && !touchOn) setTouch(true); if (!(e.target && e.target.id === 'btnPause')) guideGo(); }, true);
     document.addEventListener('contextmenu', function (e) { if (!(e.target && e.target.tagName === 'INPUT')) e.preventDefault(); });
   })();
   if (window.matchMedia && window.matchMedia('(pointer:coarse)').matches) setTouch(true);
 
   /* ---------- screens ---------- */
-  function show(id) { ['menu', 'result', 'pause', 'net', 'pick'].forEach(function (s) { $(s).classList.toggle('on', s === id); }); $('tops').style.display = (id === 'menu' || id === 'pause' || id === 'net' || id === 'pick') ? 'flex' : 'none'; if (id !== null) { $('keys').style.display = 'none'; V.keys = false; } if (id !== 'menu') $('gift').classList.remove('on'); }
-  function ruleLabel() { return save.easy ? G.t('ruleEasy') : G.t('ruleAm'); }
+  function show(id) { setOpen(false); if (id === 'menu') mi = 0; ['menu', 'result', 'pause', 'net', 'pick'].forEach(function (s) { $(s).classList.toggle('on', s === id); }); $('tops').style.display = (id === 'menu' || id === 'pause' || id === 'net' || id === 'pick') ? 'flex' : 'none'; if (id !== null) { $('keys').style.display = 'none'; V.keys = false; } if (id !== 'menu') $('gift').classList.remove('on'); }
   function sizeLabel() { return G.t('teamSize') + ': ' + G.t('vs', save.n, save.n); }
   function teamName(lvl) { var tm = G.teamOf(lvl); return G.t(tm.key) + (tm.star ? ' ★' : ''); }
   function dailyText(c) { return G.t('d_' + c.id, c.k); }
   function hatName(h) { return h ? G.t('h_' + h) : G.t('hatOwn'); }
-  function tierOf() { return save.beaten >= 5 ? 1 : 0; }
+  // the story button goes on with the story: the next ladder team (team select first), the final chapter, or the title defence
+  function storyNext() { return STORY && save.sto.end ? 'defend' : storyOn() && save.beaten >= G.LADDER ? 'final' : 'ladder'; }
+  function storyGo() {
+    var k = storyNext(); WD.log.push('story:' + k);
+    if (k === 'defend') playDefend(); else if (k === 'final') storyFinale();
+    else { sel = Math.min(save.beaten, G.LADDER - 1); openPick('single', save.n, sel); }
+  }
   function refreshMenu() {
     G.applyI18n();
-    $('bLang').textContent = G.t('lang'); $('bMute').textContent = G.t('sound') + ': ' + (A.muted ? G.t('off') : G.t('on'));
-    $('bSize').textContent = sizeLabel(); $('bRule').textContent = ruleLabel(); $('bRule').classList.toggle('green', !!save.easy);
-    // progress strip: level, streak, today's challenge, hat
+    // quiet status line: level, streak, today's challenge
     var L = MT.level(save.xp), c = MT.ensureDaily(save, MT.now());
-    $('mLv').textContent = G.t('lv', L.lvl); $('mXpFill').style.width = (100 * L.cur / L.need).toFixed(1) + '%'; $('mXp').textContent = L.cur + ' / ' + L.need;
+    $('mLv').textContent = G.t('lv', L.lvl); $('mXpFill').style.width = (100 * L.cur / L.need).toFixed(1) + '%'; $('mXpFill').parentNode.title = L.cur + ' / ' + L.need + ' XP';
     $('mStreak').textContent = '🔥 ' + G.t('streakN', Math.max(1, save.login.streak));
-    $('mDaily').innerHTML = '<b>' + esc(G.t('daily')) + '</b> ' + esc(dailyText(c)) + (save.daily.done ? ' <span class="ok">✓ ' + esc(G.t('done')) + '</span>' : ' <span class="xp">+150 XP</span>');
-    $('bLite').textContent = G.t('lite') + ': ' + (save.lite ? G.t('on') : G.t('off'));
-    $('bHat').textContent = G.t('hat') + ': ' + hatName(save.hat) + '  (' + save.hats.length + '/' + MT.HATS.length + ')';
-    $('mChars').textContent = G.t('charsN', save.unl.length, G.CHARS.length);
-    var dfOn = STORY && (save.sto.end || save.beaten >= G.LADDER); $('bDefend').style.display = dfOn ? '' : 'none'; if (dfOn) $('bDefend').textContent = save.sto.end ? G.t('dfBtn', save.sto.season + 1, save.sto.dl + 1) : G.t('stLast');
-    $('bFree').style.display = save.firstDone ? '' : 'none'; $('bFree').textContent = G.t('freeBtn');
-    var opOn = storyOn() && !!S.playOpening && !!save.firstDone; $('bOpening').style.display = opOn ? '' : 'none'; if (opOn) $('bOpening').textContent = G.t('opBtn');
-    if (save.sto.badge) $('mChars').textContent += '  \uD83C\uDFC5';
-    var lad = $('ladder'); lad.innerHTML = '';
-    var T0 = tierOf() * 5; sel = Math.max(T0, Math.min(sel, save.beaten, G.LADDER - 1));
-    for (var i = T0; i < T0 + 5; i++) (function (i) {
-      var tm = G.teamOf(i), el = document.createElement('button'), lock = i > save.beaten, done = i < save.beaten;
-      el.className = 'team' + (lock ? ' lock' : '') + (done ? ' done' : '') + (i === sel ? ' sel' : '');
-      el.innerHTML = '<span class="n">' + (i + 1) + '</span><span>' + esc(teamName(i)) + '</span><span class="dots">' + tm.skins.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + '</span><span class="st">' + (lock ? G.t('locked') : done ? G.t('beaten') : G.t('next')) + '</span>' + (STORY && S ? '<span class="sg">' + esc(G.t('st' + S.stageOf(i))) + '</span>' : '');
-      if (!lock) el.onclick = function () { sel = i; A.unlock(); G.sfx('click'); refreshMenu(); };
-      lad.appendChild(el);
-    })(i);
-    $('help').innerHTML = G.t(save.easy ? 'helpEasy' : 'help') + '<br><span style="color:#ffd23f">' + (touchOn ? G.t('hintT') : G.t('hintK') + '<br>' + G.t('keyHelp')) + '</span>' + (save.beaten >= 5 ? '<br><b>' + G.t('champion') + '</b> ' + G.t(save.beaten >= G.LADDER ? 'allClear' : 'tier2') : '');
+    $('mDaily').innerHTML = '<b>' + esc(G.t('daily')) + '</b> ' + esc(dailyText(c)) + (save.daily.done ? ' <span class="ok">✓</span>' : ' <span class="xp">+150 XP</span>');
+    var k = storyNext(), nl = Math.min(save.beaten, G.LADDER - 1);
+    $('mNext').textContent = k === 'defend' && S ? G.t('dfBtn', save.sto.season + 1, save.sto.dl + 1) : k === 'final' ? G.t('stLast') : G.t('mNextFoe', teamName(nl), nl + 1, G.LADDER);
+    refreshSet();
+    menuFocus();
     if (state === 'net' && netView) netView();
     if (state === 'pick' && PU) PU.refresh();
+  }
+  /* ---------- settings (⚙ top right): language, sound, light mode, opening replay ---------- */
+  function setIsOpen() { return $('set').classList.contains('on'); }
+  function setOpen(on) { var el = $('set'); if (!el || on === setIsOpen()) return; el.classList.toggle('on', on); si = 0; if (on) { refreshSet(); WD.log.push('settings'); } menuFocus(); }
+  function refreshSet() {
+    $('bLang').textContent = '🌐 ' + G.t('lang'); $('bMute').textContent = G.t('sound') + ': ' + (A.muted ? G.t('off') : G.t('on'));
+    $('bLite').textContent = G.t('lite') + ': ' + (save.lite ? G.t('on') : G.t('off'));
+    var opOn = state === 'menu' && storyOn() && !!S.playOpening && !!save.firstDone; $('bOpening').style.display = opOn ? '' : 'none'; if (opOn) $('bOpening').textContent = G.t('opBtn');
+    $('bSetX').textContent = G.t('close');
+  }
+  // keyboard on the menu / settings: arrows (or WASD) move a white ring, Enter / Space / J press it. ① STORY is the default.
+  var mi = 0, si = 0, kbd = false;
+  function navList() { var l = setIsOpen() ? ['bLang', 'bMute', 'bLite', 'bOpening', 'bSetX'] : ['bPlay', 'bFree', 'bOnline', 'bSet']; return l.map($).filter(function (e) { return e && e.offsetParent !== null; }); }
+  function menuFocus() {
+    var l = navList(), o = setIsOpen(), i = o ? si : mi; i = Math.max(0, Math.min(i, l.length - 1));
+    var on = o ? kbd : state === 'menu' && (kbd || !touchOn);   // settings: ring only when opened / used by keys
+    Array.prototype.forEach.call(document.querySelectorAll('.btn.kf'), function (e) { e.classList.remove('kf'); });
+    if (on && l[i]) l[i].classList.add('kf');
+  }
+  function navKey(e) {
+    var c = e.code, l = navList(), o = setIsOpen(), d = { ArrowUp: -1, KeyW: -1, ArrowLeft: -1, ArrowDown: 1, KeyS: 1, ArrowRight: 1 }[c];
+    if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur();   // only the ring decides what Enter presses
+    if (c === 'Escape') { e.preventDefault(); kbd = true; if (!e.repeat) { G.sfx('click'); setOpen(!o); } return true; }
+    if (d) { e.preventDefault(); kbd = true; if (o) si = (si + d + l.length) % l.length; else mi = (mi + d + l.length) % l.length; G.sfx('click'); menuFocus(); return true; }
+    if (c === 'Enter' || c === 'NumpadEnter' || c === 'Space' || c === 'KeyJ') { e.preventDefault(); if (e.repeat) return true; var b = l[Math.max(0, Math.min(o ? si : mi, l.length - 1))]; if (b) b.click(); return true; }
+    return false;
   }
   var shot = null, slowT = 0, slowN = 0, slowL = 0, slowS = 0, slowV = 0;
   // auto quality all match long: 1 = 1px/CSS px, 2 = LITE (saved), 3 = 0.75px/CSS px
@@ -492,7 +510,7 @@
     } else fn();
   }
   function nextLvl() { return Math.min(G.LADDER - 1, M ? (M.story === 'rival' ? save.beaten : M.lvl + 1) : save.beaten); }
-  $('bPlay').onclick = function () { A.unlock(); G.sfx('click'); openPick('single', save.n, sel); };
+  $('bPlay').onclick = function () { A.unlock(); G.sfx('click'); storyGo(); };
   $('bNext').onclick = function () {
     if (storyOn() && M && M.winner === 0 && !M.story && !M.free && !M.defend && M.lvl === G.LADDER - 1 && !save.sto.end) { between(storyFinale); return; }
     if (storyOn() && save.sto.end && M && M.winner === 0 && (M.defend || M.story === 'pov')) { between(playDefend); return; }
@@ -508,22 +526,21 @@
     }
   };
   $('bTrain').onclick = function () { A.unlock(); G.sfx('click'); startTrain(); };
-  $('bDefend').onclick = function () { A.unlock(); G.sfx('click'); if (save.sto.end) playDefend(); else if (storyOn()) storyFinale(); };
   $('bSkipEnd').onclick = function () { A.unlock(); G.sfx('click'); WD.log.push('skipEnd'); storyEnd(function () { toMenu(); reveal([{ k: 'defOpen' }]); }); };
-  $('bOpening').onclick = function () { A.unlock(); G.sfx('click'); if (storyOn()) opening(toMenu); };
+  $('bOpening').onclick = function () { A.unlock(); G.sfx('click'); if (storyOn() && state === 'menu') { setOpen(false); opening(toMenu); } };
+  $('bSet').onclick = function () { A.unlock(); G.sfx('click'); setOpen(!setIsOpen()); };
+  $('bSetX').onclick = function () { A.unlock(); G.sfx('click'); setOpen(false); };
+  $('set').addEventListener('click', function (e) { if (e.target === $('set')) setOpen(false); });   // tap outside the panel = close
   $('bFree').onclick = function () { A.unlock(); G.sfx('click'); openPick('free', save.free.n, save.free.lvl); };
   $('stSkip').onclick = function (e) { e.stopPropagation(); A.unlock(); if (state === 'train') S.endTrain(); else S.comicClose(); };
   $('cmCv').addEventListener('pointerdown', function (e) { e.preventDefault(); A.unlock(); S.comicTap(); });
   $('bTeam').onclick = function () { if (M && M.free) { var fm = M; between(function () { openPick('free', fm.n, fm.lvl); }); return; } var l = M && M.winner === 0 ? nextLvl() : M ? M.lvl : sel; between(function () { openPick('single', save.n, l); }); };
-  $('bLite').onclick = function () { A.unlock(); G.sfx('click'); save.lite = save.lite ? 0 : 1; commit(); applySave(); layout(); refreshMenu(); };
+  $('bLite').onclick = function () { A.unlock(); G.sfx('click'); save.lite = save.lite ? 0 : 1; commit(); applySave(); layout(); refreshMenu(); WD.log.push('lite:' + save.lite); };
   $('bShare').onclick = function () { A.unlock(); shareShot(); };
   $('bGiftOk').onclick = function () { A.unlock(); G.sfx('click'); $('gift').classList.remove('on'); };
-  $('bHat').onclick = function () { A.unlock(); G.sfx('click'); var l = [''].concat(MT.HATS.map(function (h) { return h.id; }).filter(function (h) { return save.hats.indexOf(h) >= 0; })); save.hat = l[(l.indexOf(save.hat) + 1) % l.length]; commit(); refreshMenu(); };
-  $('bRule').onclick = function () { A.unlock(); G.sfx('click'); save.easy = !save.easy; commit(); refreshMenu(); };
   $('bResMenu').onclick = toMenu; $('bQuit').onclick = toMenu; $('bResume').onclick = resume; $('btnPause').onclick = function () { A.unlock(); pause(); };
   $('bLang').onclick = function () { G.lang = G.lang === 'ko' ? 'en' : 'ko'; save.lang = G.lang; commit(); refreshMenu(); layout(); };
   $('bMute').onclick = function () { A.unlock(); A.setMute(!A.muted); save.mute = A.muted; commit(); refreshMenu(); };
-  $('bSize').onclick = function () { A.unlock(); G.sfx('click'); var l = G.TEAM_SIZES; save.n = l[(l.indexOf(save.n) + 1) % l.length]; commit(); refreshMenu(); };
   $('bOnline').onclick = function () { A.unlock(); G.sfx('click'); netChoose(); };
   document.addEventListener('visibilitychange', function () { if (document.hidden) { if (!NET) pause(); A.suspend(); } else A.resume(); });
 
@@ -537,8 +554,11 @@
   }
   function netChoose() {
     leaveNet(); M = G.M = null;
-    netView = function () { netPanel(G.t('online'), '<div class="help">' + esc(G.t('youHost')) + '<br>' + esc(G.t('youGuest')) + '<br>' + esc(sizeLabel()) + '</div>',
-      [['bMk', 'mkRoom', 'pri', hostRoom], ['bJn', 'joinRoom', 'blue', function () { joinView(''); }], ['bNb', 'back', '', toMenu]]); };
+    netView = function () { netPanel(G.t('online'), '<div class="help">' + esc(G.t('youHost')) + '<br>' + esc(G.t('youGuest')) + '</div>' +
+      '<div class="row"><button class="btn sm" id="bNs">' + esc(sizeLabel()) + ' ▸</button><button class="btn sm' + (save.easy ? ' green' : '') + '" id="bNr">' + esc(save.easy ? G.t('ruleSEasy') : G.t('ruleSAm')) + ' ▸</button></div>',
+      [['bMk', 'mkRoom', 'pri', hostRoom], ['bJn', 'joinRoom', 'blue', function () { joinView(''); }], ['bNb', 'back', '', toMenu]]);
+      $('bNs').onclick = function () { A.unlock(); G.sfx('click'); var l = G.TEAM_SIZES; save.n = l[(l.indexOf(save.n) + 1) % l.length]; commit(); netView(); };
+      $('bNr').onclick = function () { A.unlock(); G.sfx('click'); save.easy = !save.easy; commit(); netView(); }; };
     netView();
   }
   function netMsg(key) {
@@ -623,7 +643,7 @@
   var PK = { mode: 'single', n: 5, lvl: 0, picks: [], cur: 0, ready: false, foeReady: false, foePicks: null, foe: null, cd: 0, teams: null, easy: false, cols: 6, cells: [] };
   function cleanPicks(a, n) { var o = []; (Array.isArray(a) ? a : []).forEach(function (c) { c = c | 0; if (c >= 0 && c < G.CHARS.length && o.indexOf(c) < 0 && o.length < n) o.push(c); }); return o; }
   function openPick(mode, n, lvl) { if (PU) return PU.open(mode, n, lvl); pickQ = [mode, n, lvl]; loadStory(); loadPick(); }
-  var PICKAPI = { PK: PK, VQ: VQ, A: A, Sdk: Sdk, STORY: STORY, save: function () { return save; }, commit: commit, unlocked: unlocked, myTeam: myTeam, cleanPicks: cleanPicks, goalText: goalText, teamName: teamName, esc: esc,
+  var PICKAPI = { PK: PK, VQ: VQ, A: A, Sdk: Sdk, STORY: STORY, save: function () { return save; }, commit: commit, unlocked: unlocked, myTeam: myTeam, cleanPicks: cleanPicks, goalText: goalText, teamName: teamName, esc: esc, hatName: hatName, ruleShort: function (e) { return e ? G.t('ruleSEasy') : G.t('ruleSAm'); },
     show: show, setState: function (s) { state = s; }, getState: function () { return state; }, story: function () { return S; }, touchOn: function () { return touchOn; }, log: function (s) { WD.log.push(s); },
     start: start, play: play, storyNeed: storyNeed, startVersus: startVersus, toMenu: toMenu, netChoose: netChoose, send: function (m) { NETM.send(m); },
     guestGo: function () { if (!NETM.gotSnap) return false; M = G.M = NETM.guestView(performance.now()); enterPlay(); return true; } };

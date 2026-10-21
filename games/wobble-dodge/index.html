@@ -27,22 +27,31 @@ body{font-family:"Arial Black","Segoe UI","Apple SD Gothic Neo","Malgun Gothic",
 .panel h2{margin:0;font-size:clamp(34px,7vw,56px);font-style:italic;color:#ffd23f}
 .panel .help{font-size:14px;font-weight:700;color:#c9cbe0;line-height:1.5}
 .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.row .btn{flex:1}
-#menu{background:radial-gradient(ellipse at 50% 30%,#2b2d6a 0%,#17132f 60%,#0d0b1e 100%);flex-direction:column;gap:14px;padding:14px;overflow:auto;justify-content:flex-start}
-#logo{text-align:center;line-height:.95;transform:rotate(-3deg);margin-top:max(2vh,8px)}
-@media (max-aspect-ratio:1/1){#logo{margin-top:64px}}
-#logo .l1{font-size:clamp(44px,10vw,92px);font-style:italic;color:#fff}
-#logo .l2{font-size:clamp(44px,10vw,92px);font-style:italic;color:#ff5a4f}
+#menu{background:radial-gradient(ellipse at 50% 30%,#2b2d6a 0%,#17132f 60%,#0d0b1e 100%);flex-direction:column;gap:clamp(10px,2.4vh,18px);padding:14px;overflow:auto}
+#logo{text-align:center;line-height:.95;transform:rotate(-3deg);cursor:default}
+@media (max-aspect-ratio:1/1){#logo{margin-top:36px}}
+#logo .l1,#logo .l2{font-size:clamp(40px,min(10vw,11vh),92px);font-style:italic;color:#fff}
+#logo .l2{color:#ff5a4f}
 #logo .l3{font-size:clamp(14px,2.6vw,20px);margin-top:8px;color:#9be7ff;-webkit-text-stroke:4px #1b1b2f;paint-order:stroke fill}
-#ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;width:min(900px,96vw)}
-@media (max-aspect-ratio:1/1){#ladder{grid-template-columns:1fr}}
-.team{background:#2b2d52;border:3px solid #1b1b2f;border-radius:16px;padding:8px 6px;text-align:center;cursor:pointer;font-size:14px;box-shadow:0 4px 0 #1b1b2f;color:#fff;font-family:inherit;font-weight:900;display:flex;flex-direction:column;align-items:center;gap:4px}
-@media (max-aspect-ratio:1/1){.team{flex-direction:row;justify-content:space-between;padding:8px 14px}}
-.team .n{font-size:12px;color:#ffd23f}.team .st{font-size:11px;color:#c9cbe0}
-.team.sel{border-color:#ffd23f;background:#3f4a8a}.team.lock{opacity:.45;cursor:default}.team.done .st{color:#8ef0a8}
-.team .dots{display:flex;gap:3px}.team .dots i{width:14px;height:14px;border-radius:50%;border:2px solid #1b1b2f;display:block}
-#help{font-size:13px;font-weight:700;color:#c9cbe0;text-align:center;line-height:1.55;max-width:900px}
-#help b{color:#ffd23f}
+/* main menu: one quiet status line + three big modes */
+#modes{display:flex;flex-direction:column;gap:12px;width:min(440px,88vw)}
+.btn.mode{height:auto;min-height:clamp(58px,10vh,76px);padding:6px 18px 8px;flex-direction:column;gap:2px;border-radius:18px;white-space:normal;text-align:center}
+.mode .mt{font-size:clamp(24px,4.4vh,32px);font-style:italic;line-height:1.05}
+.mode small{font-size:13px;font-weight:700;opacity:.72;line-height:1.2}
+.btn.kf{outline:4px solid #fff;outline-offset:3px}
+.btn:focus{outline:none}.btn.kf:focus{outline:4px solid #fff}
+@media (max-height:470px) and (min-aspect-ratio:1/1){
+  #menu.on{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr auto 1fr;column-gap:24px;row-gap:10px;align-items:center;justify-items:center}
+  #logo{grid-column:1;grid-row:1/3;align-self:end}#prog{grid-column:1;grid-row:3;align-self:start;width:auto;max-width:100%}
+  #modes{grid-column:2;grid-row:1/4;width:min(400px,100%)}
+  #logo .l1,#logo .l2{font-size:clamp(28px,min(15vh,6.4vw),80px)}#logo .l3{font-size:clamp(12px,2vw,18px)}
+  .btn.mode{min-height:clamp(52px,17vh,70px)}
+}
 #tops{position:fixed;right:10px;top:10px;display:flex;gap:8px;z-index:11}
+#bSet{width:44px;height:40px;padding:0;font-size:22px}
+#set{z-index:12;background:rgba(13,11,30,.72)}
+#set .panel{width:min(380px,90vw);gap:10px}#set .panel h2{font-size:clamp(28px,6vw,40px)}
+#set .btn{height:48px;font-size:17px}
 #btnPause{position:fixed;width:44px;height:38px;padding:0;display:none;z-index:6;right:8px;top:8px}
 #touch{position:absolute;display:none;pointer-events:none;z-index:5}
 #touch.on{display:block}
@@ -56,7 +65,6 @@ body{font-family:"Arial Black","Segoe UI","Apple SD Gothic Neo","Malgun Gothic",
 #tThrow.full{background:#ff5a4f;color:#fff}
 @keyframes glow{from{box-shadow:0 0 0 0 #ffd23f}to{box-shadow:0 0 0 8px #ffd23f}}
 #pad{position:absolute;inset:0;background:#120f26;display:none}
-#menuRow{width:min(560px,92vw)}#menuRow .btn{height:54px;font-size:19px}
 #net .panel{width:min(460px,92vw)}
 #netBody{display:flex;flex-direction:column;gap:10px;align-items:stretch}
 #netBtns{flex-direction:column}#netBtns .btn{flex:none;height:56px;font-size:20px}
@@ -68,13 +76,12 @@ input{user-select:text;-webkit-user-select:text;font:inherit;border:3px solid #1
 #pad.on{display:block}
 #keys{position:fixed;display:none;z-index:6;pointer-events:none;background:rgba(16,12,40,.82);border:2px solid #1b1b2f;border-radius:10px;padding:5px 10px;font-size:13px;font-weight:700;color:#fff;line-height:1.35}
 #keys span{color:#9be7ff;font-size:11px}
-#menuRow2{width:min(560px,92vw)}#menuRow2 .btn{height:44px;font-size:16px}
-/* progression strip (menu) */
-#prog{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;width:min(900px,96vw);font-size:14px}
-#prog .chip{background:#2b2d52;border:3px solid #1b1b2f;border-radius:12px;padding:5px 10px;display:flex;align-items:center;gap:8px;box-shadow:0 3px 0 #1b1b2f}
+/* progression line (menu) */
+#prog{display:flex;gap:4px 10px;align-items:center;flex-wrap:wrap;justify-content:center;width:min(640px,94vw);font-size:13px;color:#c9cbe0;text-align:center}
+#prog>span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}#prog>#mDaily{display:inline;white-space:normal}#mDaily .xp{white-space:nowrap}
 #mLv{color:#ffd23f}.xpbar{width:110px;height:14px;border:2px solid #1b1b2f;border-radius:8px;background:#3a3c5a;overflow:hidden}.xpbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd23f,#ff9d5c)}
-#mXp{font-size:11px;color:#c9cbe0}#mDaily{font-size:13px}#mDaily b,#resDaily b{color:#9be7ff}.ok{color:#8ef0a8}.xp{color:#ffd23f}
-#bHat{height:44px;font-size:15px}
+#prog .xpbar{width:64px;height:10px}
+#mXp{font-size:11px;color:#c9cbe0}#mDaily b,#resDaily b{color:#9be7ff}.ok{color:#8ef0a8}.xp{color:#ffd23f}
 /* result rewards */
 #result .panel{gap:9px;width:min(620px,94vw)}
 #resXp .lvrow{display:flex;align-items:center;gap:10px;justify-content:center}#resXp .xpbar{flex:1;max-width:300px;height:18px}
@@ -110,8 +117,7 @@ input{user-select:text;-webkit-user-select:text;font:inherit;border:3px solid #1
 #stSkip{position:absolute;right:10px;top:10px;pointer-events:auto;z-index:2}
 #resCoach{display:none;align-items:center;gap:10px;background:#1f2145;border:3px solid #ff9d5c;border-radius:14px;padding:6px 12px;text-align:left;font-size:14px;line-height:1.35}#resCoach b{color:#ff9d5c}#resCoach canvas{width:44px;height:52px;flex:none}
 #upQuote{font-size:13px;font-style:italic;font-weight:900;background:#fff;border:2px solid #1b1b2f;border-radius:12px;padding:5px 10px;max-width:100%}
-.team .sg{font-size:10px;color:#9be7ff;letter-spacing:.04em}
-#bDefend,#bFree{width:min(560px,92vw);height:50px;font-size:18px}#bSkipEnd{opacity:.75}
+#bSkipEnd{opacity:.75}
 @media (max-height:460px){#resCoach{font-size:12px;padding:4px 8px}#resCoach canvas{width:34px;height:40px}#upQuote{font-size:11px;padding:3px 8px}}
 </style>
 </head>
@@ -129,17 +135,21 @@ input{user-select:text;-webkit-user-select:text;font:inherit;border:3px solid #1
 
 <div id="menu" class="screen on">
   <div id="logo"><div class="l1 ink" data-i18n="title1"></div><div class="l2 ink" data-i18n="title2"></div><div class="l3" data-i18n="sub"></div></div>
-  <div id="prog"><span class="chip"><span id="mLv"></span><span class="xpbar"><i id="mXpFill"></i></span><span id="mXp"></span></span><span class="chip" id="mStreak"></span><span class="chip" id="mDaily"></span><span class="chip" id="mChars"></span></div>
-  <div id="ladder"></div>
-  <button class="btn pri big" id="bPlay" data-i18n="play"></button>
-  <button class="btn pink" id="bDefend" style="display:none"></button>
-  <button class="btn green" id="bFree" style="display:none"></button>
-  <div class="row" id="menuRow"><button class="btn" id="bSize"></button><button class="btn blue" id="bOnline" data-i18n="online"></button></div>
-  <div class="row" id="menuRow2"><button class="btn" id="bRule"></button><button class="btn pink" id="bHat"></button><button class="btn sm" id="bLite"></button><button class="btn sm" id="bOpening" style="display:none"></button></div>
-  <div id="help"></div>
+  <div id="prog"><span><span id="mLv"></span><span class="xpbar"><i id="mXpFill"></i></span></span><span id="mStreak"></span><span id="mDaily"></span></div>
+  <div id="modes">
+    <button class="btn pri mode" id="bPlay"><span class="mt" data-i18n="mStory"></span><small id="mNext"></small></button>
+    <button class="btn green mode" id="bFree"><span class="mt" data-i18n="freeBtn"></span><small data-i18n="freeSub"></small></button>
+    <button class="btn blue mode" id="bOnline"><span class="mt" data-i18n="online"></span><small data-i18n="onlineSub"></small></button>
+  </div>
 </div>
 <div id="pick" class="screen"></div>
-<div id="tops"><button class="btn sm" id="bLang"></button><button class="btn sm" id="bMute"></button></div>
+<div id="tops"><button class="btn sm" id="bSet" aria-label="Settings">&#9881;&#xFE0E;</button></div>
+<div id="set" class="screen">
+  <div class="panel"><h2 class="ink" data-i18n="settings"></h2>
+    <button class="btn" id="bLang"></button><button class="btn" id="bMute"></button><button class="btn" id="bLite"></button><button class="btn" id="bOpening" style="display:none"></button>
+    <button class="btn pri" id="bSetX" data-i18n="close"></button>
+  </div>
+</div>
 
 <div id="result" class="screen dim">
   <div class="panel">
@@ -177,13 +187,13 @@ input{user-select:text;-webkit-user-select:text;font:inherit;border:3px solid #1
     <button class="btn" id="bQuit" data-i18n="menu"></button>
   </div>
 </div>
-<script src="js/i18n.js?v=12"></script>
-<script src="js/audio.js?v=12"></script>
-<script src="js/sdk.js?v=12"></script>
-<script src="js/meta.js?v=12"></script>
-<script src="js/game.js?v=12"></script>
-<script src="js/render.js?v=12"></script>
-<script src="js/net.js?v=12"></script>
-<script src="js/main.js?v=12"></script>
+<script src="js/i18n.js?v=14"></script>
+<script src="js/audio.js?v=14"></script>
+<script src="js/sdk.js?v=14"></script>
+<script src="js/meta.js?v=14"></script>
+<script src="js/game.js?v=14"></script>
+<script src="js/render.js?v=14"></script>
+<script src="js/net.js?v=14"></script>
+<script src="js/main.js?v=14"></script>
 </body>
 </html>
