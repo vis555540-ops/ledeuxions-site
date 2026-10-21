@@ -80,6 +80,7 @@
     beep: function () { tone(520, 0.1, 'square', 0.16); },
     go: function () { tone(1040, 0.3, 'square', 0.18); tone(1560, 0.3, 'square', 0.1); },
     click: function () { tone(700, 0.04, 'square', 0.1, 900); },
+    thud: function () { tone(140, 0.2, 'sine', 0.9, 42); noise(0.09, 0.55, 520, 'lowpass'); },   // team select: pick confirm / VS punch
     poof: function () { noise(0.18, 0.4, 1800, 'bandpass', 0, null, 500); },
     win: function () { var n = [523, 659, 784, 1047, 1319]; for (var i = 0; i < n.length; i++) tone(n[i], 0.18, 'square', 0.16, 0, i * 0.09); },
     lose: function () { var n = [440, 392, 330, 262]; for (var i = 0; i < n.length; i++) tone(n[i], 0.22, 'triangle', 0.22, 0, i * 0.14); },

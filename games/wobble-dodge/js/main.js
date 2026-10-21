@@ -12,6 +12,15 @@
     var sc = document.createElement('script'); sc.src = 'js/story.js' + VQ; sc.async = true;
     sc.onload = function () { S = G.story; WD.log.push('storyLoaded'); if (state === 'menu') refreshMenu(); };
     sc.onerror = function () { storyReq = false; };
+    document.head.appendChild(sc); loadPick();
+  }
+  // the team select screen (js/pick.js + face art) is not needed for the first match either: it loads together with story.js
+  var PU = null, pickReq = false, pickQ = null;
+  function loadPick() {
+    if (PU || pickReq) return; pickReq = true;
+    var sc = document.createElement('script'); sc.src = 'js/pick.js' + VQ; sc.async = true;
+    sc.onload = function () { PU = G.pickInit(PICKAPI); WD.log.push('pickLoaded'); if (pickQ) { var q = pickQ; pickQ = null; PU.open(q[0], q[1], q[2]); } };
+    sc.onerror = function () { pickReq = false; };
     document.head.appendChild(sc);
   }
   G.ROOM_SERVER = ROOM_SERVER;
@@ -61,7 +70,7 @@
     var st = $('stick'); st.style.left = '0px'; st.style.bottom = '0px'; st.style.width = Math.max(120, Math.min(TW * 0.5, TW - clusterW - 16)) + 'px'; st.style.height = (TH * (port ? 1 : 0.75)) + 'px';
     var sb = $('stickBase'), bs = Math.min(0.32 * u, parseFloat(st.style.width) * 0.8, 170); sb.style.width = sb.style.height = bs + 'px'; stickHome();
     var kg = $('keys'); kg.style.left = (l + 8) + 'px'; kg.style.top = (port ? h + 8 : t + h - 34) + 'px'; kg.style.maxWidth = (w - 16) + 'px';
-    if (state === 'pick') pickLayout();
+    if (state === 'pick' && PU) PU.layout();
     var bp = $('btnPause'); if (port) { bp.style.top = (h + 10) + 'px'; bp.style.right = 'auto'; bp.style.left = (vw / 2 - 22) + 'px'; } else { bp.style.top = (t + h * 86 / 720) + 'px'; bp.style.left = (l + w / 2 - 22) + 'px'; bp.style.right = 'auto'; }
   }
   function fitBtn(e, px) {   // largest font (<= 24% of the button) whose label fits inside the circle
@@ -87,7 +96,7 @@
     if (state === 'comic') { if (!e.repeat) { e.preventDefault(); if (e.code === 'Escape') S.comicClose(); else if (/^(Enter|Space|KeyJ|KeyK|NumpadEnter|ArrowRight)$/.test(e.code)) S.comicTap(); } return; }
     if (state === 'train' && e.code === 'Escape') { S.endTrain(); return; }
     if (state === 'menu' && /^Key[A-Z]$/.test(e.code)) { typed = (typed + e.code.slice(3)).slice(-8); if (/(WOBBLE|UNDERDOG)$/.test(typed)) { typed = ''; secretFound(); } }
-    if (state === 'pick') { pickKey(e); return; }
+    if (state === 'pick') { if (PU) PU.key(e); return; }
     var a = KM[e.code];
     if (a && state === 'play') e.preventDefault();
     if (e.code === 'KeyH' && !e.repeat) { save.keys = !keysOn(); commit(); keyGuide(); return; }
@@ -164,7 +173,7 @@
     })(i);
     $('help').innerHTML = G.t(save.easy ? 'helpEasy' : 'help') + '<br><span style="color:#ffd23f">' + (touchOn ? G.t('hintT') : G.t('hintK') + '<br>' + G.t('keyHelp')) + '</span>' + (save.beaten >= 5 ? '<br><b>' + G.t('champion') + '</b> ' + G.t(save.beaten >= G.LADDER ? 'allClear' : 'tier2') : '');
     if (state === 'net' && netView) netView();
-    if (state === 'pick') pickRefresh();
+    if (state === 'pick' && PU) PU.refresh();
   }
   var shot = null, slowT = 0, slowN = 0, slowL = 0, slowS = 0, slowV = 0;
   // auto quality all match long: 1 = 1px/CSS px, 2 = LITE (saved), 3 = 0.75px/CSS px
@@ -191,7 +200,7 @@
   }
   function start(lvl, chars, o) {   // chars: [myTeam, foeTeam] character ids (missing ones are random); o.defend = title-defence match
     A.unlock(); sel = lvl; o = o || {};
-    if (lvl === G.LADDER - 1 && !o.free && S && STORY && chars) chars = [chars[0], [S.BOSS.ch]];   // the final: the ringleader captains the developer's team
+    if (lvl === G.LADDER - 1 && !o.free && S && STORY && chars) chars = [chars[0], chars[1] && chars[1][0] === S.BOSS.ch ? chars[1] : [S.BOSS.ch]];   // the final: the ringleader captains the developer's team
     M = G.M = G.newMatch({ lvl: lvl, auto: WD.auto, hint: save.played < 3, n: o.n || save.n, chars: chars, easy: save.easy, hat: save.hat || null, superCatch: !!save.sto.sc, defend: !!o.defend, free: !!o.free, boss: lvl === G.LADDER - 1 && !o.defend && !o.free, boost: o.defend ? 0.45 * Math.max(1, save.sto.season) : 0 });
     save.played++; commit();
     enterPlay();
@@ -503,8 +512,6 @@
   $('bSkipEnd').onclick = function () { A.unlock(); G.sfx('click'); WD.log.push('skipEnd'); storyEnd(function () { toMenu(); reveal([{ k: 'defOpen' }]); }); };
   $('bOpening').onclick = function () { A.unlock(); G.sfx('click'); if (storyOn()) opening(toMenu); };
   $('bFree').onclick = function () { A.unlock(); G.sfx('click'); openPick('free', save.free.n, save.free.lvl); };
-  $('pkSize').onclick = function () { A.unlock(); G.sfx('click'); if (PK.ready) return; PK.n = PK.n % 7 + 1; save.free.n = PK.n; PK.picks = PK.picks.slice(0, PK.n); commit(); pickLayout(); pickRefresh(); };
-  $('pkVs').onclick = function () { A.unlock(); G.sfx('click'); if (PK.ready) return; PK.lvl = (PK.lvl + 1) % G.LADDER; save.free.lvl = PK.lvl; commit(); pickRefresh(); };
   $('stSkip').onclick = function (e) { e.stopPropagation(); A.unlock(); if (state === 'train') S.endTrain(); else S.comicClose(); };
   $('cmCv').addEventListener('pointerdown', function (e) { e.preventDefault(); A.unlock(); S.comicTap(); });
   $('bTeam').onclick = function () { if (M && M.free) { var fm = M; between(function () { openPick('free', fm.n, fm.lvl); }); return; } var l = M && M.winner === 0 ? nextLvl() : M ? M.lvl : sel; between(function () { openPick('single', save.n, l); }); };
@@ -587,8 +594,8 @@
     if (m.t === 'waiting' && NET === 'host') hostWaitView();
     else if (m.t === 'peer_joined' && NET === 'host') { NETM.send({ t: 'cfg', n: save.n, easy: save.easy ? 1 : 0 }); openPick('host', save.n, 0); }
     else if (m.t === 'cfg' && NET === 'guest') { var cn = G.TEAM_SIZES.indexOf(m.n) >= 0 ? m.n : 5; PK.easy = !!m.easy; openPick('guest', cn, 0); }
-    else if (m.t === 'pk' && state === 'pick' && PK.mode !== 'single') { PK.foeReady = !!m.r; if (PK.mode === 'host') PK.foePicks = cleanPicks(m.c, PK.n); pickRefresh(); hostMaybeGo(); }
-    else if (m.t === 'go' && NET === 'guest' && state === 'pick') { PK.ready = true; startCountdown(cleanPicks(m.b, PK.n), cleanPicks(m.a, PK.n)); }
+    else if (m.t === 'pk' && state === 'pick' && PK.mode !== 'single') { PK.foeReady = !!m.r; if (PK.mode === 'host') PK.foePicks = cleanPicks(m.c, PK.n); if (PU) { PU.refresh(); PU.hostMaybeGo(); } }
+    else if (m.t === 'go' && NET === 'guest' && state === 'pick') { PK.ready = true; if (PU) PU.vs(cleanPicks(m.b, PK.n), cleanPicks(m.a, PK.n)); }
     else if (m.t === 'first_snap' && NET === 'guest') { if (!(state === 'pick' && PK.cd > 0)) { M = G.M = NETM.guestView(performance.now()); enterPlay(); } }
     else if (m.t === 'err') {
       if (m.e === 'taken' && NET === 'host' && ++hostTries < 6) { NETM.close(true); tryHost(); }
@@ -612,162 +619,16 @@
     e.classList.toggle('pass', !!hold); $('tThrow').classList.toggle('full', !!full); $('tJump').classList.toggle('full', !!full);
   }
 
-  /* ---------- character select (KOF-style grid, all original characters) ---------- */
-  var PK = { mode: 'single', n: 5, lvl: 0, picks: [], cur: 0, ready: false, foeReady: false, foePicks: null, cd: 0, teams: null, easy: false, cols: 6, cells: [] };
+  /* ---------- character select: the screen itself is js/pick.js (KOF-style grid + VS), loaded late; the state stays here for the online code ---------- */
+  var PK = { mode: 'single', n: 5, lvl: 0, picks: [], cur: 0, ready: false, foeReady: false, foePicks: null, foe: null, cd: 0, teams: null, easy: false, cols: 6, cells: [] };
   function cleanPicks(a, n) { var o = []; (Array.isArray(a) ? a : []).forEach(function (c) { c = c | 0; if (c >= 0 && c < G.CHARS.length && o.indexOf(c) < 0 && o.length < n) o.push(c); }); return o; }
-  function openPick(mode, n, lvl) {
-    A.unlock(); Sdk.gameplayStop(); state = 'pick'; show('pick'); $('btnPause').style.display = 'none'; $('touch').classList.remove('on');
-    PK.mode = mode; PK.n = n; PK.lvl = lvl; PK.ready = false; PK.foeReady = false; PK.foePicks = null; PK.cd = 0; PK.teams = null;
-    if (mode !== 'guest') PK.easy = save.easy;
-    PK.picks = cleanPicks(save.picks, n); if (mode === 'single' || mode === 'free') PK.picks = PK.picks.filter(unlocked); PK.cur = PK.picks.length ? PK.picks[PK.picks.length - 1] : 0;
-    var g = $('pkGrid'); if (!g.children.length) {
-      G.CHARS.forEach(function (C, i) {
-        var e = document.createElement('button'); e.className = 'pkCell'; e.dataset.i = i; e.innerHTML = '<canvas></canvas><span class="nm"></span><span class="no"></span><span class="pg"><i></i></span>';
-        e.onclick = function () { A.unlock(); PK.cur = i; togglePick(i); };
-        e.onpointerenter = function (ev) { if (ev.pointerType === 'mouse') { PK.cur = i; pickRefresh(); } };
-        g.appendChild(e);
-      });
-    }
-    $('pkCd').classList.remove('on');
-    pickLayout(); pickRefresh(); WD.log.push('pick:' + mode);
-  }
-  function pickLocked(i) { return (PK.mode === 'single' || PK.mode === 'free') && !unlocked(i); }
-  function togglePick(i) {
-    if (PK.ready) return;
-    if (pickLocked(i)) { G.sfx('bounce'); var gl = goalText(i); $('pkHint').textContent = G.t('lockHow', gl ? gl.txt : '?'); PK.hintT = performance.now(); pickRefresh(); return; }
-    var k = PK.picks.indexOf(i);
-    if (k >= 0) { PK.picks.splice(k, 1); G.sfx('poof'); }
-    else if (PK.picks.length < PK.n) { PK.picks.push(i); G.sfx('catch'); }
-    else { G.sfx('bounce'); }
-    save.picks = PK.picks.slice(); commit(); pickRefresh();
-  }
-  function pickReady() {
-    if (PK.ready) return;
-    PK.ready = true; G.sfx('ready');
-    var mine = PK.mode === 'single' || PK.mode === 'free' ? myTeam(PK.n, PK.picks) : G.randomChars(PK.n, PK.picks); PK.picks = mine;
-    if (PK.mode === 'free') { startCountdown(mine, G.randomChars(PK.n, PK.lvl === G.LADDER - 1 && S ? [S.BOSS.ch] : null)); return; }
-    if (PK.mode === 'single') { if (storyNeed(PK.lvl)) { play(PK.lvl, [mine, null]); return; } startCountdown(mine, G.randomChars(PK.n)); return; }
-    NETM.send({ t: 'pk', c: mine, r: 1 });
-    pickRefresh(); hostMaybeGo();
-  }
-  function hostMaybeGo() {
-    if (PK.mode !== 'host' || !PK.ready || !PK.foeReady || PK.cd) return;
-    var a = PK.picks, b = G.randomChars(PK.n, PK.foePicks);
-    NETM.send({ t: 'go', a: a, b: b }); startCountdown(a, b);
-  }
-  var CD_T = 2.5;
-  function startCountdown(mine, foe) {
-    PK.teams = [mine, foe]; PK.cd = performance.now(); $('pkCd').classList.add('on'); pickLayout(); G.sfx('beep'); WD.log.push('countdown');
-  }
-  function countdownDone() {
-    $('pkCd').classList.remove('on'); var T2 = PK.teams; PK.cd = 0;
-    if (PK.mode === 'single') start(PK.lvl, T2);
-    else if (PK.mode === 'free') start(PK.lvl, T2, { free: 1, n: PK.n });
-    else if (PK.mode === 'host') startVersus(T2);
-    else if (NETM.gotSnap) { M = G.M = NETM.guestView(performance.now()); enterPlay(); }
-    else { PK.cd = -1; }   // guest: wait for the host's first snapshot
-  }
-  function pickKey(e) {
-    var c = e.code, n = G.CHARS.length, cols = PK.cols;
-    if (c === 'Escape') { pickBack(); return; }
-    if (PK.cd) return;
-    var mv = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1, ArrowUp: -cols, KeyW: -cols, ArrowDown: cols, KeyS: cols }[c];
-    if (mv) { e.preventDefault(); PK.cur = (PK.cur + mv + n) % n; G.sfx('click'); pickRefresh(); return; }
-    if (e.repeat) return;
-    if (c === 'Enter' || c === 'KeyJ' || c === 'NumpadEnter') { e.preventDefault(); if (PK.picks.length >= PK.n && PK.picks.indexOf(PK.cur) < 0 && !pickLocked(PK.cur)) pickReady(); else togglePick(PK.cur); }
-    else if (c === 'KeyK' || c === 'Backspace') { e.preventDefault(); if (!PK.ready && PK.picks.length) { PK.picks.pop(); save.picks = PK.picks.slice(); commit(); G.sfx('poof'); pickRefresh(); } }
-    else if (c === 'Space') { e.preventDefault(); pickReady(); }
-  }
-  function pickBack() { if (PK.mode === 'single' || PK.mode === 'free') toMenu(); else netChoose(); }
-  function bar(v) { var s = ''; for (var i = 1; i <= 5; i++) s += '<i class="' + (i <= v ? 'on' : '') + '"></i>'; return s; }
-  function pickRefresh() {
-    if (state !== 'pick') return;
-    var C = G.CHARS[PK.cur], i;
-    $('pkTitle').textContent = PK.mode === 'free' ? G.t('freeBtn') : G.t('pickTitle');
-    var fr = PK.mode === 'free'; $('pkSize').style.display = fr ? '' : 'none'; $('pkVs').style.display = fr ? '' : 'none';
-    if (fr) { $('pkSize').textContent = G.t('teamSize') + ': ' + G.t('vs', PK.n, PK.n) + ' \u25B8'; $('pkVs').textContent = 'VS ' + teamName(PK.lvl) + ' \u25B8'; }
-    $('pkRule').textContent = PK.easy ? G.t('ruleEasy') : G.t('ruleAm');
-    var lk = pickLocked(PK.cur), gl = lk ? goalText(PK.cur) : null;
-    $('pkName').textContent = lk && gl && gl.hidden ? G.t('u_secret') : G.t('ch' + PK.cur);
-    if (lk) {
-      // locked: the goal (with a progress bar for counting goals) instead of the stats; the play style as a teaser
-      $('pkStats').innerHTML = '<div class="goal">🔒 ' + esc(gl ? gl.txt : '?') + '</div>' + (gl && gl.bar ? '<div class="pgb"><i style="width:' + (100 * gl.s.frac).toFixed(0) + '%"></i></div>' : '');
-      $('pkSp').innerHTML = gl && gl.hidden ? '' : '<small>▶ ' + esc(G.t('ps' + PK.cur)) + '</small>';
-    } else {
-      $('pkStats').innerHTML = [['stPow', C.st[0]], ['stSpd', C.st[1]], ['stCat', C.st[2]]].map(function (r) { return '<div class="st"><b>' + esc(G.t(r[0])) + '</b><span class="bar">' + bar(r[1]) + '</span></div>'; }).join('');
-      $('pkSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + '<br><small>' + esc(G.t('ss_' + C.sp)) + '</small><br><small class="ps">▶ ' + esc(G.t('ps' + PK.cur)) + '</small>';
-    }
-    for (i = 0; i < PK.cells.length; i++) {
-      var e = PK.cells[i], k = PK.picks.indexOf(i), L = pickLocked(i), gi = L ? goalText(i) : null;
-      e.classList.toggle('cur', i === PK.cur); e.classList.toggle('lock', L); e.classList.toggle('sel', k >= 0); e.querySelector('.no').textContent = k >= 0 ? k + 1 : '';
-      e.querySelector('.nm').textContent = gi && gi.hidden ? G.t('u_secret') : G.t('ch' + i);
-      var pg = e.querySelector('.pg'); pg.style.display = gi && gi.bar ? 'block' : 'none'; if (gi && gi.bar) pg.firstChild.style.width = (100 * gi.s.frac).toFixed(0) + '%';
-      e.title = gi ? gi.txt : '';
-    }
-    $('pkMine').textContent = G.t('pickMine', PK.picks.length, PK.n);
-    $('pkFoe').textContent = PK.mode === 'single' || PK.mode === 'free' ? '' : PK.ready && !PK.foeReady ? G.t('waitFoe') : PK.foeReady ? G.t('foeReady') : G.t('foePick');
-    $('pkRnd').textContent = G.t('pickRandom'); $('pkUndo').textContent = G.t('pickUndo'); $('pkGo').textContent = G.t('pickReady'); $('pkBack').textContent = G.t('pickBack');
-    $('pkGo').disabled = PK.ready; $('pkRnd').disabled = PK.ready; $('pkUndo').disabled = PK.ready || !PK.picks.length;
-    $('pkGo').classList.toggle('pulse', PK.picks.length >= PK.n && !PK.ready);
-    if (!(PK.hintT && performance.now() - PK.hintT < 2500)) $('pkHint').textContent = touchOn ? G.t('pickHint') : G.t('pickHint') + '  ·  ' + G.t('pickHintK');
-  }
+  function openPick(mode, n, lvl) { if (PU) return PU.open(mode, n, lvl); pickQ = [mode, n, lvl]; loadStory(); loadPick(); }
+  var PICKAPI = { PK: PK, VQ: VQ, A: A, Sdk: Sdk, STORY: STORY, save: function () { return save; }, commit: commit, unlocked: unlocked, myTeam: myTeam, cleanPicks: cleanPicks, goalText: goalText, teamName: teamName, esc: esc,
+    show: show, setState: function (s) { state = s; }, getState: function () { return state; }, story: function () { return S; }, touchOn: function () { return touchOn; }, log: function (s) { WD.log.push(s); },
+    start: start, play: play, storyNeed: storyNeed, startVersus: startVersus, toMenu: toMenu, netChoose: netChoose, send: function (m) { NETM.send(m); },
+    guestGo: function () { if (!NETM.gotSnap) return false; M = G.M = NETM.guestView(performance.now()); enterPlay(); return true; } };
   function sizeCv(cv) { var r = cv.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2), w = Math.max(1, Math.round(r.width * d)), h = Math.max(1, Math.round(r.height * d)); if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; } return d; }
-  function pickLayout() {
-    var port = window.innerHeight > window.innerWidth * 1.05; PK.cols = port ? 6 : 8;
-    $('pick').classList.toggle('port', port);
-    PK.cells = Array.prototype.slice.call(document.querySelectorAll('.pkCell'));
-    var sl = $('pkSlots'); if (sl.children.length !== PK.n) { sl.innerHTML = ''; for (var i = 0; i < PK.n; i++) { var c = document.createElement('canvas'); c.className = 'slot'; sl.appendChild(c); } }
-  }
-  var MYUNI = '#2a7fd4', FOEUNI = '#e8692b';
-  function cell(c, w, h, ch, now, uni, cheer, flip) {
-    c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, w, h);
-    G.drawChar(c, ch, w / 2, h * 0.94, h * 0.78, now, uni, cheer, flip);
-  }
-  function silhouette(c, w, h, mark, fs) {
-    c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#14102a'; c.fillRect(0, 0, w, h); c.globalCompositeOperation = 'source-over';
-    c.font = '900 ' + Math.round(h * fs) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#ffd23f'; c.fillText(mark, w / 2, h * 0.5);
-  }
-  function drawPick(now) {
-    var i, cv, c, d;
-    for (i = 0; i < PK.cells.length; i++) { cv = PK.cells[i].firstChild; d = sizeCv(cv); c = cv.getContext('2d'); cell(c, cv.width, cv.height, i, now + i * 0.37, MYUNI, PK.picks.indexOf(i) >= 0 && ((now * 2 + i) | 0) % 4 === 0);
-      if (pickLocked(i)) { var hid = MT.status(save, i); hid = hid && !hid.shown; silhouette(c, cv.width, cv.height, hid ? '?' : '\uD83D\uDD12', hid ? 0.42 : 0.26); } }
-    cv = $('pkCv'); sizeCv(cv); c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
-    var g = c.createRadialGradient(cv.width / 2, cv.height * 0.7, 4, cv.width / 2, cv.height * 0.7, cv.width * 0.6); g.addColorStop(0, G.CHARS[PK.cur].skin); g.addColorStop(1, 'rgba(0,0,0,0)'); c.globalAlpha = 0.35; c.fillStyle = g; c.fillRect(0, 0, cv.width, cv.height); c.globalAlpha = 1;
-    G.drawChar(c, PK.cur, cv.width / 2, cv.height * 0.95, cv.height * 0.8, now, MYUNI, PK.picks.indexOf(PK.cur) >= 0);
-    if (pickLocked(PK.cur)) silhouette(c, cv.width, cv.height, '?', 0.3);
-    var sl = $('pkSlots').children;
-    for (i = 0; i < sl.length; i++) { cv = sl[i]; sizeCv(cv); c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
-      if (i < PK.picks.length) cell(c, cv.width, cv.height, PK.picks[i], now + i, MYUNI, PK.ready);
-      else { c.fillStyle = 'rgba(255,255,255,0.35)'; c.font = '900 ' + Math.round(cv.height * 0.5) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('?', cv.width / 2, cv.height / 2); } }
-    if (PK.cd) drawCountdown(now);
-  }
-  function drawCountdown(now) {
-    var cv = $('cdCv'); sizeCv(cv); var c = cv.getContext('2d'), w = cv.width, h = cv.height, T2 = PK.teams, port = h > w * 1.05;
-    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#120f26'; c.fillRect(0, 0, w, h);
-    c.fillStyle = 'rgba(63,169,255,0.25)'; c.beginPath(); if (port) { c.moveTo(0, 0); c.lineTo(w, 0); c.lineTo(w, h * 0.42); c.lineTo(0, h * 0.52); } else { c.moveTo(0, 0); c.lineTo(w * 0.55, 0); c.lineTo(w * 0.45, h); c.lineTo(0, h); } c.fill();
-    c.fillStyle = 'rgba(255,90,79,0.25)'; c.beginPath(); if (port) { c.moveTo(0, h * 0.52); c.lineTo(w, h * 0.42); c.lineTo(w, h); c.lineTo(0, h); } else { c.moveTo(w * 0.55, 0); c.lineTo(w, 0); c.lineTo(w, h); c.lineTo(w * 0.45, h); } c.fill();
-    var t = PK.cd > 0 ? (performance.now() - PK.cd) / 1000 : CD_T;
-    function row(list, x0, x1, y, uni, flip) { var n = list.length, step = (x1 - x0) / n, ph = Math.min(step * 1.5, port ? h * 0.2 : h * 0.34); for (var i = 0; i < n; i++) { var lt = clamp01((t - i * 0.08) / 0.25); if (lt <= 0) continue; G.drawChar(c, list[i], x0 + step * (i + 0.5) + (flip ? 1 : -1) * (1 - lt) * w * 0.3, y, ph, now + i, uni, t > 1, flip); } }
-    if (port) { row(T2[0], w * 0.04, w * 0.96, h * 0.36, MYUNI, false); row(T2[1], w * 0.04, w * 0.96, h * 0.86, FOEUNI, true); }
-    else { row(T2[0], w * 0.02, w * 0.46, h * 0.82, MYUNI, false); row(T2[1], w * 0.54, w * 0.98, h * 0.82, FOEUNI, true); }
-    var fs = Math.min(w, h) * 0.07;
-    function txt(s, x, y, size, col) { c.font = 'italic 900 ' + Math.round(size) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.strokeStyle = '#1b1b2f'; c.lineWidth = size * 0.22; c.strokeText(s, x, y); c.fillStyle = col; c.fillText(s, x, y); }
-    var sg = PK.mode === 'single' || PK.mode === 'free', myName = sg ? G.t('my') : PK.mode === 'host' ? G.t('pHost') : G.t('pGuest'), foeName = sg ? teamName(PK.lvl) : PK.mode === 'host' ? G.t('pGuest') : G.t('pHost');
-    if (port) { txt(myName, w / 2, h * 0.08, fs * 0.8, '#6ecbff'); txt(foeName, w / 2, h * 0.58, fs * 0.8, '#ff9d5c'); }
-    else { txt(myName, w * 0.25, h * 0.12, fs * 0.8, '#6ecbff'); txt(foeName, w * 0.75, h * 0.12, fs * 0.8, '#ff9d5c'); }
-    var cy = port ? h * 0.47 : h * 0.38, big, k;
-    if (t < 1.0) { big = G.t('cdReady'); k = clamp01(t / 0.2); }
-    else if (t < CD_T) { var q = Math.floor((t - 1.0) / 0.5); big = String(3 - q); k = clamp01(((t - 1.0) % 0.5) / 0.15); }
-    else { big = PK.mode === 'guest' && PK.cd === -1 ? G.t('connecting') : G.t('cdFight'); k = 1; }
-    txt('VS', w / 2, cy - fs * 1.6, fs * 0.9, '#fff');
-    txt(big, w / 2, cy, fs * 2.1 * (0.6 + 0.4 * k), '#ffd23f');
-    if (PK.cd > 0 && t >= CD_T) countdownDone();
-  }
-  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-  $('pkGo').onclick = function () { A.unlock(); pickReady(); };
-  $('pkRnd').onclick = function () { A.unlock(); if (PK.ready) return; PK.picks = PK.mode === 'single' ? myTeam(PK.n, []).filter(unlocked) : G.randomChars(PK.n); save.picks = PK.picks.slice(); commit(); G.sfx('click'); pickRefresh(); };
-  $('pkUndo').onclick = function () { A.unlock(); if (PK.ready || !PK.picks.length) return; PK.picks.pop(); save.picks = PK.picks.slice(); commit(); G.sfx('poof'); pickRefresh(); };
-  $('pkBack').onclick = function () { A.unlock(); G.sfx('click'); pickBack(); };
+  var MYUNI = '#2a7fd4';
 
   /* ---------- loop ---------- */
   function guestFrame(dt, now) {
@@ -814,9 +675,8 @@
       if (state === 'train') { S.trainStep(dt * WD.speed, readInput(), V.SW); clearPress(); }
       // SUPER CATCH: hold CATCH for 1 s (once per match)
       if (state === 'play' && M && M.scOk && !M.scUsed && M.state === 'play' && !NET) { if (keys.cat || tch.cat) { scHold += dt / 1; if (scHold >= 1) { G.superCatch(M); scHold = 0; } } else scHold = 0; } else scHold = 0;
-      if (state === 'pick') drawPick(ts / 1000);
       if (resCards.length && (state === 'result' || state === 'menu')) drawCards(ts / 1000);
-      G.render(ctx, state === 'menu' || state === 'net' || state === 'pick' || state === 'train' || state === 'comic' ? null : M, ts / 1000, V);
+      if (state !== 'pick') G.render(ctx, state === 'menu' || state === 'net' || state === 'train' || state === 'comic' ? null : M, ts / 1000, V);   // the pick screen is opaque and still: no canvas work under it
       if (state === 'train') S.drawTrain(ctx, ts / 1000, V);
       else if (S && M && !NET && (state === 'play' || state === 'pause')) S.overlay(ctx, M, ts / 1000, V, scHold);
       A.tick();
@@ -826,7 +686,7 @@
   /* ---------- debug hook ---------- */
   WD.start = function (lvl, auto, n, chars) { WD.auto = !!auto; if (n) save.n = n; start(lvl || 0, chars); return true; };
   WD.fire = function (id) { return !!(M && M.state === 'play' && G.fire(M, id)); };
-  WD.pick = function () { return { screen: state, mode: PK.mode, n: PK.n, picks: PK.picks.slice(), ready: PK.ready, foeReady: PK.foeReady, cd: PK.cd, teams: PK.teams, cols: PK.cols, easy: PK.easy }; };
+  WD.pick = function () { return { screen: state, mode: PK.mode, n: PK.n, picks: PK.picks.slice(), cur: PK.cur, ready: PK.ready, foeReady: PK.foeReady, cd: PK.cd, teams: PK.teams, cols: PK.cols, easy: PK.easy }; };
   WD.chars = function () { return M ? [0, 1].map(function (t) { return M.bodies.filter(function (b) { return b.team === t; }).map(function (b) { return b.ch; }); }) : null; };
   WD.setEasy = function (v) { save.easy = !!v; commit(); refreshMenu(); };
   WD.keysShown = function () { return $('keys').style.display === 'block'; };
