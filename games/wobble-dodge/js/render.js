@@ -118,6 +118,64 @@
     if (x.length !== 7 || isNaN(n)) return (SHADE[h] = h);
     return (SHADE[h] = 'rgb(' + Math.round((n >> 16) * 0.75) + ',' + Math.round(((n >> 8) & 255) * 0.75) + ',' + Math.round((n & 255) * 0.75 + 5) + ')');
   }
+  /* ---------- cartoon body (matches the 2D face art: bold ink outline, flat colours, chunky shapes) ----------
+     Same 11-point skeleton (0 head, 1 neck, 2 hip, 3/4 front elbow/hand, 5/6 back elbow/hand, 7/8 front knee/foot, 9/10 back).
+     Limbs = round-capped strokes, batched: one wide ink stroke under legs + sneakers + back arm, then a colour stroke each; the
+     front arm (over the jersey) gets its own ink + colour stroke. Jersey + shorts = 3 fills of cached Path2Ds (ink silhouette,
+     team-colour jersey, white shorts + belly stripe) in a hip->neck frame; plain fills measured cheaper than strokes or a
+     rotated sprite. No shadows / filters. LITE tier: no ink under legs / back arm (front arm + jersey keep theirs).
+     Cost vs the stick bodies: 검증/body_perf.mjs (G.cartoonBody = false draws the old renderer for A/B). */
+  var SKIN = ['#f9b7db', '#b5d55c', '#f8e5cb', '#fb9355', '#ca81f8', '#58ccf8', '#f8d72c', '#26c2b9', '#eccbf5', '#ee3b38', '#f4ad7f', '#d1eb63',
+    '#6ddaf9', '#ede8f4', '#5b83a5', '#f7a576', '#f0caa9', '#f9b7db', '#f98b4e', '#f9ebaf', '#494a6d', '#f8d72c', '#dcf1f9', '#87cf55'];   // sampled from heads_96.png (G.CHARS order)
+  var TORSO = {}, TL = 31, OL = 2.3;   // neck-hip length in skeleton units, ink outline thickness
+  // local frame: hip = (0,0), neck = (0,-TL); o grows the shape by o on every side (for the ink silhouette)
+  function jersey(P, th, o) {
+    var sw = 14.5 * th + o, ww = 10.2 * th + o, t = -TL - 1 - o, hb = 2.5 + o;
+    P.moveTo(-sw + 5, t); P.lineTo(sw - 5, t); P.quadraticCurveTo(sw + 1, t + 1, sw, t + 8);
+    P.lineTo(ww + 0.5, hb - 4); P.quadraticCurveTo(ww + 1, hb, ww - 3, hb); P.lineTo(-ww + 3, hb); P.quadraticCurveTo(-ww - 1, hb, -ww - 0.5, hb - 4);
+    P.lineTo(-sw, t + 8); P.quadraticCurveTo(-sw - 1, t + 1, -sw + 5, t); P.closePath();
+  }
+  function shorts(P, th, o) {   // starts under the jersey hem: the gap shows the ink silhouette = the hem line
+    var t = 2.5 + OL - o, hw = 11.8 * th + o, w0 = 10.2 * th + o, bt = 13 + o;
+    P.moveTo(-w0, t); P.lineTo(w0, t); P.lineTo(hw, bt - 2); P.quadraticCurveTo(hw, bt, hw - 2, bt); P.lineTo(-hw + 2, bt); P.quadraticCurveTo(-hw, bt, -hw, bt - 2); P.closePath();
+  }
+  function torso(th) {
+    var t = TORSO[th]; if (t) return t;
+    var o = new Path2D(), j = new Path2D(), s = new Path2D(), sw = 14.5 * th, ww = 10.2 * th;
+    jersey(o, th, OL); shorts(o, th, OL); jersey(j, th, 0); shorts(s, th, 0);
+    // white band across the belly (the part the arms and the big head cover least)
+    var a = -12, b2 = -7.5, wf = function (y) { return sw + (ww - sw) * (y + TL - 7) / (TL - 6.5) - 0.3; };
+    s.moveTo(-wf(a), a); s.lineTo(wf(a), a); s.lineTo(wf(b2), b2); s.lineTo(-wf(b2), b2); s.closePath();   // same fill as the shorts (one call)
+    return (TORSO[th] = { o: o, j: j, s: s });
+  }
+  // one limb chain a-b-c
+  function limb(c, p, a, b2, e) { c.moveTo(p[a], p[a + 1]); c.lineTo(p[b2], p[b2 + 1]); c.lineTo(p[e], p[e + 1]); }
+  // sneaker: a short segment from the foot point forward, square to the shin; the leg's round cap later covers its heel
+  function shoe(c, p, k, e, z, f) {
+    var dx = p[e] - p[k], dy = p[e + 1] - p[k + 1], d = Math.sqrt(dx * dx + dy * dy) || 1, fx = dy / d * f * z, fy = -dx / d * f * z, x = p[e], y = p[e + 1];
+    c.moveTo(x - fx, y - fy); c.lineTo(x + fx * 7, y + fy * 7);
+  }
+  function drawToon(c, b, uni, p, z, col) {
+    var th = b.th || 1, zt = z * th, flash = b.flash > 0, f = b.face < 0 ? -1 : 1;
+    var lw = 9.2 * zt, ow = lw + 4.6 * z, lite = G.lite || G.qDown >= 2;
+    var jer = flash ? '#fff' : uni;
+    // 1) one ink pass under all legs, both sneakers and the back arm; then sneakers, back limbs (shaded), front leg
+    if (!lite) { c.beginPath(); limb(c, p, 2, 10, 12); limb(c, p, 4, 18, 20); limb(c, p, 4, 14, 16); shoe(c, p, 18, 20, z, f); shoe(c, p, 14, 16, z, f); c.strokeStyle = INK; c.lineWidth = ow; c.stroke(); }
+    c.lineWidth = lw;
+    c.beginPath(); shoe(c, p, 18, 20, z, f); shoe(c, p, 14, 16, z, f); c.strokeStyle = '#fff'; c.stroke();
+    c.beginPath(); limb(c, p, 2, 10, 12); limb(c, p, 4, 18, 20); c.strokeStyle = shade(col); c.stroke();
+    c.beginPath(); limb(c, p, 4, 14, 16); c.strokeStyle = col; c.stroke();
+    // shorts + jersey in the hip->neck frame
+    var dx = p[2] - p[4], dy = p[3] - p[5], d = Math.sqrt(dx * dx + dy * dy) || 1, s = d / TL, T = torso(th);
+    c.save(); c.transform(-dy / d * s, dx / d * s, -dx / d * s, -dy / d * s, p[4], p[5]);
+    c.fillStyle = INK; c.fill(T.o); c.fillStyle = jer; c.fill(T.j); c.fillStyle = '#fff'; c.fill(T.s);   // white shorts + belly stripe = one fill
+    c.restore();
+    // 2) front arm over the jersey
+    c.beginPath(); limb(c, p, 2, 6, 8);
+    c.strokeStyle = INK; c.lineWidth = ow; c.stroke();   // kept in LITE too: the arm crossing the jersey needs its outline
+    c.strokeStyle = col; c.lineWidth = lw; c.stroke();
+  }
+  G.cartoonBody = true;
   function drawBody(c, b, uni, now, fh) {
     var i, z = b.sc, col = b.flash > 0 ? '#ffffff' : b.skin, out = INK, th = b.th || 1, hs = b.hs || 1, zt = z * th;
     fh = fh && b.ch >= 0 && b.ch < HD.n;
@@ -125,6 +183,14 @@
     var p = P;
     c.save(); if (b.role === 'toOut' || b.role === 'toIn') c.globalAlpha = 0.55;
     c.lineCap = 'round'; c.lineJoin = 'round';
+    if (G.cartoonBody) {
+      if (fh && b.flash <= 0) col = SKIN[b.ch];
+      drawToon(c, b, uni, p, z, col);
+      var tl = Math.atan2(p[1] - p[3], p[0] - p[2]) + Math.PI / 2;
+      if (fh) { c.save(); c.translate(p[0], p[1]); c.rotate(tl); c.scale(b.face * z * hs, z * hs); headSprite(c, b, b.eyes, now); c.restore(); c.restore(); return; }
+      c.fillStyle = out; c.beginPath(); c.arc(p[0], p[1], 13.5 * z * hs, 0, TAU); c.fill();
+      drawHead(c, b, now, p, z, hs, col, tl); return;
+    }
     function back() { c.moveTo(p[2], p[3]); c.lineTo(p[10], p[11]); c.lineTo(p[12], p[13]); c.moveTo(p[4], p[5]); c.lineTo(p[18], p[19]); c.lineTo(p[20], p[21]); }
     function front() { c.moveTo(p[2], p[3]); c.lineTo(p[4], p[5]); c.lineTo(p[14], p[15]); c.lineTo(p[16], p[17]); c.moveTo(p[2], p[3]); c.lineTo(p[6], p[7]); c.lineTo(p[8], p[9]); }
     c.strokeStyle = out; c.lineWidth = 12.5 * zt; c.beginPath(); back(); c.stroke();
@@ -141,6 +207,10 @@
       headSprite(c, b, b.eyes, now);
       c.restore(); c.restore(); return;
     }
+    drawHead(c, b, now, p, z, hs, col, tilt);
+  }
+  function drawHead(c, b, now, p, z, hs, col, tilt) {   // the old drawn head (portraits / story / fallback); closes drawBody's save
+    var i;
     c.fillStyle = col; c.beginPath(); c.arc(p[0], p[1], (13.5 * hs - 2.5) * z, 0, TAU); c.fill();
     c.save(); c.translate(p[0], p[1]); c.rotate(tilt); c.scale(b.face * z * hs, z * hs);
     c.fillStyle = INK; c.strokeStyle = INK; c.lineWidth = 2.2;
@@ -303,7 +373,11 @@
     var balls = BALLS; balls.length = 0; balls.push(M.ball); for (i = 0; i < M.fakes.length; i++) balls.push(M.fakes[i]);
     for (i = 0; i < balls.length; i++) ents.push(ent(ne++, balls[i].z + 0.001, null, balls[i]));
     // shadows
-    M.bodies.forEach(function (o) { var w = 24 * o.sc; c.fillStyle = 'rgba(0,0,0,0.22)'; c.beginPath(); c.ellipse(o.mode === 'rag' ? o.pts[2].x : o.x, FY(o.z), w, w * 0.32, 0, 0, TAU); c.fill(); });
+    if (G.cartoonBody) {   // all body shadows in one fill (pays for part of the cartoon bodies' extra calls)
+      c.fillStyle = 'rgba(0,0,0,0.22)'; c.beginPath();
+      for (i = 0; i < M.bodies.length; i++) { var o = M.bodies[i], w = 24 * o.sc, sx2 = o.mode === 'rag' ? o.pts[2].x : o.x; c.moveTo(sx2 + w, FY(o.z)); c.ellipse(sx2, FY(o.z), w, w * 0.32, 0, 0, TAU); }
+      c.fill();
+    } else M.bodies.forEach(function (o) { var w = 24 * o.sc; c.fillStyle = 'rgba(0,0,0,0.22)'; c.beginPath(); c.ellipse(o.mode === 'rag' ? o.pts[2].x : o.x, FY(o.z), w, w * 0.32, 0, 0, TAU); c.fill(); });   // G.cartoonBody = false: the old look (A/B in 검증/body_perf.mjs)
     balls.forEach(function (B) { if (B.sp === 'ghost' && B.st === 'fly') return; var s = clamp(1 - B.h / 400, 0.3, 1), rs = B.r * G.scz(clamp(B.z, 0, 1)); c.fillStyle = 'rgba(0,0,0,' + 0.25 * s + ')'; c.beginPath(); c.ellipse(B.x, FY(clamp(B.z, 0, 1)), rs * s * 1.1, rs * s * 0.38, 0, 0, TAU); c.fill(); });
     // aim marker (my holder)
     var me = M.ctrl >= 0 ? M.bodies[M.ctrl] : null;
@@ -350,7 +424,24 @@
   };
   function star(c, x, y, r, rot) { c.beginPath(); for (var i = 0; i < 16; i++) { var a = rot + i * Math.PI / 8, q = i % 2 ? r * 0.4 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fill(); }
 
-  function teamPanel(c, M, t, x, w, alignR, now) {
+  // team panels change a few times per rally (outs, meter, labels) but cost ~10% of a frame (outlined text, 14 small faces):
+  // each is baked into its own canvas and re-baked only when what it shows changes (1 drawImage per frame otherwise)
+  var PNL = [{}, {}];
+  function teamPanel(c, M, t, x, w, alignR, now, k) {
+    if (!G.cartoonBody) { drawPanel(c, M, t, x, w, alignR, now); return; }   // A/B: the pre-change renderer
+    var P = PNL[t], n = M.bodies.length / 2, m = M.meter[t], full = m >= 1, mask = '', fh = M.fh === 1 && G.faceHeads, i;
+    for (i = 0; i < n; i++) mask += G.alive(M.bodies[t * n + i]) ? 1 : 0;
+    var key = [w, k, alignR, fh, mask, Math.round(m * w), full ? ((now * 8) | 0) % 2 : -1, M.nextSp[t], G.lang, M.myTm ? 1 : 0, M.versus ? 1 : 0, document.fonts ? document.fonts.status : ''].join('|');
+    if (P.M !== M || P.key !== key) {
+      P.M = M; P.key = key;
+      var cw = Math.ceil((w + 8) * k), ch = Math.ceil(110 * k);
+      if (!P.cv) P.cv = document.createElement('canvas');
+      if (P.cv.width !== cw || P.cv.height !== ch) { P.cv.width = cw; P.cv.height = ch; } else P.cv.getContext('2d').clearRect(0, 0, cw, ch);
+      var g = P.cv.getContext('2d'); g.setTransform(k, 0, 0, k, 4 * k, 0); drawPanel(g, M, t, 0, w, alignR, now);
+    }
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(P.cv, Math.round((x - 4) * k), 0); c.restore();
+  }
+  function drawPanel(c, M, t, x, w, alignR, now) {
     var td = t ? M.team : M.myTm || G.MYTEAM, nm = t || M.myTm ? G.t(td.key) : G.t(M.versus ? 'pHost' : 'my');
     c.fillStyle = 'rgba(27,27,47,0.88)'; rr(c, x, 10, w, 92, 16); c.fill();
     var l = alignR ? x + w - 14 : x + 14;
@@ -382,7 +473,7 @@
   var V = {};
   function hud(c, M, now, view) {
     V = view; var SW = view.SW, pw = Math.min(330, SW * 0.37);
-    teamPanel(c, M, 0, 10, pw, false, now); teamPanel(c, M, 1, SW - 10 - pw, pw, true, now);
+    teamPanel(c, M, 0, 10, pw, false, now, view.k); teamPanel(c, M, 1, SW - 10 - pw, pw, true, now, view.k);
     // center: round score + timer
     var cx = SW / 2, cw = SW - 2 * pw - 40; if (cw > 170) cw = 170;
     c.fillStyle = 'rgba(27,27,47,0.88)'; rr(c, cx - cw / 2, 10, cw, 70, 16); c.fill();
