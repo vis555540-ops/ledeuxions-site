@@ -49,7 +49,7 @@
       pickHintK: 'Arrows: choose · J/Enter: pick · K: remove · Space: READY',
       stPow: 'POWER', stSpd: 'SPEED', stCat: 'CATCH', special: 'SPECIAL',
       foePick: 'Friend: picking...', foeReady: 'Friend: READY!', waitFoe: 'Waiting for your friend...', foeTeam: 'RIVALS', cdReady: 'READY!', cdFight: 'DODGE!',
-      ch12: 'Zappy', ch13: 'Swooshy', ch14: 'Scarfy', ch15: 'Hulky', ch16: 'Grampy', ch17: 'Twinkle', ch18: 'Blazey', ch19: 'Meowy', ch20: 'Cooly', ch21: 'Buzzy', ch22: 'Puffy', ch23: 'Goggly',
+      ch12: 'Zappy', ch13: 'Swooshy', ch14: 'Scarfy', ch15: 'Hulky', ch16: 'Grampy', ch17: 'Twinkle', ch18: 'Blazey', ch19: 'Meowy', ch20: 'Cooly', ch21: 'Buzzy', ch22: 'Puffy', ch23: 'Goggly', ch24: 'The Kid', ch25: 'Dex',
       sp_zap: 'ZAP ZAP', sp_sway: 'SWAYING GOURD', sp_fireball: 'HOT POTATO', ss_zap: 'bzzt! bzzt! bzzt!', ss_sway: 'whoa... where is it going?', ss_fireball: 'blazing fast!',
       ch0: 'Curly', ch1: 'Toot Boss', ch2: 'Clucky', ch3: 'Big Belly', ch4: 'Twinny', ch5: 'Snoozy', ch6: 'Spinny', ch7: 'Ziggy', ch8: 'Peekaboo', ch9: 'Flippy', ch10: 'Sniffles', ch11: 'Boingo',
       winSub: 'You beat the {0}!', loseSub: 'The {0} won this time. Try again!', unlocked: 'New team unlocked!', allClear: 'You beat every team! Play any of them again for fun.',
@@ -106,7 +106,7 @@
       pickHintK: '방향키 고르기 · J/Enter 넣기 · K 빼기 · Space 준비',
       stPow: '힘', stSpd: '속도', stCat: '받기', special: '필살',
       foePick: '친구: 고르는 중...', foeReady: '친구: 준비 완료!', waitFoe: '친구를 기다리는 중...', foeTeam: '상대 팀', cdReady: '준비!', cdFight: '피구 시작!',
-      ch12: '찌릿이', ch13: '휘날이', ch14: '목도리', ch15: '우람이', ch16: '호리병 할배', ch17: '반짝이', ch18: '활활이', ch19: '냥냥이', ch20: '선글이', ch21: '윙윙이', ch22: '뭉게', ch23: '고글이',
+      ch12: '찌릿이', ch13: '휘날이', ch14: '목도리', ch15: '우람이', ch16: '호리병 할배', ch17: '반짝이', ch18: '활활이', ch19: '냥냥이', ch20: '선글이', ch21: '윙윙이', ch22: '뭉게', ch23: '고글이', ch24: '주인공', ch25: '덱스',
       sp_zap: '찌릿찌릿 슛', sp_sway: '흔들 호리병 슛', sp_fireball: '뜨거운 감자 슛', ss_zap: '찌릿! 찌릿! 찌릿!', ss_sway: '어어... 어디로 가?', ss_fireball: '엄청 빠르다!',
       ch0: '뽀글이', ch1: '뿡대장', ch2: '꼬꼬댁', ch3: '왕배꼽', ch4: '쌍쌍이', ch5: '쿨쿨이', ch6: '빙글이', ch7: '지그잭', ch8: '투명이', ch9: '휘리릭', ch10: '에취왕', ch11: '통통이',
       winSub: '{0}을(를) 이겼어요!', loseSub: '이번엔 {0}이(가) 이겼어요. 다시 해 봐요!', unlocked: '새 팀이 열렸어요!', allClear: '모든 팀을 이겼어요! 아무 팀이나 다시 해도 재밌어요.',
@@ -136,7 +136,7 @@
       ps8: 'Nimble, throws a ball you cannot see', ps9: 'All attack: cannot catch at all', ps10: 'Steady defender who catches well', ps11: 'Helper: catch to bring friends back',
       ps12: 'So fast it is a dodge master, poor catcher', ps13: 'Fastball rival with a curving shot', ps14: 'Hit-and-run ninja: fast and strong, no catching', ps15: 'Catches like a wall, moves slow',
       ps16: 'Best hands; the swaying shot fools everyone', ps17: 'Weak arm, but catches everything', ps18: 'Blazing power, forget catching', ps19: 'Jump and snatch, cat style',
-      ps20: 'Cool and strong boomerang', ps21: 'Busy bee: pass, pass, ZAP', ps22: 'Heavy, sturdy cloud', ps23: 'Pilot who hunts jumpers'
+      ps20: 'Cool and strong boomerang', ps21: 'Busy bee: pass, pass, ZAP', ps22: 'Heavy, sturdy cloud', ps23: 'Pilot who hunts jumpers', ps24: 'Falls down, gets up. Every. Single. Time.', ps25: 'Your old best friend: quick feet, big grin'
     },
     ko: {
       u_wins1: '한 판 이기기', u_wins: '이기기 {0}/{1}', u_hit: '상대 맞히기 {0}/{1}', u_sp: '필살기 쓰기 {0}/{1}',
@@ -153,7 +153,7 @@
       ps8: '날쌔고, 안 보이는 공', ps9: '공격만! 받기는 꽝', ps10: '잘 받고 버티는 수비수', ps11: '잡아서 친구 살리는 도우미',
       ps12: '빨라서 피하기 달인, 받기는 서툼', ps13: '강속구 라이벌, 휘는 공', ps14: '치고 빠지는 닌자: 빠르고 세지만 못 받음', ps15: '공 잡기 힘세게, 느림',
       ps16: '받기 최고, 흔들 공으로 속임', ps17: '힘은 약해도 다 받아내는 응원단', ps18: '불처럼 세게, 받기는 포기', ps19: '점프해서 낚아채는 고양이',
-      ps20: '멋있고 센 부메랑', ps21: '부지런히 패스하는 일벌, 찌릿!', ps22: '묵직하게 버티는 구름', ps23: '점프한 상대를 노리는 비행사'
+      ps20: '멋있고 센 부메랑', ps21: '부지런히 패스하는 일벌, 찌릿!', ps22: '묵직하게 버티는 구름', ps23: '점프한 상대를 노리는 비행사', ps24: '넘어져도 일어난다. 매번.', ps25: '옛 단짝 친구: 빠른 발, 큰 웃음'
     }
   };
   for (var lk in U) for (var kk in U[lk]) T[lk][kk] = U[lk][kk];

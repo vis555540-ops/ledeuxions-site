@@ -68,11 +68,16 @@
     { skin: '#4a4e69', hat: 'shades', hs: 1.0, th: 1.0, st: [4, 3, 2], sp: 'boomer' },
     { skin: '#ffd23f', hat: 'antenna', hs: 0.9, th: 0.85, st: [2, 4, 4], sp: 'zap' },
     { skin: '#c9f0ff', hat: 'cloud', hs: 1.15, th: 1.05, st: [4, 2, 4], sp: 'slow' },
-    { skin: '#9be564', hat: 'goggles', hs: 1.0, th: 1.0, st: [3, 3, 4], sp: 'flip' }
+    { skin: '#9be564', hat: 'goggles', hs: 1.0, th: 1.0, st: [3, 3, 4], sp: 'flip' },
+    // story-only (not in the 24 unlock roster, never random): the kid from the opening video and his old friend Dex.
+    // fit = own outfit instead of the team jersey (render.js drawToon): hoodie = red hoodie + jeans, tee = yellow t-shirt + shorts
+    { skin: '#f5c69a', hat: 'hero', hs: 1.0, th: 0.9, st: [1, 4, 4], sp: 'boomer', story: 1, fit: 'hoodie' },   // 24 HERO
+    { skin: '#a8693f', hat: 'dexcap', hs: 1.0, th: 0.95, st: [3, 5, 2], sp: 'zigzag', story: 1, fit: 'tee' }    // 25 DEX
   ];
+  G.NROSTER = 24; G.HERO = 24; G.DEX = 25;   // roster = G.CHARS[0..23] (pick grid, unlocks, random fill)
   G.randomChars = function (n, keep) {   // keep the given picks, fill the rest with different random characters
     var out = (keep || []).filter(function (c, i, a) { return c >= 0 && c < G.CHARS.length && a.indexOf(c) === i; }).slice(0, n), pool = [];
-    for (var i = 0; i < G.CHARS.length; i++) if (out.indexOf(i) < 0) pool.push(i);
+    for (var i = 0; i < G.NROSTER; i++) if (out.indexOf(i) < 0) pool.push(i);
     while (out.length < n) out.push(pool.splice((Math.random() * pool.length) | 0, 1)[0]);
     return out;
   };

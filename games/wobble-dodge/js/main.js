@@ -216,6 +216,16 @@
     while (out.length < n && pool.length) out.push(pool.splice((Math.random() * pool.length) | 0, 1)[0]);
     return G.randomChars(n, out);
   }
+  // story matches: you are the kid from the opening (G.HERO), and once he is back in (chapter 2) Dex plays next to you; the rest are your picks
+  function storyFixed() { return STORY && !NET ? [G.HERO].concat(seen('friend') ? [G.DEX] : []) : []; }
+  function storyTeam(n, list) {
+    var fx = storyFixed().slice(0, n), rest = (list || []).filter(function (c) { return fx.indexOf(c) < 0 && c < G.NROSTER; });
+    return fx.length ? fx.concat(myTeam(n - fx.length, rest)) : list;
+  }
+  function storyChars(chars, o) {   // single-player story / title defence: the kid (+ Dex) lead my team (WD.start in tests stays raw)
+    o = o || {}; if (o.free || !STORY || NET) return chars;
+    chars = chars ? chars.slice() : [null, null]; chars[0] = storyTeam(o.n || save.n, chars[0] || myTeam(o.n || save.n)); return chars;
+  }
   function start(lvl, chars, o) {   // chars: [myTeam, foeTeam] character ids (missing ones are random); o.defend = title-defence match
     A.unlock(); sel = lvl; o = o || {};
     if (lvl === G.LADDER - 1 && !o.free && S && STORY && chars) chars = [chars[0], chars[1] && chars[1][0] === S.BOSS.ch ? chars[1] : [S.BOSS.ch]];   // the final: the ringleader captains the developer's team
@@ -225,7 +235,7 @@
   }
   // first visit: straight into a short guided 3 vs 3 (one round, weak rivals, hints in context, waits for the first touch/key)
   function startGuide() {
-    sel = 0; var mine = [0].concat(myTeam(2, [0]).filter(function (c) { return c !== 0; })).slice(0, 2);   // 2 vs 2 tutorial: throw, catch, pass, special in context
+    sel = 0; var mine = STORY ? [G.HERO].concat(myTeam(1)) : [0].concat(myTeam(2, [0]).filter(function (c) { return c !== 0; })).slice(0, 2);   // 2 vs 2 tutorial: throw, catch, pass, special in context (story: you are the kid from the opening)
     M = G.M = G.newMatch({ lvl: 0, n: 2, guide: true, waitInput: true, need: 1, roundT: 75, chars: [mine, null], easy: false });
     save.played++; commit(); WD.log.push('guide');
     enterPlay();
@@ -253,7 +263,7 @@
   // every single-player match goes through here: story beats first, then the match
   function play(lvl, chars, o) {
     var need = o && o.defend ? null : storyNeed(lvl);
-    if (!need) return start(lvl, chars, o);
+    if (!need) return start(lvl, storyChars(chars, o), o);
     if (need === 'rival') { if (!seen('pro')) opening(function () { comic('pro', startRival); }); else startRival(); return; }   // chapter 1: opening video, then the comic
     comic(need, function () { play(lvl, chars, o); });
   }
@@ -273,11 +283,11 @@
     save.played++; commit(); WD.log.push('pov:' + save.sto.sf); enterPlay();
   }
   function storyEnd(then) { save.sto.end = 1; save.sto.season = Math.max(1, save.sto.season); commit(); comic('end', function () { comic('credits', then); }); }
-  function playDefend() { var l = Math.max(0, Math.min(G.LADDER - 1, save.sto.dl)); start(l, [myTeam(save.n), null], { defend: 1 }); }
+  function playDefend() { var l = Math.max(0, Math.min(G.LADDER - 1, save.sto.dl)); start(l, storyChars([myTeam(save.n), null]), { defend: 1 }); }
   // the optional training montage (from the result screen after some wins)
   function startTrain() {
     A.unlock(); Sdk.gameplayStart(); state = 'train'; show(null); $('btnPause').style.display = 'none'; storyScreen(true, true); setTouch(touchOn); WD.log.push('train');
-    M = null; var ch = (save.picks && save.picks.length && unlocked(save.picks[0])) ? save.picks[0] : 0;
+    M = null; var ch = STORY ? G.HERO : (save.picks && save.picks.length && unlocked(save.picks[0])) ? save.picks[0] : 0;
     S.startTrain(ch, function (r) {
       Sdk.gameplayStop(); storyScreen(false); $('touch').classList.remove('on');
       var before = MT.level(save.xp); save.xp += r.xp; save.sto.train++; var after = MT.level(save.xp), ev = [];
@@ -522,7 +532,7 @@
       if (M.story === 'rival') { between(function () { play(save.beaten, [myTeam(save.n), null]); }); return; }
       if (M.story === 'pov') { between(startPov); return; }
       if (M.free) { var fm = M; between(function () { start(fm.lvl, [myTeam(fm.n, WD.chars()[0]), null], { free: 1, n: fm.n }); }); return; }
-      var l = M.lvl, mine = WD.chars() ? WD.chars()[0] : null, df = M.defend; between(function () { if (df) start(l, [myTeam(save.n, mine), null], { defend: 1 }); else play(l, [myTeam(save.n, mine), null]); });
+      var l = M.lvl, mine = WD.chars() ? WD.chars()[0] : null, df = M.defend; between(function () { if (df) start(l, storyChars([myTeam(save.n, mine), null]), { defend: 1 }); else play(l, [myTeam(save.n, mine), null]); });
     }
   };
   $('bTrain').onclick = function () { A.unlock(); G.sfx('click'); startTrain(); };
@@ -641,9 +651,9 @@
 
   /* ---------- character select: the screen itself is js/pick.js (KOF-style grid + VS), loaded late; the state stays here for the online code ---------- */
   var PK = { mode: 'single', n: 5, lvl: 0, picks: [], cur: 0, ready: false, foeReady: false, foePicks: null, foe: null, cd: 0, teams: null, easy: false, cols: 6, cells: [] };
-  function cleanPicks(a, n) { var o = []; (Array.isArray(a) ? a : []).forEach(function (c) { c = c | 0; if (c >= 0 && c < G.CHARS.length && o.indexOf(c) < 0 && o.length < n) o.push(c); }); return o; }
+  function cleanPicks(a, n) { var o = []; (Array.isArray(a) ? a : []).forEach(function (c) { c = c | 0; if (c >= 0 && c < G.NROSTER && o.indexOf(c) < 0 && o.length < n) o.push(c); }); return o; }
   function openPick(mode, n, lvl) { if (PU) return PU.open(mode, n, lvl); pickQ = [mode, n, lvl]; loadStory(); loadPick(); }
-  var PICKAPI = { PK: PK, VQ: VQ, A: A, Sdk: Sdk, STORY: STORY, save: function () { return save; }, commit: commit, unlocked: unlocked, myTeam: myTeam, cleanPicks: cleanPicks, goalText: goalText, teamName: teamName, esc: esc, hatName: hatName, ruleShort: function (e) { return e ? G.t('ruleSEasy') : G.t('ruleSAm'); },
+  var PICKAPI = { PK: PK, VQ: VQ, A: A, Sdk: Sdk, STORY: STORY, fixed: function (mode) { return mode === 'single' ? storyFixed() : []; }, save: function () { return save; }, commit: commit, unlocked: unlocked, myTeam: myTeam, cleanPicks: cleanPicks, goalText: goalText, teamName: teamName, esc: esc, hatName: hatName, ruleShort: function (e) { return e ? G.t('ruleSEasy') : G.t('ruleSAm'); },
     show: show, setState: function (s) { state = s; }, getState: function () { return state; }, story: function () { return S; }, touchOn: function () { return touchOn; }, log: function (s) { WD.log.push(s); },
     start: start, play: play, storyNeed: storyNeed, startVersus: startVersus, toMenu: toMenu, netChoose: netChoose, send: function (m) { NETM.send(m); },
     guestGo: function () { if (!NETM.gotSnap) return false; M = G.M = NETM.guestView(performance.now()); enterPlay(); return true; } };

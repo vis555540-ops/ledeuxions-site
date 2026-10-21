@@ -7,20 +7,20 @@
   'use strict';
   var G = window.G;
   var IDS = ['curly', 'tootboss', 'clucky', 'bigbelly', 'twinny', 'snoozy', 'spinny', 'ziggy', 'peekaboo', 'flippy', 'sniffles', 'boingo',
-    'zappy', 'swooshy', 'scarfy', 'hulky', 'grampy', 'twinkle', 'blazey', 'meowy', 'cooly', 'buzzy', 'puffy', 'goggly'];
+    'zappy', 'swooshy', 'scarfy', 'hulky', 'grampy', 'twinkle', 'blazey', 'meowy', 'cooly', 'buzzy', 'puffy', 'goggly', 'hero', 'dex'];   // + the two story kids (24, 25: fixed slots in story, not in the grid)
   G.addStr({
     en: {
       cp0: 'Party time! Let\'s bounce!', cp1: 'Make way! The Boss is here!', cp2: 'Bawk! Can\'t catch me!', cp3: 'Belly power... BOOM!', cp4: 'Which ball is real? Hehe!', cp5: 'Zzz... I\'ll catch it all...',
       cp6: 'Round and round, here it comes!', cp7: 'Zig! Zag! Try to follow me!', cp8: 'Peekaboo! Where\'s the ball?', cp9: 'Attack, attack! Whoosh!', cp10: 'Ah... ah... ACHOO!', cp11: 'Boing! I\'ll save my friends!',
       cp12: 'Zap! Fast as lightning!', cp13: 'My ball... bends.', cp14: 'Swish. Hit and gone.', cp15: 'Got it! Not letting go!', cp16: 'Ho ho! Catch this wobbly one.', cp17: 'Sparkle cheer, let\'s go!',
-      cp18: 'Fired up! Flame shot!', cp19: 'Meow! Jump and snatch!', cp20: 'Stay cool... boomerang.', cp21: 'Buzz buzz! Pass it on!', cp22: 'Puff puff... nice and slow.', cp23: 'You jumped? Gotcha!',
+      cp18: 'Fired up! Flame shot!', cp19: 'Meow! Jump and snatch!', cp20: 'Stay cool... boomerang.', cp21: 'Buzz buzz! Pass it on!', cp22: 'Puff puff... nice and slow.', cp23: 'You jumped? Gotcha!', cp24: 'I fall down. I get up.', cp25: 'Okay, okay... I\'m in.', lazyArt: '(the artist got lazy)', pkFixed: 'Story: you play the kid. Pick the rest.',
       pickHintP: 'Tap to look · tap again to pick · empty slots are random', tapAgain: 'Tap again to pick {0}!', vsSkip: 'tap to skip'
     },
     ko: {
       cp0: '파티 시작이다~ 뽀글뽀글!', cp1: '비켜라! 대장 나가신다!', cp2: '꼬꼬! 못 잡지롱~', cp3: '배꼽 힘으로... 쾅!', cp4: '진짜 공은 어느 쪽~?', cp5: '음냐... 다 잡을게...',
       cp6: '빙글빙글~ 돌아온다!', cp7: '지그재그! 따라와 봐!', cp8: '까꿍! 공이 안 보이지?', cp9: '공격 또 공격! 휘리릭!', cp10: '에... 에... 에취!', cp11: '통통! 친구 살리러 간다!',
       cp12: '찌릿! 번개처럼 피한다!', cp13: '내 공은... 휘어진다.', cp14: '슉. 치고 빠진다.', cp15: '꽉 잡았다! 안 놔!', cp16: '허허, 흔들흔들 받아 보거라.', cp17: '반짝반짝 응원 출동!',
-      cp18: '활활! 불꽃 슛이다!', cp19: '냐옹~ 점프해서 낚아챈다!', cp20: '멋있게... 부메랑.', cp21: '윙윙~ 패스 패스!', cp22: '뭉게뭉게~ 천천히 가자.', cp23: '점프했지? 딱 걸렸어!',
+      cp18: '활활! 불꽃 슛이다!', cp19: '냐옹~ 점프해서 낚아챈다!', cp20: '멋있게... 부메랑.', cp21: '윙윙~ 패스 패스!', cp22: '뭉게뭉게~ 천천히 가자.', cp23: '점프했지? 딱 걸렸어!', cp24: '넘어져도, 다시 일어나.', cp25: '알았어, 알았어... 나도 낄게.', lazyArt: '(그리는 사람이 귀찮았대)', pkFixed: '스토리: 주인공은 너야. 나머지를 골라.',
       pickHintP: '눌러서 보기 · 한 번 더 누르면 넣기 · 빈 자리는 랜덤', tapAgain: '{0}: 한 번 더 누르면 넣어요!', vsSkip: '누르면 넘기기'
     }
   });
@@ -54,10 +54,10 @@
     '#pkStats .st{display:flex;align-items:center;gap:8px;font-size:13px}#pkStats b{width:4.2em;color:#c9cbe0;text-align:right;flex:none}',
     '.bar{display:flex;gap:3px}.bar i{width:16px;height:10px;border-radius:3px;background:#4a4e69;border:1.5px solid #1b1b2f;display:block}.bar i.on{background:#ffd23f}',
     '#pkStats .goal{font-size:13px;color:#ffd23f;line-height:1.3;text-align:center}#pkStats .pgb{margin:4px auto 0;max-width:220px}',
-    '#pkSp{font-size:13px;color:#fff;line-height:1.3;text-align:center}#pkSp b{color:#ff9ecb}#pkSp small{color:#c9cbe0;font-weight:700}#pkSp small.ps{color:#9be7ff}',
+    '#pkSp{font-size:13px;color:#fff;line-height:1.3;text-align:center}#pkSp b{color:#ff9ecb}#pkSp small{color:#c9cbe0;font-weight:700}#pkSp small.ps{color:#9be7ff}#pkSp small.lazy{display:block;margin-top:1px;color:#8d8fb0;font-size:10.5px;font-weight:700;font-style:italic;opacity:.85}',
     '#pkGridBox{flex:1;min-width:0;display:flex;align-items:center;justify-content:center}',
     '#pkGrid{position:relative;display:grid;gap:6px}',
-    '.fc{display:block;background-repeat:no-repeat;background-size:600% 400%}',
+    '.fc{display:block;background-repeat:no-repeat;background-size:600% 500%}',
     '.pkCell{position:relative;font:inherit;color:#fff;padding:0;background:linear-gradient(180deg,#3d4078,#2b2d52);border:3px solid #1b1b2f;border-radius:12px;box-shadow:0 3px 0 #1b1b2f;cursor:pointer;overflow:hidden}',
     '.pkCell .fc{position:absolute;left:calc(50% - var(--fc)/2);top:var(--ft);width:var(--fc);height:var(--fc)}',
     '.pkCell .nm{position:absolute;left:0;right:0;bottom:2px;font-size:11px;color:#fff;-webkit-text-stroke:3px #1b1b2f;paint-order:stroke fill;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:var(--nm)}',
@@ -82,7 +82,7 @@
     '#pkSlots .slot b{position:absolute;left:0;right:0;top:50%;margin-top:-.6em;text-align:center;font-size:calc(var(--sl)*.36);line-height:1.2;color:#4a4e7a;font-style:italic}',
     '#pkSlots .slot .fc{position:absolute;left:5%;top:5%;width:90%;height:90%;visibility:hidden}',
     '#pkSlots .slot.on{border:3px solid #1b1b2f;background:linear-gradient(180deg,#5c6cc4,#3f4a8a);box-shadow:0 3px 0 #1b1b2f}',
-    '#pkSlots .slot.on .fc{visibility:visible}#pkSlots .slot.on.wait .fc{visibility:hidden}',
+    '#pkSlots .slot.on .fc{visibility:visible}#pkSlots .slot.on.wait .fc{visibility:hidden}#pkSlots .slot.fix{cursor:pointer;border-color:#ffd23f;background:linear-gradient(180deg,#c43a35,#7a1f2a)}#pkSlots .slot.fix b{color:#fff}',
     '#pkSlots .slot.on b{top:auto;bottom:-3px;left:3px;right:auto;margin:0;font-size:12px;color:#ffd23f;-webkit-text-stroke:3px #1b1b2f;paint-order:stroke fill;z-index:1}',
     '#pkBtns{display:flex;gap:8px;justify-content:flex-end}#pkBtns .btn{height:46px}',
     '#pkGo{font-size:22px;font-style:italic;min-width:120px}',
@@ -154,14 +154,14 @@
     function lite() { return !!G.lite || G.qDown >= 2; }
     function can(el) { return !!(el && el.animate); }
     function anim(el, kf, o) { if (!can(el)) return null; try { return el.animate(kf, o); } catch (e) { return null; } }
-    function pos(i) { return 'background-image:url(' + SHEET + ');background-position:' + (i % 6) * 20 + '% ' + ((i / 6) | 0) * 33.3333 + '%'; }
+    function pos(i) { return 'background-image:url(' + SHEET + ');background-position:' + (i % 6) * 20 + '% ' + ((i / 6) | 0) * 25 + '%'; }
     function face(i, cls) { return '<i class="fc' + (cls ? ' ' + cls : '') + '" style="' + pos(i) + '"></i>'; }
 
     // build once
     var st = document.createElement('style'); st.id = 'pkCss'; st.textContent = CSS; document.head.appendChild(st);
     var root = $('pick'); root.innerHTML = HTML;
     var grid = $('pkGrid'), cur = $('pkCur');
-    G.CHARS.forEach(function (C, i) {
+    G.CHARS.slice(0, G.NROSTER).forEach(function (C, i) {
       var e = document.createElement('button'); e.className = 'pkCell'; e.dataset.i = i;
       e.innerHTML = face(i) + '<span class="lk"></span><span class="pg"><i></i></span><span class="nm"></span><span class="no"></span><span class="fl"></span>';
       e.addEventListener('pointerdown', function (ev) { lastPtr = ev.pointerType || 'mouse'; });
@@ -230,24 +230,26 @@
       vsStop(); vfReset(); $('pkVsScr').classList.remove('on');
       PK.mode = mode; PK.n = n; PK.lvl = lvl; PK.ready = false; PK.foeReady = false; PK.foePicks = null; PK.cd = 0; PK.teams = null;
       if (mode !== 'guest') PK.easy = X.save().easy;
-      PK.picks = X.cleanPicks(X.save().picks, n); if (mode === 'single' || mode === 'free') PK.picks = PK.picks.filter(X.unlocked);
-      PK.cur = PK.picks.length ? PK.picks[PK.picks.length - 1] : 0;
+      PK.fix = X.fixed ? X.fixed(mode).slice(0, n) : [];   // story: the kid (+ Dex from chapter 2) take the first slots
+      PK.picks = X.cleanPicks(X.save().picks, cap()); if (mode === 'single' || mode === 'free') PK.picks = PK.picks.filter(X.unlocked);
+      PK.cur = PK.fix.length ? PK.fix[0] : PK.picks.length ? PK.picks[PK.picks.length - 1] : 0;
       rollFoe(); PEND = {}; SW.want = -1;
       layout(); refresh(); layout(); portrait(PK.cur, true); X.log('pick:' + mode);
       if (PK.foe && PK.foe.length) img(PK.foe[0]);   // the two captains for the VS screen
-      if (PK.picks.length) img(PK.picks[0]);
+      if (PK.fix.length) img(PK.fix[0]); else if (PK.picks.length) img(PK.picks[0]);
     }
+    function cap() { return PK.n - (PK.fix ? PK.fix.length : 0); }   // free slots for picks
     function rollFoe() {
       var S = X.story();
       PK.foe = PK.mode === 'single' || PK.mode === 'free' ? G.randomChars(PK.n, PK.lvl === G.LADDER - 1 && S && X.STORY ? [S.BOSS.ch] : null) : null;
     }
     function port() { return window.innerHeight > window.innerWidth * 1.05; }
     function layout() {
-      var P = port(); PK.cols = P ? 4 : 6; var rows = Math.ceil(G.CHARS.length / PK.cols), gap = 6;
+      var P = port(); PK.cols = P ? 4 : 6; var rows = Math.ceil(G.NROSTER / PK.cols), gap = 6;
       root.classList.toggle('port', P); root.classList.toggle('lite', lite());
       var tp = $('tops'), tw = (tp && tp.offsetWidth ? tp.offsetWidth + 14 : 70); root.style.setProperty('--tw', tw + 'px'); $('pkTop').style.paddingRight = P ? '0px' : tw + 'px';   // keep clear of the ⚙ button
       var hb = $('pkHat'), hp = P ? $('pkArt') : $('pkOpts'); if (hb.parentNode !== hp) hp.appendChild(hb);
-      var sl = $('pkSlots'); if (sl.children.length !== PK.n) { sl.innerHTML = ''; for (var i = 0; i < PK.n; i++) { var c = document.createElement('div'); c.className = 'slot'; c.innerHTML = '<b>' + (i + 1) + '</b><i class="fc"></i>'; sl.appendChild(c); } }
+      var sl = $('pkSlots'); if (sl.children.length !== PK.n) { sl.innerHTML = ''; for (var i = 0; i < PK.n; i++) { var c = document.createElement('div'); c.className = 'slot'; c.innerHTML = '<b>' + (i + 1) + '</b><i class="fc"></i>'; c.onclick = slotTap.bind(null, i); sl.appendChild(c); } }
       // slot size first (bottom bar), then the grid gets what is left
       var W = $('pkWrap').clientWidth, slW = P ? W : W - $('pkBtns').offsetWidth - $('pkMine').offsetWidth - 30;
       var s = Math.max(28, Math.min(P ? 58 : 60, Math.floor((slW - (PK.n - 1) * 6) / PK.n))); if (window.innerHeight < 460) s = Math.min(s, 46);
@@ -272,15 +274,16 @@
       cur.style.width = (cw + 6) + 'px'; cur.style.height = (ch + 6) + 'px';
       moveCur(true);
     }
+    function slotTap(k) { var f = PK.fix && PK.fix[k]; if (f == null || PK.ready || PK.cd) return; X.A.unlock(); G.sfx('click'); setCur(f); hint(G.t('pkFixed')); }
     function moveCur(snap) {
-      var e = PK.cells[PK.cur]; if (!e) return;
+      var e = PK.cells[PK.cur]; cur.style.visibility = e ? '' : 'hidden'; if (!e) return;
       if (snap) { cur.style.transition = 'none'; }
       cur.style.transform = 'translate(' + (e.offsetLeft - 3) + 'px,' + (e.offsetTop - 3) + 'px)';
       if (snap) { void cur.offsetWidth; cur.style.transition = ''; }
     }
 
     /* ---------- state -> DOM (event driven, never per frame) ---------- */
-    function locked(i) { return (PK.mode === 'single' || PK.mode === 'free') && !X.unlocked(i); }
+    function locked(i) { return i < G.NROSTER && (PK.mode === 'single' || PK.mode === 'free') && !X.unlocked(i); }
     function bar(v) { var s = ''; for (var i = 1; i <= 5; i++) s += '<i class="' + (i <= v ? 'on' : '') + '"></i>'; return s; }
     var PEND = {};
     function preview() {
@@ -292,14 +295,15 @@
         $('pkSp').innerHTML = gl && gl.hidden ? '' : '<small>▶ ' + esc(G.t('ps' + i)) + '</small>';
       } else {
         $('pkStats').innerHTML = [['stPow', C.st[0]], ['stSpd', C.st[1]], ['stCat', C.st[2]]].map(function (r) { return '<div class="st"><b>' + esc(G.t(r[0])) + '</b><span class="bar">' + bar(r[1]) + '</span></div>'; }).join('');
-        $('pkSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + '<br><small>' + esc(G.t('ss_' + C.sp)) + '</small><br><small class="ps">▶ ' + esc(G.t('ps' + i)) + '</small>';
+        $('pkSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + '<br><small>' + esc(G.t('ss_' + C.sp)) + '</small><br><small class="ps">▶ ' + esc(G.t('ps' + i)) + '</small>' + (i < G.NROSTER ? '<small class="lazy">' + esc(G.t('lazyArt')) + '</small>' : '');
       }
     }
     function slots() {
       var sl = $('pkSlots').children;
+      var nf = PK.fix ? PK.fix.length : 0;
       for (var k = 0; k < sl.length; k++) {
-        var e = sl[k], c = PK.picks[k], on = c != null;
-        e.classList.toggle('on', on); e.classList.toggle('wait', on && PEND[k] === c);
+        var e = sl[k], c = k < nf ? PK.fix[k] : PK.picks[k - nf], on = c != null;
+        e.classList.toggle('on', on); e.classList.toggle('fix', k < nf); e.classList.toggle('wait', on && k >= nf && PEND[k] === c);
         if (on && e.dataset.c !== String(c)) { e.dataset.c = c; e.lastChild.setAttribute('style', pos(c)); }
         if (!on) e.dataset.c = '';
       }
@@ -324,11 +328,11 @@
       var rb = $('pkRule'); rb.textContent = X.ruleShort(PK.easy) + (sg ? ' ▸' : ''); rb.classList.toggle('st', !sg); rb.classList.toggle('green', sg && !!PK.easy); rb.title = PK.easy ? G.t('ruleEasy') : G.t('ruleAm');
       var hOn = sg && sv.hats && sv.hats.length > 0; $('pkHat').style.display = hOn ? '' : 'none';
       if (hOn) { var hl = G.t('hatShort', X.hatName(sv.hat)); $('pkHat').textContent = port() ? '🎩' : hl + ' (' + sv.hats.length + '/' + G.meta.HATS.length + ') ▸'; $('pkHat').title = hl; }
-      $('pkChars').textContent = sg ? G.t('charsN', sv.unl.length, G.CHARS.length) + (sv.sto && sv.sto.badge ? ' \uD83C\uDFC5' : '') : '';
+      $('pkChars').textContent = sg ? G.t('charsN', sv.unl.length, G.NROSTER) + (sv.sto && sv.sto.badge ? ' \uD83C\uDFC5' : '') : '';
       preview();
       for (i = 0; i < PK.cells.length; i++) {
         var e = PK.cells[i], k = PK.picks.indexOf(i), L = locked(i), gi = L ? X.goalText(i) : null;
-        e.classList.toggle('cur', i === PK.cur); e.classList.toggle('lock', L); e.classList.toggle('sel', k >= 0); e.querySelector('.no').textContent = k >= 0 ? k + 1 : '';
+        e.classList.toggle('cur', i === PK.cur); e.classList.toggle('lock', L); e.classList.toggle('sel', k >= 0); e.querySelector('.no').textContent = k >= 0 ? k + 1 + PK.fix.length : '';
         e.querySelector('.nm').textContent = gi && gi.hidden ? G.t('u_secret') : G.t('ch' + i);
         var hid = L && gi && gi.hidden; e.querySelector('.lk').textContent = hid ? '?' : '🔒';
         var pg = e.querySelector('.pg'); pg.style.display = gi && gi.bar ? 'block' : 'none'; if (gi && gi.bar) pg.firstChild.style.width = (100 * gi.s.frac).toFixed(0) + '%';
@@ -336,11 +340,11 @@
         e.setAttribute('aria-label', (gi && gi.hidden ? G.t('u_secret') : G.t('ch' + i)) + (L ? ' 🔒' : ''));
       }
       slots(); foePanel();
-      $('pkMine').textContent = G.t('pickMine', PK.picks.length, PK.n);
+      $('pkMine').textContent = G.t('pickMine', PK.picks.length + PK.fix.length, PK.n);
       $('pkFoe').textContent = sg ? '' : PK.ready && !PK.foeReady ? G.t('waitFoe') : PK.foeReady ? G.t('foeReady') : G.t('foePick');
       $('pkRnd').textContent = G.t('pickRandom'); $('pkUndo').textContent = G.t('pickUndo'); $('pkGo').textContent = G.t('pickReady'); $('pkBack').textContent = G.t('pickBack');
       $('pkGo').disabled = PK.ready; $('pkRnd').disabled = PK.ready; $('pkUndo').disabled = PK.ready || !PK.picks.length;
-      var full = PK.picks.length >= PK.n && !PK.ready, go = $('pkGo'); if (full !== go.classList.contains('pulse')) go.classList.toggle('pulse', full);
+      var full = PK.picks.length >= cap() && !PK.ready, go = $('pkGo'); if (full !== go.classList.contains('pulse')) go.classList.toggle('pulse', full);
       if (!(PK.hintT && now() - PK.hintT < 2500)) $('pkHint').textContent = X.touchOn() ? G.t(port() ? 'pickHintP' : 'pickHint') : G.t('pickHint') + '  ·  ' + G.t('pickHintK');
       moveCur(false);
     }
@@ -359,11 +363,11 @@
 
     /* ---------- pick / remove ---------- */
     function togglePick(i) {
-      if (PK.ready) return;
+      if (PK.ready || i >= G.NROSTER) return;
       if (locked(i)) { G.sfx('bounce'); var gl = X.goalText(i); hint(G.t('lockHow', gl ? gl.txt : '?')); shake(PK.cells[i], 4); refresh(); return; }
       var k = PK.picks.indexOf(i);
       if (k >= 0) { PK.picks.splice(k, 1); G.sfx('poof'); PEND = {}; stopClip(); }
-      else if (PK.picks.length < PK.n) { PK.picks.push(i); confirm(i, PK.picks.length - 1); PK.hintT = 0; }
+      else if (PK.picks.length < cap()) { PK.picks.push(i); confirm(i, PK.picks.length - 1 + PK.fix.length); PK.hintT = 0; }
       else { G.sfx('bounce'); shake($('pkSlots'), 4); }
       X.save().picks = PK.picks.slice(); X.commit(); refresh();
     }
@@ -394,7 +398,7 @@
     function undo() { if (PK.ready || !PK.picks.length) return; PK.picks.pop(); PEND = {}; stopClip(); X.save().picks = PK.picks.slice(); X.commit(); G.sfx('poof'); refresh(); }
     function random() {
       if (PK.ready) return; stopClip();
-      PK.picks = PK.mode === 'single' ? X.myTeam(PK.n, []).filter(X.unlocked) : G.randomChars(PK.n); PEND = {}; if (PK.picks.length) img(PK.picks[0]);
+      PK.picks = PK.mode === 'single' ? X.myTeam(cap(), []).filter(X.unlocked) : G.randomChars(PK.n); PEND = {}; if (PK.picks.length) img(PK.picks[0]);
       X.save().picks = PK.picks.slice(); X.commit(); G.sfx('thud'); refresh();
       if (!reduced()) Array.prototype.forEach.call($('pkSlots').children, function (s, k) { if (k < PK.picks.length) anim(s, [{ transform: 'scale(1.18)' }, { transform: 'none' }], { duration: 100, delay: k * 40, easing: 'ease-out', fill: 'backwards' }); });
     }
@@ -402,7 +406,7 @@
       if (PK.ready) return;
       PK.ready = true; G.sfx('ready'); stopClip();
       var sg = PK.mode === 'single' || PK.mode === 'free';
-      var mine = sg ? X.myTeam(PK.n, PK.picks) : G.randomChars(PK.n, PK.picks); PK.picks = mine;
+      var mine = sg ? PK.fix.concat(X.myTeam(cap(), PK.picks)) : G.randomChars(PK.n, PK.picks); PK.picks = mine.slice(PK.fix.length);
       if (PK.mode === 'free') { vs(mine, PK.foe); return; }
       if (PK.mode === 'single') { if (X.storyNeed(PK.lvl)) { X.play(PK.lvl, [mine, PK.foe]); return; } vs(mine, PK.foe); return; }
       X.send({ t: 'pk', c: mine, r: 1 });
@@ -466,13 +470,13 @@
 
     /* ---------- keys + buttons ---------- */
     function key(e) {
-      var c = e.code, n = G.CHARS.length, cols = PK.cols;
+      var c = e.code, n = G.NROSTER, cols = PK.cols;
       if (c === 'Escape') { back(); return; }
       if (PK.cd) { if (!e.repeat) { e.preventDefault(); vsSkip(); } return; }
       var mv = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1, ArrowUp: -cols, KeyW: -cols, ArrowDown: cols, KeyS: cols }[c];
-      if (mv) { e.preventDefault(); setCur((PK.cur + mv + n) % n); G.sfx('click'); return; }
+      if (mv) { e.preventDefault(); setCur(PK.cur >= n ? 0 : (PK.cur + mv + n) % n); G.sfx('click'); return; }
       if (e.repeat) return;
-      if (c === 'Enter' || c === 'KeyJ' || c === 'NumpadEnter') { e.preventDefault(); if (PK.picks.length >= PK.n && PK.picks.indexOf(PK.cur) < 0 && !locked(PK.cur)) readyGo(); else togglePick(PK.cur); }
+      if (c === 'Enter' || c === 'KeyJ' || c === 'NumpadEnter') { e.preventDefault(); if (PK.picks.length >= cap() && PK.picks.indexOf(PK.cur) < 0 && !locked(PK.cur)) readyGo(); else togglePick(PK.cur); }
       else if (c === 'KeyK' || c === 'Backspace') { e.preventDefault(); undo(); }
       else if (c === 'Space') { e.preventDefault(); readyGo(); }
     }
@@ -485,7 +489,7 @@
     $('pkSize').onclick = function () {
       X.A.unlock(); G.sfx('click'); if (PK.ready || PK.cd) return; var sv = X.save();
       if (PK.mode === 'free') { PK.n = PK.n % 7 + 1; sv.free.n = PK.n; } else { var l = G.TEAM_SIZES; PK.n = sv.n = l[(l.indexOf(sv.n) + 1) % l.length]; }
-      PK.picks = PK.picks.slice(0, PK.n); X.commit(); rollFoe(); layout(); refresh();
+      PK.fix = X.fixed ? X.fixed(PK.mode).slice(0, PK.n) : []; PK.picks = PK.picks.slice(0, cap()); X.commit(); rollFoe(); layout(); refresh();
     };
     $('pkVs').onclick = function () {
       X.A.unlock(); G.sfx('click'); if (PK.ready || PK.cd) return; var sv = X.save();

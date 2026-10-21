@@ -54,6 +54,15 @@
       case 'bow': c.fillStyle = INK; c.beginPath(); c.moveTo(0, -12); c.lineTo(-16, -22); c.lineTo(-16, -2); c.closePath(); c.moveTo(0, -12); c.lineTo(16, -22); c.lineTo(16, -2); c.closePath(); c.fill(); c.fillStyle = '#ff4fa3'; c.beginPath(); c.moveTo(0, -12); c.lineTo(-13, -19); c.lineTo(-13, -5); c.closePath(); c.moveTo(0, -12); c.lineTo(13, -19); c.lineTo(13, -5); c.closePath(); c.fill(); c.fillStyle = INK; c.beginPath(); c.arc(0, -12, 5, 0, TAU); c.fill(); c.fillStyle = '#ff9ecb'; c.beginPath(); c.arc(0, -12, 3, 0, TAU); c.fill(); break;
       case 'horns': for (var hn = -1; hn <= 1; hn += 2) { c.fillStyle = INK; c.beginPath(); c.moveTo(hn * 5, -7); c.quadraticCurveTo(hn * 16, -14, hn * 15, -28); c.quadraticCurveTo(hn * 11, -16, hn * 12, -5); c.fill(); c.fillStyle = '#fff3d6'; c.beginPath(); c.moveTo(hn * 7, -8); c.quadraticCurveTo(hn * 14, -14, hn * 14, -23); c.quadraticCurveTo(hn * 11, -15, hn * 11, -7); c.fill(); } break;
       case 'beanie': c.fillStyle = INK; c.beginPath(); c.arc(0, -4, 14, Math.PI, TAU); c.fill(); c.fillRect(-15, -7, 30, 7); c.fillStyle = '#3d5afe'; c.beginPath(); c.arc(0, -5, 11.5, Math.PI, TAU); c.fill(); c.fillStyle = '#ffd23f'; c.fillRect(-13, -6, 26, 4); c.fillStyle = INK; c.beginPath(); c.arc(0, -19, 6, 0, TAU); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(0, -19, 4, 0, TAU); c.fill(); break;
+      case 'hero':   // the kid from the opening: messy brown hair + band-aid (hood is on the body)
+        c.fillStyle = INK; c.beginPath(); c.moveTo(-6, 11); c.quadraticCurveTo(-16.5, 5, -15, -5); c.lineTo(-18, -8); c.lineTo(-14, -10); c.lineTo(-14.5, -15); c.lineTo(-8.5, -15); c.lineTo(-6, -20); c.lineTo(-1, -16); c.lineTo(3, -20.5); c.lineTo(6, -15.5); c.lineTo(12, -17); c.lineTo(11.5, -11.5); c.lineTo(17.5, -9); c.lineTo(11, -6.5); c.quadraticCurveTo(6, -9, 2, -5.5); c.quadraticCurveTo(-3, -4, -5, 0); c.quadraticCurveTo(-6, 6, -6, 11); c.fill();
+        c.fillStyle = '#6e3f1f'; c.beginPath(); c.moveTo(-5.2, 9); c.quadraticCurveTo(-15, 4.5, -13.6, -5); c.lineTo(-15.8, -7.8); c.lineTo(-12.6, -9.2); c.lineTo(-13, -13.6); c.lineTo(-8, -13.6); c.lineTo(-5.6, -17.8); c.lineTo(-1.2, -14.4); c.lineTo(2.8, -18.4); c.lineTo(5.4, -14); c.lineTo(10.6, -15.4); c.lineTo(10.2, -10.6); c.lineTo(15, -8.8); c.lineTo(10.6, -7.6); c.quadraticCurveTo(6, -10.4, 1.4, -6.8); c.quadraticCurveTo(-4.2, -5.4, -6.2, -0.6); c.quadraticCurveTo(-6.6, 5, -5.2, 9); c.fill();
+        c.save(); c.translate(4.2, 4.6); c.rotate(-0.3); c.fillStyle = INK; c.fillRect(-3.4, -1.6, 6.8, 3.2); c.fillStyle = '#f4d9a8'; c.fillRect(-2.9, -1.1, 5.8, 2.2); c.restore(); break;
+      case 'dexcap':   // Dex: curly black hair + backwards blue cap (brim to the back)
+        c.fillStyle = INK; c.beginPath(); for (var dq = 0; dq < 5; dq++) { var da = Math.PI * (0.62 + dq * 0.12); c.moveTo(Math.cos(da) * 12.5 + 4.6, Math.sin(da) * 12.5 - 1); c.arc(Math.cos(da) * 12.5, Math.sin(da) * 12.5 - 1, 4.6, 0, TAU); } c.fill();
+        c.fillStyle = '#24201f'; c.beginPath(); for (dq = 0; dq < 5; dq++) { da = Math.PI * (0.62 + dq * 0.12); c.moveTo(Math.cos(da) * 12.5 + 3.4, Math.sin(da) * 12.5 - 1); c.arc(Math.cos(da) * 12.5, Math.sin(da) * 12.5 - 1, 3.4, 0, TAU); } c.fill();
+        c.fillStyle = INK; c.beginPath(); c.arc(0, -3, 14.4, Math.PI, TAU); c.fill(); c.fillRect(-23, -6.5, 15, 6);
+        c.fillStyle = '#2f7de1'; c.beginPath(); c.arc(0, -4, 12.4, Math.PI, TAU); c.fill(); c.fillRect(-21.5, -5.2, 13, 3); c.fillStyle = '#1f5fb3'; c.fillRect(-12.4, -6.2, 24.8, 2.2); c.fillStyle = INK; c.beginPath(); c.arc(0, -16.6, 2, 0, TAU); c.fill(); break;
       case 'crown': c.fillStyle = INK; c.beginPath(); c.moveTo(-13, -5); c.lineTo(-15, -26); c.lineTo(-6, -17); c.lineTo(0, -29); c.lineTo(6, -17); c.lineTo(15, -26); c.lineTo(13, -5); c.fill(); c.fillStyle = '#ffc400'; c.beginPath(); c.moveTo(-10.5, -7.5); c.lineTo(-12, -20); c.lineTo(-5.5, -13.5); c.lineTo(0, -24); c.lineTo(5.5, -13.5); c.lineTo(12, -20); c.lineTo(10.5, -7.5); c.fill(); c.fillStyle = '#e63946'; c.beginPath(); c.arc(0, -12, 2.4, 0, TAU); c.fill(); break;
     }
   }
@@ -65,7 +74,8 @@
      shows faces, so heads never pop mid-rally. G.faceHeads = false -> the old drawn heads (A/B and fallback). */
   var HD = { ok: false, img: null, white: null, cell: 64, n: 24 }, FR = 13.5 * 1.4, COSM = { star: 1, flower: 1, wizard: 1, pirate: 1, viking: 1, goldcrown: 1 };
   // tight box of each face inside its cell, in 1/64 cell units (x, y, w, h): only these pixels are drawn (about half the cell = half the raster work)
-  var HBOX = [6,0,52,64,11,1,47,63,0,21,58,43,10,0,48,64,9,0,49,64,8,0,50,64,10,7,50,57,10,16,54,48,11,10,47,54,11,10,47,54,8,5,52,59,7,10,51,54,3,10,55,54,10,19,48,45,0,20,58,44,11,20,47,44,0,21,58,43,7,10,51,54,10,0,50,64,10,9,54,55,11,20,47,44,11,0,47,64,9,7,49,57,9,19,49,45];   // side-view sheet (art/faces/side/HBOX_side.txt)
+  var HBOX = [6,0,52,64,11,1,47,63,0,21,58,43,10,0,48,64,9,0,49,64,8,0,50,64,10,7,50,57,10,16,54,48,11,10,47,54,11,10,47,54,8,5,52,59,7,10,51,54,3,10,55,54,10,19,48,45,0,20,58,44,11,20,47,44,0,21,58,43,7,10,51,54,10,0,50,64,10,9,54,55,11,20,47,44,11,0,47,64,9,7,49,57,9,19,49,45,
+    1,13,58,51,0,12,58,52];   // side-view sheet (art/faces/side/HBOX_side.txt) + row 5: hero, Dex (art/faces/story/post_story.py)
   G.faceHeads = true; G.headSheet = HD;
   (function () {
     var vq = (/\?v=[^&#]*/.exec((document.currentScript && document.currentScript.src) || '') || [''])[0];
@@ -78,7 +88,7 @@
             g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,255,255,0.78)'; g.fillRect(0, 0, w.width, w.height);
             HD.white = w;
           } catch (e) { HD.white = im; }
-          HD.img = im; HD.cell = im.width / 6; HD.ok = true;
+          HD.img = im; HD.cell = im.width / 6; HD.n = Math.min(G.CHARS.length, Math.round(im.height / HD.cell) * 6, HBOX.length / 4); HD.ok = true;
         }
         if (im.decode) im.decode().then(fin, fin); else fin();
       };
@@ -126,7 +136,8 @@
      rotated sprite. No shadows / filters. LITE tier: no ink under legs / back arm (front arm + jersey keep theirs).
      Cost vs the stick bodies: 검증/body_perf.mjs (G.cartoonBody = false draws the old renderer for A/B). */
   var SKIN = ['#f9b7db', '#b5d55c', '#f8e5cb', '#fb9355', '#ca81f8', '#58ccf8', '#f8d72c', '#26c2b9', '#eccbf5', '#ee3b38', '#f4ad7f', '#d1eb63',
-    '#6ddaf9', '#ede8f4', '#5b83a5', '#f7a576', '#f0caa9', '#f9b7db', '#f98b4e', '#f9ebaf', '#494a6d', '#f8d72c', '#dcf1f9', '#87cf55'];   // sampled from heads_96.png (G.CHARS order)
+    '#6ddaf9', '#ede8f4', '#5b83a5', '#f7a576', '#f0caa9', '#f9b7db', '#f98b4e', '#f9ebaf', '#494a6d', '#f8d72c', '#dcf1f9', '#87cf55',
+    '#f7c693', '#ae673d'];   // sampled from heads_96.png (G.CHARS order); last two = the story kids (hero, Dex)
   var TORSO = {}, TL = 31, OL = 2.3;   // neck-hip length in skeleton units, ink outline thickness
   // local frame: hip = (0,0), neck = (0,-TL); o grows the shape by o on every side (for the ink silhouette)
   function jersey(P, th, o) {
@@ -155,8 +166,22 @@
     var dx = p[e] - p[k], dy = p[e + 1] - p[k + 1], d = Math.sqrt(dx * dx + dy * dy) || 1, fx = dy / d * f * z, fy = -dx / d * f * z, x = p[e], y = p[e + 1];
     c.moveTo(x - fx, y - fy); c.lineTo(x + fx * 7, y + fy * 7);
   }
+  // the two story kids wear their own clothes (G.CHARS[ch].fit); same strokes and fills as the jersey body, plus a hood lump,
+  // a pocket / sleeves, skin hands and a team-colour armband (the team marker, since the shirt is not the team colour)
+  var FIT = { hoodie: { top: '#e3342f', top2: '#c4261f', arm: '#e3342f', leg: '#4a7cc4', pants: '#4a7cc4', hood: 1 },
+    tee: { top: '#ffd23f', top2: '#e8b820', arm: null, leg: null, pants: '#2b3f73', sleeve: 1 } };
+  function fitParts(th) {   // cached per limb thickness: shorts without the belly stripe, hood (+ ink), kangaroo pocket, drawstrings
+    var T = torso(th); if (T.x) return T.x;
+    var sh = new Path2D(), ho = new Path2D(), hd = new Path2D(), ds = new Path2D(), sw = 14.5 * th, ww = 10.2 * th;
+    shorts(sh, th, 0);
+    ho.ellipse(sw * 0.72, -TL + 1.5, 8.8 + OL, 6.4 + OL, 0.35, 0, TAU); hd.ellipse(sw * 0.72, -TL + 1.5, 8.8, 6.4, 0.35, 0, TAU);
+    hd.moveTo(-ww * 0.72, -13); hd.lineTo(ww * 0.72, -13); hd.lineTo(ww * 0.9, -3.5); hd.lineTo(-ww * 0.9, -3.5); hd.closePath();   // + kangaroo pocket (same fill)
+    ds.rect(-sw * 0.42, -TL + 1, 1.6, 9); ds.rect(-sw * 0.12, -TL + 1, 1.6, 8);
+    return (T.x = { sh: sh, ho: ho, hd: hd, ds: ds });
+  }
   function drawToon(c, b, uni, p, z, col) {
-    var th = b.th || 1, zt = z * th, flash = b.flash > 0, f = b.face < 0 ? -1 : 1;
+    var th = b.th || 1, zt = z * th, flash = b.flash > 0, f = b.face < 0 ? -1 : 1, C = G.CHARS[b.ch], F = C && C.fit ? FIT[C.fit] : null;
+    if (F) { drawFit(c, b, uni, p, z, col, F, th, zt, flash, f); return; }
     var lw = 9.2 * zt, ow = lw + 4.6 * z, lite = G.lite || G.qDown >= 2;
     var jer = flash ? '#fff' : uni;
     // 1) one ink pass under all legs, both sneakers and the back arm; then sneakers, back limbs (shaded), front leg
@@ -174,6 +199,34 @@
     c.beginPath(); limb(c, p, 2, 6, 8);
     c.strokeStyle = INK; c.lineWidth = ow; c.stroke();   // kept in LITE too: the arm crossing the jersey needs its outline
     c.strokeStyle = col; c.lineWidth = lw; c.stroke();
+  }
+  function drawFit(c, b, uni, p, z, col, F, th, zt, flash, f) {
+    var lw = 9.2 * zt, ow = lw + 4.6 * z, lite = G.lite || G.qDown >= 2, X = fitParts(th), T = torso(th);
+    var arm = flash ? '#fff' : F.arm || col, leg = flash ? '#fff' : F.leg || col, top = flash ? '#fff' : F.top;
+    if (!lite) { c.beginPath(); limb(c, p, 2, 10, 12); limb(c, p, 4, 18, 20); limb(c, p, 4, 14, 16); shoe(c, p, 18, 20, z, f); shoe(c, p, 14, 16, z, f); c.strokeStyle = INK; c.lineWidth = ow; c.stroke(); }
+    c.lineWidth = lw;
+    c.beginPath(); shoe(c, p, 18, 20, z, f); shoe(c, p, 14, 16, z, f); c.strokeStyle = '#fff'; c.stroke();
+    c.beginPath(); limb(c, p, 4, 18, 20); c.strokeStyle = shade(leg); c.stroke();
+    c.beginPath(); limb(c, p, 2, 10, 12); c.strokeStyle = shade(arm); c.stroke();
+    if (F.sleeve && !lite) { c.beginPath(); c.moveTo(p[2], p[3]); c.lineTo(p[2] + (p[10] - p[2]) * 0.5, p[3] + (p[11] - p[3]) * 0.5); c.strokeStyle = shade(top); c.lineWidth = lw * 1.2; c.stroke(); c.lineWidth = lw; }
+    c.beginPath(); limb(c, p, 4, 14, 16); c.strokeStyle = leg; c.stroke();
+    // top + pants in the hip->neck frame (x mirrored with the facing so the hood sits at the back)
+    var dx = p[2] - p[4], dy = p[3] - p[5], d = Math.sqrt(dx * dx + dy * dy) || 1, s = d / TL;
+    c.save(); c.transform(-dy / d * s, dx / d * s, -dx / d * s, -dy / d * s, p[4], p[5]); if (f < 0) c.scale(-1, 1);
+    c.fillStyle = INK; c.fill(T.o);
+    c.fillStyle = top; c.fill(T.j); c.fillStyle = flash ? '#fff' : F.pants; c.fill(X.sh);
+    if (F.hood) { c.fillStyle = INK; c.fill(X.ho); c.fillStyle = flash ? '#fff' : F.top2; c.fill(X.hd); if (!flash && !lite) { c.fillStyle = '#fff'; c.fill(X.ds); } }
+    c.restore();
+    // front arm over the top: ink, sleeve/skin, hand, armband in the team colour
+    c.beginPath(); limb(c, p, 2, 6, 8);
+    c.strokeStyle = INK; c.lineWidth = ow; c.stroke();
+    c.strokeStyle = arm; c.lineWidth = lw; c.stroke();
+    var ex = p[2] + (p[6] - p[2]) * 0.55, ey = p[3] + (p[7] - p[3]) * 0.55;
+    if (F.sleeve) { c.beginPath(); c.moveTo(p[2], p[3]); c.lineTo(ex, ey); c.strokeStyle = INK; c.lineWidth = ow * 1.12; c.stroke(); c.strokeStyle = top; c.lineWidth = lw * 1.2; c.stroke(); }
+    if (F.arm && !lite) { c.fillStyle = flash ? '#fff' : col; c.beginPath(); c.arc(p[8], p[9], lw * 0.42, 0, TAU); c.moveTo(p[12] + lw * 0.42, p[13]); c.arc(p[12], p[13], lw * 0.42, 0, TAU); c.fill(); }   // both hands out of the sleeves (one fill)
+    var ax = p[2] + (p[6] - p[2]) * (F.sleeve ? 0.62 : 0.5), ay = p[3] + (p[7] - p[3]) * (F.sleeve ? 0.62 : 0.5), ux = (p[6] - p[2]) * 0.16, uy = (p[7] - p[3]) * 0.16;
+    c.lineCap = 'butt'; c.beginPath(); c.moveTo(ax - ux, ay - uy); c.lineTo(ax + ux, ay + uy);
+    c.strokeStyle = INK; c.lineWidth = ow * 1.1; c.stroke(); c.strokeStyle = flash ? '#fff' : uni; c.lineWidth = lw * 1.15; c.stroke(); c.lineCap = 'round';
   }
   G.cartoonBody = true;
   function drawBody(c, b, uni, now, fh) {
@@ -220,6 +273,7 @@
     else if (e === 1) { c.beginPath(); c.moveTo(-1, -3.5); c.lineTo(3, -1); c.lineTo(-1, 1.5); c.moveTo(10, -3.5); c.lineTo(6, -1); c.lineTo(10, 1.5); c.stroke(); c.beginPath(); c.ellipse(5, 6, 2.5, 3, 0, 0, TAU); c.fill(); }
     else if (b.cheer) { c.beginPath(); c.arc(1.5, -0.5, 2.6, Math.PI, TAU); c.moveTo(11.1, -0.5); c.arc(8.5, -0.5, 2.6, Math.PI, TAU); c.stroke(); c.beginPath(); c.arc(5, 3, 4, 0.1, Math.PI - 0.1); c.fill(); }
     else { c.beginPath(); c.arc(2, -1.5, 2.1, 0, TAU); c.arc(8.6, -1.5, 2.1, 0, TAU); c.fill(); if (e === 4 || b.charging) { c.beginPath(); c.moveTo(-1.5, -6.5); c.lineTo(4.5, -4.2); c.moveTo(11.5, -6.5); c.lineTo(6, -4.2); c.stroke(); } if (b.sad) { c.beginPath(); c.arc(5, 7, 2.5, Math.PI + 0.3, TAU - 0.3); c.stroke(); } }
+    var C = G.CHARS[b.ch]; if (C && C.story && b.hat !== C.hat) drawHat(c, C.hat, now);
     drawHat(c, b.hat, now);
     c.restore(); c.restore();
   }

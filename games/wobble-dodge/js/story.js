@@ -4,7 +4,7 @@
 (function () {
   'use strict';
   var G = window.G, S = G.story = {}, TAU = Math.PI * 2, INK = '#1b1b2f';
-  S.HERO = 0; S.COACH = 3; S.DEX = 7; S.DEV = 1; S.CAPT = 6;   // character ids used in the comics
+  S.HERO = G.HERO; S.COACH = 3; S.DEX = G.DEX; S.DEV = 1; S.CAPT = 6;   // character ids used in the comics
   // the ringleader from gym class: captain of the developer's team in the final, and the one you play in the final chapter. Swap his look here.
   S.BOSS = { ch: 20, hat: 'shades', uni: '#c9a227' };
   var TXT = {
@@ -126,14 +126,14 @@
   // a panel: bg, cast [[ch, x 0..1, {flop, flip, cheer, hat, uni, s}]], say [[cast index, key]], cap (caption key), fx [[kind, ...]]
   S.COMICS = {
     pro: [
-      { bg: 'gym', cap: 'pro1c', cast: [[H0, 0.26, { flop: 1 }], [BS.ch, 0.6, { flip: 1, cheer: 1, hat: BS.hat, uni: FOE }], [DX, 0.84, { flip: 1, cheer: 1, hat: 'cap', uni: FOE, s: 0.85 }]], say: [[1, 'pro1a']], fx: [['balls', 0], ['laugh', 1], ['laugh', 2], ['dizzy', 0]] },
-      { bg: 'gym', cap: 'pro1b', cast: [[H0, 0.28, {}], [DX, 0.74, { flip: 1, hat: 'cap', uni: FOE }]], say: [[0, 'pro2a'], [1, 'pro2b']] },
-      { bg: 'park', cap: 'pro3c', cast: [[H0, 0.26, {}], [DX, 0.76, { flip: 1, hat: 'cap', uni: FOE }]], say: [[0, 'pro3a'], [1, 'pro3b']], fx: [['sign', 0.5, 0.22, 'sgPark', '#8ee53f']] }
+      { bg: 'gym', cap: 'pro1c', cast: [[H0, 0.26, { flop: 1 }], [BS.ch, 0.6, { flip: 1, cheer: 1, hat: BS.hat, uni: FOE }], [DX, 0.84, { flip: 1, cheer: 1, uni: FOE, s: 0.85 }]], say: [[1, 'pro1a']], fx: [['balls', 0], ['laugh', 1], ['laugh', 2], ['dizzy', 0]] },
+      { bg: 'gym', cap: 'pro1b', cast: [[H0, 0.28, {}], [DX, 0.74, { flip: 1, uni: FOE }]], say: [[0, 'pro2a'], [1, 'pro2b']] },
+      { bg: 'park', cap: 'pro3c', cast: [[H0, 0.26, {}], [DX, 0.76, { flip: 1, uni: FOE }]], say: [[0, 'pro3a'], [1, 'pro3b']], fx: [['sign', 0.5, 0.22, 'sgPark', '#8ee53f']] }
     ],
     friend: [
-      { bg: 'park', cast: [[H0, 0.3, { cheer: 1 }], [DX, 0.7, { flop: 1, hat: 'cap', uni: FOE }]], say: [[1, 'fr1a'], [0, 'fr1b']], fx: [['dizzy', 1]] },
-      { bg: 'park', cast: [[H0, 0.28, {}], [DX, 0.72, { flip: 1, hat: 'cap', uni: MY }]], say: [[1, 'fr2a'], [0, 'fr2b']] },
-      { bg: 'park', cast: [[H0, 0.3, { cheer: 1 }], [DX, 0.7, { flip: 1, cheer: 1, hat: 'cap', uni: MY }]], say: [[1, 'fr2c']], fx: [['shake']] }
+      { bg: 'park', cast: [[H0, 0.3, { cheer: 1 }], [DX, 0.7, { flop: 1, uni: FOE }]], say: [[1, 'fr1a'], [0, 'fr1b']], fx: [['dizzy', 1]] },
+      { bg: 'park', cast: [[H0, 0.28, {}], [DX, 0.72, { flip: 1, uni: MY }]], say: [[1, 'fr2a'], [0, 'fr2b']] },
+      { bg: 'park', cast: [[H0, 0.3, { cheer: 1 }], [DX, 0.7, { flip: 1, cheer: 1, uni: MY }]], say: [[1, 'fr2c']], fx: [['shake']] }
     ],
     coach: [
       { bg: 'park', cap: 'co1c', cast: [[H0, 0.25, { cheer: 1 }], [CO, 0.74, { flip: 1, hat: 'cap', uni: '#5b6b80' }]], say: [[1, 'co1a'], [0, 'co1b']], fx: [['bench', 0.74]] },
@@ -141,7 +141,7 @@
       { bg: 'rec', cap: 'co3c', cast: [[CO, 0.2, { hat: 'cap', uni: '#5b6b80' }], [H0, 0.8, { flip: 1, cheer: 1 }]], say: [[0, 'co3a'], [1, 'co3b']], fx: [['sign', 0.5, 0.24, 'sgSold', '#ff5a4f'], ['dozer', 0.5]] }
     ],
     r: [
-      { bg: 'arena', cap: 'r1c', cast: [[CO, 0.24, { hat: 'cap', uni: '#5b6b80' }], [H0, 0.5, {}], [5, 0.72, {}], [7, 0.9, { uni: MY, s: 0.9 }]], say: [[0, 'r1a']] },
+      { bg: 'arena', cap: 'r1c', cast: [[CO, 0.24, { hat: 'cap', uni: '#5b6b80' }], [H0, 0.5, {}], [5, 0.72, {}], [DX, 0.9, { uni: MY, s: 0.9 }]], say: [[0, 'r1a']] },
       { bg: 'arena', cast: [[H0, 0.28, {}], [CO, 0.72, { flip: 1, hat: 'cap', uni: '#5b6b80' }]], say: [[0, 'r2a'], [1, 'r2b']], fx: [['zzz', 1]] }
     ],
     rb: [
@@ -162,7 +162,7 @@
     f: [
       { bg: 'gym', cap: 'f0c', cast: [[H0, 0.26, { flop: 1 }], [BS.ch, 0.7, { flip: 1, cheer: 1, hat: BS.hat, uni: FOE }]], say: [[1, 'f0a']], fx: [['dizzy', 0], ['laugh', 1]] },
       { bg: 'office', cast: [[DV, 0.26, { hat: 'top', uni: '#c9a227' }], [BS.ch, 0.74, { flip: 1, hat: BS.hat, uni: BS.uni }]], say: [[0, 'f1a'], [1, 'f1b']] },
-      { bg: 'arena', cast: [[CO, 0.14, { hat: 'cap', uni: '#5b6b80', s: 0.9 }], [H0, 0.4, {}], [DX, 0.62, { hat: 'cap' }], [12, 0.84, { cheer: 1 }]], say: [[1, 'f2a'], [3, 'f2b']], fx: [['spot']] }
+      { bg: 'arena', cast: [[CO, 0.14, { hat: 'cap', uni: '#5b6b80', s: 0.9 }], [H0, 0.4, {}], [DX, 0.62, {}], [12, 0.84, { cheer: 1 }]], say: [[1, 'f2a'], [3, 'f2b']], fx: [['spot']] }
     ],
     credits: [{ bg: 'credits', fx: [['credits']] }]
   };
@@ -212,7 +212,7 @@
   ];
   S.COMICS.end = [
     { bg: 'arena', cast: [[BS.ch, 0.32, { hat: BS.hat, uni: BS.uni }], [H0, 0.68, { flip: 1, cheer: 1 }]], say: [[0, 'en1a'], [1, 'en1b']], fx: [['shake'], ['spot']] },
-    { bg: 'rec', cast: [[DX, 0.13, { cheer: 1, hat: 'cap', s: 0.85 }], [BS.ch, 0.37, { cheer: 1, hat: BS.hat }], [H0, 0.62, { flip: 1, cheer: 1 }], [CO, 0.87, { flip: 1, cheer: 1, hat: 'cap', uni: '#5b6b80', s: 0.9 }]], say: [[1, 'en2a'], [2, 'en2b']], fx: [['sign', 0.5, 0.2, 'sgSaved', '#8ee53f']] },
+    { bg: 'rec', cast: [[DX, 0.13, { cheer: 1, s: 0.85 }], [BS.ch, 0.37, { cheer: 1, hat: BS.hat }], [H0, 0.62, { flip: 1, cheer: 1 }], [CO, 0.87, { flip: 1, cheer: 1, hat: 'cap', uni: '#5b6b80', s: 0.9 }]], say: [[1, 'en2a'], [2, 'en2b']], fx: [['sign', 0.5, 0.2, 'sgSaved', '#8ee53f']] },
     { bg: 'trophy', cap: 'e2c', cast: [[H0, 0.28, { cheer: 1, hat: 'goldcrown' }], [CO, 0.76, { flip: 1, cheer: 1, hat: 'cap', uni: '#5b6b80' }]], say: [[1, 'e1a']], fx: [['cup', 0.52], ['confetti']] }
   ];
   /* ================= end of the final chapter ================= */
