@@ -65,7 +65,7 @@
      shows faces, so heads never pop mid-rally. G.faceHeads = false -> the old drawn heads (A/B and fallback). */
   var HD = { ok: false, img: null, white: null, cell: 64, n: 24 }, FR = 13.5 * 1.4, COSM = { star: 1, flower: 1, wizard: 1, pirate: 1, viking: 1, goldcrown: 1 };
   // tight box of each face inside its cell, in 1/64 cell units (x, y, w, h): only these pixels are drawn (about half the cell = half the raster work)
-  var HBOX = [12,4,40,60,10,9,44,55,0,20,58,44,10,4,44,60,6,4,52,60,13,12,38,52,11,14,42,50,7,17,57,47,11,12,42,52,12,20,41,44,11,14,41,50,5,12,53,52,11,8,42,56,0,20,50,44,9,20,52,44,10,20,44,44,0,20,53,44,10,14,47,50,13,6,40,58,13,21,38,43,14,28,37,36,12,0,40,64,12,14,44,50,13,28,38,36];
+  var HBOX = [6,0,52,64,11,1,47,63,0,21,58,43,10,0,48,64,9,0,49,64,8,0,50,64,10,7,50,57,10,16,54,48,11,10,47,54,11,10,47,54,8,5,52,59,7,10,51,54,3,10,55,54,10,19,48,45,0,20,58,44,11,20,47,44,0,21,58,43,7,10,51,54,10,0,50,64,10,9,54,55,11,20,47,44,11,0,47,64,9,7,49,57,9,19,49,45];   // side-view sheet (art/faces/side/HBOX_side.txt)
   G.faceHeads = true; G.headSheet = HD;
   (function () {
     var vq = (/\?v=[^&#]*/.exec((document.currentScript && document.currentScript.src) || '') || [''])[0];
@@ -83,7 +83,7 @@
         if (im.decode) im.decode().then(fin, fin); else fin();
       };
       // 64 px cells (face R 20) for 1x screens / LITE (the slow-laptop case); 96 px cells (R 30, ~42 KB) on hi-dpi so faces stay sharp
-      im.src = 'art_game/faces/heads_' + ((window.devicePixelRatio || 1) >= 1.5 && !G.lite ? 96 : 64) + '.png' + vq;
+      im.src = 'art_game/faces/heads_side_' + ((window.devicePixelRatio || 1) >= 1.5 && !G.lite ? 96 : 64) + '.png' + vq;
     }
     // first load stays untouched (검증/select_kof: no face art before the first tap): fetch on the first input, or when a match
     // that is not the waiting tutorial gets drawn. The tap that starts the tutorial leaves ~0.3 s of intro, usually enough.
@@ -102,11 +102,11 @@
     if (e === 1 || e === 2) c.scale(1.07, 0.9);   // hit / KO squash
     c.drawImage(b.flash > 0 ? HD.white : HD.img, (ch % 6) * cs + bx * u, ((ch / 6) | 0) * cs + by * u, bw * u, bh * u, -1.6 * R + bx * d, -2.1 * R + by * d, bw * d, bh * d);
     if (e === 2 || e === 1) {   // KO = X eyes, hit = > < eyes, stuck on over the art's eyes
-      var ex = 0.33 * R, ey = 0.16 * R, er = 0.27 * R, q = 0.17 * R;
-      c.fillStyle = '#fff'; c.beginPath(); c.arc(-ex, ey, er, 0, TAU); c.arc(ex, ey, er, 0, TAU); c.fill();
+      var ex = 0.51 * R, ey = -0.08 * R, er = 0.27 * R, q = 0.17 * R;   // side view: one eye, forward of centre
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(ex, ey, er, 0, TAU); c.fill();
       c.strokeStyle = INK; c.lineWidth = 0.13 * R; c.lineCap = 'round'; c.beginPath();
-      if (e === 2) for (var i = -1; i <= 1; i += 2) { var x = i * ex; c.moveTo(x - q, ey - q); c.lineTo(x + q, ey + q); c.moveTo(x + q, ey - q); c.lineTo(x - q, ey + q); }
-      else { c.moveTo(-ex - q, ey - q); c.lineTo(-ex + q, ey); c.lineTo(-ex - q, ey + q); c.moveTo(ex + q, ey - q); c.lineTo(ex - q, ey); c.lineTo(ex + q, ey + q); }
+      if (e === 2) { c.moveTo(ex - q, ey - q); c.lineTo(ex + q, ey + q); c.moveTo(ex + q, ey - q); c.lineTo(ex - q, ey + q); }
+      else { c.moveTo(ex - q, ey - q); c.lineTo(ex + q, ey); c.lineTo(ex - q, ey + q); }
       c.stroke();
     }
     if (COSM[b.hat]) { c.save(); c.translate(0, -R * 0.62); c.scale(1.05, 1.05); drawHat(c, b.hat, now); c.restore(); }   // earned cosmetic hat on top of the art
