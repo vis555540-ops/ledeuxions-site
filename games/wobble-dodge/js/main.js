@@ -39,7 +39,8 @@
     if (!port) { V.SW = 1280; w = Math.min(vw, vh * 16 / 9); h = w * 9 / 16; l = (vw - w) / 2; t = (vh - h) / 2; }
     else { V.SW = 680; w = vw; h = w * 720 / 680; if (h > vh * 0.6) { h = vh * 0.6; w = h * 680 / 720; } l = (vw - w) / 2; t = 0; }
     cv.style.left = l + 'px'; cv.style.top = t + 'px'; cv.style.width = w + 'px'; cv.style.height = h + 'px';
-    var dpr = G.lite ? 1 : Math.min(window.devicePixelRatio || 1, 2), pw = Math.min(1920, Math.max(320, Math.round(w * dpr)));
+    var dpr = G.lite ? 1 : Math.min(window.devicePixelRatio || 1, 2); if (G.qDown >= 1) dpr = Math.min(dpr, 1); if (G.qDown >= 3) dpr = 0.75;
+    var pw = Math.min(1920, Math.max(320, Math.round(w * dpr)));
     if (cv.width !== pw) { cv.width = pw; cv.height = Math.round(pw * h / w); }
     V.k = cv.width / V.SW;
     $('pad').classList.toggle('on', port);
@@ -165,7 +166,21 @@
     if (state === 'net' && netView) netView();
     if (state === 'pick') pickRefresh();
   }
-  var shot = null, slowT = 0, slowN = 0;
+  var shot = null, slowT = 0, slowN = 0, slowL = 0, slowS = 0, slowV = 0;
+  // auto quality all match long: 1 = 1px/CSS px, 2 = LITE (saved), 3 = 0.75px/CSS px
+  G.qDown = 0;
+  function quality(dt) {
+    if (state !== 'play' || WD.speed > 1 || G.qDown >= 3) { slowN = 0; return; }
+    if (slowN++ < 30) { slowT = slowL = slowS = slowV = 0; return; }
+    slowT++; if (dt > 0.025) slowL++; else if (dt < 0.022) slowS++; if (dt > 0.045) slowV++;
+    if (slowT < 120) return;
+    if ((slowL > 18 && slowS > 12) || slowV > 24) {   // stutter or <22 fps (steady 30 Hz is ok)
+      G.qDown = G.lite ? 3 : G.qDown === 0 && (window.devicePixelRatio || 1) <= 1 ? 2 : G.qDown + 1;
+      if (G.qDown === 2) { save.lite = 1; commit(); applySave(); WD.log.push('autoLite'); }
+      layout(); WD.log.push('q' + G.qDown);
+    }
+    slowN = 0;
+  }
   function enterPlay() { shot = null; state = 'play'; ovl = false; show(null); $('btnPause').style.display = 'block'; setTouch(touchOn); acc = 0; resT = 0; gAcc = 0; V.camX = 0; layout(); keyGuide(); if (!(M && M.waitInput)) Sdk.gameplayStart(); scHold = 0; if (S && !NET) S.matchStart(M); }
   // my team for a quick start: saved picks that are unlocked, then random unlocked, then (bigger teams than the roster) borrowed ones
   function unlocked(i) { return save.unl.indexOf(i) >= 0; }
@@ -768,7 +783,7 @@
   function frame(ts) {
     requestAnimationFrame(frame);
     var dt = Math.min(0.05, (ts - (last || ts)) / 1000); last = ts;
-    if (state === 'play' && !save.lite && slowN < 300) { slowN++; if (dt > 0.034) slowT++; if (slowN === 300 && slowT > 120) { save.lite = 1; commit(); applySave(); layout(); WD.log.push('autoLite'); } }
+    quality(dt);
     try {
       var now = performance.now();
       if (NET === 'guest' && (state === 'play' || state === 'result') && NETM.gotSnap) guestFrame(dt, now);
