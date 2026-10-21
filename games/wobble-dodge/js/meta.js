@@ -16,25 +16,27 @@
   /* Vampire-Survivors-style unlocks: every locked player has its own goal tied to play.
      v = the counter in d.ach (or d.wins / d.beaten / d.login.days), n = goal. Per-match goals keep the best match in d.ach.
      req = a chain: the goal stays hidden ("unlock X first") until X is unlocked. sec = secret: only a vague hint until done.
-     Pace: the first three fall in the first ~15 min (first win, 5 hits, 3 specials); the rest are spaced over 1-2 weeks of casual play. */
+     Pace (art/해금_속도_분석.md, Monte-Carlo with MT.reward, average player): ~2 in the first session (first win + 10 hits), ~5 after day 1,
+     ~9 by day 3, ~13 by day 7, ~17 after a month; one or two a day in between. Ladder/story (15, 20) and the secrets keep their goals.
+     A locked, visible (not secret / not chained) player can also be opened with 3 rewarded ads (MT.adWatched, max 5 ads a day). */
   MT.UNLOCKS = [
     { ch: 2, v: 'wins', n: 1 },                 // first win (the guided match)
-    { ch: 12, v: 'hit', n: 5 },                 // hit 5 opponents in total
-    { ch: 1, v: 'sp', n: 3 },                   // use 3 special shots in total
-    { ch: 4, v: 'outsBest', n: 5 },             // put 5 out (hits + catch-outs) in one match
-    { ch: 6, v: 'cat', n: 10 },                 // catch 10 balls in total
-    { ch: 18, v: 'spBest', n: 3, req: 12 },     // chain after Zappy: 3 specials in one match (the fire one)
-    { ch: 8, v: 'rev', n: 5 },                  // bring 5 teammates back with catches (the halo one)
-    { ch: 13, v: 'ban', n: 5 },                 // hit 5 times with the BANANA SHOT
-    { ch: 14, v: 'noHit', n: 1 },               // win a match without getting hit (the ninja)
+    { ch: 12, v: 'hit', n: 10 },                // hit 10 opponents in total
+    { ch: 1, v: 'sp', n: 10 },                  // use 10 special shots in total
+    { ch: 4, v: 'outsBest', n: 10 },            // put 10 out (hits + catch-outs) in one match
+    { ch: 6, v: 'cat', n: 50 },                 // catch 50 balls in total
+    { ch: 18, v: 'spBest', n: 5, req: 12 },     // chain after Zappy: 5 specials in one match (the fire one)
+    { ch: 8, v: 'rev', n: 30 },                 // bring 30 teammates back with catches (the halo one)
+    { ch: 13, v: 'ban', n: 25 },                // hit 25 times with the BANANA SHOT
+    { ch: 14, v: 'noHit', n: 3 },               // win 3 matches without getting hit (the ninja)
     { ch: 10, v: 'days', n: 3 },                // the one login unlock: play on 3 different days
     { ch: 9, v: 'w7', n: 1 },                   // win a 7 vs 7 match
     { ch: 23, v: 'flipAir', n: 1, req: 9 },     // chain after the horned one: FLIP shot hits a jumping enemy
     { ch: 11, v: 'mpCatch', n: 1 },             // finish a match with a catch on match point
-    { ch: 16, v: 'cat', n: 20 },                // the old master: 20 catches in total
-    { ch: 15, v: 'beaten', n: 5 },              // beat ladder team 5
+    { ch: 16, v: 'cat', n: 120 },               // the old master: 120 catches in total
+    { ch: 15, v: 'beaten', n: 8 },              // beat ladder team 8
     { ch: 20, v: 'hulkWin', n: 1, req: 15 },    // chain after Hulky: win with Hulky on the team
-    { ch: 17, v: 'wins', n: 20 },               // 20 wins in total (the idol)
+    { ch: 17, v: 'wins', n: 60 },               // 60 wins in total (the idol)
     { ch: 19, v: 'airCat', n: 1, sec: 1 },      // secret: catch a ball in mid-air (the cat)
     { ch: 21, v: 'passBest', n: 8, sec: 1 },    // secret: 8 passes in a row without throwing (the bee)
     { ch: 22, v: 'code', n: 1, sec: 1 }         // secret: tickle the title (tap it 5x, or type WOBBLE on the menu)
@@ -70,6 +72,26 @@
       if (!best || sc > best.sc) best = { ch: u.ch, sc: sc, s: s };
     });
     return best ? best.ch : -1;
+  };
+  /* rewarded-ad unlock (pick screen): 3 finished ads open one player; at most 5 counted ads per local day.
+     Only players whose goal is visible (not secret, not chained) and still locked. Save: d.ads = { day, n, ch: { id: ads so far } } */
+  MT.AD_NEED = 3; MT.AD_DAY = 5;
+  function ads(d, dt) {
+    var a = d.ads; if (!a || typeof a !== 'object') a = d.ads = { day: '', n: 0, ch: {} };
+    if (!a.ch || typeof a.ch !== 'object') a.ch = {};
+    var t = dayKey(dt); if (a.day !== t) { a.day = t; a.n = 0; }
+    return a;
+  }
+  MT.adCan = function (d, ch) { var s = MT.status(d, ch); return !!(s && !s.open && s.shown && ch < G.NROSTER); };
+  MT.adLeft = function (d, dt) { return Math.max(0, MT.AD_DAY - ads(d, dt).n); };
+  MT.adCount = function (d, ch) { var v = d.ads && d.ads.ch ? d.ads.ch[ch] : 0; return typeof v === 'number' && v > 0 ? Math.min(MT.AD_NEED - 1, v | 0) : 0; };
+  // one finished rewarded ad for `ch`. Returns the events (a 'char' event when this was the third ad), or null when not allowed.
+  MT.adWatched = function (d, ch, dt) {
+    if (!MT.adCan(d, ch) || MT.adLeft(d, dt) <= 0) return null;
+    var a = ads(d, dt), ev = [], c = MT.adCount(d, ch) + 1; a.n++;
+    if (c >= MT.AD_NEED) { delete a.ch[ch]; d.unl.push(ch); ev.push({ k: 'char', ch: ch, why: 'ad' }); MT.check(d, ev, 'ad'); }
+    else a.ch[ch] = c;
+    return ev;
   };
   MT.secretCode = function (d) { var ev = []; if (!ach(d).code) { d.ach.code = 1; MT.check(d, ev, 'code'); } return ev; };
   // cosmetic hats: id -> how it is earned

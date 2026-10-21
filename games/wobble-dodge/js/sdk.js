@@ -83,6 +83,35 @@
     } catch (e) { end('fail'); }
   };
 
+  /* rewarded ad (pick screen "watch ads to unlock"). Only on an explicit click, never while a match is being played.
+     cb('done') ONLY on adFinished; adError / no fill / nothing within 8 s / a rejected promise -> cb('fail'); no SDK -> cb('skip').
+     The game is already stopped on the pick screen; audio is muted while the ad is on screen. Exactly one cb() per request. */
+  S.lastAdT = 0;
+  S.rewardedOk = function () { return S.ok && S.adsOk; };
+  S.rewarded = function (cb) {
+    if (!S.rewardedOk()) { cb('skip'); return; }
+    if (S.adPending || S.playing) { cb('busy'); return; }
+    S.adPending = true; lg('rewarded');
+    var fired = false, t1 = 0, t2 = 0;
+    function end(r) {
+      if (fired) return; fired = true; clearTimeout(t1); clearTimeout(t2);
+      S.adPending = false; S.adPlaying = false; G.audio.setAdMute(false); S.lastAdT = performance.now();
+      lg('rw:' + r); try { cb(r); } catch (e) { }
+    }
+    try {
+      var p = sdk.ad.requestAd('rewarded', {
+        adStarted: function () {
+          if (fired) return; clearTimeout(t1); S.adPlaying = true; G.audio.setAdMute(true);
+          t2 = setTimeout(function () { end('fail'); }, 120000);
+        },
+        adFinished: function () { end('done'); },
+        adError: function () { end('fail'); }
+      });
+      if (p && typeof p.catch === 'function') p.catch(function () { end('fail'); });
+      t1 = setTimeout(function () { if (!S.adPlaying) end('fail'); }, 8000);
+    } catch (e) { end('fail'); }
+  };
+
   /* ---------- save ---------- */
   var KEY = 'wobbledodge_v1';   // same key the site version already used: old saves keep working
   function defaults() {
@@ -91,7 +120,8 @@
       login: { last: '', streak: 0, best: 0, days: 0 }, daily: { date: '', done: false }, dailyN: 0, seen: { lvl: 1 },
       lite: 0, rec: { cat: 0, hit: 0, streak: 0, cur: 0 },
       sto: { seen: '', fails: 0, sf: 0, badge: 0, sc: 0, end: 0, season: 0, dl: 0, train: 0 }, free: { n: 3, lvl: 0 },   // story: comics seen (',id,'), 1 vs 1 losses, SUPER CATCH owned, ending seen, title-defence season + match, trainings done
-      ach: { hit: 0, cat: 0, sp: 0, rev: 0, ban: 0, outsBest: 0, spBest: 0, noHit: 0, w7: 0, flipAir: 0, mpCatch: 0, hulkWin: 0, airCat: 0, passBest: 0, code: 0 } };   // goal counters for player unlocks (meta.js MT.UNLOCKS)
+      ach: { hit: 0, cat: 0, sp: 0, rev: 0, ban: 0, outsBest: 0, spBest: 0, noHit: 0, w7: 0, flipAir: 0, mpCatch: 0, hulkWin: 0, airCat: 0, passBest: 0, code: 0 },
+      ads: { day: '', n: 0, ch: {} } };   // ads = rewarded-ad unlock progress (meta.js MT.adWatched): local day, ads counted that day, { player: ads so far }; ach = goal counters for player unlocks (meta.js MT.UNLOCKS)
   }
   G.saveDefaults = defaults;
   function parse(str) { try { var o = JSON.parse(str); return (o && typeof o === 'object' && !Array.isArray(o)) ? o : null; } catch (e) { return null; } }
@@ -114,6 +144,8 @@
     d.unl = d.unl.filter(function (c, i, a) { return c >= 0 && c < 24 && (c | 0) === c && a.indexOf(c) === i; });
     d.beaten = Math.max(0, Math.min(10, d.beaten | 0)); d.xp = Math.max(0, Math.floor(d.xp));
     if (G.TEAM_SIZES && G.TEAM_SIZES.indexOf(d.n) < 0) d.n = 5;
+    var ac = {}, a0 = d.ads.ch; if (a0 && typeof a0 === 'object') for (var c in a0) { var cn = +c, v = a0[c]; if ((cn | 0) === cn && cn >= 0 && cn < 24 && typeof v === 'number' && v >= 1) ac[cn] = Math.min(2, v | 0); }
+    d.ads.ch = ac; d.ads.n = Math.max(0, d.ads.n | 0);
     // older saves (daily-gift / win-count unlocks): every player already unlocked stays unlocked; goal counters start at 0
     // except what the save already knows (wins, ladder, days, best catches/hits in a match)
     if (o.ach === undefined) { d.ach.cat = Math.max(d.ach.cat, d.rec.cat); d.ach.hit = Math.max(d.ach.hit, d.rec.hit); }

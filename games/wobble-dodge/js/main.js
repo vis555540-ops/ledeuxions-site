@@ -469,7 +469,7 @@
     if (it.k === 'char') {
       ch = it.ch; var C = G.CHARS[ch], g = goalText(ch); tag += ' ' + G.t('unlTitle'); name = G.t('ch' + ch);
       sp = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + ' <small>' + esc(G.t('ss_' + C.sp)) + '</small>'; sty = '▶ ' + G.t('ps' + ch);
-      quote = S ? S.recruit(ch) : ''; how = g ? G.t('unlHow', g.txt) : ''; WD.log.push('unlPop:' + ch);
+      quote = S ? S.recruit(ch) : ''; how = it.why === 'ad' ? G.t('unlHow', G.t('adGoal', MT.AD_NEED)) : g ? G.t('unlHow', g.txt) : ''; WD.log.push('unlPop:' + ch);
       if (state === 'result') card('gold', G.t('newChar'), G.t('ch' + ch) + ' · ' + G.t('sp_' + C.sp), ch, null, 0, true);
     } else if (it.k === 'hat') { hat = it.hat; tag += ' ' + G.t('newHat'); name = G.t('h_' + it.hat); if (state === 'result') card('gold', G.t('newHat'), name, 0, hat, 0, true); }
     else if (it.k === 'skill') { tag += ' ' + G.t('skTag'); name = G.t('skName'); sp = esc(G.t('skDesc')); quote = G.t('skQuote'); if (state === 'result') card('gold', G.t('skTag'), name, 0, null, 0, true); }
@@ -514,7 +514,7 @@
   function between(fn) {
     if (NET || adBusy) { if (!adBusy) fn(); return; }
     var now = performance.now();
-    if (Sdk.ok && Sdk.adsOk && adGate.n >= 2 && now - adGate.t > (WD.adGapMs != null ? WD.adGapMs : 150000)) {
+    if (Sdk.ok && Sdk.adsOk && adGate.n >= 2 && now - Math.max(adGate.t, Sdk.lastAdT || 0) > (WD.adGapMs != null ? WD.adGapMs : 150000)) {
       adBusy = true; adGate.n = 0; adGate.t = now; WD.log.push('midgame');
       Sdk.midgame(function () { adGate.t = performance.now(); adBusy = false; if (state === 'result') fn(); });
     } else fn();
@@ -653,7 +653,7 @@
   var PK = { mode: 'single', n: 5, lvl: 0, picks: [], cur: 0, ready: false, foeReady: false, foePicks: null, foe: null, cd: 0, teams: null, easy: false, cols: 6, cells: [] };
   function cleanPicks(a, n) { var o = []; (Array.isArray(a) ? a : []).forEach(function (c) { c = c | 0; if (c >= 0 && c < G.NROSTER && o.indexOf(c) < 0 && o.length < n) o.push(c); }); return o; }
   function openPick(mode, n, lvl) { if (PU) return PU.open(mode, n, lvl); pickQ = [mode, n, lvl]; loadStory(); loadPick(); }
-  var PICKAPI = { PK: PK, VQ: VQ, A: A, Sdk: Sdk, STORY: STORY, fixed: function (mode) { return mode === 'single' ? storyFixed() : []; }, save: function () { return save; }, commit: commit, unlocked: unlocked, myTeam: myTeam, cleanPicks: cleanPicks, goalText: goalText, teamName: teamName, esc: esc, hatName: hatName, ruleShort: function (e) { return e ? G.t('ruleSEasy') : G.t('ruleSAm'); },
+  var PICKAPI = { PK: PK, VQ: VQ, A: A, Sdk: Sdk, STORY: STORY, fixed: function (mode) { return mode === 'single' ? storyFixed() : []; }, save: function () { return save; }, commit: commit, unlocked: unlocked, myTeam: myTeam, cleanPicks: cleanPicks, goalText: goalText, reveal: function (items, done) { reveal(items, done); }, now: function () { return MT.now(); }, teamName: teamName, esc: esc, hatName: hatName, ruleShort: function (e) { return e ? G.t('ruleSEasy') : G.t('ruleSAm'); },
     show: show, setState: function (s) { state = s; }, getState: function () { return state; }, story: function () { return S; }, touchOn: function () { return touchOn; }, log: function (s) { WD.log.push(s); },
     start: start, play: play, storyNeed: storyNeed, startVersus: startVersus, toMenu: toMenu, netChoose: netChoose, send: function (m) { NETM.send(m); },
     guestGo: function () { if (!NETM.gotSnap) return false; M = G.M = NETM.guestView(performance.now()); enterPlay(); return true; } };
@@ -705,7 +705,7 @@
       if (state === 'train') { S.trainStep(dt * WD.speed, readInput(), V.SW); clearPress(); }
       // SUPER CATCH: hold CATCH for 1 s (once per match)
       if (state === 'play' && M && M.scOk && !M.scUsed && M.state === 'play' && !NET) { if (keys.cat || tch.cat) { scHold += dt / 1; if (scHold >= 1) { G.superCatch(M); scHold = 0; } } else scHold = 0; } else scHold = 0;
-      if (resCards.length && (state === 'result' || state === 'menu')) drawCards(ts / 1000);
+      if (resCards.length && (state === 'result' || state === 'menu' || (state === 'pick' && popCh >= 0))) drawCards(ts / 1000);   // pick: only under an unlock pop-up (rewarded-ad unlock)
       if (state !== 'pick') G.render(ctx, state === 'menu' || state === 'net' || state === 'train' || state === 'comic' ? null : M, ts / 1000, V);   // the pick screen is opaque and still: no canvas work under it
       if (state === 'train') S.drawTrain(ctx, ts / 1000, V);
       else if (S && M && !NET && (state === 'play' || state === 'pause')) S.overlay(ctx, M, ts / 1000, V, scHold);

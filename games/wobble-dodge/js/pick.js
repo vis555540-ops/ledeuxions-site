@@ -54,6 +54,9 @@
     '#pkStats .st{display:flex;align-items:center;gap:8px;font-size:13px}#pkStats b{width:4.2em;color:#c9cbe0;text-align:right;flex:none}',
     '.bar{display:flex;gap:3px}.bar i{width:16px;height:10px;border-radius:3px;background:#4a4e69;border:1.5px solid #1b1b2f;display:block}.bar i.on{background:#ffd23f}',
     '#pkStats .goal{font-size:13px;color:#ffd23f;line-height:1.3;text-align:center}#pkStats .pgb{margin:4px auto 0;max-width:220px}',
+    '#pkAdBox{margin-top:6px;text-align:center}#pkAd{height:34px;font-size:14px;padding:0 12px;box-shadow:0 3px 0 #1b1b2f;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#pkAd[disabled]{opacity:.7;cursor:default}',
+    '#pkAdBox small{display:block;margin-top:3px;font-size:11px;color:#c9cbe0;font-weight:700;word-break:keep-all}#pkAdBox .cap{font-size:13px;color:#9be7ff;font-weight:700}',
+    '#pick.port #pkAdBox{margin-top:3px}#pick.port #pkAd{height:30px;font-size:12px;padding:0 8px}#pick.port #pkAdBox small{font-size:10px}',
     '#pkSp{font-size:13px;color:#fff;line-height:1.3;text-align:center}#pkSp b{color:#ff9ecb}#pkSp small{color:#c9cbe0;font-weight:700}#pkSp small.ps{color:#9be7ff}#pkSp small.lazy{display:block;margin-top:1px;color:#8d8fb0;font-size:10.5px;font-weight:700;font-style:italic;opacity:.85}',
     '#pkGridBox{flex:1;min-width:0;display:flex;align-items:center;justify-content:center}',
     '#pkGrid{position:relative;display:grid;gap:6px}',
@@ -291,13 +294,44 @@
       $('pkName').textContent = lk && gl && gl.hidden ? G.t('u_secret') : G.t('ch' + i);
       $('pkArt').classList.toggle('lock', lk); $('pkLk').textContent = lk && gl && gl.hidden ? '?' : '🔒';
       if (lk) {
-        $('pkStats').innerHTML = '<div class="goal">🔒 ' + esc(gl ? gl.txt : '?') + '</div>' + (gl && gl.bar ? '<div class="pgb"><i style="width:' + (100 * gl.s.frac).toFixed(0) + '%"></i></div>' : '');
+        $('pkStats').innerHTML = '<div class="goal">🔒 ' + esc(gl ? gl.txt : '?') + '</div>' + (gl && gl.bar ? '<div class="pgb"><i style="width:' + (100 * gl.s.frac).toFixed(0) + '%"></i></div>' : '') + adBox(i);
         $('pkSp').innerHTML = gl && gl.hidden ? '' : '<small>▶ ' + esc(G.t('ps' + i)) + '</small>';
       } else {
         $('pkStats').innerHTML = [['stPow', C.st[0]], ['stSpd', C.st[1]], ['stCat', C.st[2]]].map(function (r) { return '<div class="st"><b>' + esc(G.t(r[0])) + '</b><span class="bar">' + bar(r[1]) + '</span></div>'; }).join('');
         $('pkSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + '<br><small>' + esc(G.t('ss_' + C.sp)) + '</small><br><small class="ps">▶ ' + esc(G.t('ps' + i)) + '</small>' + (i < G.NROSTER ? '<small class="lazy">' + esc(G.t('lazyArt')) + '</small>' : '');
       }
     }
+    /* ---------- rewarded-ad unlock: a second way in for a locked, visible player (not secret / chained ??? players, never the story kids).
+       Only where the CrazyGames SDK can show ads; on our site / local there is no button at all. One click = one ad; reward only when it finished. */
+    var MT = G.meta, AD = { busy: false };
+    function adShown(i) { return locked(i) && X.Sdk.rewardedOk && X.Sdk.rewardedOk() && MT.adCan(X.save(), i); }
+    function adBox(i) {
+      if (!adShown(i)) return '';
+      var sv = X.save(), left = MT.adLeft(sv, X.now()), n = MT.adCount(sv, i), esc = X.esc;
+      if (left <= 0 && !AD.busy) return '<div id="pkAdBox"><div class="cap">' + esc(G.t('adCap')) + '</div></div>';
+      return '<div id="pkAdBox"><button class="btn sm green" id="pkAd"' + (AD.busy ? ' disabled' : '') + '>' + esc(AD.busy ? G.t('adWait') : G.t('adBtn', n, MT.AD_NEED)) + '</button>' +
+        '<small>' + esc(G.t('adSub', left, MT.AD_NEED)) + '</small></div>';
+    }
+    function adGo() {
+      var i = PK.cur, sv = X.save();
+      if (AD.busy || PK.ready || PK.cd || !adShown(i)) return;
+      if (MT.adLeft(sv, X.now()) <= 0) { hint(G.t('adCap')); preview(); return; }
+      AD.busy = true; stopClip(); X.log('adReq:' + i); preview();
+      X.Sdk.rewarded(function (r) {
+        AD.busy = false; X.log('adRes:' + i + ':' + r);
+        if (r === 'done') {
+          var ev = MT.adWatched(X.save(), i, X.now());
+          if (ev) {
+            X.commit();
+            if (ev.length) { if (X.getState() === 'pick') refresh(); X.reveal(ev); return; }   // third ad: the usual one-at-a-time TA-DA! pop-up
+            hint(G.t('adGot', MT.adCount(X.save(), i), MT.AD_NEED)); G.sfx('click');
+          }
+        } else if (r === 'fail') hint(G.t('adNone'));   // no fill / error: friendly line, nothing given
+        if (X.getState() === 'pick') refresh();
+      });
+    }
+    $('pkStats').addEventListener('click', function (e) { if (e.target && e.target.id === 'pkAd') { e.stopPropagation(); X.A.unlock(); adGo(); } });
+
     function slots() {
       var sl = $('pkSlots').children;
       var nf = PK.fix ? PK.fix.length : 0;
