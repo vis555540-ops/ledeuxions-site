@@ -1,4 +1,4 @@
-/* 흐물 피구 / Wobble Dodgeball - i18n + global namespace */
+/* 언더독 피구 / Underdog Dodgeball - i18n + global namespace */
 (function () {
   'use strict';
   var G = window.G = {};
@@ -26,10 +26,10 @@
       roomCode: 'Room code', codeHint: 'Enter the 4-digit code', waitFriend: 'Waiting for your friend...', shareHint: 'Send the code or the link to your friend.',
       connecting: 'Connecting...', joining: 'Joining room {0}...', noroom: 'No room with that code.', full: 'That room is full.', netErr: 'Could not connect. Check your internet.',
       peerLeft: 'Your friend left the game.', hostLeft: 'The host left the game.', lost: 'Connection lost.', youHost: 'You: LEFT team (blue)', youGuest: 'You: RIGHT team (orange)',
-      vsWin: 'YOU WIN!', vsLose: 'YOU LOSE...', rematch: 'REMATCH', waitHost: 'Waiting for the host...', shareText: 'Play Wobble Dodgeball with me! Room {0}',
-      title1: 'WOBBLE', title2: 'DODGEBALL', sub: 'Floppy team dodgeball',
+      vsWin: 'YOU WIN!', vsLose: 'YOU LOSE...', rematch: 'REMATCH', waitHost: 'Waiting for the host...', shareText: 'Play Underdog Dodgeball with me! Room {0}',
+      title1: 'UNDERDOG', title2: 'DODGEBALL', sub: 'From gym-class target to champion',
       play: 'PLAY', locked: 'LOCKED', beaten: 'CLEARED', next: 'NEXT UP', champion: 'CHAMPION!',
-      t0: 'Jelly Jigglers', t1: 'Tummy Rumblers', t2: 'Peep Peep Chicks', t3: 'Clang Clang Pots', t4: 'Toot Toot Overlords', my: 'Wobble Squad',
+      t0: 'Jelly Jigglers', t1: 'Tummy Rumblers', t2: 'Peep Peep Chicks', t3: 'Clang Clang Pots', t4: 'Toot Toot Overlords', my: 'Underdog Squad',
       round: 'ROUND {0}', ready: 'READY...', go: 'DODGE!',
       out: 'OUT!', catch: 'CATCH!', caughtOut: 'CAUGHT OUT!', dodge: 'WHOOSH!', backIn: 'BACK IN!', tooBig: 'TOO BIG!',
       spReady: 'SPECIAL READY!', nextSp: 'NEXT', matchPoint: 'MATCH POINT!',
@@ -50,7 +50,7 @@
       stPow: 'POWER', stSpd: 'SPEED', stCat: 'CATCH', special: 'SPECIAL',
       foePick: 'Friend: picking...', foeReady: 'Friend: READY!', waitFoe: 'Waiting for your friend...', foeTeam: 'RIVALS', cdReady: 'READY!', cdFight: 'DODGE!',
       ch12: 'Zappy', ch13: 'Swooshy', ch14: 'Scarfy', ch15: 'Hulky', ch16: 'Grampy', ch17: 'Twinkle', ch18: 'Blazey', ch19: 'Meowy', ch20: 'Cooly', ch21: 'Buzzy', ch22: 'Puffy', ch23: 'Goggly',
-      sp_zap: 'ZAP ZAP', sp_sway: 'WOBBLY GOURD', sp_fireball: 'HOT POTATO', ss_zap: 'bzzt! bzzt! bzzt!', ss_sway: 'whoa... where is it going?', ss_fireball: 'blazing fast!',
+      sp_zap: 'ZAP ZAP', sp_sway: 'SWAYING GOURD', sp_fireball: 'HOT POTATO', ss_zap: 'bzzt! bzzt! bzzt!', ss_sway: 'whoa... where is it going?', ss_fireball: 'blazing fast!',
       ch0: 'Curly', ch1: 'Toot Boss', ch2: 'Clucky', ch3: 'Big Belly', ch4: 'Twinny', ch5: 'Snoozy', ch6: 'Spinny', ch7: 'Ziggy', ch8: 'Peekaboo', ch9: 'Flippy', ch10: 'Sniffles', ch11: 'Boingo',
       winSub: 'You beat the {0}!', loseSub: 'The {0} won this time. Try again!', unlocked: 'New team unlocked!', allClear: 'You beat every team! Play any of them again for fun.',
       wows: ['WOW!', 'OOOH!', 'YEAH!', 'WHOA!', 'NICE!'],
@@ -83,10 +83,10 @@
       roomCode: '방 번호', codeHint: '숫자 4개를 넣어요', waitFriend: '친구를 기다리는 중...', shareHint: '친구에게 번호나 링크를 보내 주세요.',
       connecting: '연결하는 중...', joining: '{0}번 방에 들어가는 중...', noroom: '그 번호의 방이 없어요.', full: '그 방은 꽉 찼어요.', netErr: '연결이 안 돼요. 인터넷을 확인해 주세요.',
       peerLeft: '친구가 나갔어요.', hostLeft: '방장이 나갔어요.', lost: '연결이 끊겼어요.', youHost: '나: 왼쪽 팀 (파랑)', youGuest: '나: 오른쪽 팀 (주황)',
-      vsWin: '이겼다!', vsLose: '졌다...', rematch: '한 판 더', waitHost: '방장을 기다리는 중...', shareText: '흐물 피구 같이 하자! 방 번호 {0}',
-      title1: '흐물', title2: '피구', sub: '흐물흐물 팀 피구',
+      vsWin: '이겼다!', vsLose: '졌다...', rematch: '한 판 더', waitHost: '방장을 기다리는 중...', shareText: '언더독 피구 같이 하자! 방 번호 {0}',
+      title1: '언더독', title2: '피구', sub: '체육 시간 과녁에서 챔피언까지',
       play: '시작!', locked: '잠김', beaten: '격파', next: '도전', champion: '챔피언!',
-      t0: '말랑 젤리단', t1: '꼬르륵 배꼽단', t2: '삐약 병아리단', t3: '우당탕 냄비단', t4: '뿡뿡 대마왕단', my: '흐물 동네단',
+      t0: '말랑 젤리단', t1: '꼬르륵 배꼽단', t2: '삐약 병아리단', t3: '우당탕 냄비단', t4: '뿡뿡 대마왕단', my: '언더독 동네단',
       round: '{0} 라운드', ready: '준비...', go: '피구 시작!',
       out: '아웃!', catch: '잡았다!', caughtOut: '잡혀서 아웃!', dodge: '휙!', backIn: '부활!', tooBig: '너무 커!',
       spReady: '필살 준비!', nextSp: '다음', matchPoint: '매치 포인트!',
@@ -135,7 +135,7 @@
       ps4: 'Quick trickster: only one ball is real', ps5: 'Catching expert, takes it slow', ps6: 'Fastest feet, weakest arm: boomerang from behind', ps7: 'Quick dodger, zigzags to confuse',
       ps8: 'Nimble, throws a ball you cannot see', ps9: 'All attack: cannot catch at all', ps10: 'Steady defender who catches well', ps11: 'Helper: catch to bring friends back',
       ps12: 'So fast it is a dodge master, poor catcher', ps13: 'Fastball rival with a curving shot', ps14: 'Hit-and-run ninja: fast and strong, no catching', ps15: 'Catches like a wall, moves slow',
-      ps16: 'Best hands; the wobbly shot fools everyone', ps17: 'Weak arm, but catches everything', ps18: 'Blazing power, forget catching', ps19: 'Jump and snatch, cat style',
+      ps16: 'Best hands; the swaying shot fools everyone', ps17: 'Weak arm, but catches everything', ps18: 'Blazing power, forget catching', ps19: 'Jump and snatch, cat style',
       ps20: 'Cool and strong boomerang', ps21: 'Busy bee: pass, pass, ZAP', ps22: 'Heavy, sturdy cloud', ps23: 'Pilot who hunts jumpers'
     },
     ko: {

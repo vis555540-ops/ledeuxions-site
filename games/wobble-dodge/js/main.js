@@ -1,4 +1,4 @@
-/* 흐물 피구 — boot, layout (landscape + portrait), input (keyboard + touch), loop, screens, save, online rooms, debug hook (window.__wd). */
+/* 언더독 피구 (Underdog Dodgeball; was 흐물 피구 / Wobble Dodgeball) — boot, layout (landscape + portrait), input (keyboard + touch), loop, screens, save, online rooms, debug hook (window.__wd). */
 (function () {
   'use strict';
   // ★ online room server (Cloudflare Worker "wobble-dodge-rooms", source in ../server). Change only this line to move it.
@@ -86,7 +86,7 @@
     if (state === 'opening') { if (!e.repeat) { e.preventDefault(); S.openingKey(e.code); } return; }
     if (state === 'comic') { if (!e.repeat) { e.preventDefault(); if (e.code === 'Escape') S.comicClose(); else if (/^(Enter|Space|KeyJ|KeyK|NumpadEnter|ArrowRight)$/.test(e.code)) S.comicTap(); } return; }
     if (state === 'train' && e.code === 'Escape') { S.endTrain(); return; }
-    if (state === 'menu' && /^Key[A-Z]$/.test(e.code)) { typed = (typed + e.code.slice(3)).slice(-6); if (typed === 'WOBBLE') { typed = ''; secretFound(); } }
+    if (state === 'menu' && /^Key[A-Z]$/.test(e.code)) { typed = (typed + e.code.slice(3)).slice(-8); if (/(WOBBLE|UNDERDOG)$/.test(typed)) { typed = ''; secretFound(); } }
     if (state === 'pick') { pickKey(e); return; }
     var a = KM[e.code];
     if (a && state === 'play') e.preventDefault();
@@ -388,7 +388,7 @@
   }
   // share the deciding moment: Web Share with the image when the device can, else download the PNG (no external links)
   function shareShot() {
-    if (!shot) return; var name = 'wobble-dodgeball.png';
+    if (!shot) return; var name = 'underdog-dodgeball.png';
     function dl() { var a = document.createElement('a'); a.href = shot; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
     try {
       var bin = atob(shot.split(',')[1]), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
@@ -455,7 +455,7 @@
   WD.popOpen = function () { return popCh; };
   $('bUpOk').onclick = function (e) { e.stopPropagation(); A.unlock(); G.sfx('click'); popNext(); };
   $('unlPop').onclick = function () { popNext(); };
-  // secret: tap the title 5 times quickly, or type WOBBLE on the menu
+  // secret: tap the title 5 times quickly, or type UNDERDOG (or the old WOBBLE) on the menu
   var tickle = [], typed = '';
   function secretFound() {
     var ev = MT.secretCode(save); if (!ev.length) return; commit(); refreshMenu(); G.sfx('special'); WD.log.push('secret');

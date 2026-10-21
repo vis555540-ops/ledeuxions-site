@@ -98,19 +98,68 @@
 
   /* ---------- background (cached) ---------- */
   var bg = null, bgK = 0;
-  var FCOL = ['#ff5a4f', '#3fa9ff', '#8ee53f', '#ffd23f', '#ff8fd0', '#a77bff', '#ff9d5c', '#4cd9c0'], FJ = new Float32Array(120);
-  var FAN_R = 15, fanK = 0, fanS = null;
-  function fanSprites(k) {
-    if (fanS && fanK === k) return fanS;
-    fanK = k; fanS = FCOL.map(function (col) {
-      var cv = document.createElement('canvas'), d = Math.ceil(2 * FAN_R * k); cv.width = cv.height = d;
-      var g = cv.getContext('2d'); g.setTransform(k, 0, 0, k, 0, 0);
-      g.fillStyle = INK; g.beginPath(); g.arc(FAN_R, FAN_R, 13, 0, TAU); g.fill(); g.fillStyle = col; g.beginPath(); g.arc(FAN_R, FAN_R, 10, 0, TAU); g.fill();
-      return cv;
-    });
-    return fanS;
+  /* ---------- crowd = a pre-baked pixel video ----------
+     The crowd is baked ONCE into a tiny strip (1 crowd pixel = CP world units, 320x58 px per frame): 6 idle frames + 4 cheer frames.
+     Every frame the game draws one frame of it scaled up with smoothing off (one drawImage, chunky pixels on purpose). */
+  var FCOL = ['#ff5a4f', '#3fa9ff', '#8ee53f', '#ffd23f', '#ff8fd0', '#a77bff', '#ff9d5c', '#4cd9c0'];
+  var CP = 4, CY0 = 76, CFW = Math.ceil(W / CP), CFH = 58, C_IDLE = 6, C_CHEER = 4, crowdAtlas = null, crowdT = 0, crowdLast = -1;
+  function bakeCrowd() {
+    var cv = document.createElement('canvas'); cv.width = CFW; cv.height = CFH * (C_IDLE + C_CHEER);
+    var g = cv.getContext('2d'), seed = 11;
+    function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    function px(x, y, w, h, col) { g.fillStyle = col; g.fillRect(x, y, w, h); }
+    function disc(cx, cy, d, col) {   // crisp pixel disc, d px wide, centred on (cx, cy)
+      g.fillStyle = col; var R = d / 2;
+      for (var j = 0; j < d; j++) { var yy = j + 0.5 - R, hw = Math.sqrt(Math.max(0, R * R - yy * yy)); var x0 = Math.round(cx - hw), x1 = Math.round(cx + hw); if (x1 > x0) g.fillRect(x0, Math.round(cy - R) + j, x1 - x0, 1); }
+    }
+    function dark(h) { var n = parseInt(h.slice(1), 16), f = 0.62; return 'rgb(' + (((n >> 16) * f) | 0) + ',' + ((((n >> 8) & 255) * f) | 0) + ',' + (((n & 255) * f) | 0) + ')'; }
+    var fans = [];
+    for (var r = 0; r < 4; r++) for (var i = 0; i < 30; i++) {
+      var ci = (i * 7 + r * 3) % 8;
+      fans.push({ x: Math.round((20 + i * 42 + (r % 2) * 21) / CP), y: Math.round((120 + r * 52 - CY0) / CP), col: FCOL[ci], sh: dark(FCOL[ci]), ph: rnd() * Math.PI });
+    }
+    for (var fr = 0; fr < C_IDLE + C_CHEER; fr++) {
+      var cheer = fr >= C_IDLE, oy = fr * CFH;
+      g.save(); g.beginPath(); g.rect(0, oy, CFW, CFH); g.clip();
+      for (var q = 0; q < fans.length; q++) {
+        var f = fans[q], a = cheer ? Math.PI * (fr - C_IDLE) / C_CHEER : Math.PI * fr / C_IDLE;
+        var up = Math.round(Math.abs(Math.sin(a + f.ph)) * (cheer ? 5 : 1.4)), x = f.x, y = oy + f.y - up;
+        // shoulders + head (ink outline, colour, two eye pixels)
+        px(x - 4, y + 4, 9, 4, INK); px(x - 3, y + 5, 7, 3, f.sh);
+        disc(x + 0.5, y + 0.5, 8, INK); disc(x + 0.5, y + 0.5, 6, f.col);
+        px(x - 1, y, 1, 1, INK); px(x + 2, y, 1, 1, INK);
+        if (cheer) {   // arms up + open mouth
+          var lift = up > 2 ? 1 : 0;
+          px(x - 5, y + 2, 1, 2, INK); px(x - 6, y - lift, 1, 2, INK); px(x - 6, y - 2 - lift, 1, 2, INK);
+          px(x + 5, y + 2, 1, 2, INK); px(x + 6, y - lift, 1, 2, INK); px(x + 6, y - 2 - lift, 1, 2, INK);
+          px(x, y + 2, 2, 1, INK);
+        }
+      }
+      g.restore();
+    }
+    return cv;
   }
-  var fans = []; (function () { var cols = FCOL; for (var r = 0; r < 4; r++) for (var i = 0; i < 30; i++) fans.push({ x: 20 + i * 42 + (r % 2) * 21, y: 120 + r * 52, c: cols[(i * 7 + r * 3) % 8], ci: (i * 7 + r * 3) % 8, ph: Math.random() * 6 }); })();
+  // the top of the gym (wall + bleachers) is one opaque canvas = bg + the current crowd frame. It is rebuilt only when the crowd frame
+  // changes (6-12 times a second); every frame is then two plain 1:1 copies (top + rest of bg), same cost as the bg alone.
+  var CY1 = CY0 + CFH * CP, topCv = null, topG = null, topBg = null, topFr = -1;
+  function drawBgCrowd(c, hype, now, ox, oy) {
+    if (!crowdAtlas) crowdAtlas = bakeCrowd();
+    var dt = crowdLast < 0 ? 0 : Math.min(0.1, Math.max(0, now - crowdLast)); crowdLast = now;
+    var cheer = hype > 0.4, n = cheer ? C_CHEER : C_IDLE;
+    crowdT += dt * (3 + hype * 6) / Math.PI * n;   // same tempo as the old per-head bob
+    var fr = (cheer ? C_IDLE : 0) + (Math.floor(crowdT) % n), top = Math.min(bg.height, Math.round(CY1 * bgK));
+    if (topBg !== bg) { topBg = bg; topFr = -1; topCv = document.createElement('canvas'); topCv.width = bg.width; topCv.height = top; topG = topCv.getContext('2d', { alpha: false }); }
+    if (fr !== topFr) {
+      topFr = fr; topG.setTransform(1, 0, 0, 1, 0, 0); topG.drawImage(bg, 0, 0, bg.width, top, 0, 0, bg.width, top);
+      topG.setTransform(bg.width / W, 0, 0, bg.height / H, 0, 0); topG.imageSmoothingEnabled = false;
+      topG.drawImage(crowdAtlas, 0, fr * CFH, CFW, CFH, 0, CY0, CFW * CP, CFH * CP);
+    }
+    c.save(); c.setTransform(1, 0, 0, 1, ox, oy);
+    c.drawImage(topCv, 0, 0);
+    c.drawImage(bg, 0, top, bg.width, bg.height - top, 0, top, bg.width, bg.height - top);
+    c.restore();
+  }
+
   function buildBg(k) {
     bg = document.createElement('canvas'); bg.width = Math.round(W * k); bg.height = Math.round(H * k); bgK = k;
     var c = bg.getContext('2d'); c.scale(k, k);
@@ -185,17 +234,10 @@
     if (!bg || bgK !== k) buildBg(k);
     c.setTransform(1, 0, 0, 1, 0, 0);
     var sx = 0, sy = 0; if (M && M.shake > 0.3 && !G.lite) { sx = (Math.random() - 0.5) * M.shake * 1.4; sy = (Math.random() - 0.5) * M.shake * 1.4; }
-    c.setTransform(k, 0, 0, k, Math.round((-V.camX + sx) * k), Math.round(sy * k));
-    c.drawImage(bg, 0, 0, W, H);
-    // crowd heads
-    var hype = M ? M.crowd : 0;
-    // fan heads: cached sprites
-    var fs = G.lite ? 2 : 1, i, f, fw = 3 + hype * 6, fa = 3 + hype * 14, fsp = fanSprites(k), fr = FAN_R * k;
-    c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
-    var ox = Math.round((-V.camX + sx) * k), oy = Math.round(sy * k);
-    for (i = 0; i < fans.length; i += fs) { f = fans[i]; FJ[i] = f.y - Math.abs(Math.sin(now * fw + f.ph)) * fa; c.drawImage(fsp[f.ci], Math.round(ox + f.x * k - fr), Math.round(oy + FJ[i] * k - fr)); }
-    c.restore();
-    if (hype > 0.4) { c.strokeStyle = INK; c.lineWidth = 4; for (i = 0; i < fans.length; i += fs) { f = fans[i]; var fj = FJ[i]; c.beginPath(); c.moveTo(f.x - 9, fj + 8); c.lineTo(f.x - 15, fj - 10); c.moveTo(f.x + 9, fj + 8); c.lineTo(f.x + 15, fj - 10); c.stroke(); } }
+    var ox = Math.round((-V.camX + sx) * k), oy = Math.round(sy * k), hype = M ? M.crowd : 0, i;
+    // gym background + crowd (one frame of the pre-baked pixel strip)
+    drawBgCrowd(c, hype, now, ox, oy);
+    c.setTransform(k, 0, 0, k, ox, oy);
     if (!M) return;
     var ents = ENTS, b, ne = 0;
     ents.length = 0;
