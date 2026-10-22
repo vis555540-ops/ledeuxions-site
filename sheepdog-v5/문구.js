@@ -126,5 +126,7 @@ const 문구 = {
   확률_첫세번:{ko:"처음 세 번은 없는 것만 나와요",en:"First 3 pulls: only ones you don't have"},
   눌러서_이름:{ko:"눌러서 이름 바꾸기",en:"Tap to rename"},
   탄_성공_컷:{ko:"양들이 돌아왔어요",en:"The sheep are home"},
+  폰강아지:{ko:"폰 화면에 강아지",en:"Dog on your phone"}, 폰_위젯:{ko:"홈 화면 위젯",en:"Home screen widget"},
+  폰_배경:{ko:"움직이는 배경화면",en:"Live wallpaper"}, 폰_안내:{ko:"지금 고른 강아지가 나와요",en:"Shows the dog you picked"},
 };
 function 글(키){ const 항=문구[키]; if(!항) return 키; const l=(typeof 저장!=="undefined"&&저장.자료)?저장.자료.언어:"ko"; return 항[l]||항.ko; }
