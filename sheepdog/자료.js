@@ -127,11 +127,11 @@ const 집목록 = [
   { 코드:"basic",  이름:{ko:"나무 집",en:"Wooden house"},       값:20,  그림:"house/g_wood.png" },
   { 코드:"red",    이름:{ko:"빨간지붕 집",en:"Red roof"},        값:45,  그림:"house/g_red.png", 열림:{탄:3} },
   { 코드:"예쁜",   이름:{ko:"동화 속 집",en:"Fairy-tale house"}, 값:80,  그림:"house/g_fairy.png", 열림:{탄:5} },
-  { 코드:"log",    이름:{ko:"통나무 집",en:"Log cabin"},         값:120, 그림:"house/g_log.png", 열림:{탄:8} },
+  { 코드:"log",    이름:{ko:"통나무 집",en:"Log cabin"},         값:120, 그림:"house/g_log.png", 뒤집기:true, 열림:{탄:8} },
   { 코드:"별빛",   이름:{ko:"다락방 집",en:"Loft house"},        값:170, 그림:"house/g_loft.png", 열림:{탄:10} },
-  { 코드:"garden", 이름:{ko:"테라스 집",en:"Terrace house"},     값:230, 그림:"house/g_terrace.png", 열림:{탄:12} },
-  { 코드:"glass",  이름:{ko:"유리 집",en:"Glass villa"},         값:290, 그림:"house/g_glass.png", 열림:{탄:15} },
-  { 코드:"castle", 이름:{ko:"작은 성",en:"Little castle"},       값:380, 그림:"house/g_castle.png", 열림:{탄:18} },
+  { 코드:"garden", 이름:{ko:"테라스 집",en:"Terrace house"},     값:230, 그림:"house/g_terrace.png", 뒤집기:true, 열림:{탄:12} },
+  { 코드:"glass",  이름:{ko:"유리 집",en:"Glass villa"},         값:290, 그림:"house/g_glass.png", 뒤집기:true, 열림:{탄:15} },
+  { 코드:"castle", 이름:{ko:"작은 성",en:"Little castle"},       값:380, 그림:"house/g_castle.png", 뒤집기:true, 열림:{탄:18} },
   { 코드:"별의집", 이름:{ko:"궁전 집",en:"Palace"},              값:480, 그림:"house/g_palace.png", 열림:{탄:20, 레벨:5} },
   // ★ 2026-09-25 형 딸 소원 「돈 모아서 정원 있는 강아지 집」 — 제일 비싼 집. 그림은 코드로 (화면.js 집그리기). 문x = 문 자리(가운데에서 왼쪽으로)
   { 코드:"정원있는", 이름:{ko:"정원 있는 집",en:"House with garden"}, 값:600, 문x:-14, 그림:"house/garden_yard.png", 열림:{탄:20, 훈장:10} },   // 파일 없으면 코드 그림
