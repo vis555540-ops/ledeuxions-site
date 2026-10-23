@@ -1510,6 +1510,8 @@ function 집그리기(코드, x, 바닥, 배, 글자도) {
   const g = 집그림[코드];
   if (g && g.im.complete && g.im.naturalWidth) {
     const 위 = 글자도 ? 0 : g.글자줄, s = (글자도 ? 0.8 : 0.85) * 배, w = 64*s, h = (64-위)*s;
+    { const c = 그림.c; c.save(); c.fillStyle = "rgba(20,30,10,0.32)"; c.beginPath();   // ★ 2026-10-23 땅에 붙어 보이게 발밑 그림자
+      c.ellipse(정수(x), 정수(바닥 - 2*배), w*0.44, 3.5*배, 0, 0, Math.PI*2); c.fill(); c.restore(); }
     그림.c.drawImage(g.im, 0, 위, 64, 64-위, 정수(x - w/2), 정수(바닥 - h), 정수(w), 정수(h)); return; }
   const 네=(dx,dy,w,h,f)=>그림.네모(정수(x+dx*배), 정수(바닥+dy*배), 정수(w*배), 정수(h*배), f);
   // ★고침 열 채가 전부 다르게 보이도록 다시 그렸다. 전에는 「나무」「빨강」 말고 여덟 채가 같은 그림이었다

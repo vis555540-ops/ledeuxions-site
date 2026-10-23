@@ -120,17 +120,19 @@ const 날씨_주소 = "https://api.open-meteo.com/v1/forecast?latitude=37.57&lon
 const 날씨_다시보기 = 30*60*1000;  // 30분마다
 // 강아지 집 — 가게에서 산다 (형 「집은 그냥 사기로 하자」). 그림은 맺음 임시, 형이 픽셀로 다시 그릴 예정
 // ★고침 집 10채로 확장 (5 → 420 코인). 그림은 house/*.png 64×64
+// ★ 2026-10-23 형 결정 「제미나이가 그린 거 있잖아 그걸로」 — 9/21 형이 제미나이로 뽑은 20채 중 10채(house/g_*.png).
+//   코드(저장 id)는 그대로 두고 그림·이름만 바꿨다. 이미 산 집은 같은 자리 그림으로 바뀐다(저장 안 깨짐). 옛 피블 그림은 house/*.png 에 남아 있음
 const 집목록 = [
-  { 코드:"box",    이름:{ko:"박스 집",en:"Box house"},        값:5,   그림:"house/box.png" },   // ★ 2026-09-25 형 「박스는 박스집 해야지」 — 이름만 바꿈(코드 box 그대로라 저장 안 깨짐)
-  { 코드:"basic",  이름:{ko:"나무 집",en:"Wooden house"},     값:20,  그림:"house/wood.png" },
-  { 코드:"red",    이름:{ko:"빨간지붕 집",en:"Red roof"},      값:45,  그림:"house/red.png", 열림:{탄:3} },
-  { 코드:"예쁜",   이름:{ko:"벽돌 집",en:"Brick house"},       값:80,  그림:"house/brick.png", 열림:{탄:5} },
-  { 코드:"log",    이름:{ko:"통나무 집",en:"Log cabin"},       값:120, 그림:"house/log.png", 열림:{탄:8} },
-  { 코드:"별빛",   이름:{ko:"별빛 집",en:"Starlight house"},   값:170, 그림:"house/star.png", 열림:{탄:10} },
-  { 코드:"garden", 이름:{ko:"정원 집",en:"Garden cottage"},    값:230, 그림:"house/garden.png", 열림:{탄:12} },
-  { 코드:"glass",  이름:{ko:"유리 온실",en:"Glass house"},     값:290, 그림:"house/glass.png", 열림:{탄:15} },
-  { 코드:"castle", 이름:{ko:"작은 성",en:"Little castle"},     값:380, 그림:"house/castle.png", 열림:{탄:18} },
-  { 코드:"별의집", 이름:{ko:"달 집",en:"House of the moon"},   값:480, 그림:"house/moon.png", 열림:{탄:20, 레벨:5} },
+  { 코드:"box",    이름:{ko:"박스 집",en:"Box house"},          값:5,   그림:"house/g_box.png" },
+  { 코드:"basic",  이름:{ko:"나무 집",en:"Wooden house"},       값:20,  그림:"house/g_wood.png" },
+  { 코드:"red",    이름:{ko:"빨간지붕 집",en:"Red roof"},        값:45,  그림:"house/g_red.png", 열림:{탄:3} },
+  { 코드:"예쁜",   이름:{ko:"동화 속 집",en:"Fairy-tale house"}, 값:80,  그림:"house/g_fairy.png", 열림:{탄:5} },
+  { 코드:"log",    이름:{ko:"통나무 집",en:"Log cabin"},         값:120, 그림:"house/g_log.png", 열림:{탄:8} },
+  { 코드:"별빛",   이름:{ko:"다락방 집",en:"Loft house"},        값:170, 그림:"house/g_loft.png", 열림:{탄:10} },
+  { 코드:"garden", 이름:{ko:"테라스 집",en:"Terrace house"},     값:230, 그림:"house/g_terrace.png", 열림:{탄:12} },
+  { 코드:"glass",  이름:{ko:"유리 집",en:"Glass villa"},         값:290, 그림:"house/g_glass.png", 열림:{탄:15} },
+  { 코드:"castle", 이름:{ko:"작은 성",en:"Little castle"},       값:380, 그림:"house/g_castle.png", 열림:{탄:18} },
+  { 코드:"별의집", 이름:{ko:"궁전 집",en:"Palace"},              값:480, 그림:"house/g_palace.png", 열림:{탄:20, 레벨:5} },
   // ★ 2026-09-25 형 딸 소원 「돈 모아서 정원 있는 강아지 집」 — 제일 비싼 집. 그림은 코드로 (화면.js 집그리기). 문x = 문 자리(가운데에서 왼쪽으로)
   { 코드:"정원있는", 이름:{ko:"정원 있는 집",en:"House with garden"}, 값:600, 문x:-14, 그림:"house/garden_yard.png", 열림:{탄:20, 훈장:10} },   // 파일 없으면 코드 그림
 ];
