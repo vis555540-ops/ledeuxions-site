@@ -29,15 +29,15 @@
 <video id="인트로" playsinline preload="none"></video>
 <!-- 🚨 파일 이름이 한글이면 Cloudflare 의 캐시 규칙(_headers 의 *.js)이 안 걸린다.
      그래서 주소 뒤에 판 번호를 붙여 캐시를 넘긴다. 코드를 고치면 이 v= 를 같이 올릴 것. -->
-<script src="자료.js?v=5.49"></script>
-<script src="문구.js?v=5.49"></script>
-<script src="저장.js?v=5.49"></script>
-<script src="소리.js?v=5.49"></script>
-<script src="광고.js?v=5.49"></script>
-<script src="그림.js?v=5.49"></script>
-<script src="규칙_생성기.js?v=5.49"></script>
-<script src="게임.js?v=5.49"></script>
-<script src="화면.js?v=5.49"></script>
+<script src="자료.js?v=5.50"></script>
+<script src="문구.js?v=5.50"></script>
+<script src="저장.js?v=5.50"></script>
+<script src="소리.js?v=5.50"></script>
+<script src="광고.js?v=5.50"></script>
+<script src="그림.js?v=5.50"></script>
+<script src="규칙_생성기.js?v=5.50"></script>
+<script src="게임.js?v=5.50"></script>
+<script src="화면.js?v=5.50"></script>
 <script>
 (function(){
   const 캔버스=document.getElementById("캔버스"); let 배율=1;
@@ -65,12 +65,13 @@
     setTimeout(() => { if (!끝남 && v.readyState === 0) 마침(); }, 5000);
   };
   function 좌표(e){ const r=캔버스.getBoundingClientRect(); const p=e.touches?e.touches[0]||e.changedTouches[0]:e; return { x:(p.clientX-r.left)/배율, y:(p.clientY-r.top)/배율 }; }
-  let 누름=false;
-  function 터치(종류,e){ e.preventDefault(); const {x,y}=좌표(e); if (팝업터치(종류,x,y)) return; if (현재화면&&현재화면.터치) 현재화면.터치(종류,x,y); }
-  캔버스.addEventListener("pointerdown",e=>{ 누름=true; 캔버스.setPointerCapture(e.pointerId); 터치("내림",e); });
-  캔버스.addEventListener("pointermove",e=>{ if (누름) 터치("이동",e); });
-  캔버스.addEventListener("pointerup",e=>{ 누름=false; 터치("올림",e); });
-  캔버스.addEventListener("pointercancel",e=>{ 누름=false; 터치("올림",e); });
+  // ★ 2026-10-23 손가락마다 따로 센다 — 조이스틱을 누른 채 다른 손가락으로 짖기를 눌러도 섞이지 않게. 4번째 인자 = 손가락 번호
+  const 누름=new Set();
+  function 터치(종류,e){ e.preventDefault(); const {x,y}=좌표(e); if (팝업터치(종류,x,y)) return; if (현재화면&&현재화면.터치) 현재화면.터치(종류,x,y,e.pointerId); }
+  캔버스.addEventListener("pointerdown",e=>{ 누름.add(e.pointerId); 캔버스.setPointerCapture(e.pointerId); 터치("내림",e); });
+  캔버스.addEventListener("pointermove",e=>{ if (누름.has(e.pointerId)) 터치("이동",e); });
+  캔버스.addEventListener("pointerup",e=>{ 누름.delete(e.pointerId); 터치("올림",e); });
+  캔버스.addEventListener("pointercancel",e=>{ 누름.delete(e.pointerId); 터치("올림",e); });
   캔버스.addEventListener("contextmenu",e=>e.preventDefault());
   document.addEventListener("visibilitychange",()=>{ if (document.hidden) { if (현재코드==="S6") { 게임.정지=true; 전환("S7"); } 소리.배경음_멈춤(); } else 소리.배경음_재개(); });
   let 이전=performance.now();
