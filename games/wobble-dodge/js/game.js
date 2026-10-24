@@ -393,7 +393,7 @@
       var sc = b.sc, r = B.r, dx = Math.abs(B.x - b.x), dz = Math.abs(B.z - b.z) * ZPX, top = b.h + BODY_H * sc;
       // generous catch: bigger box, while the catch window is open
       var ck = 0.85 + 0.05 * b.cv;
-      if (((M.sc > 0 && b.team === 0 && b.id === M.ctrl) || (M.sc2 > 0 && b.team === 1 && b.i === 0)) && !B.fake && dx < (40 * sc + r) && dz < (36 + r) && B.h - r < top + 24 && B.h + r > b.h - 4) { catchBall(M, B, b); ev(M, 'scCatch'); return; }   // SUPER CATCH: every ball that reaches me is caught
+      if (((M.sc > 0 && b.team === 0 && b.id === M.ctrl && b.ch === G.HERO) || (M.sc2 > 0 && b.team === 1 && b.i === 0)) && !B.fake && dx < (40 * sc + r) && dz < (36 + r) && B.h - r < top + 24 && B.h + r > b.h - 4) { catchBall(M, B, b); ev(M, 'scCatch'); return; }   // SUPER CATCH: every ball that reaches me is caught
       if (b.catchT > 0 && !B.fake && B.sp !== 'giant' && dx < (34 * sc + r) * ck && dz < (32 + r) * ck && B.h - r < top + 20 && B.h + r > b.h) { catchBall(M, B, b); return; }
       if (dx < 16 * sc + r && dz < 15 + r * 0.8 && B.h - r < top && B.h + r > b.h + 4) {
         if (B.fake) { dead(M, B); return; }
@@ -474,7 +474,7 @@
   }
   function ev(M, k, a) { if (G.onEv) try { G.onEv(M, k, a); } catch (e) { } }   // story announcer hook (story.js)
   // SUPER CATCH (story skill): 30 s of guaranteed catches for the player, once per match
-  G.superCatch = function (M) { if (!M.scOk || M.scUsed || M.state !== 'play' || M.ctrl < 0) return false; M.scUsed = 1; M.sc = 30; var b = M.bodies[M.ctrl]; pop(M, b.x, FY(b.z) - 170, T('skPop'), '#ffd23f', 34); G.sfx('ready'); ev(M, 'sc'); return true; };
+  G.superCatch = function (M) { if (!M.scOk || M.scUsed || M.state !== 'play' || M.ctrl < 0 || M.bodies[M.ctrl].ch !== G.HERO) return false; M.scUsed = 1; M.sc = 30; var b = M.bodies[M.ctrl]; pop(M, b.x, FY(b.z) - 170, T('skPop'), '#ffd23f', 34); G.sfx('ready'); ev(M, 'sc'); return true; };   // 2026-10-24 형 「주인공 전용으로」
   function pop(M, x, y, txt, col, size) { M.pops.push({ x: x, y: y, txt: txt, col: col || '#ffe45c', size: size || 30, t: 0 }); if (M.pops.length > 10) M.pops.shift(); }
   G.pop = pop;
   function crowd(M, p) {
