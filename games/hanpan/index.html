@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>한판퍼즐</title>
+<meta name="description" content="매일 바뀌는 논리 퍼즐 — 한붓길·왕관자리·바둑칸. Daily logic puzzles: One Stroke, Crowns, Stones.">
+<meta name="theme-color" content="#c0532b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="canonical" href="https://ledeuxions.com/games/hanpan/">
+<style>
+:root{
+  --bg:#f6f1e7; --card:#fffdf8; --ink:#2b2622; --sub:#7a6f64; --line:#d9cfc1; --accent:#c0532b; --accent2:#2f6f62;
+  --bad:#d23a3a; --good:#2f8f4e; --path:#c0532b; --given:#ece4d6;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#1c1a18; --card:#26231f; --ink:#f1ebe2; --sub:#a99d90; --line:#4a433b; --accent:#e9774b; --accent2:#5fb3a1;
+  --bad:#ff6464; --good:#5fcf80; --path:#e9774b; --given:#35302a; } }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;font-size:18px}
+button{font:inherit;color:inherit}
+.wrap{max-width:520px;margin:0 auto;padding:12px 16px 32px}
+header{display:flex;align-items:baseline;justify-content:space-between;margin:4px 0 14px}
+header h1{font-size:28px;margin:0;letter-spacing:-.5px}
+header h1 b{color:var(--accent)}
+header .date{color:var(--sub);font-size:16px}
+.today{width:100%;border:0;border-radius:20px;background:var(--accent);color:#fff;padding:20px;text-align:left;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.15)}
+.today .k{font-size:15px;opacity:.9}
+.today .t{font-size:30px;font-weight:800;margin:4px 0}
+.today .s{font-size:17px;opacity:.95}
+.row{display:flex;gap:10px;margin:14px 0}
+.stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.stat b{display:block;font-size:26px}
+.stat span{font-size:14px;color:var(--sub)}
+h2{font-size:20px;margin:22px 0 8px}
+.ptype{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
+.ptype .nm{font-size:21px;font-weight:800}
+.ptype .ds{color:var(--sub);font-size:15px;margin:2px 0 10px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{flex:1;min-width:64px;border:2px solid var(--line);background:transparent;border-radius:12px;padding:10px 2px;font-size:16px;font-weight:700;cursor:pointer}
+.chip.d3{border-color:var(--accent);color:var(--accent)}
+.chip small{display:block;font-weight:400;font-size:12px;color:var(--sub)}
+/* 게임 */
+#game{display:none}
+.top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.top .back{border:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:18px;cursor:pointer}
+.top .ttl{flex:1;min-width:0;font-weight:800;font-size:20px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .ttl small{display:block;font-weight:400;color:var(--sub);font-size:14px}
+.top .timer{font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;min-width:3.2em;text-align:right;line-height:1.1}
+.hint{color:var(--sub);font-size:15px;text-align:center;height:22px;line-height:22px;overflow:hidden;margin:6px 0}
+#board{position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none}
+.grid{display:grid;width:100%;height:100%;border:3px solid var(--ink);border-radius:8px;overflow:hidden;background:var(--line);gap:1px}
+.cell{background:var(--card);display:flex;align-items:center;justify-content:center;position:relative;font-weight:800;min-width:0;min-height:0;overflow:hidden;line-height:1}
+.q{display:block;width:1.1em;height:1em;line-height:1;text-align:center;pointer-events:none}
+.q.pop{animation:pop .18s ease-out}
+@keyframes pop{from{transform:scale(.6)}to{transform:scale(1)}}
+.cell.given{background:var(--given)}
+.cell.bad::after{content:"";position:absolute;inset:0;background:var(--bad);opacity:.35}
+.stone{width:72%;height:72%;border-radius:50%}
+.stone.b{background:radial-gradient(circle at 35% 30%,#666,#111 60%)}
+.stone.w{background:radial-gradient(circle at 35% 30%,#fff,#d8d2c8 70%);border:1.5px solid #9a9184}
+.given .stone{width:62%;height:62%}
+.qx{color:#5a5047;opacity:.55;font-weight:400}
+.ctrls{display:flex;gap:8px;margin-top:12px}
+.ctrls button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px 4px;font-size:16px;cursor:pointer}
+.ctrls button.on{border-color:var(--bad);color:var(--bad);font-weight:700}
+/* 창 */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+.modal.show{display:flex}
+.box{background:var(--card);border-radius:20px;padding:20px;max-width:420px;width:100%;max-height:92vh;overflow:auto}
+.box h3{margin:0 0 6px;font-size:24px}
+.box p{margin:6px 0;line-height:1.45}
+.box .big{font-size:40px;font-weight:800;text-align:center;margin:8px 0}
+.box .btns{display:flex;gap:8px;margin-top:14px}
+.box .btns button{flex:1;border:0;border-radius:14px;padding:14px 6px;font-size:18px;font-weight:700;cursor:pointer;background:var(--given)}
+.box .btns button.pri{background:var(--accent);color:#fff}
+.demo{display:flex;justify-content:center;margin:10px 0}
+.rulelist{padding-left:20px;margin:8px 0}
+.rulelist li{margin:4px 0}
+.ad-slot{margin-top:12px;min-height:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:16px;display:none;z-index:10}
+.foot{color:var(--sub);font-size:13px;text-align:center;margin-top:24px}
+.foot a{color:var(--sub)}
+.hr{display:flex;align-items:center;gap:10px}
+.gear{border:1px solid var(--line);background:var(--card);border-radius:12px;width:40px;height:40px;font-size:20px;cursor:pointer;padding:0}
+.langs{display:flex;gap:8px;margin:8px 0 4px}
+.langb{flex:1;border:2px solid var(--line);background:transparent;border-radius:12px;padding:10px 4px;font-size:16px;cursor:pointer}
+.langb.on{border-color:var(--accent);color:var(--accent);font-weight:700}
+.app .webonly{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="home">
+    <header><h1 data-t="logo">한판<b>퍼즐</b></h1><div class="hr"><span class="date" id="hdate"></span><button class="gear" id="setBtn" aria-label="settings">⚙️</button></div></header>
+    <button class="today" id="todayBtn"><div class="k" data-t="today">오늘의 퍼즐</div><div class="t" id="todayT"></div><div class="s" id="todayS"></div></button>
+    <div class="row">
+      <div class="stat"><b id="stStreak">0</b><span data-t="streak">연속 일</span></div>
+      <div class="stat"><b id="stDone">0</b><span data-t="done">푼 판</span></div>
+      <div class="stat"><b id="stToday">-</b><span data-t="todayRec">오늘 기록</span></div>
+    </div>
+    <h2><span data-t="more">더 하기</span> <small style="font-weight:400;color:var(--sub);font-size:15px" data-t="endless">— 끝없이 새 판</small></h2>
+    <div id="types"></div>
+    <div class="foot"><span data-t="foot">판은 그때그때 새로 만들고, 답이 하나뿐인지 확인한 판만 냅니다.</span><br><a href="privacy/" data-t="privacy">개인정보처리방침</a> · LeDeuxions</div>
+  </section>
+
+  <section id="game">
+    <div class="top">
+      <button class="back" id="backBtn">←</button>
+      <div class="ttl" id="gTitle"></div>
+      <div class="timer" id="timer">0:00</div>
+    </div>
+    <div class="hint" id="hint"></div>
+    <div id="board"></div>
+    <div class="ctrls">
+      <button id="undoBtn" data-t="undo">↶ 무르기</button>
+      <button id="clearBtn" data-t="clear">지우기</button>
+      <button id="checkBtn" data-t="check">틀린 곳</button>
+      <button id="ruleBtn" data-t="rule">규칙</button>
+    </div>
+  </section>
+</div>
+
+<div class="modal" id="ruleM"><div class="box">
+  <h3 id="rTitle"></h3>
+  <div class="demo" id="rDemo"></div>
+  <ul class="rulelist" id="rList"></ul>
+  <div class="btns"><button class="pri" id="rOk" data-t="ok">알겠어, 시작!</button></div>
+</div></div>
+
+<div class="modal" id="winM"><div class="box">
+  <h3 id="wTitle" style="text-align:center">🎉 정답!</h3>
+  <div class="big" id="wTime"></div>
+  <p id="wInfo" style="text-align:center;color:var(--sub)"></p>
+  <div class="btns"><button id="wShare" data-t="share">공유하기</button><button class="pri" id="wNext">한 판 더</button></div>
+  <div class="btns"><button id="wHome" data-t="home">처음으로</button></div>
+  <div class="ad-slot" id="adSlot" data-slot="between"></div>
+</div></div>
+<div class="modal" id="setM"><div class="box">
+  <h3 data-t="settings">설정</h3>
+  <p data-t="lang">말</p>
+  <div class="langs"><button class="langb" data-l="auto" data-t="auto">자동</button><button class="langb" data-l="ko">한국어</button><button class="langb" data-l="en">English</button></div>
+  <p style="margin-top:14px"><a href="privacy/" data-t="privacy" style="color:var(--sub)">개인정보처리방침</a></p>
+  <div class="btns"><button class="pri" id="setClose" data-t="close">닫기</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script src="puzzles.js?v=3"></script>
+<script src="app.js?v=3"></script>
+</body>
+</html>

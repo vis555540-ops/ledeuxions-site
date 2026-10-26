@@ -1,0 +1,20 @@
+{
+ "name": "한판퍼즐 / OnePuzzle",
+ "short_name": "한판퍼즐",
+ "description": "매일 바뀌는 논리 퍼즐 — 한붓길·왕관자리·바둑칸. Daily logic puzzles.",
+ "id": "/games/hanpan/",
+ "start_url": "./?source=pwa",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#f6f1e7",
+ "theme_color": "#c0532b",
+ "lang": "ko",
+ "categories": ["games", "puzzle"],
+ "icons": [
+  {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+  {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+  {"src": "icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable"},
+  {"src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+ ]
+}

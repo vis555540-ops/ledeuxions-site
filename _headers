@@ -57,3 +57,16 @@
 /tools/hwp/manifest.webmanifest
   Cache-Control: no-cache, must-revalidate
   Content-Type: application/manifest+json
+
+# 한판퍼즐 (2026-10-26) — 워커·코드는 늘 새것 확인
+/games/hanpan/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/games/hanpan/*.js
+  Cache-Control: no-cache, must-revalidate
+
+/games/hanpan/manifest.json
+  Cache-Control: no-cache, must-revalidate
+
+/games/hanpan/
+  Cache-Control: no-cache, must-revalidate
