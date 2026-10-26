@@ -252,7 +252,7 @@
     play.id = 'opPlay'; play.className = 'btn'; play.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:auto;min-width:120px;height:120px;border-radius:60px;font-size:54px;padding:0 30px;z-index:2;display:none;flex-direction:column;gap:0;line-height:1';
     box.appendChild(v); box.appendChild(play); box.appendChild(skip); document.body.appendChild(box);
     OP = { v: v, box: box, skip: skip, play: play };
-    function showSkip() { skip.style.opacity = '1'; skip.style.pointerEvents = 'auto'; clearTimeout(hideT); hideT = setTimeout(function () { if (OP && !v.paused) { skip.style.opacity = '0'; skip.style.pointerEvents = 'none'; } }, 4000); }
+    function showSkip() { skip.style.opacity = '1'; skip.style.pointerEvents = 'auto'; }   // SKIP stays on screen the whole time (from the first frame)
     function askPlay(sound) { play.innerHTML = G.t('opPlay') + (sound ? '<span style="font-size:15px;font-style:normal">' + G.t('opSound') + '</span>' : ''); play.style.display = 'inline-flex'; showSkip(); }
     function end(how) {
       if (!OP) return; clearTimeout(hideT); clearTimeout(guard); OP = null;
