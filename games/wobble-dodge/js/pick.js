@@ -95,6 +95,7 @@
     '#pick.port #pkHead{min-height:44px}#pick.port #pkOpts{flex:1 1 100%;min-width:0;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px}',
     '#pick.port #pkOpts .btn{width:100%;min-width:0;padding:0 4px;font-size:12px;height:34px;overflow:hidden;white-space:normal;line-height:1.05;word-break:keep-all}',
     '#pkArt #pkHat{position:absolute;right:4px;top:4px;z-index:4;height:28px;min-width:32px;padding:0 4px;font-size:14px;border-width:2px;box-shadow:0 2px 0 #1b1b2f}',
+    '#pkSp .cmd{display:block;margin:3px 0 1px;font-size:12.5px;color:#ffd23f;font-weight:800}#pkSp .cmd b{color:#ffd23f}#pkSp .cmd kbd{font:inherit;color:#fff;background:#3a3c5a;border:1px solid #ffd23f;border-radius:6px;padding:0 5px;white-space:nowrap}',
     '#pick.port #pkInfo{overflow:hidden}@media (max-height:700px){#pick.port #pkSp small,#pick.port #pkSp br{display:none}}',
     '#pick.port #pkBand{bottom:4px;padding:2px 12px}#pick.port #pkName{font-size:17px}',
     '#pick.port #pkMain{flex-direction:column;gap:8px}',
@@ -298,7 +299,7 @@
         $('pkSp').innerHTML = gl && gl.hidden ? '' : '<small>▶ ' + esc(G.t('ps' + i)) + '</small>';
       } else {
         $('pkStats').innerHTML = [['stPow', C.st[0]], ['stSpd', C.st[1]], ['stCat', C.st[2]]].map(function (r) { return '<div class="st"><b>' + esc(G.t(r[0])) + '</b><span class="bar">' + bar(r[1]) + '</span></div>'; }).join('');
-        $('pkSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + '<br><small>' + esc(G.t('ss_' + C.sp)) + '</small><br><small class="ps">▶ ' + esc(G.t('ps' + i)) + '</small>' + (i < G.NROSTER ? '<small class="lazy">' + esc(G.t('lazyArt')) + '</small>' : '');
+        $('pkSp').innerHTML = '<b>' + esc(G.t('special')) + '</b> ' + esc(G.t('sp_' + C.sp)) + '<br><small>' + esc(G.t('ss_' + C.sp)) + '</small>' + (C.cmd ? '<span class="cmd"><b>' + esc(G.t('cmd')) + '</b> <kbd>' + esc(G.cmdArrows(C.cmd, 0)) + ' + ' + esc(G.t('cmdThr')) + '</kbd> ' + esc(G.t(C.cmd)) + '</span>' : '') + '<small class="ps">▶ ' + esc(G.t('ps' + i)) + '</small>' + (i < G.NROSTER ? '<small class="lazy">' + esc(G.t('lazyArt')) + '</small>' : '');
       }
     }
     /* ---------- rewarded-ad unlock: a second way in for a locked, visible player (not secret / chained ??? players, never the story kids).

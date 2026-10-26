@@ -38,7 +38,7 @@
       sound: 'SOUND', on: 'ON', off: 'OFF', lang: '한국어',
       tThrow: 'THROW', tGrab: 'CATCH', tJump: 'JUMP', tPass: 'PASS',
       you: 'YOU', catchNow: 'CATCH!', spHow: 'JUMP + THROW = SPECIAL!',
-      hintK: 'Move WASD/Arrows · J throw (hold-release) · K catch/pass · Space jump · jump+throw = SPECIAL',
+      hintK: 'Move WASD/Arrows · J throw (hold-release) · K catch/pass · Space jump · jump+throw = SPECIAL · ← (etc.) + J = COMMAND',
       hintT: 'Hold THROW, let go to throw · CATCH right before the ball hits you · full meter: JUMP and THROW = SPECIAL!',
       keyHelp: 'H: show/hide keys',
       help: '<b>Hit</b> = out. <b>Catch</b> a throw = the thrower is OUT and your teammate who went out first comes back in!<br>Outfielders who hit someone come back in. Catches and dodges fill the <b>SPECIAL</b> meter: then <b>jump and throw</b>.',
@@ -58,7 +58,11 @@
       sp_boomer: 'BOOMERANG', sp_zigzag: 'ZIGZAG', sp_ghost: 'GHOST BALL', sp_flip: 'FLIP METEOR', sp_sneeze: 'SNEEZE SHOT', sp_bouncy: 'BOING BOING',
       ss_banana: 'it curves like crazy!', ss_fart: 'pfffrrt... VROOM!', ss_chicken: 'wait, that is a chicken', ss_giant: 'it keeps growing!', ss_clone: 'only one is real!', ss_slow: 'sooo slooow...',
       ss_boomer: 'it comes back around!', ss_zigzag: 'zig! zag! zig!', ss_ghost: 'now you see it...', ss_flip: 'triple flip from the sky!', ss_sneeze: 'ah... ah...', ss_bouncy: 'boing boing boing!',
-      toot: 'TOOT!', zoom: 'ZOOM!', bawk: 'BAWK!', ah: 'ah...', achoo: 'AH-CHOO!!'
+      toot: 'TOOT!', zoom: 'ZOOM!', bawk: 'BAWK!', ah: 'ah...', achoo: 'AH-CHOO!!',
+      cmd: 'COMMAND', cmdThr: 'THROW', cmdReady: 'READY', cmdWait: 'CHARGING', cmdOf: '{0}: {1}',
+      c_curve: 'CURVE SHOT', c_drop: 'SKY SPIKE', c_rocket: 'BULLET SHOT', c_under: 'UNDERDOG SHOT', c_feint: 'FAKE-OUT SHOT',
+      cs_curve: 'swings wide, then hooks in', cs_drop: 'flies up high, then slams down', cs_rocket: 'dead straight, super fast', cs_under: 'skims the floor, pops up at the end', cs_feint: 'stops in mid-air... then GOES',
+      gCmdT: 'COMMAND: push the stick {0}, then tap THROW!', gCmdK: 'COMMAND: press {0}, then J!'
     },
     ko: {
       teamSize: '인원', vs: '{0}대{1}',
@@ -95,7 +99,7 @@
       sound: '소리', on: '켬', off: '끔', lang: 'English',
       tThrow: '던지기', tGrab: '잡기', tJump: '점프', tPass: '패스',
       you: '나', catchNow: '잡아!', spHow: '점프하며 던지면 필살!',
-      hintK: '이동 WASD/방향키 · J 던지기(꾹-떼기) · K 잡기/패스 · Space 점프 · 점프+던지기 = 필살',
+      hintK: '이동 WASD/방향키 · J 던지기(꾹-떼기) · K 잡기/패스 · Space 점프 · 점프+던지기 = 필살 · ←(등)+J = 커맨드',
       hintT: '던지기 꾹 눌렀다 떼기 · 공이 닿기 직전에 잡기 · 게이지 가득: 점프하며 던지면 필살!',
       keyHelp: 'H: 키 안내 켜기/끄기',
       help: '공에 <b>맞으면</b> 아웃. 날아온 공을 <b>잡으면</b> 던진 사람이 아웃 + 먼저 나간 우리 편이 다시 들어와요!<br>밖에 나간 친구가 맞히면 다시 들어와요. 잡기·피하기로 <b>필살</b> 게이지가 차면 <b>점프하며 던지기</b>.',
@@ -115,7 +119,11 @@
       sp_boomer: '부메랑 슛', sp_zigzag: '지그재그 슛', sp_ghost: '투명 슛', sp_flip: '공중제비 슛', sp_sneeze: '재채기 슛', sp_bouncy: '통통 슛',
       ss_banana: '엄청 휘어진다~!', ss_fart: '뿌우웅... 슈웅!', ss_chicken: '잠깐, 저거 닭이잖아', ss_giant: '점점 커진다!', ss_clone: '진짜는 하나뿐!', ss_slow: '느으으리이...',
       ss_boomer: '빙 돌아서 온다!', ss_zigzag: '지그! 재그! 지그!', ss_ghost: '보였다 안 보였다...', ss_flip: '하늘에서 떨어진다!', ss_sneeze: '에... 에...', ss_bouncy: '통! 통! 통!',
-      toot: '뿌웅!', zoom: '슝!', bawk: '꼬꼬댁!', ah: '에...', achoo: '에취!!'
+      toot: '뿌웅!', zoom: '슝!', bawk: '꼬꼬댁!', ah: '에...', achoo: '에취!!',
+      cmd: '필살 커맨드', cmdThr: '던지기', cmdReady: '준비', cmdWait: '충전 중', cmdOf: '{0}: {1}',
+      c_curve: '휘는 공', c_drop: '하늘 내리꽂기', c_rocket: '총알 직구', c_under: '언더독 슛', c_feint: '멈칫 슛',
+      cs_curve: '크게 돌았다가 꺾여 들어온다', cs_drop: '높이 떴다가 내리꽂는다', cs_rocket: '곧게, 엄청 빠르게', cs_under: '바닥을 기다가 마지막에 솟는다', cs_feint: '공중에서 멈칫... 그리고 슝!',
+      gCmdT: '필살 커맨드: 조이스틱 {0} 하고 던지기!', gCmdK: '필살 커맨드: {0} 누르고 J!'
     }
   };
 

@@ -74,7 +74,20 @@
     { skin: '#f5c69a', hat: 'hero', hs: 1.0, th: 0.9, st: [1, 4, 4], sp: 'boomer', story: 1, fit: 'hoodie' },   // 24 HERO
     { skin: '#a8693f', hat: 'dexcap', hs: 1.0, th: 0.95, st: [3, 5, 2], sp: 'zigzag', story: 1, fit: 'tee' }    // 25 DEX
   ];
-  G.NROSTER = 24; G.HERO = 24; G.DEX = 25;   // roster = G.CHARS[0..23] (pick grid, unlocks, random fill)
+  G.NROSTER = 24; G.HERO = 24; G.DEX = 25;
+  /* ---------- COMMAND shots (fighting-game motion + THROW) ----------
+     seq: directions relative to the rivals: F = toward them, B = back, U = up (far side), D = down (near side).
+     The motion must be entered within CMD_WIN s before THROW is pressed (or released), the last direction within CMD_LAST s.
+     Each player has one command; a used command recharges for CMD_CD s (round start: CMD_CD0 s). */
+  G.CMD_WIN = 0.5; G.CMD_LAST = 0.4; G.CMD_CD = 9; G.CMD_CD0 = 3;
+  G.CMDS = ['c_curve', 'c_drop', 'c_rocket', 'c_under', 'c_feint'];
+  G.CMDSEQ = { c_curve: ['B'], c_drop: ['B', 'U'], c_rocket: ['F', 'F'], c_under: ['D', 'F'], c_feint: ['D', 'B'] };
+  G.CHARS.forEach(function (C, i) { C.cmd = i === G.HERO ? 'c_under' : i === G.DEX ? 'c_feint' : ['c_curve', 'c_drop', 'c_rocket'][i % 3]; });
+  G.cmdArrows = function (id, team) {   // the motion as arrows for a player on `team` (left team faces right)
+    var r = team ? -1 : 1, A = { F: r > 0 ? '\u2192' : '\u2190', B: r > 0 ? '\u2190' : '\u2192', U: '\u2191', D: '\u2193' };
+    return (G.CMDSEQ[id] || []).map(function (d) { return A[d]; }).join(' ');
+  };
+  G.SPALL = null;   // G.SPECIALS + G.CMDS (net snapshot index), set below   // roster = G.CHARS[0..23] (pick grid, unlocks, random fill)
   G.randomChars = function (n, keep) {   // keep the given picks, fill the rest with different random characters
     var out = (keep || []).filter(function (c, i, a) { return c >= 0 && c < G.CHARS.length && a.indexOf(c) === i; }).slice(0, n), pool = [];
     for (var i = 0; i < G.NROSTER; i++) if (out.indexOf(i) < 0) pool.push(i);
@@ -90,7 +103,7 @@
   /* ---------- bodies ---------- */
   function mkBody(M, team, i, ch) {
     var C = G.CHARS[ch] || G.CHARS[0];
-    var b = { id: team * M.n + i, team: team, i: i, ch: ch, skin: C.skin, hat: C.hat, hs: C.hs, th: C.th, sp: C.sp, pw: C.st[0], sv: C.st[1], cv: C.st[2], outAt: 0, pts: [], tg: new Float32Array(22), x: 0, z: 0.5, h: 0, vh: 0, vx: 0, vz: 0,
+    var b = { id: team * M.n + i, team: team, i: i, ch: ch, skin: C.skin, hat: C.hat, hs: C.hs, th: C.th, sp: C.sp, cmd: C.cmd, cmdCD: G.CMD_CD0, cmdBuf: [], cmdDir: [0, 0], cmdTh: false, pw: C.st[0], sv: C.st[1], cv: C.st[2], outAt: 0, pts: [], tg: new Float32Array(22), x: 0, z: 0.5, h: 0, vh: 0, vx: 0, vz: 0,
       face: team ? -1 : 1, mode: 'stand', role: 'in', pendingOut: false, hold: false, charge: 0, charging: false, throwT: 0, catchT: 0, catchCD: 0,
       animT: i * 0.7, runPh: 0, ragT: 0, eyes: 0, sc: 1, rsc: 1, rx: 0, ry: 0, spd: 0, noPick: 0, flipping: false, sad: false, cheer: false, flash: 0, dest: null,
       ai: { t: 0, tx: 0, tz: 0.5, holdT: null, dec: -1, dodgeT: 0, dodgeZ: 0 } };
@@ -100,7 +113,7 @@
   function place(b, x, z) {
     b.x = x; b.z = z; b.h = 0; b.vh = 0; b.vx = 0; b.vz = 0; b.mode = 'stand'; b.role = 'in'; b.pendingOut = false; b.hold = false; b.charging = false;
     b.charge = 0; b.throwT = 0; b.catchT = 0; b.catchCD = 0; b.eyes = 0; b.flipping = false; b.sad = false; b.cheer = false; b.flash = 0; b.dest = null; b.noPick = 0; b.outAt = 0;
-    b.face = b.team ? -1 : 1; b.ai.holdT = null; b.ai.t = rnd(0.2, 0.8); b.ai.dec = -1; b.ai.dodgeT = 0;
+    b.face = b.team ? -1 : 1; b.cmdCD = Math.min(b.cmdCD, G.CMD_CD0); b.cmdBuf = []; b.ai.holdT = null; b.ai.t = rnd(0.2, 0.8); b.ai.dec = -1; b.ai.dodgeT = 0;
     b.sc = scz(z); b.rx = x; b.ry = FY(z); pose(b);
     for (var k = 0; k < 11; k++) { var p = b.pts[k]; p.x = p.px = b.tg[k * 2]; p.y = p.py = b.tg[k * 2 + 1]; }
   }
@@ -229,7 +242,7 @@
   /* ---------- ball ---------- */
   function mkBall() { return { x: CX, z: 0.5, h: 11, vx: 0, vz: 0, vh: 0, st: 'loose', holder: null, team: -1, thrower: null, sp: null, t: 0, path: null, prog: 0, r: 11, fake: false, pass: false, side: {}, alive: true, trail: [], id: 0, spin: 0, pow: 0, lx: 0, lz: 0, lh: 0 }; }
   function giveBall(M, B, b) {
-    B.st = 'held'; B.holder = b; B.path = null; B.sp = null; B.pass = false; B.team = b.team; B.r = 11; B.trail = []; B.fakeLook = null;
+    B.st = 'held'; B.holder = b; B.path = null; B.sp = null; B.cmd = 0; B.pass = false; B.team = b.team; B.r = 11; B.trail = []; B.fakeLook = null;
     b.hold = true; b.charging = false; b.charge = 0; b.ai.holdT = null; b.catchT = 0; b.heldT = 0;
     if (b.team === 0 && M.ctrl >= 0) M.ctrl = b.id;
     if (b.team !== 0 && M.me) M.me.pr = 0;
@@ -341,8 +354,67 @@
       var bn = Math.floor(0.5 + u * 3); if (bn !== B.bn) { B.bn = bn; G.sfx('boing'); puff(M, B.x, FY(B.z), 3, '#fff', 8, 40); }
     } }
   };
+  // COMMAND shots (G.CMDS): weaker than a SPECIAL (no meter), stronger than a plain throw; v = flight speed
+  SPEC.c_curve = { col: '#ffb3e1', v: 980, arc: 18, cpm: 0.9, dpm: 1, off: function (M, B, u, q) { q[1] += B.path.side * 0.24 * Math.sin(Math.PI * u) * (1.25 - 0.5 * u); } };
+  SPEC.c_drop = { col: '#9be7ff', v: 820, arc: 0, cpm: 0.7, dpm: 0.85, pos: function (M, B, u) {   // up to the apex, then homes in on where the target is NOW and slams down
+    var P = B.path;
+    if (u < 0.62) { var k = u / 0.62; return [lerp(P.x0, P.x1, 0.35 * k), lerp(P.z0, P.z1, 0.35 * k), lerp(P.h0, 330, Math.sin(k * Math.PI / 2))]; }
+    if (!B.bk) { B.bk = 1; G.sfx('zoom'); B.ax = lerp(P.x0, P.x1, 0.35); B.az = lerp(P.z0, P.z1, 0.35); var tg = B.tgt; if (tg && tg.mode === 'stand' && tg.role === 'in' && !tg.pendingOut) { P.x1 = tg.x; P.z1 = tg.z; } }
+    var w = (u - 0.62) / 0.38; return [lerp(B.ax, P.x1, w), lerp(B.az, P.z1, w), lerp(330, P.h1, w)];
+  } };
+  SPEC.c_rocket = { col: '#ffd23f', v: 1650, arc: 0, cpm: 0.45, dpm: 0.85, tick: function (M, B) { B.r = 10; if (Math.random() < 0.7) puff(M, B.x - B.path.dir * 10, bsy(B), 1, '#fff6c2', 8, 20); } };
+  SPEC.c_under = { col: '#ff5a4f', v: 900, arc: 0, cpm: 0.5, dpm: 0.85, pos: function (M, B, u) {
+    // 2026-10-26 형: never touches the floor (a ball that bounced = no count). Skims a clear gap above its shadow, then pops up at the rival
+    var P = B.path, lo = B.r + 14 + 2 * Math.sin(u * 9), h = u < 0.72 ? lo : lerp(lo, P.h1 + 10, Math.sin((u - 0.72) / 0.28 * Math.PI / 2));
+    if (u < 0.72 && Math.random() < 0.45) M.fx.push({ k: 'spark', x: B.x - P.dir * rnd(12, 26), y: FY(B.z) - h + rnd(-7, 7), vx: P.dir * rnd(220, 420), vy: 0, life: 0, max: rnd(0.14, 0.24), col: '#ffffff', s: rnd(1.5, 2.5) });   // wind streaks, not floor dust
+    return [lerp(P.x0, P.x1, u), lerp(P.z0, P.z1, u), h];
+  } };
+  SPEC.c_feint = { col: '#8ee53f', v: 760, arc: 12, cpm: 0.8, dpm: 1, rate: function (M, B) {
+    if (B.ph === 0) { if (B.prog >= 0.4) { B.ph = 1; B.w = 0.42; pop(M, B.x, bsy(B) - 36, '!?', '#8ee53f', 30); } return 1; }
+    if (B.ph === 1) { B.w -= DT; if (B.w <= 0) { B.ph = 2; G.sfx('zoom'); M.shake = Math.max(M.shake, 5); M.bodies.forEach(function (o) { if (o.ai.dec === B.id) o.ai.dec = -1; }); } return 0.03; }
+    return 3.2;
+  } };
+  G.SPALL = G.SPECIALS.concat(G.CMDS);
   G.SPEC = SPEC;
   function special(M, b, id) { throwBall(M, b, 1, id); }
+  // input buffer: record each newly pressed direction (relative to the rivals), with the match clock
+  function cmdRecord(M, b, mx, mz) {
+    var r = enemyDir(b), fx = mx * r, qx = fx > 0.5 ? 1 : fx < -0.5 ? -1 : 0, qz = mz > 0.5 ? 1 : mz < -0.5 ? -1 : 0, d = b.cmdDir, t = M.frame * DT;
+    if (qx && qx !== d[0]) b.cmdBuf.push(qx > 0 ? 'F' : 'B', t);
+    if (qz && qz !== d[1]) b.cmdBuf.push(qz > 0 ? 'D' : 'U', t);
+    d[0] = qx; d[1] = qz;
+    while (b.cmdBuf.length && (b.cmdBuf.length > 16 || t - b.cmdBuf[1] > G.CMD_WIN)) b.cmdBuf.splice(0, 2);
+  }
+  function cmdMatch(M, b) {   // the player's own command entered just now?
+    var seq = G.CMDSEQ[b.cmd], buf = b.cmdBuf, t = M.frame * DT; if (!seq) return false;
+    if (seq.length === 1 && ((seq[0] === 'F' || seq[0] === 'B') ? (b.cmdDir[0] === (seq[0] === 'F' ? 1 : -1)) : (b.cmdDir[1] === (seq[0] === 'D' ? 1 : -1)))) return true;   // one-direction command: holding it counts
+    if (!buf.length) return false;
+    var j = seq.length - 1, held = [b.cmdDir[0] > 0 ? 'F' : b.cmdDir[0] < 0 ? 'B' : '', b.cmdDir[1] > 0 ? 'D' : b.cmdDir[1] < 0 ? 'U' : ''];
+    for (var i = buf.length - 2; i >= 0 && j >= 0; i -= 2) {
+      if (t - buf[i + 1] > G.CMD_WIN) break;
+      if (buf[i] === seq[j]) { if (j === seq.length - 1 && t - buf[i + 1] > G.CMD_LAST && held.indexOf(buf[i]) < 0) return false; j--; }
+    }
+    return j < 0;
+  }
+  G.cmdMatch = cmdMatch;
+  function throwCmd(M, b) {
+    var id = b.cmd, S = SPEC[id], B = M.ball, human = isHuman(M, b);
+    throwBall(M, b, 1, null);
+    if (!B.path) return;
+    B.sp = id; B.cmd = 1; B.pow = 1; B.bk = 0; B.ph = 0; B.tgt = null;
+    var bd = 1e9; M.bodies.forEach(function (o) { if (o.team !== b.team && o.role === 'in' && !o.pendingOut) { var dd = Math.abs(o.x - B.path.x1) + Math.abs(o.z - B.path.z1) * ZPX; if (dd < bd) { bd = dd; B.tgt = o; } } });
+    var P = B.path, d = Math.sqrt(Math.pow(P.x1 - P.x0, 2) + Math.pow((P.z1 - P.z0) * ZPX, 2));
+    P.D = Math.max(0.22, d / S.v); P.arc = S.arc;
+    b.cmdCD = G.CMD_CD; b.cmdBuf = [];
+    STAT.cmd = (STAT.cmd || 0) + 1; STAT.cmdT = STAT.cmdT || [0, 0]; STAT.cmdT[b.team]++;
+    M.cmdFired = M.cmdFired || {}; M.cmdFired[id] = (M.cmdFired[id] || 0) + 1;
+    if (human && b.team === 0) M.me.cmd = (M.me.cmd || 0) + 1;
+    if (M.guide && human) M.guide.cmd = (M.guide.cmd || 0) + 1;
+    M.ban = { txt: T(id), sub: G.cmdArrows(id, b.team) + ' + ' + T('cmdThr'), k: id, col: S.col, t: 0, dur: 1.0, sp: id, team: b.team, cmd: 1 };
+    M.flash = Math.max(M.flash, 0.12); M.shake = Math.max(M.shake, 4); G.sfx('special'); crowd(M, 0.6);
+    sparks(M, B.x, bsy(B), 10, S.col, 260);
+  }
+  G.throwCmd = throwCmd;
 
   function pathStep(M, B) {
     var P = B.path, S = B.sp ? SPEC[B.sp] : null, rate = S && S.rate ? S.rate(M, B) : 1;
@@ -384,7 +456,7 @@
   }
   function dead(M, B) {
     if (B.fake) { B.alive = false; puff(M, B.x, bsy(B), 6, '#d7c4ff', 12, 70); G.sfx('poof'); return; }
-    B.st = 'loose'; B.path = null; B.pass = false; B.team = -1; B.sp = null; B.r = 11;
+    B.st = 'loose'; B.path = null; B.pass = false; B.team = -1; B.sp = null; B.cmd = 0; B.r = 11;
   }
   function liveCheck(M, B) {
     var i, b;
@@ -408,14 +480,15 @@
   }
   function sparks(M, x, y, n, col, sp) { for (var i = 0; i < n; i++) { var a = rnd(0, 6.283), v = rnd(0.3, 1) * sp; M.fx.push({ k: 'spark', x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(0.18, 0.4), col: col, s: rnd(3, 6) }); } }
   function hitBody(M, B, b) {
-    var pw = B.sp ? (B.sp === 'giant' ? 2.5 : 1.8) : 0.55 + Math.min(1.3, B.pow) * 1.05;
+    var pw = B.cmd ? 1.35 : B.sp ? (B.sp === 'giant' ? 2.5 : 1.8) : 0.55 + Math.min(1.3, B.pow) * 1.05;
+    if (B.cmd) { STAT.cmdHit = (STAT.cmdHit || 0) + 1; STAT.cmdHitT = STAT.cmdHitT || [0, 0]; STAT.cmdHitT[B.team]++; if (B.team === 0 && B.thrower && isHuman(M, B.thrower)) M.me.cmdHit = (M.me.cmdHit || 0) + 1; }
     var dir = Math.abs(B.vx) > 30 ? sgn(B.vx) : (b.team ? 1 : -1);
     var hy = bsy(B), wasAir = b.h > 1;
     launch(b, dir, pw); b.pendingOut = true; b.outAt = ++M.outSeq; M.hits[B.team]++; STAT.hit++;
     if (B.thrower && B.team === 0 && isHuman(M, B.thrower)) { M.me.hit++; M.me.outs++; if (B.sp === 'banana') M.me.ban++; if (B.sp === 'flip' && wasAir) M.me.flipAir++; }
     if (b.team === 0 && isHuman(M, b)) M.me.hurt++;
     M.lastCatchMe = false;
-    M.lastSp = B.team === 0 && !!B.sp;
+    M.lastSp = B.team === 0 && !!B.sp && !B.cmd;
     // the hit feel: hit-stop, shake, white body flash, impact ring + sparks, crunchy thump
     M.hitstop = 0.06 + 0.06 * pw; M.shake = Math.max(M.shake, 8 + 9 * pw); M.flash = Math.max(M.flash, 0.06 + 0.05 * pw);
     M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.28, col: '#fff', s: 20 + 30 * pw });
@@ -426,13 +499,14 @@
     pop(M, b.x, FY(b.z) - 150 * b.sc, T('out'), '#ff5a4f', 30 + pw * 8); ev(M, b.team === 0 ? 'hitMe' : 'hit', pw, b);
     meterAdd(M, B.team, 0.15);
     var th = B.thrower; if (th && th.role === 'out' && th.mode === 'stand') { goIn(th); pop(M, th.x, FY(th.z) - 150, T('backIn'), '#8ef0a8', 30); G.sfx('revive'); }
-    B.path = null; B.st = 'loose'; B.team = -1; B.sp = null; B.r = 11; B.vx = -B.vx * 0.22; B.vz *= 0.3; B.vh = 380;
+    B.path = null; B.st = 'loose'; B.team = -1; B.sp = null; B.cmd = 0; B.r = 11; B.vx = -B.vx * 0.22; B.vz *= 0.3; B.vh = 380;
     M.fakes.forEach(function (f) { if (f.alive) dead(M, f); });
     if (isHuman(M, b)) { var n = nearestIn(M, b.team, b); if (n) setCtrl(M, b.team, n.id); }
     checkRoundEnd(M);
   }
   function catchBall(M, B, b) {
     var th = B.thrower;
+    if (B.cmd) STAT.cmdCaught = (STAT.cmdCaught || 0) + 1;
     giveBall(M, B, b); b.throwT = 0; STAT.cat++; M.lastSp = false;
     var meC = b.team === 0 && isHuman(M, b); M.lastCatchMe = meC;
     if (meC) { M.me.cat++; if (b.h > 1) M.me.airCat++; if (M.guide) M.guide.cat++; }
@@ -532,6 +606,7 @@
         var outs = M.bodies.some(function (x) { return x.team === b.team && x.role === 'out' && x.mode === 'stand'; });
         if (a.useSp && M.meter[b.team] >= 1 && b.h > 1) special(M, b, b.sp);
         else if (b.role === 'in' && outs && Math.random() < P.passP) pass(M, b);
+        else if (b.cmdCD <= 0 && !(M.noCmdAI && M.noCmdAI[b.team]) && Math.random() < (M.cmdAI != null ? M.cmdAI : 0.35)) throwCmd(M, b);
         else throwBall(M, b, b.charging ? b.charge : P.pow);
       }
       return o;
@@ -543,7 +618,7 @@
       a.dec = th.B.id;
       var cp = P.catchP * (0.7 + 0.1 * b.cv), dp = P.dodgeP, Bt = th.B;
       if (!M.easy) { var nOut = M.bodies.filter(function (x) { return x.team === b.team && !alive(x); }).length; cp *= 1 + Math.min(0.6, 0.2 * nOut); }   // a catch brings a teammate back: worth more when many are out
-      if (Bt.sp) { cp *= 0.45; dp *= 0.75; } if (Bt.sp === 'giant') cp = 0; if (Bt.sp === 'ghost') { cp *= 0.6; dp *= 0.6; }
+      if (Bt.cmd) { var CS = SPEC[Bt.sp] || {}; cp *= CS.cpm || 0.7; dp *= CS.dpm || 0.85; } else if (Bt.sp) { cp *= 0.45; dp *= 0.75; } if (Bt.sp === 'giant') cp = 0; if (Bt.sp === 'ghost') { cp *= 0.6; dp *= 0.6; }
       if (th.tt < P.react) { cp *= 0.4; dp *= 0.4; STAT.late++; }
       var r = Math.random();
       if (r < cp && b.catchCD <= 0) { b.catchT = catchWin(b); b.catchCD = 0.6; STAT.cTry++; }
@@ -656,7 +731,7 @@
     [M.ctrl, M.ctrl2].forEach(function (cid, t) { if (cid < 0) return; var cb = bs[cid]; if (!(cb.role === 'in' && !cb.pendingOut) && !(cb.role === 'out' && cb.hold)) { var n = nearestIn(M, t, cb); if (n) setCtrl(M, t, n.id); } });
     for (i = 0; i < bs.length; i++) {
       b = bs[i];
-      if (b.catchT > 0) b.catchT -= DT; if (b.catchCD > 0) b.catchCD -= DT; if (b.throwT > 0) b.throwT -= DT; if (b.noPick > 0) b.noPick -= DT; if (b.flash > 0) b.flash -= DT;
+      if (b.catchT > 0) b.catchT -= DT; if (b.catchCD > 0) b.catchCD -= DT; if (b.throwT > 0) b.throwT -= DT; if (b.noPick > 0) b.noPick -= DT; if (b.flash > 0) b.flash -= DT; if (b.cmdCD > 0 && M.state === 'play') b.cmdCD -= DT;
       if (b.mode === 'rag') { ragStep(M, b); continue; }
       var o;
       if (b.role === 'toOut' || b.role === 'toIn') {
@@ -687,7 +762,9 @@
   // three buttons: GRAB/PASS (catchP; passP kept for old clients), JUMP, THROW (hold + release). Special = release THROW in the air with a full meter.
   function humanInput(M, b, inp) {
     inp = inp || {};
-    var o = { mx: inp.mx || 0, mz: inp.mz || 0, jump: !!inp.jumpP }, grab = inp.catchP || inp.passP;
+    var o = { mx: inp.mx || 0, mz: inp.mz || 0, jump: !!inp.jumpP }, grab = inp.catchP || inp.passP, th = !!inp.throwHeld, thP = th && !b.cmdTh;
+    cmdRecord(M, b, o.mx, o.mz); b.cmdTh = th;
+    if (b.hold && b.cmdCD <= 0 && !grab && (thP || (!th && b.charging)) && cmdMatch(M, b)) { throwCmd(M, b); return o; }   // COMMAND: motion + THROW press (or release)
     if (b.hold) {
       // shot clock: a player who keeps the ball too long throws it anyway (the match never stalls)
       b.heldT = (b.heldT || 0) + DT;

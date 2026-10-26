@@ -309,6 +309,7 @@
   function pause() {
     if (state !== 'play') return;
     $('pauseHelp').innerHTML = touchOn ? G.t('hintT') : G.t('hintK');
+    var cb = M && (M.ctrl >= 0 ? M.bodies[M.ctrl] : null); if (cb && cb.cmd) $('pauseHelp').innerHTML += '<div class="cmdP"><b>' + esc(G.t('ch' + cb.ch)) + ' · ' + esc(G.t('cmd')) + '</b> <kbd>' + esc(G.cmdArrows(cb.cmd, cb.team)) + ' + ' + esc(touchOn ? G.t('cmdThr') : 'J') + '</kbd> ' + esc(G.t(cb.cmd)) + ' <small>(' + esc(G.t('cs_' + cb.cmd.slice(2))) + ')</small></div>';
     Sdk.gameplayStop();
     if (NET) { ovl = true; show('pause'); return; }   // online: the game keeps running underneath
     state = 'pause'; refreshMenu(); show('pause');

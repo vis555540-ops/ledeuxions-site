@@ -561,12 +561,22 @@
       c.strokeStyle = '#ffd23f'; c.lineWidth = 3; rr(c, (SW - tw) / 2, py - 22, tw, 44, 22); c.stroke();
       fitLabel(c, txt, SW / 2, py, 26, '#fff', 'center', tw - 24, true);
     }
+    cmdChip(c, M, now, view, pw);
     if (M.guide || M.waitInput) guideHud(c, M, now, view);
     // first-match hint
     if (M.hint && !M.guide && view.touch && M.round === 1 && M.time > G.ROUND_T - 9 && M.state !== 'intro') {
       var ht = view.touch ? G.t('hintT') : G.t('hintK'); c.font = '700 15px ' + G.FONT; var hw = Math.min(SW - 30, c.measureText(ht).width + 30);
       c.fillStyle = 'rgba(16,12,40,0.82)'; rr(c, (SW - hw) / 2, H - 50, hw, 36, 12); c.fill(); fitLabel(c, ht, SW / 2, H - 32, 15, '#fff', 'center', hw - 20);
     }
+  }
+  // COMMAND chip under my team panel: motion + name, fills while it recharges
+  function cmdChip(c, M, now, view, pw) {
+    var my = M.myTeam || 0, cid = my ? M.ctrl2 : M.ctrl; if (M.versus && my) cid = M.ctrl;
+    var b = cid >= 0 ? M.bodies[cid] : null; if (!b || !b.cmd || b.cmdCD == null || M.state === 'intro' && M.waitInput) return;
+    var x = my ? view.SW - 10 - pw : 10, y = view.port ? H - 36 : 108, w = pw, h = 26, rdy = b.cmdCD <= 0, f = rdy ? 1 : 1 - b.cmdCD / G.CMD_CD;
+    c.fillStyle = 'rgba(27,27,47,0.82)'; rr(c, x, y, w, h, 13); c.fill();
+    c.fillStyle = rdy ? (((now * 4) | 0) % 2 ? '#ffd23f' : '#ffb703') : '#3a3c5a'; rr(c, x + 3, y + 3, Math.max(20, (w - 6) * clamp(f, 0, 1)), h - 6, 10); c.fill();
+    fitLabel(c, G.cmdArrows(b.cmd, b.team) + ' + ' + (view.touch ? G.t('cmdThr') : 'J') + '  ' + G.t(b.cmd), x + w / 2, y + h / 2 + 1, 15, rdy ? '#1b1b2f' : '#c9cbe0', 'center', w - 16);
   }
   // guided first match: one short line in context, big and readable; what to press depends on keyboard / touch
   G.guideTip = function (M, touch) {
@@ -576,6 +586,7 @@
     if (M.guideSlow) return touch ? 'gCatchT' : 'gCatchK';
     if (me.hold && M.meter[0] >= 1 && g.thr < 6) return touch ? 'gSpT' : 'gSpK';
     if (me.hold && g.thr < 3) return me.charging ? 'gRelease' : touch ? 'gThrowT' : 'gThrowK';
+    if (me.hold && !me.charging && me.cmd && me.cmdCD <= 0 && !g.cmd && (g.pass || g.thr >= 4) && g.thr < 12) return touch ? 'gCmdT' : 'gCmdK';
     if (me.hold && !me.charging && g.thr >= 2 && g.thr < 6 && !g.pass && M.bodies.some(function (o) { return o.team === 0 && o !== me && o.role === 'in' && !o.pendingOut; })) return touch ? 'gPassT' : 'gPassK';
     if (!me.hold && M.ball.st === 'loose' && g.thr < 3 && M.chaser[0] === null && Math.abs(M.ball.x - me.x) < 500) return touch ? 'gGetT' : 'gGetK';
     return null;
@@ -590,7 +601,7 @@
       return;
     }
     if (!key) return;
-    var txt = G.t(key), urgent = key === 'gCatchT' || key === 'gCatchK', fs = urgent ? 40 : 30, y = urgent ? H * 0.27 : H - 62;
+    var cme = M.bodies[M.ctrl], txt = key.slice(0, 4) === 'gCmd' && cme ? G.t(key, G.cmdArrows(cme.cmd, cme.team)) : G.t(key), urgent = key === 'gCatchT' || key === 'gCatchK', fs = urgent ? 40 : 30, y = urgent ? H * 0.27 : H - 62;
     c.font = 'italic 900 ' + fs + 'px ' + G.FONT; var tw = Math.min(SW - 24, c.measureText(txt).width + 50);
     var pu2 = 0.5 + 0.5 * Math.sin(now * 10);
     c.fillStyle = urgent ? 'rgba(46,160,90,' + (0.85 + 0.15 * pu2) + ')' : 'rgba(16,12,40,0.86)'; rr(c, (SW - tw) / 2, y - fs * 0.85, tw, fs * 1.7, 18); c.fill();

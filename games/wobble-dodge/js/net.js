@@ -74,7 +74,7 @@
     return a;
   }
   function encBall(B) {
-    return [r1(B.x), r3(B.z), r1(B.h), r1(B.r), BST.indexOf(B.st), B.sp ? G.SPECIALS.indexOf(B.sp) : -1, r1(B.vx), r1(B.vz), Math.round(B.spin * 100) / 100, B.holder ? B.holder.id : -1, B.ph || 0, B.alive ? 1 : 0, B.team, B.pass ? 1 : 0];
+    return [r1(B.x), r3(B.z), r1(B.h), r1(B.r), BST.indexOf(B.st), B.sp ? G.SPALL.indexOf(B.sp) : -1, r1(B.vx), r1(B.vz), Math.round(B.spin * 100) / 100, B.holder ? B.holder.id : -1, B.ph || 0, B.alive ? 1 : 0, B.team, B.pass ? 1 : 0];
   }
   function rnd(o) { var c = {}; for (var k in o) { var v = o[k]; if (k === '_s') continue; c[k] = typeof v === 'number' ? Math.round(v * 10) / 10 : v; } return c; }
   N.hostSend = function (M, now, force) {
@@ -132,7 +132,7 @@
   function decBall(o, a, c, u, V) {
     var same = c && a[4] === c[4]; if (!same) { c = a; u = 0; }
     o.x = L(a[0], c[0], u); o.z = L(a[1], c[1], u) / 1000; o.h = L(a[2], c[2], u); o.r = L(a[3], c[3], u);
-    o.st = BST[a[4]] || 'loose'; o.sp = a[5] >= 0 ? G.SPECIALS[a[5]] : null; o.vx = a[6]; o.vz = a[7]; o.spin = L(a[8], c[8], u); o.holder = a[9] >= 0 ? V.bodies[a[9]] : null; o.ph = a[10]; o.alive = !!a[11]; o.team = a[12]; o.pass = !!a[13];
+    o.st = BST[a[4]] || 'loose'; o.sp = a[5] >= 0 ? G.SPALL[a[5]] : null; o.vx = a[6]; o.vz = a[7]; o.spin = L(a[8], c[8], u); o.holder = a[9] >= 0 ? V.bodies[a[9]] : null; o.ph = a[10]; o.alive = !!a[11]; o.team = a[12]; o.pass = !!a[13];
   }
   var SWAP = { roundWin: 'roundLose', roundLose: 'roundWin' }, SWCOL = { '#8ef0a8': '#ff9d5c', '#ff9d5c': '#8ef0a8' };
   function applyEvents(V, s) {
