@@ -33,6 +33,7 @@
       filledBad: '다 채웠는데 규칙에 안 맞는 곳이 있어요 — 「틀린 곳」',
       newBest: '최고 기록 새로!', days: n => `${n}일 연속`,
       copied: '복사했어요. 붙여넣기 하세요', copyPrompt: '복사해서 보내세요',
+      hintNone: '오늘 무료 힌트를 다 썼어요. 내일 또 3개!', hintAdFail: '광고를 끝까지 보면 힌트를 드려요', hintFull: '더 줄 힌트가 없어요',
       settings: '설정', lang: '말', auto: '자동', close: '닫기', privacy: '개인정보처리방침', title: '한판퍼즐', logo: '한판<b>퍼즐</b>',
     },
     en: {
@@ -63,6 +64,7 @@
       filledBad: 'All filled, but something breaks a rule — tap “Mistakes”',
       newBest: 'New best!', days: n => `${n}-day streak`,
       copied: 'Copied. Paste it anywhere', copyPrompt: 'Copy and send',
+      hintNone: 'No free hints left today. 3 more tomorrow!', hintAdFail: 'Watch the whole ad to get a hint', hintFull: 'Nothing left to hint',
       settings: 'Settings', lang: 'Language', auto: 'Auto', close: 'Close', privacy: 'Privacy policy', title: 'OnePuzzle', logo: 'One<b>Puzzle</b>',
     },
   };
@@ -143,7 +145,7 @@
       if (spec.type === 'queens') G.st = new Array(pz.N * pz.N).fill(0);
       if (spec.type === 'bin') G.st = pz.givens.slice();
       $('checkBtn').classList.remove('on');
-      layout(); draw();
+      layout(); draw(); hintBadge();
       clearInterval(timerH); $('timer').textContent = '0:00';
       timerH = setInterval(() => { if (!G.solved && !document.hidden) { G.sec++; $('timer').textContent = fmt(G.sec); } }, 1000);
       if (!S.seen[spec.type]) showRules();
@@ -180,14 +182,14 @@
         const v = G.st[i];
         const r = (i / N) | 0, c = i % N, g = G.pz.reg[i];
         const sh = [r > 0 && G.pz.reg[i - N] !== g ? 'inset 0 3px 0 #2b2622' : '', c > 0 && G.pz.reg[i - 1] !== g ? 'inset 3px 0 0 #2b2622' : ''].filter(Boolean).join(',');
-        html += `<div class="cell${bad.has(i) ? ' bad' : ''}" style="background:${COLORS[g]};${sh ? 'box-shadow:' + sh + ';' : ''}font-size:${fs}px">${v === 2 ? `<span class="q${i === G.pop ? ' pop' : ''}">👑</span>` : v === 1 ? '<span class="q qx">✕</span>' : ''}</div>`;
+        html += `<div class="cell${bad.has(i) ? ' bad' : ''}${i === G.hl ? ' hl' : ''}" style="background:${COLORS[g]};${sh ? 'box-shadow:' + sh + ';' : ''}font-size:${fs}px">${v === 2 ? `<span class="q${i === G.pop ? ' pop' : ''}">👑</span>` : v === 1 ? '<span class="q qx">✕</span>' : ''}</div>`;
       } else {
         const v = G.st[i], gv = G.pz.givens[i] >= 0;
-        html += `<div class="cell${gv ? ' given' : ''}${bad.has(i) ? ' bad' : ''}">${v === 0 ? '<div class="stone b"></div>' : v === 1 ? '<div class="stone w"></div>' : ''}</div>`;
+        html += `<div class="cell${gv ? ' given' : ''}${bad.has(i) ? ' bad' : ''}${i === G.hl ? ' hl' : ''}">${v === 0 ? '<div class="stone b"></div>' : v === 1 ? '<div class="stone w"></div>' : ''}</div>`;
       }
     }
     b.innerHTML = html + '</div>';
-    G.pop = -1;
+    G.pop = -1; G.hl = -1;
     hint();
   }
   function drawZip() {
@@ -199,6 +201,7 @@
     for (let k = 1; k < N; k++) s += `<line x1="${k}" y1="0" x2="${k}" y2="${N}" stroke="var(--line)" stroke-width=".03"/><line x1="0" y1="${k}" x2="${N}" y2="${k}" stroke="var(--line)" stroke-width=".03"/>`;
     if (path.length > 1) s += `<polyline points="${path.map(i => xy(i).join(',')).join(' ')}" fill="none" stroke="var(--path)" stroke-width=".42" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>`;
     else { const [x, y] = xy(path[0]); s += `<circle cx="${x}" cy="${y}" r=".21" fill="var(--path)"/>`; }
+    if (G.hl >= 0) { const [x, y] = xy(G.hl); s += `<rect class="hlz" x="${x - .46}" y="${y - .46}" width=".92" height=".92" rx=".12" fill="none" stroke="#f5b400" stroke-width=".1"/>`; G.hl = -1; }
     for (let i = 0; i < N * N; i++) if (clue[i]) {
       const [x, y] = xy(i);
       s += `<circle cx="${x}" cy="${y}" r=".33" fill="var(--ink)"/><text x="${x}" y="${y + .13}" font-size=".36" font-weight="800" text-anchor="middle" fill="var(--card)">${clue[i]}</text>`;
@@ -338,10 +341,49 @@
     $('wTime').textContent = '⏱ ' + fmt(t);
     $('wInfo').textContent = [info, G.spec.daily ? `🔥 ${T.days(streak())}` : `${NM(G.spec.type)} ${DF(G.spec.diff)} ${T.best} ${fmt(S.best[key])}`].filter(Boolean).join(' · ');
     $('wNext').textContent = G.spec.daily ? T.more : T.next;
-    setTimeout(() => { $('winM').classList.add('show'); adHook('between'); }, 400);
+    HanpanAds.solved();
+    setTimeout(() => $('winM').classList.add('show'), 400);
   }
-  // 광고 자리 — 판 사이에만. 지금은 비어 있음. 나중에 window.hanpanAd = slot => {...} 로 붙이면 됨.
-  function adHook(slot) { try { if (typeof window.hanpanAd === 'function') window.hanpanAd(slot, $('adSlot')); } catch (e) {} }
+
+  // ---------- 💡 힌트 (광고 보고 / 지금은 하루 3번 무료 — ads.js) ----------
+  function hintBadge() { const b = HanpanAds.hintBadge(); $('hintN').textContent = b === 'ad' ? '▶' : b; }
+  // 힌트 하나 놓기. 놓은 칸 번호, 줄 게 없으면 -1
+  function giveHint() {
+    const N = G.pz.N, sol = G.pz.solution;
+    if (G.spec.type === 'zip') { // 맞게 온 데까지 두고 다음 칸 하나
+      let k = 0; while (k < G.path.length && G.path[k] === sol[k]) k++;
+      if (k >= sol.length) return -1;
+      G.path.length = k; G.path.push(sol[k]); return sol[k];
+    }
+    if (G.spec.type === 'queens') { // 빠진 왕관 하나 (그 줄에 틀린 왕관 있으면 치움)
+      const r = G.st.findIndex((v, i) => sol[i] === 1 && v !== 2);
+      if (r < 0) { const w = G.st.findIndex((v, i) => v === 2 && sol[i] !== 1); if (w < 0) return -1; G.st[w] = 0; return w; }
+      const row = (r / N) | 0;
+      for (let c = 0; c < N; c++) if (G.st[row * N + c] === 2) G.st[row * N + c] = 0;
+      G.st[r] = 2; G.pop = r; return r;
+    }
+    let i = G.st.findIndex(v => v < 0); // 바둑칸: 빈칸 하나 (없으면 틀린 칸 하나)
+    if (i < 0) i = G.st.findIndex((v, j) => v !== sol[j]);
+    if (i < 0) return -1;
+    G.st[i] = sol[i]; return i;
+  }
+  let hintBusy = false;
+  $('hintBtn').onclick = async () => {
+    if (!G || G.solved || hintBusy) return;
+    hintBusy = true;
+    try {
+      const b = HanpanAds.hintBadge();
+      if (b !== 'ad' && b <= 0) { toast(T.hintNone); return; }
+      const ok = await HanpanAds.rewardHint();
+      if (!ok) { toast(b === 'ad' ? T.hintAdFail : T.hintNone); return; }
+      if (!G || G.solved) return;
+      snap();
+      const i = giveHint();
+      if (i < 0) { G.hist.pop(); toast(T.hintFull); return; }
+      G.hints = (G.hints || 0) + 1; G.hl = i;
+      draw(); won();
+    } finally { hintBusy = false; hintBadge(); }
+  };
 
   function shareText() {
     const d = new Date();
@@ -355,8 +397,8 @@
     try { await navigator.clipboard.writeText(t); toast(T.copied); }
     catch (e) { prompt(T.copyPrompt, t); }
   };
-  $('wNext').onclick = () => { $('winM').classList.remove('show'); const s = G.spec; start({ type: s.type, diff: s.diff, seed: 'more-' + Date.now(), daily: false }); };
-  $('wHome').onclick = () => { $('winM').classList.remove('show'); $('backBtn').onclick(); };
+  $('wNext').onclick = async () => { $('winM').classList.remove('show'); await HanpanAds.between(); const s = G.spec; start({ type: s.type, diff: s.diff, seed: 'more-' + Date.now(), daily: false }); };
+  $('wHome').onclick = async () => { $('winM').classList.remove('show'); await HanpanAds.between(); $('backBtn').onclick(); };
 
   // ---------- 규칙 (그림) ----------
   function demoSvg(type) {

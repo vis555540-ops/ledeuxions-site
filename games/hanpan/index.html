@@ -48,6 +48,9 @@ h2{font-size:20px;margin:22px 0 8px}
 .top .back{border:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:18px;cursor:pointer}
 .top .ttl{flex:1;min-width:0;font-weight:800;font-size:20px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top .ttl small{display:block;font-weight:400;color:var(--sub);font-size:14px}
+.hintb{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:6px 8px;font-size:20px;cursor:pointer;display:flex;align-items:center;gap:2px;line-height:1}
+.hintb small{font-size:13px;font-weight:700;color:var(--sub);min-width:.8em}
+.cell.hl{outline:3px solid #f5b400;outline-offset:-3px;z-index:1}
 .top .timer{font-variant-numeric:tabular-nums;font-size:22px;font-weight:700;min-width:3.2em;text-align:right;line-height:1.1}
 .hint{color:var(--sub);font-size:15px;text-align:center;height:22px;line-height:22px;overflow:hidden;margin:6px 0}
 #board{position:relative;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -110,6 +113,7 @@ h2{font-size:20px;margin:22px 0 8px}
     <div class="top">
       <button class="back" id="backBtn">←</button>
       <div class="ttl" id="gTitle"></div>
+      <button class="hintb" id="hintBtn" aria-label="hint">💡<small id="hintN"></small></button>
       <div class="timer" id="timer">0:00</div>
     </div>
     <div class="hint" id="hint"></div>
@@ -136,7 +140,6 @@ h2{font-size:20px;margin:22px 0 8px}
   <p id="wInfo" style="text-align:center;color:var(--sub)"></p>
   <div class="btns"><button id="wShare" data-t="share">공유하기</button><button class="pri" id="wNext">한 판 더</button></div>
   <div class="btns"><button id="wHome" data-t="home">처음으로</button></div>
-  <div class="ad-slot" id="adSlot" data-slot="between"></div>
 </div></div>
 <div class="modal" id="setM"><div class="box">
   <h3 data-t="settings">설정</h3>
@@ -147,7 +150,8 @@ h2{font-size:20px;margin:22px 0 8px}
 </div></div>
 <div class="toast" id="toast"></div>
 
-<script src="puzzles.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<script src="ads.js?v=4"></script>
+<script src="puzzles.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
