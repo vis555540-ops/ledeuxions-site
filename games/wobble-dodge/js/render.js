@@ -411,6 +411,23 @@
   var ENTS = [], BALLS = [], EPOOL = [];
   function ent(i, z, b, B) { var e = EPOOL[i] || (EPOOL[i] = {}); e.z = z; e.b = b; e.B = B; return e; }
   function bySortZ(a, b2) { return a.z - b2.z; }
+  function drawBanner(c, M, now, V) {   // special/round name strip; drawn BEHIND the players (form 10/28) so sprites are never covered
+    if (!M.ban) return;
+    var SW = V.SW, bn = M.ban, t = bn.t, sc = easeOutBack(t / 0.22), al = t > bn.dur - 0.25 ? (bn.dur - t) / 0.25 : 1, by = H * 0.42;
+    c.save(); c.globalAlpha = clamp(al, 0, 1);
+    if (bn.sp) {   // special announcement: big slanted strip
+      var sw2 = SW * clamp(t / 0.15, 0, 1); c.fillStyle = INK; c.save(); c.translate(SW / 2, by); c.rotate(-0.06); c.fillRect(-sw2 / 2, -62, sw2, 124); c.fillStyle = bn.col; c.fillRect(-sw2 / 2, -54, sw2, 108);
+      c.fillStyle = 'rgba(255,255,255,0.25)'; for (var q = -8; q < 8; q++) { var ox = ((q * 90 + now * 600) % (SW + 180)) - SW / 2; c.beginPath(); c.moveTo(ox, -54); c.lineTo(ox + 30, -54); c.lineTo(ox - 10, 54); c.lineTo(ox - 40, 54); c.fill(); }
+      c.restore();
+      c.translate(SW / 2, by - 10); c.rotate(-0.06); c.scale(sc, sc);
+      fitLabel(c, bn.txt, 0, -4, 66, '#fff', 'center', SW * 0.9, true);
+      if (bn.sub) fitLabel(c, bn.sub, 0, 44, 24, '#fff', 'center', SW * 0.8);
+    } else {
+      c.translate(SW / 2, by); c.scale(sc, sc); fitLabel(c, bn.txt, 0, 0, 78, bn.col, 'center', SW * 0.9, true);
+      if (bn.sub) fitLabel(c, bn.sub, 0, 62, 30, '#fff', 'center', SW * 0.85);
+    }
+    c.restore();
+  }
   G.render = function (c, M, now, V) {
     var k = V.k, SW = V.SW;
     if (!bg || bgK !== k) buildBg(k);
@@ -436,6 +453,18 @@
     // aim marker (my holder)
     var me = M.ctrl >= 0 ? M.bodies[M.ctrl] : null;
     if (me && me.hold && M.state === 'play') { var tg = G.pickTarget(M, me); if (tg) { c.strokeStyle = '#ff3b3b'; c.lineWidth = 4; c.beginPath(); c.ellipse(tg.x, FY(tg.z), 30 * tg.sc, 10 * tg.sc, 0, 0, TAU); c.stroke(); } }
+    // special name banner + shot fx: drawn BEHIND the players (form 10/28) so sprites/ball/aim stay on top
+    c.setTransform(k, 0, 0, k, 0, 0); drawBanner(c, M, now, V); c.setTransform(k, 0, 0, k, ox, oy);
+    for (i = 0; i < M.fx.length; i++) {
+      var f0 = M.fx[i], a0 = 1 - f0.life / f0.max;
+      if (f0.k === 'puff') { c.fillStyle = hexA(f0.col, a0 * 0.75); c.beginPath(); c.arc(f0.x, f0.y, f0.s * (1 + (1 - a0) * 1.2), 0, TAU); c.fill(); }
+      else if (f0.k === 'spark') { c.strokeStyle = hexA(f0.col, a0); c.lineWidth = f0.s; c.lineCap = 'round'; c.beginPath(); c.moveTo(f0.x, f0.y); c.lineTo(f0.x - f0.vx * 0.03, f0.y - f0.vy * 0.03); c.stroke(); }
+      else if (f0.k === 'ring') { c.strokeStyle = hexA(f0.col, a0); c.lineWidth = 8 * a0 + 1; c.beginPath(); c.arc(f0.x, f0.y, f0.s * (0.4 + (1 - a0) * 1.8), 0, TAU); c.stroke(); }
+      else if (f0.k === 'burst') { c.fillStyle = hexA('#ffffff', a0); star(c, f0.x, f0.y, f0.s * (1.2 - a0 * 0.4), now * 3); c.fillStyle = hexA('#ffe45c', a0); star(c, f0.x, f0.y, f0.s * 0.6, now * 3 + 0.4); }
+      else if (f0.k === 'feather') { c.save(); c.translate(f0.x, f0.y); c.rotate(f0.rot); c.globalAlpha = a0; c.fillStyle = '#fff'; c.strokeStyle = INK; c.lineWidth = 1.5; c.beginPath(); c.ellipse(0, 0, f0.s, f0.s * 0.35, 0, 0, TAU); c.fill(); c.stroke(); c.restore(); }
+      else if (f0.k === 'drop') { c.fillStyle = hexA(f0.col, a0); c.beginPath(); c.arc(f0.x, f0.y, f0.s, 0, TAU); c.fill(); }
+      else if (f0.k === 'txt') { c.globalAlpha = a0; label(c, f0.txt, f0.x, f0.y, f0.s, f0.col, 'center'); c.globalAlpha = 1; }
+    }
     ents.sort(bySortZ);
     var fh = useFaces(M);
     for (i = 0; i < ents.length; i++) {
@@ -456,17 +485,7 @@
         if (ok && me.catchT <= 0) label(c, G.t('catchNow'), me.x, cyy - rad - 14, 20, '#8ef0a8', 'center');
       }
     }
-    // fx
-    for (i = 0; i < M.fx.length; i++) {
-      var f2 = M.fx[i], a = 1 - f2.life / f2.max;
-      if (f2.k === 'puff') { c.fillStyle = hexA(f2.col, a * 0.75); c.beginPath(); c.arc(f2.x, f2.y, f2.s * (1 + (1 - a) * 1.2), 0, TAU); c.fill(); }
-      else if (f2.k === 'spark') { c.strokeStyle = hexA(f2.col, a); c.lineWidth = f2.s; c.lineCap = 'round'; c.beginPath(); c.moveTo(f2.x, f2.y); c.lineTo(f2.x - f2.vx * 0.03, f2.y - f2.vy * 0.03); c.stroke(); }
-      else if (f2.k === 'ring') { c.strokeStyle = hexA(f2.col, a); c.lineWidth = 8 * a + 1; c.beginPath(); c.arc(f2.x, f2.y, f2.s * (0.4 + (1 - a) * 1.8), 0, TAU); c.stroke(); }
-      else if (f2.k === 'burst') { c.fillStyle = hexA('#ffffff', a); star(c, f2.x, f2.y, f2.s * (1.2 - a * 0.4), now * 3); c.fillStyle = hexA('#ffe45c', a); star(c, f2.x, f2.y, f2.s * 0.6, now * 3 + 0.4); }
-      else if (f2.k === 'feather') { c.save(); c.translate(f2.x, f2.y); c.rotate(f2.rot); c.globalAlpha = a; c.fillStyle = '#fff'; c.strokeStyle = INK; c.lineWidth = 1.5; c.beginPath(); c.ellipse(0, 0, f2.s, f2.s * 0.35, 0, 0, TAU); c.fill(); c.stroke(); c.restore(); }
-      else if (f2.k === 'drop') { c.fillStyle = hexA(f2.col, a); c.beginPath(); c.arc(f2.x, f2.y, f2.s, 0, TAU); c.fill(); }
-      else if (f2.k === 'txt') { c.globalAlpha = a; label(c, f2.txt, f2.x, f2.y, f2.s, f2.col, 'center'); c.globalAlpha = 1; }
-    }
+    // fx now drawn behind the players (moved up, before the body loop)
     // world pops
     for (i = 0; i < M.pops.length; i++) { var p = M.pops[i], sc = easeOutBack(p.t / 0.18), al = p.t > 0.7 ? 1 - (p.t - 0.7) / 0.3 : 1; c.save(); c.globalAlpha = clamp(al, 0, 1); c.translate(clamp(p.x, V.camX + 70, V.camX + SW - 70), p.y - p.t * 40); c.scale(sc, sc); label(c, p.txt, 0, 0, p.size, p.col, 'center', true); c.restore(); }
     for (i = 0; i < M.wows.length; i++) { var w = M.wows[i], a2 = w.t < 0.15 ? w.t / 0.15 : 1 - (w.t - 0.15) / 0.95; c.save(); c.globalAlpha = clamp(a2, 0, 1); c.translate(w.x, w.y - w.t * 20); c.rotate(Math.sin(w.x) * 0.2); label(c, w.txt, 0, 0, w.s, '#fff', 'center', true); c.restore(); }
@@ -534,23 +553,7 @@
     var tt = Math.max(0, Math.ceil(M.time)), ts = (tt / 60 | 0) + ':' + ('0' + tt % 60).slice(-2);
     label(c, ts, cx, 34, 26, tt <= 10 && M.state === 'play' ? '#ff5a4f' : '#fff', 'center');
     for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) { var dx = cx + (i ? 14 + j * 18 : -14 - j * 18); c.fillStyle = INK; c.beginPath(); c.arc(dx, 62, 8, 0, TAU); c.fill(); c.fillStyle = M.score[i] > j ? (i ? '#ff9d5c' : '#6ecbff') : '#4a4e69'; c.beginPath(); c.arc(dx, 62, 5.5, 0, TAU); c.fill(); }
-    // banner
-    if (M.ban) {
-      var bn = M.ban, t = bn.t, sc = easeOutBack(t / 0.22), al = t > bn.dur - 0.25 ? (bn.dur - t) / 0.25 : 1, by = H * 0.42;
-      c.save(); c.globalAlpha = clamp(al, 0, 1);
-      if (bn.sp) {   // special announcement: big slanted strip
-        var sw2 = SW * clamp(t / 0.15, 0, 1); c.fillStyle = INK; c.save(); c.translate(SW / 2, by); c.rotate(-0.06); c.fillRect(-sw2 / 2, -62, sw2, 124); c.fillStyle = bn.col; c.fillRect(-sw2 / 2, -54, sw2, 108);
-        c.fillStyle = 'rgba(255,255,255,0.25)'; for (var q = -8; q < 8; q++) { var ox = ((q * 90 + now * 600) % (SW + 180)) - SW / 2; c.beginPath(); c.moveTo(ox, -54); c.lineTo(ox + 30, -54); c.lineTo(ox - 10, 54); c.lineTo(ox - 40, 54); c.fill(); }
-        c.restore();
-        c.translate(SW / 2, by - 10); c.rotate(-0.06); c.scale(sc, sc);
-        fitLabel(c, bn.txt, 0, -4, 66, '#fff', 'center', SW * 0.9, true);
-        if (bn.sub) fitLabel(c, bn.sub, 0, 44, 24, '#1b1b2f' === bn.col ? '#fff' : '#fff', 'center', SW * 0.8);
-      } else {
-        c.translate(SW / 2, by); c.scale(sc, sc); fitLabel(c, bn.txt, 0, 0, 78, bn.col, 'center', SW * 0.9, true);
-        if (bn.sub) fitLabel(c, bn.sub, 0, 62, 30, '#fff', 'center', SW * 0.85);
-      }
-      c.restore();
-    }
+    // banner now drawn behind the players in G.render (drawBanner), not here
     // special ready: glowing hint for my team
     var my = M.myTeam || 0;
     if (M.meter[my] >= 1 && M.state === 'play' && (M.ctrl >= 0 || M.versus)) {
