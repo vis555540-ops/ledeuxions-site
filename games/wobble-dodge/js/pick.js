@@ -7,7 +7,7 @@
   'use strict';
   var G = window.G;
   var IDS = ['curly', 'tootboss', 'clucky', 'bigbelly', 'twinny', 'snoozy', 'spinny', 'ziggy', 'peekaboo', 'flippy', 'sniffles', 'boingo',
-    'zappy', 'swooshy', 'scarfy', 'hulky', 'grampy', 'twinkle', 'blazey', 'meowy', 'cooly', 'buzzy', 'puffy', 'goggly', 'hero', 'dex'];   // + the two story kids (24, 25: fixed slots in story, not in the grid)
+    'zappy', 'swooshy', 'scarfy', 'hulky', 'grampy', 'twinkle', 'blazey', 'meowy', 'cooly', 'buzzy', 'puffy', 'goggly', 'goldboss', 'hero', 'dex'];   // 24 = gold boss (in the grid); 25,26 = the story kids (not in the grid)
   G.addStr({
     en: {
       cp0: 'Party time! Let\'s bounce!', cp1: 'Make way! The Boss is here!', cp2: 'Bawk! Can\'t catch me!', cp3: 'Belly power... BOOM!', cp4: 'Which ball is real? Hehe!', cp5: 'Zzz... I\'ll catch it all...',
@@ -65,6 +65,8 @@
     '.pkCell .fc{position:absolute;left:calc(50% - var(--fc)/2);top:var(--ft);width:var(--fc);height:var(--fc)}',
     '.pkCell .nm{position:absolute;left:0;right:0;bottom:2px;font-size:11px;color:#fff;-webkit-text-stroke:3px #1b1b2f;paint-order:stroke fill;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:var(--nm)}',
     '.pkCell .no{position:absolute;right:3px;top:3px;min-width:20px;height:20px;border-radius:10px;background:#ffd23f;color:#1b1b2f;font-size:13px;line-height:17px;border:2px solid #1b1b2f;display:none}',
+    '.pkCell .nw{position:absolute;left:3px;top:3px;padding:0 5px;height:18px;border-radius:9px;background:#ff5a4f;color:#fff;font-size:11px;font-weight:900;line-height:16px;border:2px solid #1b1b2f;letter-spacing:.3px;z-index:2}',
+    '@keyframes nwpls{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}.pkCell .nw{animation:nwpls 1s ease-in-out infinite}',
     '.pkCell.sel{border-color:#ffd23f;background:linear-gradient(180deg,#5c6cc4,#3f4a8a)}.pkCell.sel .no{display:block}',
     '.pkCell.lock{background:#1d1f3c;cursor:default}.pkCell.lock .fc{filter:brightness(0);opacity:.62}',
     '.pkCell .lk{position:absolute;left:0;right:0;top:calc(var(--ft) + var(--fc)*.3);text-align:center;font-size:calc(var(--fc)*.3);line-height:1;color:#ffd23f;display:none;-webkit-text-stroke:3px #1b1b2f;paint-order:stroke fill}.pkCell.lock .lk{display:block}',
@@ -167,7 +169,7 @@
     var grid = $('pkGrid'), cur = $('pkCur');
     G.CHARS.slice(0, G.NROSTER).forEach(function (C, i) {
       var e = document.createElement('button'); e.className = 'pkCell'; e.dataset.i = i;
-      e.innerHTML = face(i) + '<span class="lk"></span><span class="pg"><i></i></span><span class="nm"></span><span class="no"></span><span class="fl"></span>';
+      e.innerHTML = face(i) + '<span class="lk"></span><span class="pg"><i></i></span><span class="nm"></span><span class="no"></span>' + (G.CHARS[i] && G.CHARS[i].isNew ? '<span class="nw">' + G.t('charsNew') + '</span>' : '') + '<span class="fl"></span>';
       e.addEventListener('pointerdown', function (ev) { lastPtr = ev.pointerType || 'mouse'; });
       e.onclick = function () { X.A.unlock(); cellTap(i); };
       e.onpointerenter = function (ev) { if (ev.pointerType === 'mouse') setCur(i); };

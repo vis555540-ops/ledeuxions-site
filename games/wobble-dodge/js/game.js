@@ -41,7 +41,7 @@
   G.teamOf = function (lvl) { if (lvl === 9) return G.BOSS; var b = G.TEAMS[lvl % 5]; if (lvl < 5) return b; return { key: b.key, skins: b.skins, hats: b.hats, uni: b.uni, L: b.L + 1.1, star: true }; };
   G.MYTEAM = { key: 'my', skins: ['#3fa9ff', '#8ee53f', '#4cd9c0'], hats: ['cap', 'band', 'prop'], uni: '#2a7fd4' };
   G.FRIEND = { key: 'pGuest', skins: ['#ff9d5c', '#ffb37a', '#f07c3a'], hats: ['cap', 'band', 'cap'], uni: '#e8692b', L: 2 };
-  G.SPECIALS = ['banana', 'fart', 'chicken', 'giant', 'clone', 'slow', 'boomer', 'zigzag', 'ghost', 'flip', 'sneeze', 'bouncy', 'zap', 'sway', 'fireball'];
+  G.SPECIALS = ['banana', 'fart', 'chicken', 'giant', 'clone', 'slow', 'boomer', 'zigzag', 'ghost', 'flip', 'sneeze', 'bouncy', 'zap', 'sway', 'fireball', 'money'];
   // original roster: look (skin, hat, head size hs, limb thickness th), stats [power, speed, catch] 1..5, own special shot
   G.CHARS = [
     { skin: '#ff8fd0', hat: 'party', hs: 1.0, th: 1.0, st: [3, 3, 3], sp: 'banana' },
@@ -71,10 +71,12 @@
     { skin: '#9be564', hat: 'goggles', hs: 1.0, th: 1.0, st: [3, 3, 4], sp: 'flip' },
     // story-only (not in the 24 unlock roster, never random): the kid from the opening video and his old friend Dex.
     // fit = own outfit instead of the team jersey (render.js drawToon): hoodie = red hoodie + jeans, tee = yellow t-shirt + shorts
-    { skin: '#f5c69a', hat: 'hero', hs: 1.0, th: 0.9, st: [1, 4, 4], sp: 'boomer', story: 1, fit: 'hoodie' },   // 24 HERO
-    { skin: '#a8693f', hat: 'dexcap', hs: 1.0, th: 0.95, st: [3, 5, 2], sp: 'zigzag', story: 1, fit: 'tee' }    // 25 DEX
+    // 24 GOLD BOSS (new): rich tycoon, money shot. slicked blond hair + navy suit + red tie + pot belly.
+    { skin: '#f0c89a', hat: 'slick', hs: 1.05, th: 1.55, st: [5, 1, 4], sp: 'money', fit: 'suit', drawn: 1, isNew: 1 },
+    { skin: '#f5c69a', hat: 'hero', hs: 1.0, th: 0.9, st: [1, 4, 4], sp: 'boomer', story: 1, fit: 'hoodie' },   // 25 HERO
+    { skin: '#a8693f', hat: 'dexcap', hs: 1.0, th: 0.95, st: [3, 5, 2], sp: 'zigzag', story: 1, fit: 'tee' }    // 26 DEX
   ];
-  G.NROSTER = 24; G.HERO = 24; G.DEX = 25;
+  G.NROSTER = 25; G.GOLDBOSS = 24; G.HERO = 25; G.DEX = 26;
   /* ---------- COMMAND shots (fighting-game motion + THROW) ----------
      seq: directions relative to the rivals: F = toward them, B = back, U = up (far side), D = down (near side).
      The motion must be entered within CMD_WIN s before THROW is pressed (or released), the last direction within CMD_LAST s.
@@ -352,6 +354,12 @@
     bouncy: { col: '#ff70a6', dm: 1.4, off: function (M, B, u, q) {
       var s = Math.abs(Math.sin(Math.PI * (0.5 + u * 3))); q[2] = B.r + (B.path.h1 + 40 - B.r) * s;
       var bn = Math.floor(0.5 + u * 3); if (bn !== B.bn) { B.bn = bn; G.sfx('boing'); puff(M, B.x, FY(B.z), 3, '#fff', 8, 40); }
+    } },
+    // money shot: a heavy wad of cash, bills flutter off it in flight (bills spray on a hit, handled in the hit code)
+    money: { col: '#ffcf33', dm: 1.6, start: function (M, B, b) {
+      for (var i = 0; i < 10; i++) M.fx.push({ k: 'bill', x: B.x, y: bsy(B), vx: rnd(-150, 150), vy: rnd(-210, -50), life: 0, max: rnd(0.6, 1.1), col: i % 3 ? '#49b35e' : '#ffd23f', s: rnd(5, 8), rot: rnd(0, 6) });
+    }, tick: function (M, B) {
+      if (Math.random() < 0.3) M.fx.push({ k: 'bill', x: B.x, y: bsy(B), vx: -B.path.dir * rnd(20, 90), vy: rnd(-70, 10), life: 0, max: 1.0, col: Math.random() < 0.5 ? '#49b35e' : '#ffd23f', s: rnd(5, 7), rot: rnd(0, 6) });
     } }
   };
   // COMMAND shots (G.CMDS): weaker than a SPECIAL (no meter), stronger than a plain throw; v = flight speed
@@ -494,6 +502,7 @@
     M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.28, col: '#fff', s: 20 + 30 * pw });
     M.fx.push({ k: 'burst', x: B.x, y: hy, life: 0, max: 0.12, col: '#fff', s: 26 + 22 * pw });
     sparks(M, B.x, hy, 10 + (pw * 6 | 0), '#ffe45c', 380 + 260 * pw);
+    if (B.sp === 'money') { for (var mi = 0; mi < 18; mi++) M.fx.push({ k: 'bill', x: B.x, y: hy, vx: rnd(-1, 1) * 340, vy: rnd(-1, 0.3) * 380 - 70, life: 0, max: rnd(0.7, 1.4), col: mi % 3 ? '#49b35e' : '#ffd23f', s: rnd(5, 9), rot: rnd(0, 6) }); pop(M, B.x, hy - 46, T('cash'), '#ffd23f', 34); }
     G.sfx(pw > 1.2 ? 'bigHit' : 'hit'); if (pw > 1.2) G.audio.buzz(40);
     crowd(M, pw);
     pop(M, b.x, FY(b.z) - 150 * b.sc, T('out'), '#ff5a4f', 30 + pw * 8); ev(M, b.team === 0 ? 'hitMe' : 'hit', pw, b);
@@ -778,7 +787,7 @@
   G.stepFx = stepFx;
   function stepFx(M) {
     var i, f;
-    for (i = M.fx.length - 1; i >= 0; i--) { f = M.fx[i]; f.life += DT; if (f.life > f.max) { M.fx.splice(i, 1); continue; } f.x += (f.vx || 0) * DT; f.y += (f.vy || 0) * DT; if (f.k === 'spark' || f.k === 'drop') f.vy += 900 * DT; if (f.k === 'feather') { f.vy += 60 * DT; f.vx *= 0.99; f.rot += DT * 4; } }
+    for (i = M.fx.length - 1; i >= 0; i--) { f = M.fx[i]; f.life += DT; if (f.life > f.max) { M.fx.splice(i, 1); continue; } f.x += (f.vx || 0) * DT; f.y += (f.vy || 0) * DT; if (f.k === 'spark' || f.k === 'drop') f.vy += 900 * DT; if (f.k === 'feather') { f.vy += 60 * DT; f.vx *= 0.99; f.rot += DT * 4; } if (f.k === 'bill') { f.vy += 150 * DT; f.vx *= 0.98; f.rot += DT * 6; } }
     var fxCap = G.lite ? 70 : 220; if (M.fx.length > fxCap) M.fx.splice(0, M.fx.length - fxCap);
     for (i = M.pops.length - 1; i >= 0; i--) { M.pops[i].t += DT; if (M.pops[i].t > 1.0) M.pops.splice(i, 1); }
     for (i = M.wows.length - 1; i >= 0; i--) { M.wows[i].t += DT; if (M.wows[i].t > 1.1) M.wows.splice(i, 1); }

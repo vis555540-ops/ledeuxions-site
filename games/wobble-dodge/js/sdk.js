@@ -116,7 +116,7 @@
   var KEY = 'wobbledodge_v1';   // same key the site version already used: old saves keep working
   function defaults() {
     return { rev: 0, beaten: 0, mute: false, lang: '', played: 0, n: 5, easy: false, keys: null, picks: [],
-      firstDone: 0, wins: 0, losses: 0, xp: 0, unl: [0, 3, 5, 7], hats: [], hat: '', gifts: 0,
+      firstDone: 0, wins: 0, losses: 0, xp: 0, unl: [0, 3, 5, 7, 24], hats: [], hat: '', gifts: 0,
       login: { last: '', streak: 0, best: 0, days: 0 }, daily: { date: '', done: false }, dailyN: 0, seen: { lvl: 1 },
       lite: 0, rec: { cat: 0, hit: 0, streak: 0, cur: 0 },
       sto: { seen: '', fails: 0, sf: 0, badge: 0, sc: 0, end: 0, season: 0, dl: 0, train: 0 }, free: { n: 3, lvl: 0 },   // story: comics seen (',id,'), 1 vs 1 losses, SUPER CATCH owned, ending seen, title-defence season + match, trainings done
@@ -140,8 +140,8 @@
       else if (typeof v === typeof t) d[k] = v;
     }
     if (old) { d.firstDone = 1; if (typeof o.n === 'number') d.n = o.n; }
-    [0, 3, 5, 7].forEach(function (c) { if (d.unl.indexOf(c) < 0) d.unl.push(c); });
-    d.unl = d.unl.filter(function (c, i, a) { return c >= 0 && c < 24 && (c | 0) === c && a.indexOf(c) === i; });
+    [0, 3, 5, 7, 24].forEach(function (c) { if (d.unl.indexOf(c) < 0) d.unl.push(c); });
+    d.unl = d.unl.filter(function (c, i, a) { return c >= 0 && c < G.NROSTER && (c | 0) === c && a.indexOf(c) === i; });
     d.beaten = Math.max(0, Math.min(10, d.beaten | 0)); d.xp = Math.max(0, Math.floor(d.xp));
     if (G.TEAM_SIZES && G.TEAM_SIZES.indexOf(d.n) < 0) d.n = 5;
     var ac = {}, a0 = d.ads.ch; if (a0 && typeof a0 === 'object') for (var c in a0) { var cn = +c, v = a0[c]; if ((cn | 0) === cn && cn >= 0 && cn < 24 && typeof v === 'number' && v >= 1) ac[cn] = Math.min(2, v | 0); }

@@ -63,6 +63,10 @@
         c.fillStyle = '#24201f'; c.beginPath(); for (dq = 0; dq < 5; dq++) { da = Math.PI * (0.62 + dq * 0.12); c.moveTo(Math.cos(da) * 12.5 + 3.4, Math.sin(da) * 12.5 - 1); c.arc(Math.cos(da) * 12.5, Math.sin(da) * 12.5 - 1, 3.4, 0, TAU); } c.fill();
         c.fillStyle = INK; c.beginPath(); c.arc(0, -3, 14.4, Math.PI, TAU); c.fill(); c.fillRect(-23, -6.5, 15, 6);
         c.fillStyle = '#2f7de1'; c.beginPath(); c.arc(0, -4, 12.4, Math.PI, TAU); c.fill(); c.fillRect(-21.5, -5.2, 13, 3); c.fillStyle = '#1f5fb3'; c.fillRect(-12.4, -6.2, 24.8, 2.2); c.fillStyle = INK; c.beginPath(); c.arc(0, -16.6, 2, 0, TAU); c.fill(); break;
+      case 'slick':   // gold boss: blond hair slicked straight back, a small front quiff (side view faces +x)
+        c.fillStyle = INK; c.beginPath(); c.moveTo(13, -4); c.quadraticCurveTo(14.5, -15, 4, -16.5); c.quadraticCurveTo(-8, -18, -16.5, -8); c.quadraticCurveTo(-18.5, -2, -11.5, 0.5); c.quadraticCurveTo(-5, -6, 2.5, -8); c.quadraticCurveTo(9, -8.5, 13, -4); c.fill();
+        c.fillStyle = '#f2cf63'; c.beginPath(); c.moveTo(12, -5); c.quadraticCurveTo(12.8, -13, 3.5, -14.2); c.quadraticCurveTo(-7, -15.6, -14.2, -7.5); c.quadraticCurveTo(-15.8, -3, -11, -1); c.quadraticCurveTo(-5, -6.5, 2.5, -8.6); c.quadraticCurveTo(8.6, -8.8, 12, -5); c.fill();
+        c.strokeStyle = '#d9b43f'; c.lineWidth = 1.1; c.lineCap = 'round'; c.beginPath(); c.moveTo(9, -8); c.quadraticCurveTo(-2, -13, -13, -6); c.moveTo(10, -6); c.quadraticCurveTo(-1, -10.5, -12, -4); c.stroke(); break;
       case 'crown': c.fillStyle = INK; c.beginPath(); c.moveTo(-13, -5); c.lineTo(-15, -26); c.lineTo(-6, -17); c.lineTo(0, -29); c.lineTo(6, -17); c.lineTo(15, -26); c.lineTo(13, -5); c.fill(); c.fillStyle = '#ffc400'; c.beginPath(); c.moveTo(-10.5, -7.5); c.lineTo(-12, -20); c.lineTo(-5.5, -13.5); c.lineTo(0, -24); c.lineTo(5.5, -13.5); c.lineTo(12, -20); c.lineTo(10.5, -7.5); c.fill(); c.fillStyle = '#e63946'; c.beginPath(); c.arc(0, -12, 2.4, 0, TAU); c.fill(); break;
     }
   }
@@ -88,7 +92,7 @@
             g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,255,255,0.78)'; g.fillRect(0, 0, w.width, w.height);
             HD.white = w;
           } catch (e) { HD.white = im; }
-          HD.img = im; HD.cell = im.width / 6; HD.n = Math.min(G.CHARS.length, Math.round(im.height / HD.cell) * 6, HBOX.length / 4); HD.ok = true;
+          HD.img = im; HD.cell = im.width / 6; HD.n = Math.min(G.GOLDBOSS || G.CHARS.length, Math.round(im.height / HD.cell) * 6, HBOX.length / 4); HD.ok = true;   // faces for the 0..23 roster only; gold boss(24)+ use the drawn head
         }
         if (im.decode) im.decode().then(fin, fin); else fin();
       };
@@ -169,7 +173,8 @@
   // the two story kids wear their own clothes (G.CHARS[ch].fit); same strokes and fills as the jersey body, plus a hood lump,
   // a pocket / sleeves, skin hands and a team-colour armband (the team marker, since the shirt is not the team colour)
   var FIT = { hoodie: { top: '#e3342f', top2: '#c4261f', arm: '#e3342f', leg: '#4a7cc4', pants: '#4a7cc4', hood: 1 },
-    tee: { top: '#ffd23f', top2: '#e8b820', arm: null, leg: null, pants: '#2b3f73', sleeve: 1 } };
+    tee: { top: '#ffd23f', top2: '#e8b820', arm: null, leg: null, pants: '#2b3f73', sleeve: 1 },
+    suit: { top: '#2b3157', top2: '#20254a', arm: '#2b3157', leg: '#20244a', pants: '#20244a', sleeve: 1, tie: '#e23b3b' } };   // gold boss: navy suit + red tie
   function fitParts(th) {   // cached per limb thickness: shorts without the belly stripe, hood (+ ink), kangaroo pocket, drawstrings
     var T = torso(th); if (T.x) return T.x;
     var sh = new Path2D(), ho = new Path2D(), hd = new Path2D(), ds = new Path2D(), sw = 14.5 * th, ww = 10.2 * th;
@@ -215,6 +220,7 @@
     c.save(); c.transform(-dy / d * s, dx / d * s, -dx / d * s, -dy / d * s, p[4], p[5]); if (f < 0) c.scale(-1, 1);
     c.fillStyle = INK; c.fill(T.o);
     c.fillStyle = top; c.fill(T.j); c.fillStyle = flash ? '#fff' : F.pants; c.fill(X.sh);
+    if (F.tie) { c.fillStyle = flash ? '#fff' : F.tie; c.beginPath(); c.moveTo(-2.6 * th, -23); c.lineTo(2.6 * th, -23); c.lineTo(1.3 * th, -10); c.lineTo(0, -7.5); c.lineTo(-1.3 * th, -10); c.closePath(); c.fill(); }
     if (F.hood) { c.fillStyle = INK; c.fill(X.ho); c.fillStyle = flash ? '#fff' : F.top2; c.fill(X.hd); if (!flash && !lite) { c.fillStyle = '#fff'; c.fill(X.ds); } }
     c.restore();
     // front arm over the top: ink, sleeve/skin, hand, armband in the team colour
@@ -390,6 +396,14 @@
       c.fillStyle = '#ffb703'; c.beginPath(); c.moveTo(r * 1.5, -r * 0.4); c.lineTo(r * 2.1, -r * 0.2); c.lineTo(r * 1.5, 0); c.fill();
       c.fillStyle = INK; c.beginPath(); c.arc(r * 1.05, -r * 0.45, 2, 0, TAU); c.fill();
       c.strokeStyle = '#ffb703'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(-r * 0.2, r * 1.0); c.lineTo(-r * 0.4, r * 1.6); c.moveTo(r * 0.3, r * 1.0); c.lineTo(r * 0.2, r * 1.6); c.stroke(); c.restore();
+    } else if (sp === 'money') {
+      c.save(); c.translate(x, y);
+      c.fillStyle = INK; c.beginPath(); c.arc(0, 0, r + 3, 0, TAU); c.fill();
+      c.beginPath(); c.arc(0, 0, r, 0, TAU); c.fillStyle = '#49b35e'; c.fill(); c.save(); c.clip();
+      c.fillStyle = '#ffd23f'; c.fillRect(-r - 1, -r * 0.26, (r + 1) * 2, r * 0.52);
+      c.fillStyle = '#2f8b47'; c.fillRect(-r - 1, -r * 0.26, (r + 1) * 2, 1.6); c.fillRect(-r - 1, r * 0.26 - 1.6, (r + 1) * 2, 1.6);
+      c.fillStyle = INK; c.font = '900 ' + (r * 0.95).toFixed(1) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('$', 0, r * 0.04);
+      c.restore(); c.restore();
     } else {
       c.fillStyle = INK; c.beginPath(); c.arc(x, y, r + 3, 0, TAU); c.fill();
       c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
@@ -462,6 +476,7 @@
       else if (f0.k === 'ring') { c.strokeStyle = hexA(f0.col, a0); c.lineWidth = 8 * a0 + 1; c.beginPath(); c.arc(f0.x, f0.y, f0.s * (0.4 + (1 - a0) * 1.8), 0, TAU); c.stroke(); }
       else if (f0.k === 'burst') { c.fillStyle = hexA('#ffffff', a0); star(c, f0.x, f0.y, f0.s * (1.2 - a0 * 0.4), now * 3); c.fillStyle = hexA('#ffe45c', a0); star(c, f0.x, f0.y, f0.s * 0.6, now * 3 + 0.4); }
       else if (f0.k === 'feather') { c.save(); c.translate(f0.x, f0.y); c.rotate(f0.rot); c.globalAlpha = a0; c.fillStyle = '#fff'; c.strokeStyle = INK; c.lineWidth = 1.5; c.beginPath(); c.ellipse(0, 0, f0.s, f0.s * 0.35, 0, 0, TAU); c.fill(); c.stroke(); c.restore(); }
+      else if (f0.k === 'bill') { c.save(); c.translate(f0.x, f0.y); c.rotate(f0.rot); c.globalAlpha = a0; c.fillStyle = f0.col; c.strokeStyle = INK; c.lineWidth = 1.1; c.fillRect(-f0.s, -f0.s * 0.55, f0.s * 2, f0.s * 1.1); c.strokeRect(-f0.s, -f0.s * 0.55, f0.s * 2, f0.s * 1.1); c.fillStyle = 'rgba(27,27,47,0.6)'; c.beginPath(); c.arc(0, 0, f0.s * 0.32, 0, TAU); c.fill(); c.restore(); c.globalAlpha = 1; }
       else if (f0.k === 'drop') { c.fillStyle = hexA(f0.col, a0); c.beginPath(); c.arc(f0.x, f0.y, f0.s, 0, TAU); c.fill(); }
       else if (f0.k === 'txt') { c.globalAlpha = a0; label(c, f0.txt, f0.x, f0.y, f0.s, f0.col, 'center'); c.globalAlpha = 1; }
     }

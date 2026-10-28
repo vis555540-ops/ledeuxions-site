@@ -12,7 +12,7 @@
   function keyNum(k) { var m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(k || ''); return m ? Math.round(Date.UTC(+m[1], +m[2] - 1, +m[3]) / 86400000) : null; }
 
   /* ---------- characters / hats ---------- */
-  MT.STARTERS = [0, 3, 5, 7];
+  MT.STARTERS = [0, 3, 5, 7, 24];
   /* Vampire-Survivors-style unlocks: every locked player has its own goal tied to play.
      v = the counter in d.ach (or d.wins / d.beaten / d.login.days), n = goal. Per-match goals keep the best match in d.ach.
      req = a chain: the goal stays hidden ("unlock X first") until X is unlocked. sec = secret: only a vague hint until done.
