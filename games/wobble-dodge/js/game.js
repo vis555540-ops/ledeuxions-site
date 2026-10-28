@@ -356,10 +356,11 @@
       var bn = Math.floor(0.5 + u * 3); if (bn !== B.bn) { B.bn = bn; G.sfx('boing'); puff(M, B.x, FY(B.z), 3, '#fff', 8, 40); }
     } },
     // money shot: a heavy wad of cash, bills flutter off it in flight (bills spray on a hit, handled in the hit code)
-    money: { col: '#ffcf33', dm: 1.6, start: function (M, B, b) {
+    money: { col: '#ffcf33', dm: 2.2, start: function (M, B, b) {
       for (var i = 0; i < 10; i++) M.fx.push({ k: 'bill', x: B.x, y: bsy(B), vx: rnd(-150, 150), vy: rnd(-210, -50), life: 0, max: rnd(0.6, 1.1), col: i % 3 ? '#49b35e' : '#ffd23f', s: rnd(5, 8), rot: rnd(0, 6) });
     }, tick: function (M, B) {
-      if (Math.random() < 0.3) M.fx.push({ k: 'bill', x: B.x, y: bsy(B), vx: -B.path.dir * rnd(20, 90), vy: rnd(-70, 10), life: 0, max: 1.0, col: Math.random() < 0.5 ? '#49b35e' : '#ffd23f', s: rnd(5, 7), rot: rnd(0, 6) });
+      B.r = 16 + 20 * Math.min(1, B.t / 0.3);   // a fat wad of cash: big hitbox, easy to land
+      if (Math.random() < 0.4) M.fx.push({ k: 'bill', x: B.x, y: bsy(B), vx: -B.path.dir * rnd(20, 90), vy: rnd(-70, 10), life: 0, max: 1.0, col: Math.random() < 0.5 ? '#49b35e' : '#ffd23f', s: rnd(5, 7), rot: rnd(0, 6) });
     } }
   };
   // COMMAND shots (G.CMDS): weaker than a SPECIAL (no meter), stronger than a plain throw; v = flight speed
@@ -488,7 +489,7 @@
   }
   function sparks(M, x, y, n, col, sp) { for (var i = 0; i < n; i++) { var a = rnd(0, 6.283), v = rnd(0.3, 1) * sp; M.fx.push({ k: 'spark', x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(0.18, 0.4), col: col, s: rnd(3, 6) }); } }
   function hitBody(M, B, b) {
-    var pw = B.cmd ? 1.35 : B.sp ? (B.sp === 'giant' ? 2.5 : 1.8) : 0.55 + Math.min(1.3, B.pow) * 1.05;
+    var pw = B.cmd ? 1.35 : B.sp ? (B.sp === 'money' ? 3.0 : B.sp === 'giant' ? 2.5 : 1.8) : 0.55 + Math.min(1.3, B.pow) * 1.05;
     if (B.cmd) { STAT.cmdHit = (STAT.cmdHit || 0) + 1; STAT.cmdHitT = STAT.cmdHitT || [0, 0]; STAT.cmdHitT[B.team]++; if (B.team === 0 && B.thrower && isHuman(M, B.thrower)) M.me.cmdHit = (M.me.cmdHit || 0) + 1; }
     var dir = Math.abs(B.vx) > 30 ? sgn(B.vx) : (b.team ? 1 : -1);
     var hy = bsy(B), wasAir = b.h > 1;
@@ -502,7 +503,22 @@
     M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.28, col: '#fff', s: 20 + 30 * pw });
     M.fx.push({ k: 'burst', x: B.x, y: hy, life: 0, max: 0.12, col: '#fff', s: 26 + 22 * pw });
     sparks(M, B.x, hy, 10 + (pw * 6 | 0), '#ffe45c', 380 + 260 * pw);
-    if (B.sp === 'money') { for (var mi = 0; mi < 18; mi++) M.fx.push({ k: 'bill', x: B.x, y: hy, vx: rnd(-1, 1) * 340, vy: rnd(-1, 0.3) * 380 - 70, life: 0, max: rnd(0.7, 1.4), col: mi % 3 ? '#49b35e' : '#ffd23f', s: rnd(5, 9), rot: rnd(0, 6) }); pop(M, B.x, hy - 46, T('cash'), '#ffd23f', 34); }
+    if (B.sp === 'money') {
+      for (var mi = 0; mi < 24; mi++) M.fx.push({ k: 'bill', x: B.x, y: hy, vx: rnd(-1, 1) * 420, vy: rnd(-1, 0.3) * 440 - 80, life: 0, max: rnd(0.8, 1.6), col: mi % 3 ? '#49b35e' : '#ffd23f', s: rnd(5, 10), rot: rnd(0, 6) });
+      pop(M, B.x, hy - 46, T('cash'), '#ffd23f', 34);
+      M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.35, col: '#ffd23f', s: 60 });   // the money blast radius
+      var mTeam = B.team, mx = B.x, mz = B.z;   // 돈벼락: everyone caught in the blast gets knocked out too (team captured before the ball is reset below)
+      M.bodies.forEach(function (o) {
+        if (o === b || o.team === mTeam || o.role !== 'in' || o.pendingOut || o.mode !== 'stand') return;
+        if (Math.abs(o.x - mx) < 180 && Math.abs(o.z - mz) * ZPX < 130) {
+          launch(o, o.x < mx ? -1 : 1, 2.2); o.pendingOut = true; o.outAt = ++M.outSeq; M.hits[mTeam]++; STAT.hit++;
+          if (mTeam === 0 && B.thrower && isHuman(M, B.thrower)) { M.me.hit++; M.me.outs++; }
+          pop(M, o.x, FY(o.z) - 150 * o.sc, T('out'), '#ffd23f', 32);
+          for (var bk = 0; bk < 10; bk++) M.fx.push({ k: 'bill', x: o.x, y: FY(o.z) - o.h, vx: rnd(-1, 1) * 320, vy: rnd(-1, 0.2) * 360 - 60, life: 0, max: rnd(0.7, 1.3), col: bk % 3 ? '#49b35e' : '#ffd23f', s: rnd(5, 9), rot: rnd(0, 6) });
+          ev(M, mTeam === 0 ? 'hit' : 'hitMe', 1.6, o);
+        }
+      });
+    }
     G.sfx(pw > 1.2 ? 'bigHit' : 'hit'); if (pw > 1.2) G.audio.buzz(40);
     crowd(M, pw);
     pop(M, b.x, FY(b.z) - 150 * b.sc, T('out'), '#ff5a4f', 30 + pw * 8); ev(M, b.team === 0 ? 'hitMe' : 'hit', pw, b);
