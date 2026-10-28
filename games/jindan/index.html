@@ -87,6 +87,33 @@
   #over h3{margin:0 0 6px; font-size:22px}
   #over p{color:var(--dim); font-size:13px; line-height:1.6}
   .hide{display:none!important}
+
+  /* ===== 그림 ===== */
+  .hero{display:flex; align-items:center; gap:12px; background:linear-gradient(135deg,#1a2234,#222d44);
+    border:1px solid var(--line); border-radius:14px; padding:10px 12px; margin:6px 0 12px}
+  .hero .doc{width:62px; height:80px; flex:none; border-radius:12px; overflow:hidden;
+    background-image:url(img/의사_3포즈_원본.jpg); background-size:300% auto; background-position:0% center;
+    background-color:#dfe9f5; border:1px solid var(--line)}
+  .hero .msg{font-size:12.5px; color:#cfe0ff; line-height:1.55}
+  .hero .msg b{color:var(--accent)}
+  .casebtn{position:relative; display:flex; gap:11px; align-items:center}
+  .casebtn .pt{width:52px; height:52px; flex:none; border-radius:10px; object-fit:cover;
+    background:#fff; border:1px solid var(--line)}
+  .casebtn .txt{flex:1; min-width:0}
+  .charthead{display:flex; gap:11px; align-items:center; margin:-1px 0 9px}
+  .charthead .pt{width:74px; height:74px; flex:none; border-radius:12px; object-fit:cover;
+    background:#fff; border:1px solid var(--line)}
+  .charthead .nm2{font-size:13.5px; font-weight:700}
+  .charthead .ds{font-size:11px; color:var(--dim); margin-top:3px; line-height:1.4}
+  .act .l{display:flex; align-items:center; gap:9px; flex:1; min-width:0}
+  .icn{width:30px; height:30px; flex:none; border-radius:8px; background:#fff; object-fit:contain;
+    padding:2px; border:1px solid var(--line)}
+  .stat{position:relative}
+  .statimg{position:absolute; right:6px; top:6px; width:26px; height:26px; object-fit:contain; opacity:.92}
+  .ovdoc{width:150px; height:150px; flex:none; border-radius:16px; overflow:hidden; margin:-4px auto 8px;
+    background-image:url(img/의사_3포즈_원본.jpg); background-size:300% auto; background-position:50% center;
+    background-color:#dfe9f5}
+  .ovimg{width:112px; height:112px; object-fit:contain; margin:-4px auto 4px; display:block}
 </style>
 </head>
 <body>
@@ -99,13 +126,19 @@
 
   <div id="game" class="hide">
     <button class="btn ghost" id="backBtn" style="margin:0 0 4px">← 사례 목록</button>
+    <div class="hero" style="margin:2px 0 10px">
+      <div class="doc"></div>
+      <div class="msg"><b>진단의 선생님 (당신)</b><br>차트를 읽고, 검사·약으로 떠보며 후보를 하나씩 지워 진짜 병명을 찾자.</div>
+    </div>
     <div class="stats">
       <div class="stat" id="ddBox">
+        <img class="statimg" src="img/g088.png" alt="">
         <div class="lab">⏳ 데드라인</div>
         <div class="big"><span id="ddNum">0</span><span style="font-size:13px;color:var(--dim)">일</span></div>
         <div class="bar"><i id="ddBar"></i></div>
       </div>
       <div class="stat tempbox" id="tempBox">
+        <img class="statimg" id="tempImg" src="img/g086.png" alt="">
         <div class="lab">🌡️ 체온</div>
         <div class="big"><span id="tempNum">0</span><span style="font-size:13px;color:var(--dim)">°C</span></div>
         <div class="danger">위험선 40.0°C</div>
@@ -480,8 +513,43 @@ const CASES = [
 const $=s=>document.querySelector(s), el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e};
 let S=null;
 
+/* ===== 그림 매핑 (답 → 환자 그림) ===== */
+const PATIMG={
+  "감기":"g011","급성 장염":"g012","탈수":"g013","중이염":"g031","수족구병":"g014",
+  "변비":"g018","알레르기 비염":"g011","요로감염":"g015","철결핍빈혈":"g025",
+  "결핵":"g023","성인 스틸병":"g020","가와사키병":"g016","베체트병":"g030","유육종증":"g028",
+  "측두동맥염":"g026","급성 포르피리아":"g021","아밀로이드증":"g022","쿠싱증후군":"g019",
+  "애디슨병":"g035","갈색세포종":"g034","윌슨병":"g040","혈전성혈소판감소자반증":"g029",
+  "갑상선항진증":"g028","전신홍반루푸스":"g027"
+};
+function patImg(c){ return PATIMG[c.answer]||"g034"; }
+
+/* 검사 이름 → 아이콘(g061~075, g059) */
+function testIcon(n){
+  const m=[[/CT/,"g065"],[/심초음파|심장 초음파|심전도/,"g073"],[/초음파/,"g066"],
+    [/엑스레이|흉부|가슴|방사|영상/,"g064"],[/골수/,"g067"],[/소변/,"g068"],[/대변/,"g069"],
+    [/귀|고막/,"g070"],[/열 재기|체온|활력|열 경과|문진/,"g070"],[/청진|호흡기|폐/,"g071"],
+    [/혈압/,"g072"],[/배양/,"g074"],[/조직검사|생검|도찰|내시경|세극등/,"g075"],
+    [/현미경|도말/,"g061"],[/채혈|주사/,"g063"],
+    [/혈|검사|수치|항체|호르몬|농도|당|전해질|표지자|납|구리|페리틴|ESR|CRP|ANA|카테콜/,"g062"]];
+  for(const [re,ic] of m) if(re.test(n)) return ic;
+  return "g059";
+}
+/* 약 이름 → 아이콘(g076~085) */
+function drugIcon(d){
+  const m=[[/해열|진통|이뇨/,"g076"],[/항생제/,"g082"],[/구충/,"g083"],[/스테로이드|콜히친/,"g081"],
+    [/면역글로불린|IVIG|면역억제/,"g085"],[/수액|전해질/,"g079"],[/경과관찰|대증|생활습관|휴식/,"g084"],
+    [/수술|혈장교환|헴|알파차단/,"g078"],[/철분/,"g076"],
+    [/항바이러스|항결핵|항갑상선|항히스타민|구리 배출|코르티솔|항우울|안정제|완하/,"g077"]];
+  for(const [re,ic] of m) if(re.test(d)) return ic;
+  return "g076";
+}
+
 function buildMenu(){
   const m=$("#menu"); m.innerHTML="";
+  const hero=el("div","hero");
+  hero.innerHTML=`<div class="doc"></div><div class="msg"><b>진단의학과에 온 걸 환영해.</b><br>다른 병원이 못 찾은 환자가 기다리고 있어. 차트를 읽고, 검사하고, 약으로 떠보면서 진짜 병명을 찾아줘.</div>`;
+  m.appendChild(hero);
   [["kids","🧸 애들 모드","감기·배탈·탈수 같은 쉬운 사례 (9)"],
    ["dx","🔬 진단의학과 모드","다른 병원이 못 찾은 희귀·까다로운 사례 (16)"]]
   .forEach(([mode,h,sub])=>{
@@ -489,8 +557,9 @@ function buildMenu(){
     const ps=el("p","sub"); ps.style.margin="0 0 2px"; ps.textContent=sub; m.appendChild(ps);
     CASES.forEach((c,i)=>{ if(c.mode!==mode) return;
       const b=el("button","casebtn");
-      b.innerHTML=`<span class="tag">${c.deadline}일 · ${c.temp}°C${c.events?" · ⏳시간축":""}${c.mystery?" · ❓불명열":""}</span>`+
-        `<div class="t">${c.title}</div><div class="d">${c.desc}</div>`;
+      b.innerHTML=`<img class="pt" src="img/${patImg(c)}.png" alt="">`+
+        `<div class="txt"><span class="tag">${c.deadline}일 · ${c.temp}°C${c.events?" · ⏳시간축":""}${c.mystery?" · ❓불명열":""}</span>`+
+        `<div class="t">${c.title}</div><div class="d">${c.desc}</div></div>`;
       b.onclick=()=>startCase(i); m.appendChild(b);
     });
   });
@@ -534,8 +603,12 @@ function render(){
   $("#ddBar").style.background=S.dd<=1?"var(--warn)":"var(--blue)";
   $("#tempNum").textContent=S.temp.toFixed(1);
   $("#tempBox").classList.toggle("hot",S.temp>=40);
+  $("#tempImg").src="img/"+(S.temp>=40?"g087":"g086")+".png";
   // chart
   const ch=$("#chart"); ch.innerHTML="<h2>📋 환자 차트</h2>";
+  const hd=el("div","charthead");
+  hd.innerHTML=`<img class="pt" src="img/${patImg(c)}.png" alt=""><div><div class="nm2">${c.title}</div><div class="ds">${c.desc}</div></div>`;
+  ch.appendChild(hd);
   for(const k in c.chart){
     const r=el("div","row"), kk=el("div","k"), vv=el("div","v"); kk.textContent=k;
     if(k==="증상"){
@@ -562,7 +635,7 @@ function render(){
   const ts=$("#tests"); ts.innerHTML="";
   c.tests.forEach((t,i)=>{
     const b=el("button","act"); b.disabled=S.usedT.has(i)||S.over;
-    b.innerHTML=`<span>🔬 ${t.name}${S.usedT.has(i)?" (완료)":""}</span><span class="cost">-1일</span>`;
+    b.innerHTML=`<span class="l"><img class="icn" src="img/${testIcon(t.name)}.png" alt=""><span>${t.name}${S.usedT.has(i)?" (완료)":""}</span></span><span class="cost">-1일</span>`;
     b.onclick=()=>doTest(i); ts.appendChild(b);
   });
   // treats (2단계: 설명 → 투약)
@@ -571,7 +644,7 @@ function render(){
     const wrap=el("div");
     const used=S.usedTr.has(i), armed=S.armed===i;
     const b=el("button","act treat"+(armed?" armed":"")); b.disabled=used||S.over;
-    b.innerHTML=`<span>💊 ${t.drug}${used?" (투약함)":""}</span><span class="cost">${used?"":armed?"▼ 설명":"📖 눌러보기"}</span>`;
+    b.innerHTML=`<span class="l"><img class="icn" src="img/${drugIcon(t.drug)}.png" alt=""><span>${t.drug}${used?" (투약함)":""}</span></span><span class="cost">${used?"":armed?"▼ 설명":"📖 눌러보기"}</span>`;
     b.onclick=()=>toggleDrug(i); wrap.appendChild(b);
     if(armed && !used && !S.over){
       const panel=el("div","drugpanel");
@@ -662,7 +735,8 @@ function finalPick(nm){
 function end(win,t,p){
   S.over=true; render();
   const ov=$("#over"), box=ov.querySelector(".box");
-  box.innerHTML=`<h3>${t}</h3><p>${p}</p>`;
+  const pic=win?`<div class="ovdoc"></div>`:`<img class="ovimg" src="img/g091.png" alt="">`;
+  box.innerHTML=`${pic}<h3>${t}</h3><p>${p}</p>`;
   const b=el("button","btn primary"); b.style.marginTop="14px"; b.textContent="사례 목록으로";
   b.onclick=()=>{closeOver(); toMenu()}; box.appendChild(b);
   ov.style.display="flex";
