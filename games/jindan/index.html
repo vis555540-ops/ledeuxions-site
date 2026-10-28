@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>진단의학과</title>
+<style>
+  :root{
+    --bg:#0f1420; --panel:#1a2234; --panel2:#222d44; --line:#2e3c58;
+    --ink:#e7edf7; --dim:#8ea0c0; --accent:#52d1a8; --warn:#ff5a5a;
+    --gold:#f2c14e; --blue:#6aa0ff;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  body{display:flex; justify-content:center}
+  #app{width:100%; max-width:430px; min-height:100vh; padding:12px 14px 40px; position:relative}
+  h1{font-size:19px; margin:4px 0 2px; letter-spacing:-.5px}
+  .sub{color:var(--dim); font-size:12px; margin:0 0 10px}
+  .safety{background:#2a1c1c; border:1px solid #5a2e2e; color:#ffb4b4;
+    font-size:11.5px; line-height:1.5; border-radius:10px; padding:8px 10px; margin:8px 0}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px 13px; margin:10px 0}
+  .card h2{font-size:13px; color:var(--accent); margin:0 0 8px; letter-spacing:.3px}
+  .stats{display:flex; gap:10px; margin:10px 0}
+  .stat{flex:1; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:9px 11px}
+  .stat .lab{font-size:11px; color:var(--dim)}
+  .stat .big{font-size:22px; font-weight:800; line-height:1.1; margin-top:2px}
+  .bar{height:7px; border-radius:5px; background:#0c1120; margin-top:7px; overflow:hidden}
+  .bar>i{display:block; height:100%; background:var(--blue); transition:width .35s, background .35s}
+  .tempbox.hot{border-color:var(--warn); box-shadow:0 0 0 2px rgba(255,90,90,.25)}
+  .tempbox.hot .big{color:var(--warn)}
+  .tempbox.hot .danger{color:var(--warn); font-weight:700}
+  .danger{font-size:10.5px; color:var(--dim); margin-top:6px}
+  .chart .row{display:flex; font-size:13px; padding:4px 0; border-bottom:1px dashed #27324a}
+  .chart .row:last-child{border-bottom:0}
+  .chart .k{color:var(--dim); width:74px; flex:none}
+  .chart .v{flex:1}
+  .sx{display:inline-block; background:var(--panel2); border:1px solid var(--line);
+    border-radius:8px; padding:3px 8px; margin:3px 4px 0 0; font-size:12.5px}
+  .sx.new{border-color:var(--gold); background:#3a2f12; color:#ffe39a; animation:pop .5s}
+  @keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+  .board{background:#13351f; border:1px solid #1f5a34}
+  .board h2{color:#9ff0c2}
+  .cand{display:flex; align-items:center; gap:8px; padding:7px 2px; font-size:14px; border-bottom:1px dashed #1f5a34}
+  .cand:last-child{border-bottom:0}
+  .cand.out{opacity:.4}
+  .cand .nm{flex:1; position:relative}
+  .cand.out .nm>span:first-child{text-decoration:line-through; text-decoration-color:var(--warn); text-decoration-thickness:2px}
+  .cand.newc .nm>span:first-child{color:var(--gold); font-weight:700}
+  .cand .x{color:var(--warn); font-weight:800; font-size:15px; width:18px; text-align:center}
+  .book{cursor:pointer; font-size:13px; opacity:.85; margin-left:4px}
+  .tip{display:none; position:absolute; left:0; top:100%; z-index:5; margin-top:5px;
+    background:#0b1424; border:1px solid var(--blue); border-radius:10px; padding:8px 10px;
+    font-size:11.5px; color:#cfe0ff; width:245px; line-height:1.55; box-shadow:0 6px 20px rgba(0,0,0,.5)}
+  .tip.show{display:block}
+  .act{width:100%; text-align:left; background:var(--panel2); color:var(--ink);
+    border:1px solid var(--line); border-radius:11px; padding:11px 12px; margin:7px 0;
+    font-size:13.5px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:8px}
+  .act:active{transform:scale(.99)}
+  .act .cost{font-size:11px; color:var(--gold); flex:none}
+  .act:disabled{opacity:.4; cursor:default}
+  .act.treat{border-color:#5a4a2e}
+  .act.treat.armed{border-color:var(--gold); background:#2a2410}
+  .act.watch{border-color:#3a4e6e; background:#192637}
+  .drugpanel{margin:-2px 0 6px}
+  .dtip{font-size:11.5px; color:#ffe6b0; background:#241d0c; border:1px solid #5a4a2e;
+    border-radius:10px; padding:9px 11px; line-height:1.55; margin:0 0 5px}
+  .btn{display:block; width:100%; border:0; border-radius:12px; padding:14px; font-size:15px;
+    font-weight:800; cursor:pointer; margin-top:6px}
+  .btn.sm{padding:10px; font-size:13px; margin:0 0 2px}
+  .btn.primary{background:var(--accent); color:#06201a}
+  .btn.ghost{background:transparent; color:var(--dim); border:1px solid var(--line); font-weight:600}
+  .btn.gold{background:var(--gold); color:#2a1f05}
+  #log{font-size:12px; color:var(--dim); line-height:1.6}
+  #log b{color:var(--ink)}
+  #log .ok{color:var(--accent)} #log .bad{color:var(--warn)} #log .info{color:var(--blue)}
+  #log .new{color:var(--gold); font-weight:700}
+  .mode-h{font-size:13px; color:var(--gold); margin:16px 0 4px}
+  .casebtn{width:100%; text-align:left; background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; padding:12px; margin:8px 0; color:var(--ink); cursor:pointer}
+  .casebtn .t{font-size:14px; font-weight:700}
+  .casebtn .d{font-size:11.5px; color:var(--dim); margin-top:3px}
+  .tag{font-size:10px; padding:2px 7px; border-radius:20px; background:var(--panel2); color:var(--dim); float:right}
+  #over{position:fixed; inset:0; background:rgba(6,10,20,.88); display:none; align-items:center; justify-content:center; padding:24px; z-index:20}
+  #over .box{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px; max-width:340px; width:100%; text-align:center; max-height:86vh; overflow:auto}
+  #over h3{margin:0 0 6px; font-size:22px}
+  #over p{color:var(--dim); font-size:13px; line-height:1.6}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>🩺 진단의학과</h1>
+  <p class="sub">다른 병원에서 병명을 못 찾아 넘어온 환자를 추리로 맞히는 게임</p>
+  <div class="safety">⚠️ 이건 재미용 게임이야. 증상·검사·약·정답은 상식 수준이고 진짜 의학 조언이 아니야. <b>진짜 아프면 꼭 병원에 가.</b></div>
+
+  <div id="menu"></div>
+
+  <div id="game" class="hide">
+    <button class="btn ghost" id="backBtn" style="margin:0 0 4px">← 사례 목록</button>
+    <div class="stats">
+      <div class="stat" id="ddBox">
+        <div class="lab">⏳ 데드라인</div>
+        <div class="big"><span id="ddNum">0</span><span style="font-size:13px;color:var(--dim)">일</span></div>
+        <div class="bar"><i id="ddBar"></i></div>
+      </div>
+      <div class="stat tempbox" id="tempBox">
+        <div class="lab">🌡️ 체온</div>
+        <div class="big"><span id="tempNum">0</span><span style="font-size:13px;color:var(--dim)">°C</span></div>
+        <div class="danger">위험선 40.0°C</div>
+      </div>
+    </div>
+
+    <div class="card chart" id="chart"></div>
+    <div class="card board" id="board"></div>
+
+    <div class="card">
+      <h2>🔬 검사 — 단서 얻고 데드라인 1일 깎기</h2>
+      <div id="tests"></div>
+    </div>
+    <div class="card">
+      <h2>💊 경험적 치료 — 약이 곧 검사. 맞으면 시간 벌고, 틀려도 후보가 좁혀짐</h2>
+      <p class="sub" style="margin:0 0 4px">약을 누르면 📖설명이 먼저 뜨고, 한 번 더 눌러야 투약돼.</p>
+      <div id="treats"></div>
+    </div>
+    <button class="act watch" id="watchBtn" style="margin:2px 0 8px">
+      <span>⏳ 하루 지켜보기 — 병이 진행되며 새 증상이 나올 수도</span><span class="cost">-1일</span>
+    </button>
+
+    <button class="btn gold" id="finalBtn">🎯 최종 진단 내리기</button>
+
+    <div class="card"><h2>📋 진료 기록</h2><div id="log"></div></div>
+  </div>
+</div>
+
+<div id="over"><div class="box">
+  <h3 id="ovT"></h3><p id="ovP"></p>
+  <button class="btn primary" id="ovBtn" style="margin-top:14px">확인</button>
+</div></div>
+
+<script>
+/* ===== 병명 사전 (설명 + 💊대표 치료) — 재미용, 실제 치료는 의사와 상담 ===== */
+const DICT = {
+  "불명열":"아직 원인을 못 찾은 고열. 💊 검사와 약 반응으로 정체를 좁혀간다.",
+  "감기":"흔한 바이러스 상기도 감염. 콧물·기침·미열. 💊 해열·수분·휴식(저절로 나음).",
+  "독감":"인플루엔자 바이러스. 고열·근육통이 세다. 💊 항바이러스제·해열. 실제론 의사와.",
+  "폐렴":"폐의 염증. 기침·고열·숨참. 💊 항생제(세균성). 실제론 의사와.",
+  "급성 장염":"장에 생긴 염증. 설사·구토. 💊 수분·전해질 보충이 핵심.",
+  "맹장염":"충수 염증. 오른쪽 아랫배 통증. 💊 응급 수술. 실제론 의사 판단.",
+  "식중독":"상한 음식의 독소·세균. 💊 수분 보충·대증치료.",
+  "탈수":"몸의 물·전해질이 빠진 상태. 💊 수액·전해질 보충.",
+  "패혈증":"감염이 온몸으로 퍼진 응급. 💊 즉시 광범위 항생제. 실제론 응급실로.",
+  "로타바이러스":"어린이 장염의 흔한 바이러스. 💊 수분 보충.",
+  "중이염":"고막 안쪽 염증. 귀 아픔·열. 💊 항생제·진통. 실제론 의사와.",
+  "인후염":"목(인두) 염증. 삼킬 때 통증. 💊 항생제·진통(세균성).",
+  "수족구병":"콕사키 바이러스. 손·발·입에 물집. 💊 대증치료(수분·진통).",
+  "수두":"수두 바이러스. 온몸에 물집. 💊 항바이러스제·격리.",
+  "구내염":"입안 점막 궤양. 💊 대증치료·구강 청결.",
+  "변비":"대변이 오래 못 나와 배가 아픔. 💊 완하제·관장·식이섬유.",
+  "알레르기 비염":"알레르기성 코 염증. 맑은 콧물·재채기, 열 없음. 💊 항히스타민제·회피.",
+  "축농증":"부비동에 고름이 찬 염증. 💊 항생제(세균성).",
+  "요로감염":"오줌길 세균 감염. 소변 볼 때 아픔. 💊 항생제.",
+  "신우신염":"감염이 콩팥까지 올라감. 옆구리 통증·고열. 💊 항생제(입원할 수도).",
+  "철결핍빈혈":"철 부족으로 피가 묽어짐. 창백·피로. 💊 철분제·식이 교정.",
+  "간흡충증":"민물고기 회로 온 기생충(디스토마). 💊 구충제(프라지콴텔).",
+  "림프종":"림프구가 암처럼 자라는 혈액암. 💊 항암·방사선. 실제론 전문 치료.",
+  "결핵":"결핵균 감염. 미열·식은땀·체중감소. 💊 항결핵제 여러 약을 오래.",
+  "간염":"간의 염증. 💊 원인별 치료(항바이러스 등).",
+  "바이러스간염":"간염 바이러스로 생긴 간 염증. 💊 항바이러스제·휴식.",
+  "성인 스틸병":"원인 불명 자가면역 염증. 고열+발진+관절통. 💊 스테로이드.",
+  "백혈병":"골수의 혈액암. 💊 항암치료. 실제론 전문 치료.",
+  "가와사키병":"5세 이하 혈관 염증병. 5일 넘는 고열+딸기혀+손발 부종. 💊 면역글로불린(IVIG)+아스피린.",
+  "성홍열":"연쇄구균 독소로 붉은 발진·딸기혀. 💊 항생제.",
+  "홍역":"홍역 바이러스. 고열 뒤 발진. 💊 대증치료·예방은 백신.",
+  "베체트병":"입·생식기 궤양+눈 염증이 반복되는 자가면역 혈관염. 💊 콜히친·스테로이드.",
+  "단순포진":"헤르페스로 입·입술에 물집. 💊 항바이러스제.",
+  "크론병":"소화관 어디든 생기는 만성 염증성 장질환. 💊 면역억제·스테로이드.",
+  "유육종증":"온몸에 육아종이 생기는 원인불명 병. 폐·림프절에 잘. 💊 스테로이드.",
+  "측두동맥염":"관자놀이 큰 혈관의 염증. 늦으면 실명! 💊 즉시 스테로이드.",
+  "편두통":"한쪽 머리가 욱신. 💊 진통제·편두통약.",
+  "긴장성두통":"근육 긴장으로 조이는 두통. 💊 진통제·휴식.",
+  "녹내장":"눈 압력이 높아 시신경이 상함. 💊 안압 낮추는 치료.",
+  "급성 포르피리아":"헴 합성 효소 이상 유전병. 복통·신경증상 발작, 소변이 햇빛에 붉게. 💊 헴·포도당 주사.",
+  "납중독":"납이 쌓여 복통·빈혈·신경증상. 💊 중금속 배출(킬레이션).",
+  "길랭-바레증후군":"면역이 말초신경 공격, 다리부터 힘 빠짐. 💊 면역글로불린·혈장교환.",
+  "아밀로이드증":"비정상 단백질이 장기에 쌓임. 💊 원인 교정·면역억제.",
+  "신증후군":"콩팥이 단백질을 흘려 몸이 붓는 병. 💊 스테로이드·이뇨제.",
+  "갑상선저하증":"갑상선호르몬 부족. 피로·추위·부종. 💊 호르몬(갑상선) 보충.",
+  "심부전":"심장이 피를 잘 못 짜냄. 숨참·부종. 💊 이뇨제·심장약.",
+  "쿠싱증후군":"코르티솔 과다. 달덩이 얼굴·중심비만·보라색 튼살. 💊 원인(종양) 수술.",
+  "단순비만":"체지방이 늘어난 상태. 💊 식이·운동(생활습관 교정).",
+  "당뇨병":"혈당이 높게 유지됨. 💊 식이·운동·혈당약·인슐린.",
+  "애디슨병":"부신이 코르티솔을 못 만듦. 피로·저혈압·피부 검어짐. 💊 코르티솔 보충(끊으면 위험).",
+  "우울증":"지속되는 우울·무기력. 💊 항우울제·상담.",
+  "갈색세포종":"부신 종양이 아드레날린을 뿜어 발작적 고혈압. 💊 알파차단 후 수술.",
+  "공황장애":"극심한 불안 발작 반복. 💊 안정제·인지행동치료.",
+  "본태성고혈압":"원인 없이 혈압이 꾸준히 높음. 💊 혈압약·생활습관.",
+  "윌슨병":"구리가 간·뇌에 쌓이는 유전병. 💊 구리 배출제(페니실라민).",
+  "파킨슨병":"도파민 부족으로 떨림·느려짐. 보통 노년. 💊 도파민 약.",
+  "혈전성혈소판감소자반증":"작은 혈관 혈전으로 혈소판↓·빈혈·신경·신장·열 다섯 징후. 응급! 💊 혈장교환.",
+  "특발성혈소판감소자반증":"면역이 혈소판만 공격, 멍이 잘 듦(ITP). 💊 스테로이드·면역치료.",
+  "갑상선항진증":"갑상선호르몬 과다. 두근·체중감소·더위 못참음. 💊 항갑상선제.",
+  "불안장애":"지나친 불안이 지속. 💊 안정제·상담.",
+  "전신홍반루푸스":"면역이 온몸을 공격하는 자가면역병. 나비발진·관절통·신장. 💊 스테로이드·면역억제.",
+  "류마티스관절염":"면역이 관절을 공격해 변형. 💊 면역조절(항류마티스약).",
+  "피부염":"피부의 염증·발진. 💊 보습·국소 스테로이드.",
+  "섬유근육통":"온몸이 쑤시나 염증 수치는 정상. 💊 운동·수면·통증조절.",
+  "카이저-플라이셔 링":"각막에 구리가 쌓여 생기는 갈색 고리. 윌슨병 신호."
+};
+
+/* ===== 약 사전 (무슨 약·어떤 병·부작용) — 재미용, 실제 복용은 의사·약사와 ===== */
+const DRUGS = {
+  "해열제":"열·통증을 내리는 약(아세트아미노펜·이부프로펜). 원인 치료는 아님. 부작용: 과량 시 간·위 부담. 실제론 의사·약사와.",
+  "진통제":"통증을 줄이는 약. 원인은 못 고침. 부작용: 위장장애. 실제론 상담.",
+  "광범위 항생제":"여러 세균을 폭넓게 잡음. 폐렴·요로·패혈증 등 세균감염에. 바이러스엔 무효, 남용 시 내성. 실제론 의사와.",
+  "항바이러스제":"바이러스 증식을 막음(수두·헤르페스 등). 세균엔 무효. 실제론 의사와.",
+  "항진균제":"곰팡이(진균) 감염 치료제. 부작용: 간 부담. 실제론 상담.",
+  "스테로이드":"강한 항염증·면역조절제. 자가면역·염증병(스틸·유육종·루푸스·측두동맥염)에. 감염을 덮을 수 있어 주의, 장기 사용 부작용 多. 실제론 의사와.",
+  "면역억제제":"과한 면역을 누름. 중증 자가면역에. 감염 위험↑. 실제론 의사와.",
+  "면역글로불린(IVIG)":"모아둔 항체를 정맥 주입. 가와사키·일부 면역질환에. 부작용: 드물게 알레르기. 실제론 의사와.",
+  "수액·전해질":"빠진 물·염분을 채움. 탈수·쇼크에. 과량 시 부종. 실제론 상담.",
+  "이뇨제":"몸의 물을 소변으로 빼 붓기를 줄임(심부전·부종). 전해질 교란 주의. 실제론 의사와.",
+  "항응고제":"피가 굳는 걸 막음(혈전). 부작용: 출혈. 실제론 의사와.",
+  "구충제(프라지콴텔)":"기생충을 없앰. 부작용: 어지럼·복통. 실제론 상담.",
+  "항결핵제":"결핵균 잡는 여러 약을 오래 같이 복용. 간 부담. 실제론 의사와.",
+  "항갑상선제(메티마졸)":"갑상선호르몬 과다를 억제. 부작용: 드물게 백혈구 감소. 실제론 의사와.",
+  "코르티솔 보충":"부족한 부신호르몬을 채움(애디슨). 갑자기 끊으면 위험. 실제론 의사와.",
+  "철분제":"부족한 철을 보충해 빈혈 교정. 부작용: 변비·속쓰림. 실제론 상담.",
+  "완하제·관장":"막힌 변을 풀어줌(변비). 과용 주의. 실제론 상담.",
+  "혈장교환(응급)":"혈장을 갈아주는 응급치료(TTP 등). 병원에서만. 실제론 의사와.",
+  "헴·포도당 주사":"포르피리아 발작을 가라앉힘. 병원에서. 실제론 의사와.",
+  "알파차단제 후 수술":"갈색세포종에서 혈압을 안정시킨 뒤 종양 제거. 실제론 의사와.",
+  "구리 배출제(페니실라민)":"쌓인 구리를 배출(윌슨병). 부작용 많아 모니터링. 실제론 의사와.",
+  "항히스타민제":"알레르기 반응을 줄임(비염). 부작용: 졸림. 실제론 상담.",
+  "콜히친·스테로이드":"베체트 등 염증을 가라앉힘. 부작용: 설사·면역저하. 실제론 의사와.",
+  "응급 수술 의뢰":"수술이 필요한 병(맹장염 등)을 제거. 실제론 의사 판단.",
+  "경과관찰·대증치료":"특별한 약 없이 지켜보며 증상만 달램(저절로 낫는 병). 악화하면 재평가.",
+  "원인(종양) 수술":"호르몬을 뿜는 종양을 제거하는 근본 치료(쿠싱·갈색세포종 등). 실제론 의사 판단.",
+  "생활습관 교정":"식이·운동으로 체중·대사를 개선. 약은 아님.",
+  "항우울제":"우울증 치료제. 효과까지 몇 주 걸림. 실제론 의사와.",
+  "안정제":"불안·공황을 가라앉힘. 원인 질환은 못 고침. 실제론 의사와."
+};
+
+/* ===== 사례 풀 =====
+ test  : {name, reveal, elim:[지울 후보], add:[드러나는 후보]}  (쓰면 -1일)
+ treat : {drug(=DRUGS 키/표시명), worksFor:[이 병이면 호전], add:[약 반응으로 드러나는 후보],
+          sxGood:[호전 반응 증상], sxBad:[악화 반응 증상]}
+ events: {day:경과일, sx:[새 증상], add:[새 후보], remove:[], temp:체온, note}  경과일=시작DL-현재DL
+ mystery:true → 시작 칠판에 "불명열"만, 검사·약 반응으로 실제 후보가 드러남
+*/
+const CASES = [
+ /* ---------- 애들 모드 (9) : 약 적고 반응 단순 ---------- */
+ {mode:"kids", title:"콧물 흘리는 7살", desc:"미열·콧물·기침으로 왔어요",
+  chart:{나이:"7세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["콧물","기침","목 아픔","미열"]},
+  temp:37.8, deadline:5, answer:"감기", candidates:["감기","독감","폐렴"],
+  tests:[{name:"열 재기 / 문진",reveal:"열 37.8°C로 낮고 근육통 없음.",elim:["독감"]},
+    {name:"청진 + 가슴 엑스레이",reveal:"폐 소리 깨끗, 엑스레이 정상.",elim:["폐렴"]},
+    {name:"콧물 바이러스 검사",reveal:"흔한 감기 바이러스(리노) 검출.",elim:[]}],
+  treats:[{drug:"경과관찰·대증치료",worksFor:["감기","독감"]},{drug:"광범위 항생제",worksFor:["폐렴"]}]},
+
+ {mode:"kids", title:"배 아픈 9살", desc:"설사·구토·배앓이로 왔어요",
+  chart:{나이:"9세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["물설사","구토","배꼽 주변 통증","약간 열"]},
+  temp:38.0, deadline:4, answer:"급성 장염", candidates:["급성 장염","맹장염","식중독"],
+  tests:[{name:"배 눌러보기(압통 위치)",reveal:"오른쪽 아랫배 반발통 없음. 배꼽 둘레가 아픔.",elim:["맹장염"]},
+    {name:"먹은 음식 문진",reveal:"상한 음식 이력 없음. 어린이집에 같은 증상 유행.",elim:["식중독"]},
+    {name:"대변 검사",reveal:"로타바이러스 양성.",elim:[]}],
+  treats:[{drug:"수액·전해질",worksFor:["급성 장염","식중독","탈수"]},{drug:"응급 수술 의뢰",worksFor:["맹장염"]}]},
+
+ {mode:"kids", title:"축 처진 5살", desc:"설사가 이틀째, 기운이 없어요",
+  chart:{나이:"5세",과거병:"어제까지 장염",알레르기:"없음",복용약:"없음",증상:["입·혀 마름","눈물 적음","소변 줄음","처짐"]},
+  temp:37.2, deadline:3, answer:"탈수", candidates:["탈수","급성 장염","패혈증"],
+  tests:[{name:"활력징후·열 확인",reveal:"열 거의 없고 염증 수치 정상.",elim:["패혈증"]},
+    {name:"피부 탄력·점막 보기",reveal:"피부 탄력 느리고 점막이 말랐다. 전형적 탈수.",elim:[]},
+    {name:"대변 검사 재확인",reveal:"장염은 가라앉는 중. 지금 문제는 빠진 수분.",elim:["급성 장염"]}],
+  treats:[{drug:"수액·전해질",worksFor:["탈수","급성 장염"]},{drug:"광범위 항생제",worksFor:["패혈증"]}]},
+
+ {mode:"kids", title:"귀 아파 우는 4살", desc:"감기 끝에 밤새 보채고 귀를 만져요",
+  chart:{나이:"4세",과거병:"일주일 전 감기",알레르기:"없음",복용약:"없음",증상:["귀 아픔","열","밤에 보챔"]},
+  temp:38.6, deadline:4, answer:"중이염", candidates:["중이염","감기","인후염"],
+  tests:[{name:"귀(고막) 들여다보기",reveal:"고막이 빨갛게 부풀고 가운데 고름이 비친다.",elim:["감기"]},
+    {name:"목 들여다보기",reveal:"편도는 깨끗하다.",elim:["인후염"]},
+    {name:"열·보챔 양상",reveal:"귀를 자꾸 만지고 누우면 더 아파한다.",elim:[]}],
+  treats:[{drug:"광범위 항생제",worksFor:["중이염","인후염"]},{drug:"경과관찰·대증치료",worksFor:["감기"]}]},
+
+ {mode:"kids", title:"손발에 물집 난 3살", desc:"미열에 입을 아파하고 손에 뭐가 났어요",
+  chart:{나이:"3세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["미열","입안 아픔","손에 작은 물집"]},
+  temp:37.9, deadline:4, answer:"수족구병", candidates:["수족구병","수두","구내염"],
+  tests:[{name:"발진 위치·모양",reveal:"손바닥·발바닥·입안에 물집. 온몸에 번지진 않음.",elim:["수두"]},
+    {name:"입안만 vs 손발",reveal:"입뿐 아니라 손발에도 있다.",elim:["구내염"]},
+    {name:"바이러스 검사",reveal:"콕사키 바이러스 양성.",elim:[]}],
+  treats:[{drug:"경과관찰·대증치료",worksFor:["수족구병","구내염"]},{drug:"항바이러스제",worksFor:["수두"]}],
+  events:[{day:1,sx:["발바닥까지 물집 번짐"],note:"손발에 물집이 더 번졌다. 수족구 전형."}]},
+
+ {mode:"kids", title:"며칠째 변을 못 본 6살", desc:"배가 아픈데 설사는 아니에요",
+  chart:{나이:"6세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["배가 빵빵","왼쪽 아랫배 통증","4일째 변 못 봄"]},
+  temp:36.9, deadline:4, answer:"변비", candidates:["변비","급성 장염","맹장염"],
+  tests:[{name:"배 만져보기",reveal:"왼쪽 아랫배에 딱딱한 변 덩어리. 오른쪽 반발통 없음.",elim:["맹장염"]},
+    {name:"설사·열 확인",reveal:"설사·열 없음. 며칠째 변을 못 봤다.",elim:["급성 장염"]},
+    {name:"복부 엑스레이",reveal:"대장이 변으로 가득 차 있다.",elim:[]}],
+  treats:[{drug:"완하제·관장",worksFor:["변비"]},{drug:"응급 수술 의뢰",worksFor:["맹장염"]}]},
+
+ {mode:"kids", title:"맑은 콧물 흘리는 8살", desc:"재채기와 눈 가려움이 몇 주째예요",
+  chart:{나이:"8세",과거병:"없음",알레르기:"집먼지?",복용약:"없음",증상:["맑은 콧물","재채기","눈 가려움","열 없음"]},
+  temp:36.8, deadline:5, answer:"알레르기 비염", candidates:["알레르기 비염","감기","축농증"],
+  tests:[{name:"콧물 양상·기간",reveal:"맑은 콧물이 몇 주째 반복, 눈·코 가려움. 열 없음.",elim:["감기"]},
+    {name:"부비동 엑스레이",reveal:"부비동 깨끗, 농성 콧물 없음.",elim:["축농증"]},
+    {name:"알레르기 피부반응",reveal:"집먼지진드기에 강양성.",elim:[]}],
+  treats:[{drug:"항히스타민제",worksFor:["알레르기 비염"]},{drug:"광범위 항생제",worksFor:["축농증"]}]},
+
+ {mode:"kids", title:"열나는 2살", desc:"고열인데 콧물·기침이 없어요",
+  chart:{나이:"2세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["고열","보챔","소변 볼 때 우는 듯"]},
+  temp:38.9, deadline:4, answer:"요로감염", candidates:["요로감염","감기","급성 장염"],
+  tests:[{name:"호흡기 진찰",reveal:"콧물·기침 없고 폐 깨끗.",elim:["감기"]},
+    {name:"배·설사 확인",reveal:"설사·구토 없음.",elim:["급성 장염"]},
+    {name:"소변 검사",reveal:"소변에 백혈구·세균 양성.",elim:[]}],
+  treats:[{drug:"광범위 항생제",worksFor:["요로감염","신우신염"]},{drug:"경과관찰·대증치료",worksFor:["감기"]}],
+  events:[{day:2,sx:["옆구리 통증","더 치솟는 고열"],add:["신우신염"],temp:39.6,note:"감염이 콩팥으로 올라갔다. 서둘러야 한다."}]},
+
+ {mode:"kids", title:"창백하고 피곤한 9살", desc:"요즘 자주 어지럽고 입맛이 없어요",
+  chart:{나이:"9세",과거병:"편식",알레르기:"없음",복용약:"없음",증상:["창백함","쉽게 피곤","어지럼","입맛 없음"]},
+  temp:36.6, deadline:6, answer:"철결핍빈혈", candidates:["철결핍빈혈","탈수","감기"],
+  tests:[{name:"열·점막 확인",reveal:"열 없고 점막 촉촉.",elim:["탈수","감기"]},
+    {name:"혈색소 검사",reveal:"혈색소가 많이 낮다. 빈혈이다.",elim:[]},
+    {name:"적혈구 모양·식이 문진",reveal:"적혈구가 작고 옅다. 고기·채소를 거의 안 먹음.",elim:[]}],
+  treats:[{drug:"철분제",worksFor:["철결핍빈혈"]},{drug:"수액·전해질",worksFor:["탈수"]}]},
+
+ /* ---------- 진단의학과 모드 (16) : 약 반응 역진단·깊은 감별 ---------- */
+ {mode:"dx", title:"3주째 열나는 38살 (불명열)", desc:"원인을 못 찾은 고열로 의뢰됐어요",
+  chart:{나이:"38세",과거병:"없음",알레르기:"없음",복용약:"해열제(잠깐만 들음)",증상:["3주째 원인 모를 고열","식은땀","체중 감소"]},
+  temp:38.4, deadline:7, answer:"결핵", mystery:true, candidates:["불명열"],
+  tests:[
+    {name:"흉부 영상·감염 검사",reveal:"폐 윗부분에 희미한 음영, 밤 식은땀. 감염·결핵이 의심된다.",elim:["불명열"],add:["결핵","림프종"]},
+    {name:"CT·종양 표지자",reveal:"림프절이 조금 커져 있다. 혈액암·자가면역도 배제 못 한다.",add:["림프종","성인 스틸병"]},
+    {name:"자가항체·배양",reveal:"자가항체 음성, 일반 세균 안 자람.",elim:["성인 스틸병"]}],
+  treats:[
+    {drug:"광범위 항생제",worksFor:["패혈증"],sxBad:["열이 안 잡힘"]},
+    {drug:"스테로이드",worksFor:["성인 스틸병","림프종"],sxBad:["오히려 열이 더 오름(감염을 덮은 듯)"]},
+    {drug:"항결핵제",worksFor:["결핵"],sxGood:["며칠 뒤 열이 떨어지고 식은땀이 멎음"]}],
+  events:[{day:3,sx:["체중 더 빠짐"],note:"지켜보는 동안 환자가 더 축났다."}]},
+
+ {mode:"dx", title:"고열이 치솟는 29살", desc:"매일 40°C까지 열, 발진·관절통",
+  chart:{나이:"29세",과거병:"없음",알레르기:"없음",복용약:"해열제(효과 적음)",증상:["하루 한 번 40°C 고열","연어색 발진","관절통","인후통"]},
+  temp:40.1, deadline:4, answer:"성인 스틸병", candidates:["성인 스틸병","패혈증","백혈병","림프종"],
+  tests:[{name:"혈액배양(감염균 찾기)",reveal:"세균 안 자람. 감염원을 못 찾겠다.",elim:["패혈증"]},
+    {name:"골수검사",reveal:"암세포 없음. 페리틴만 폭발적으로 높다.",elim:["백혈병"]},
+    {name:"영상·림프절 검사",reveal:"커진 림프절·종양 없음. 자가면역 염증 양상.",elim:["림프종"]}],
+  treats:[{drug:"스테로이드",worksFor:["성인 스틸병","림프종"],sxGood:["열이 내리고 발진이 가라앉음"]},
+    {drug:"광범위 항생제",worksFor:["패혈증"],sxBad:["변화 없음"]}]},
+
+ {mode:"dx", title:"5일째 열나는 4살", desc:"고열이 안 떨어지는데 처음엔 열만 났어요",
+  chart:{나이:"4세",과거병:"없음",알레르기:"없음",복용약:"해열제",증상:["5일 넘는 고열"]},
+  temp:39.4, deadline:5, answer:"가와사키병", candidates:["가와사키병","성홍열","홍역","독감"],
+  tests:[{name:"열 경과·근육통 확인",reveal:"5일 넘게 안 떨어지는 고열. 단순 독감 경과가 아니다.",elim:["독감"]},
+    {name:"인후 도찰·발진 검사",reveal:"연쇄구균 음성, 발진이 성홍열·홍역과 다르다.",elim:["성홍열","홍역"]},
+    {name:"심장 초음파·염증수치",reveal:"관상동맥 벽이 붓기 시작. 전형적 가와사키.",elim:[]}],
+  treats:[{drug:"면역글로불린(IVIG)",worksFor:["가와사키병"],sxGood:["열이 떨어지고 붓기가 가라앉음"]},
+    {drug:"광범위 항생제",worksFor:["성홍열"],sxBad:["열이 계속됨"]}],
+  events:[{day:1,sx:["양쪽 눈 충혈"],note:"눈이 빨개졌다."},
+    {day:2,sx:["딸기혀"],note:"혀가 딸기처럼 붉고 오돌토돌해졌다."},
+    {day:3,sx:["손발 부종"],temp:39.9,note:"손발이 붓기 시작 — 가와사키 결정 단서!"}]},
+
+ {mode:"dx", title:"입안 궤양이 반복되는 28살", desc:"입안이 자꾸 헐고 눈이 아파요",
+  chart:{나이:"28세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["반복되는 입안 궤양","눈 충혈·통증"]},
+  temp:37.5, deadline:6, answer:"베체트병", candidates:["베체트병","단순포진","크론병","전신홍반루푸스"],
+  tests:[{name:"궤양 재발력·바이러스 배양",reveal:"몇 달째 반복, 헤르페스 배양 음성.",elim:["단순포진"]},
+    {name:"장 내시경",reveal:"장에는 궤양 없음.",elim:["크론병"]},
+    {name:"자가항체(ANA)·피부 반응",reveal:"ANA 음성, 바늘 찌른 자리에 농포(파테르기) 양성.",elim:["전신홍반루푸스"]}],
+  treats:[{drug:"콜히친·스테로이드",worksFor:["베체트병","전신홍반루푸스"],sxGood:["궤양·눈 염증이 가라앉음"]},
+    {drug:"항바이러스제",worksFor:["단순포진"],sxBad:["변화 없음"]}],
+  events:[{day:2,sx:["생식기 궤양","시야 흐림(포도막염)"],note:"구강·생식기 궤양 + 눈 염증 — 베체트 삼징후."}]},
+
+ {mode:"dx", title:"마른기침하는 33살", desc:"기침·피로에 정강이가 붉게 부었어요",
+  chart:{나이:"33세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["마른기침","피로","정강이 붉은 결절"]},
+  temp:37.2, deadline:6, answer:"유육종증", candidates:["유육종증","결핵","림프종","폐렴"],
+  tests:[{name:"흉부 CT",reveal:"양쪽 폐문 림프절이 대칭적으로 커짐. 폐렴 음영 없음.",elim:["폐렴"]},
+    {name:"결핵균 검사",reveal:"결핵균 음성, 배양 안 자람.",elim:["결핵"]},
+    {name:"림프절 조직검사",reveal:"비건락성 육아종. 암세포 없음.",elim:["림프종"]}],
+  treats:[{drug:"스테로이드",worksFor:["유육종증"],sxGood:["기침·피로가 호전됨"]},
+    {drug:"항결핵제",worksFor:["결핵"],sxBad:["변화 없음"]}]},
+
+ {mode:"dx", title:"관자놀이가 아픈 72살", desc:"새 두통에 씹을 때 턱이 아프고 눈이 침침해요",
+  chart:{나이:"72세",과거병:"고혈압",알레르기:"없음",복용약:"혈압약",증상:["관자놀이 지끈 두통","씹을 때 턱 통증","시야 침침"]},
+  temp:37.8, deadline:4, answer:"측두동맥염", candidates:["측두동맥염","편두통","긴장성두통","녹내장"],
+  tests:[{name:"염증 수치(ESR/CRP)",reveal:"염증 수치가 매우 높다. 단순 두통이 아니다.",elim:["편두통","긴장성두통"]},
+    {name:"안압 검사",reveal:"안압 정상.",elim:["녹내장"]},
+    {name:"측두동맥 조직검사",reveal:"혈관벽에 거대세포 염증. 확정적이다.",elim:[]}],
+  treats:[{drug:"스테로이드",worksFor:["측두동맥염"],sxGood:["두통이 빠르게 가라앉고 시야가 안정됨"]},
+    {drug:"진통제",worksFor:["편두통","긴장성두통"],sxBad:["통증이 계속되고 시야가 더 나빠짐"]}],
+  events:[{day:2,sx:["한쪽 눈 시야 상실 조짐"],temp:38.0,note:"늦으면 실명 위험! 스테로이드를 서둘러야 한다."}]},
+
+ {mode:"dx", title:"복통이 발작하는 25살", desc:"극심한 배 통증과 손발 저림, 불안",
+  chart:{나이:"25세",과거병:"비슷한 복통 과거력",알레르기:"없음",복용약:"없음",증상:["극심한 복통","손발 저림·약화","불안"]},
+  temp:37.0, deadline:5, answer:"급성 포르피리아", candidates:["급성 포르피리아","맹장염","납중독","길랭-바레증후군"],
+  tests:[{name:"복부 영상",reveal:"외과적 이상 없음.",elim:["맹장염"]},
+    {name:"혈중 납 농도",reveal:"납 농도 정상.",elim:["납중독"]},
+    {name:"신경전도·소변 검사",reveal:"급성 탈수초 아님. 받아둔 소변을 햇빛에 두니 붉게 변함.",elim:["길랭-바레증후군"]}],
+  treats:[{drug:"헴·포도당 주사",worksFor:["급성 포르피리아"],sxGood:["복통 발작이 가라앉음"]},
+    {drug:"응급 수술 의뢰",worksFor:["맹장염"],sxBad:["열어보니 멀쩡, 괜한 수술"]}],
+  events:[{day:2,sx:["소변이 햇빛에 붉게 변함"],note:"포르피리아 특유의 소변 변색 — 결정 단서."}]},
+
+ {mode:"dx", title:"다리가 붓는 60살", desc:"피로에 다리가 붓고 혀가 커졌어요",
+  chart:{나이:"60세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["다리 부종","피로","혀가 커짐"]},
+  temp:36.8, deadline:6, answer:"아밀로이드증", candidates:["아밀로이드증","신증후군","갑상선저하증","심부전"],
+  tests:[{name:"갑상선 검사",reveal:"갑상선 기능 정상.",elim:["갑상선저하증"]},
+    {name:"소변 단백·심초음파",reveal:"다량 단백뇨에 심근이 두껍고 반짝인다(침착성).",elim:["심부전"]},
+    {name:"조직검사(콩고레드 염색)",reveal:"콩고레드 양성 — 아밀로이드 침착 확인.",elim:["신증후군"]}],
+  treats:[{drug:"면역억제제",worksFor:["아밀로이드증"],sxGood:["부종·피로가 서서히 호전"]},
+    {drug:"이뇨제",worksFor:["심부전","신증후군"],sxBad:["붓기만 잠깐 빠지고 근본은 그대로"]}]},
+
+ {mode:"dx", title:"얼굴이 둥글어진 40살", desc:"살이 몸통에만 찌고 배에 보라색 선이 생겼어요",
+  chart:{나이:"40세",과거병:"고혈압",알레르기:"없음",복용약:"혈압약",증상:["달덩이 얼굴","목뒤·몸통 지방","배에 보라색 튼살"]},
+  temp:36.7, deadline:7, answer:"쿠싱증후군", candidates:["쿠싱증후군","단순비만","당뇨병","갑상선저하증"],
+  tests:[{name:"갑상선 검사",reveal:"갑상선 정상.",elim:["갑상선저하증"]},
+    {name:"혈당 검사",reveal:"혈당이 좀 높지만 주원인은 아니다.",elim:["당뇨병"]},
+    {name:"코르티솔·덱사메타손 억제검사",reveal:"밤에도 코르티솔 높고 억제가 안 된다.",elim:["단순비만"]}],
+  treats:[{drug:"원인(종양) 수술",worksFor:["쿠싱증후군","갈색세포종"],sxGood:["호르몬이 정상으로 돌아옴"]},
+    {drug:"생활습관 교정",worksFor:["단순비만"],sxBad:["체형이 그대로"]}]},
+
+ {mode:"dx", title:"기운 없는 35살", desc:"만성 피로에 어지럽고 피부가 검어졌어요",
+  chart:{나이:"35세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["만성 피로","어지럼(저혈압)","피부·잇몸 색소침착","짠 것이 당김"]},
+  temp:36.9, deadline:5, answer:"애디슨병", candidates:["애디슨병","철결핍빈혈","우울증","갑상선저하증"],
+  tests:[{name:"혈색소·갑상선",reveal:"혈색소 정상, 갑상선 정상.",elim:["철결핍빈혈","갑상선저하증"]},
+    {name:"전해질 검사",reveal:"나트륨 낮고 칼륨 높다. 기분 문제로는 설명 안 됨.",elim:["우울증"]},
+    {name:"코르티솔·ACTH 자극검사",reveal:"코르티솔 낮고 자극에도 반응 없음.",elim:[]}],
+  treats:[{drug:"코르티솔 보충",worksFor:["애디슨병"],sxGood:["기운이 돌아오고 혈압이 오름"]},
+    {drug:"항우울제",worksFor:["우울증"],sxBad:["변화 없고 더 처진다"]}],
+  events:[{day:2,sx:["구토·심한 탈수","혈압 뚝 떨어짐"],temp:35.8,note:"애디슨 위기(쇼크) 조짐! 코르티솔을 서둘러야 한다."}]},
+
+ {mode:"dx", title:"발작적으로 두근거리는 45살", desc:"가끔 두통·식은땀과 함께 혈압이 치솟아요",
+  chart:{나이:"45세",과거병:"조절 안 되는 고혈압",알레르기:"없음",복용약:"혈압약 3종",증상:["발작적 두통","식은땀","심한 두근거림","발작 때 혈압 급상승"]},
+  temp:36.8, deadline:6, answer:"갈색세포종", candidates:["갈색세포종","공황장애","본태성고혈압","갑상선항진증"],
+  tests:[{name:"갑상선 검사",reveal:"갑상선 정상.",elim:["갑상선항진증"]},
+    {name:"24시간 혈압",reveal:"평소엔 정상, 발작 때만 폭등.",elim:["본태성고혈압"]},
+    {name:"소변·혈중 카테콜아민",reveal:"메타네프린이 매우 높고 부신에 종양이 보인다.",elim:["공황장애"]}],
+  treats:[{drug:"알파차단제 후 수술",worksFor:["갈색세포종"],sxGood:["발작이 멎고 혈압이 안정됨"]},
+    {drug:"안정제",worksFor:["공황장애"],sxBad:["발작 때 혈압은 여전히 폭등"]}]},
+
+ {mode:"dx", title:"손을 떠는 22살", desc:"말이 어눌하고 간 수치가 이상해요",
+  chart:{나이:"22세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["손 떨림","말 어눌","간 수치 이상"]},
+  temp:36.7, deadline:6, answer:"윌슨병", candidates:["윌슨병","바이러스간염","파킨슨병","갑상선항진증"],
+  tests:[{name:"간염 바이러스 검사",reveal:"간염 바이러스 모두 음성.",elim:["바이러스간염"]},
+    {name:"갑상선 검사",reveal:"갑상선 정상.",elim:["갑상선항진증"]},
+    {name:"세극등 검사·구리 수치",reveal:"각막에 갈색 고리(카이저-플라이셔). 구리 수치 이상. 20대엔 파킨슨 드묾.",elim:["파킨슨병"]}],
+  treats:[{drug:"구리 배출제(페니실라민)",worksFor:["윌슨병"],sxGood:["떨림·간 수치가 서서히 호전"]},
+    {drug:"항바이러스제",worksFor:["바이러스간염"],sxBad:["변화 없음"]}]},
+
+ {mode:"dx", title:"멍투성이에 헛소리하는 38살", desc:"열·빈혈에 온몸 멍, 정신이 오락가락",
+  chart:{나이:"38세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["온몸 멍·점상출혈","피로(빈혈)","열","가끔 헷갈림"]},
+  temp:38.5, deadline:3, answer:"혈전성혈소판감소자반증", candidates:["혈전성혈소판감소자반증","특발성혈소판감소자반증","패혈증","백혈병"],
+  tests:[{name:"혈액배양",reveal:"세균 안 자람. 감염 아님.",elim:["패혈증"]},
+    {name:"골수검사",reveal:"백혈병 세포 없음.",elim:["백혈병"]},
+    {name:"혈액도말·ADAMTS13",reveal:"조각난 적혈구(용혈)에 효소 활성 급감. ITP엔 없는 소견.",elim:["특발성혈소판감소자반증"]}],
+  treats:[{drug:"혈장교환(응급)",worksFor:["혈전성혈소판감소자반증"],sxGood:["의식이 또렷해지고 혈소판이 회복됨"]},
+    {drug:"스테로이드",worksFor:["특발성혈소판감소자반증"],sxBad:["출혈·혼미가 계속됨"]}],
+  events:[{day:1,sx:["의식 더 흐려짐","소변량 급감(신장 악화)"],temp:38.9,note:"다섯 징후가 모였다 — TTP 응급! 혈장교환을 서둘러."}]},
+
+ {mode:"dx", title:"살이 빠지는 32살", desc:"잘 먹는데 체중이 줄고 가슴이 두근거려요",
+  chart:{나이:"32세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["체중 감소(식욕은 늘음)","가슴 두근거림","손 떨림","더위 못 참음"]},
+  temp:37.6, deadline:6, answer:"갑상선항진증", candidates:["갑상선항진증","불안장애","철결핍빈혈","당뇨병"],
+  tests:[{name:"혈당 검사",reveal:"혈당 정상.",elim:["당뇨병"]},
+    {name:"혈색소 검사",reveal:"빈혈 없음.",elim:["철결핍빈혈"]},
+    {name:"갑상선호르몬(TSH/T4)",reveal:"TSH 낮고 T4 높다. 눈도 약간 돌출.",elim:["불안장애"]}],
+  treats:[{drug:"항갑상선제(메티마졸)",worksFor:["갑상선항진증"],sxGood:["두근거림·떨림이 가라앉음"]},
+    {drug:"안정제",worksFor:["불안장애"],sxBad:["체중은 계속 빠진다"]}],
+  events:[{day:2,sx:["열·맥박 폭주"],temp:39.5,note:"갑상선 폭풍 조짐! 서둘러 치료해야 한다."}]},
+
+ {mode:"dx", title:"볼에 발진 난 26살", desc:"양 볼 발진에 관절통, 햇빛 쬐면 심해져요",
+  chart:{나이:"26세",과거병:"없음",알레르기:"없음",복용약:"없음",증상:["양 볼 나비모양 발진","여러 관절 통증","햇빛 쬐면 악화","피로·미열"]},
+  temp:37.9, deadline:6, answer:"전신홍반루푸스", candidates:["전신홍반루푸스","류마티스관절염","피부염","섬유근육통"],
+  tests:[{name:"염증 수치·관절 양상",reveal:"염증 수치 높고 관절은 변형 없는 다발통.",elim:["섬유근육통"]},
+    {name:"관절 영상",reveal:"뼈 침식·변형이 없다.",elim:["류마티스관절염"]},
+    {name:"자가항체(ANA/dsDNA)·소변",reveal:"ANA·dsDNA 양성에 단백뇨. 단순 피부염이 아니다.",elim:["피부염"]}],
+  treats:[{drug:"스테로이드",worksFor:["전신홍반루푸스"],sxGood:["발진·관절통이 가라앉음"]},
+    {drug:"경과관찰·대증치료",worksFor:["피부염"],sxBad:["전신 증상이 계속됨"]}],
+  events:[{day:3,sx:["단백뇨 증가(신장 침범)"],note:"루푸스 신염 조짐 — 신장을 지켜야 한다."}]}
+];
+
+/* ===== 엔진 ===== */
+const $=s=>document.querySelector(s), el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e};
+let S=null;
+
+function buildMenu(){
+  const m=$("#menu"); m.innerHTML="";
+  [["kids","🧸 애들 모드","감기·배탈·탈수 같은 쉬운 사례 (9)"],
+   ["dx","🔬 진단의학과 모드","다른 병원이 못 찾은 희귀·까다로운 사례 (16)"]]
+  .forEach(([mode,h,sub])=>{
+    const hh=el("div","mode-h"); hh.textContent=h; m.appendChild(hh);
+    const ps=el("p","sub"); ps.style.margin="0 0 2px"; ps.textContent=sub; m.appendChild(ps);
+    CASES.forEach((c,i)=>{ if(c.mode!==mode) return;
+      const b=el("button","casebtn");
+      b.innerHTML=`<span class="tag">${c.deadline}일 · ${c.temp}°C${c.events?" · ⏳시간축":""}${c.mystery?" · ❓불명열":""}</span>`+
+        `<div class="t">${c.title}</div><div class="d">${c.desc}</div>`;
+      b.onclick=()=>startCase(i); m.appendChild(b);
+    });
+  });
+}
+
+function startCase(i){
+  const c=CASES[i];
+  S={c, dd:c.deadline, ddMax:c.deadline, temp:c.temp,
+     out:new Set(), usedT:new Set(), usedTr:new Set(), armed:null,
+     cands:[...c.candidates], sx:c.chart.증상.map(s=>({t:s,isNew:false})),
+     newCands:new Set(), seenEv:new Set(), over:false};
+  $("#menu").classList.add("hide"); $("#game").classList.remove("hide");
+  logClear(); log(`<span class="info">${c.title}</span> — 환자 입원. 추리를 시작한다.`);
+  if(c.mystery) log(`<span class="info">❓ 지금은 '불명열'뿐. 검사와 약 반응으로 정체를 밝혀내자.</span>`);
+  if(c.events) log(`<span class="info">⏳ 시간이 흐르면 병이 진행돼 새 증상이 나타난다. 빨리 지를지, 지켜볼지.</span>`);
+  render(); window.scrollTo(0,0);
+}
+
+function clearNew(){ S.sx.forEach(o=>o.isNew=false); S.newCands.clear(); }
+function addCand(nm,tag){ if(!S.cands.includes(nm)){ S.cands.push(nm); S.newCands.add(nm); log(`　└ ${tag} <b>${nm}</b> 등장`,"new"); } }
+function addSx(list){ (list||[]).forEach(s=>S.sx.push({t:s,isNew:true})); }
+
+function checkEvents(){
+  if(!S.c.events) return;
+  const elapsed=S.ddMax-S.dd;
+  S.c.events.forEach((ev,idx)=>{
+    if(S.seenEv.has(idx)||elapsed<ev.day) return;
+    S.seenEv.add(idx);
+    addSx(ev.sx);
+    (ev.add||[]).forEach(n=>addCand(n,"새 후보"));
+    (ev.remove||[]).forEach(n=>S.out.add(n));
+    if(ev.temp!=null) S.temp=ev.temp;
+    log(`🆕 <b>새 증상 나타남!</b> ${ev.note||""}`,"new");
+  });
+}
+
+function render(){
+  const c=S.c;
+  $("#ddNum").textContent=S.dd;
+  $("#ddBar").style.width=Math.max(0,S.dd/S.ddMax*100)+"%";
+  $("#ddBar").style.background=S.dd<=1?"var(--warn)":"var(--blue)";
+  $("#tempNum").textContent=S.temp.toFixed(1);
+  $("#tempBox").classList.toggle("hot",S.temp>=40);
+  // chart
+  const ch=$("#chart"); ch.innerHTML="<h2>📋 환자 차트</h2>";
+  for(const k in c.chart){
+    const r=el("div","row"), kk=el("div","k"), vv=el("div","v"); kk.textContent=k;
+    if(k==="증상"){
+      S.sx.forEach(o=>{const t=el("span","sx"+(o.isNew?" new":"")); t.textContent=(o.isNew?"🆕 ":"")+o.t; vv.appendChild(t)});
+    } else vv.textContent=c.chart[k];
+    r.appendChild(kk); r.appendChild(vv); ch.appendChild(r);
+  }
+  // board
+  const bd=$("#board"); bd.innerHTML="<h2>🖍️ 감별진단 칠판</h2>";
+  S.cands.forEach(nm=>{
+    const out=S.out.has(nm);
+    const row=el("div","cand"+(out?" out":"")+(S.newCands.has(nm)?" newc":""));
+    const x=el("div","x"); x.textContent=out?"✗":"•";
+    const n=el("div","nm"); n.innerHTML=`<span>${nm}</span>`;
+    if(DICT[nm]){
+      const bk=el("span","book"); bk.textContent="📖";
+      const tip=el("span","tip"); tip.textContent=DICT[nm];
+      bk.onclick=e=>{e.stopPropagation(); document.querySelectorAll(".tip").forEach(t=>t!==tip&&t.classList.remove("show")); tip.classList.toggle("show")};
+      n.appendChild(bk); n.appendChild(tip);
+    }
+    row.appendChild(x); row.appendChild(n); bd.appendChild(row);
+  });
+  // tests
+  const ts=$("#tests"); ts.innerHTML="";
+  c.tests.forEach((t,i)=>{
+    const b=el("button","act"); b.disabled=S.usedT.has(i)||S.over;
+    b.innerHTML=`<span>🔬 ${t.name}${S.usedT.has(i)?" (완료)":""}</span><span class="cost">-1일</span>`;
+    b.onclick=()=>doTest(i); ts.appendChild(b);
+  });
+  // treats (2단계: 설명 → 투약)
+  const tr=$("#treats"); tr.innerHTML="";
+  c.treats.forEach((t,i)=>{
+    const wrap=el("div");
+    const used=S.usedTr.has(i), armed=S.armed===i;
+    const b=el("button","act treat"+(armed?" armed":"")); b.disabled=used||S.over;
+    b.innerHTML=`<span>💊 ${t.drug}${used?" (투약함)":""}</span><span class="cost">${used?"":armed?"▼ 설명":"📖 눌러보기"}</span>`;
+    b.onclick=()=>toggleDrug(i); wrap.appendChild(b);
+    if(armed && !used && !S.over){
+      const panel=el("div","drugpanel");
+      const tip=el("div","dtip"); tip.textContent=DRUGS[t.drug]||"자세한 설명은 준비 중. 실제론 의사와 상담.";
+      panel.appendChild(tip);
+      const ib=el("button","btn gold sm"); ib.textContent="💉 이 약 투약하기";
+      ib.onclick=()=>doTreat(i); panel.appendChild(ib);
+      wrap.appendChild(panel);
+    }
+    tr.appendChild(wrap);
+  });
+  $("#watchBtn").disabled=S.over;
+  $("#finalBtn").disabled=S.over;
+}
+
+function toggleDrug(i){ if(S.over) return; S.armed=(S.armed===i?null:i); render(); }
+
+function doTest(i){
+  if(S.usedT.has(i)||S.over) return;
+  clearNew();
+  const t=S.c.tests[i]; S.usedT.add(i); S.dd-=1;
+  log(`🔬 <b>${t.name}</b> → ${t.reveal}`);
+  (t.elim||[]).forEach(nm=>{ if(!S.out.has(nm)){S.out.add(nm); log(`　└ 칠판에서 <b>${nm}</b> 지움 ✗`,"bad")} });
+  (t.add||[]).forEach(nm=>addCand(nm,"검사로"));
+  afterAction();
+}
+
+function doTreat(i){
+  if(S.usedTr.has(i)||S.over) return;
+  clearNew(); S.armed=null;
+  const t=S.c.treats[i]; S.usedTr.add(i);
+  (t.add||[]).forEach(nm=>addCand(nm,"약 반응으로"));
+  const correct=t.worksFor.includes(S.c.answer);
+  if(correct){
+    S.dd+=1; S.temp=Math.max(36.5,S.temp-1.3);
+    addSx(t.sxGood);
+    log(`💊 <b>${t.drug}</b> → ${t.sxGood&&t.sxGood.length?t.sxGood[0]+". ":""}환자가 호전됐다! 데드라인 <b>+1일</b>.`,"ok");
+    S.cands.forEach(nm=>{ if(!t.worksFor.includes(nm)&&!S.out.has(nm)){S.out.add(nm); log(`　└ 이 약에 반응 안 할 <b>${nm}</b> 지움 ✗`,"bad")} });
+  }else{
+    S.dd-=1; S.temp=Math.min(41.5,S.temp+0.8);
+    addSx(t.sxBad);
+    log(`💊 <b>${t.drug}</b> → ${t.sxBad&&t.sxBad.length?t.sxBad[0]+". ":""}반응 없거나 악화. 데드라인 <b>-1일</b>.`,"bad");
+    t.worksFor.forEach(nm=>{ if(!S.out.has(nm)){S.out.add(nm); log(`　└ 그 반응이면 아닌 <b>${nm}</b> 지움 ✗ (실패도 정보)`,"info")} });
+  }
+  afterAction();
+}
+
+function doWatch(){
+  if(S.over) return;
+  clearNew(); S.armed=null; S.dd-=1;
+  log(`⏳ <b>하루 지켜봤다.</b> 병이 그만큼 진행된다.`,"info");
+  afterAction();
+}
+
+function afterAction(){
+  checkEvents();
+  if(S.dd<=0){ S.dd=0; render(); return end(false,"⏳ 데드라인 초과","시간이 다 됐어. 환자를 다른 과로 넘겼어. 검사·관찰·약을 더 아껴 써보자."); }
+  render();
+}
+
+function openFinal(){
+  if(S.over) return;
+  const left=S.cands.filter(n=>!S.out.has(n));
+  const ov=$("#over"), box=ov.querySelector(".box");
+  box.innerHTML=`<h3>🎯 최종 진단</h3><p>칠판에 남은 후보 중 하나를 고르자.</p>`;
+  (left.length?left:S.cands).forEach(nm=>{
+    const b=el("button","btn gold"); b.style.marginTop="8px"; b.textContent=nm;
+    b.onclick=()=>finalPick(nm); box.appendChild(b);
+  });
+  const cx=el("button","btn ghost"); cx.style.marginTop="10px"; cx.textContent="취소";
+  cx.onclick=closeOver; box.appendChild(cx);
+  ov.style.display="flex";
+}
+
+function finalPick(nm){
+  closeOver();
+  if(nm===S.c.answer){
+    log(`🎯 최종 진단: <b>${nm}</b> → 정답! 환자를 살렸다. 🎉`,"ok");
+    end(true,"🎉 완치!",`정답은 ${nm}. 추리로 환자를 살렸어. 멋지다!`);
+  }else{
+    S.dd-=1; S.out.add(nm);
+    log(`🎯 최종 진단: <b>${nm}</b> → 오진. 데드라인 -1일, 후보에서 지움.`,"bad");
+    if(S.dd<=0){ S.dd=0; render(); return end(false,"⏳ 데드라인 초과","오진이 겹쳐 시간이 다 됐어. 괜찮아, 다시 해보자."); }
+    render();
+  }
+}
+
+function end(win,t,p){
+  S.over=true; render();
+  const ov=$("#over"), box=ov.querySelector(".box");
+  box.innerHTML=`<h3>${t}</h3><p>${p}</p>`;
+  const b=el("button","btn primary"); b.style.marginTop="14px"; b.textContent="사례 목록으로";
+  b.onclick=()=>{closeOver(); toMenu()}; box.appendChild(b);
+  ov.style.display="flex";
+}
+function closeOver(){ $("#over").style.display="none"; }
+function toMenu(){ S=null; $("#game").classList.add("hide"); $("#menu").classList.remove("hide"); window.scrollTo(0,0); }
+
+function logClear(){ $("#log").innerHTML=""; }
+function log(html,cls){ const d=el("div",cls||""); d.innerHTML=html; $("#log").prepend(d); }
+
+$("#backBtn").onclick=toMenu;
+$("#watchBtn").onclick=doWatch;
+$("#finalBtn").onclick=openFinal;
+document.addEventListener("click",e=>{ if(!e.target.closest(".nm")) document.querySelectorAll(".tip").forEach(t=>t.classList.remove("show")); });
+buildMenu();
+</script>
+</body>
+</html>
