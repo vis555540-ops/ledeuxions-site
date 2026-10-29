@@ -357,10 +357,13 @@
     } },
     // money shot: a heavy wad of cash, bills flutter off it in flight (bills spray on a hit, handled in the hit code)
     money: { col: '#ffcf33', dm: 1.4, start: function (M, B, b) {
-      for (var i = 0; i < 10; i++) M.fx.push({ k: 'bill', x: B.x, y: bsy(B), vx: rnd(-150, 150), vy: rnd(-210, -50), life: 0, max: rnd(0.6, 1.1), col: i % 3 ? '#49b35e' : '#ffd23f', s: rnd(5, 8), rot: rnd(0, 6) });
+      var n = G.lite ? 12 : 22;
+      for (var i = 0; i < n; i++) M.fx.push({ k: 'bill', x: B.x, y: bsy(B), vx: rnd(-200, 200), vy: rnd(-260, -60), life: 0, max: rnd(0.8, 1.6), col: i % 3 ? '#49b35e' : '#ffd23f', s: rnd(6, 11), rot: rnd(0, 6) });
+      for (var j = 0; j < (G.lite ? 4 : 9); j++) M.fx.push({ k: 'sparkle', x: B.x + rnd(-30, 30), y: bsy(B) + rnd(-26, 26), vx: rnd(-40, 40), vy: rnd(-50, 10), life: 0, max: rnd(0.4, 0.8), col: j % 2 ? '#fff6c2' : '#ffd23f', s: rnd(5, 10) });
     }, tick: function (M, B) {
       B.r = 14;   // a wad of cash: a touch bigger than a plain ball but still dodgeable, like the other specials
-      if (Math.random() < 0.4) M.fx.push({ k: 'bill', x: B.x, y: bsy(B), vx: -B.path.dir * rnd(20, 90), vy: rnd(-70, 10), life: 0, max: 1.0, col: Math.random() < 0.5 ? '#49b35e' : '#ffd23f', s: rnd(5, 7), rot: rnd(0, 6) });
+      if (Math.random() < (G.lite ? 0.4 : 0.6)) M.fx.push({ k: 'bill', x: B.x, y: bsy(B), vx: -B.path.dir * rnd(20, 110), vy: rnd(-80, 10), life: 0, max: rnd(0.9, 1.4), col: Math.random() < 0.5 ? '#49b35e' : '#ffd23f', s: rnd(5, 9), rot: rnd(0, 6) });
+      if (!G.lite && Math.random() < 0.35) M.fx.push({ k: 'sparkle', x: B.x + rnd(-14, 14), y: bsy(B) + rnd(-14, 14), vx: rnd(-30, 30), vy: rnd(-40, 0), life: 0, max: rnd(0.3, 0.6), col: '#fff6c2', s: rnd(4, 8) });
     } }
   };
   // COMMAND shots (G.CMDS): weaker than a SPECIAL (no meter), stronger than a plain throw; v = flight speed
@@ -503,10 +506,14 @@
     M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.28, col: '#fff', s: 20 + 30 * pw });
     M.fx.push({ k: 'burst', x: B.x, y: hy, life: 0, max: 0.12, col: '#fff', s: 26 + 22 * pw });
     sparks(M, B.x, hy, 10 + (pw * 6 | 0), '#ffe45c', 380 + 260 * pw);
-    if (B.sp === 'money') {
-      for (var mi = 0; mi < 24; mi++) M.fx.push({ k: 'bill', x: B.x, y: hy, vx: rnd(-1, 1) * 420, vy: rnd(-1, 0.3) * 440 - 80, life: 0, max: rnd(0.8, 1.6), col: mi % 3 ? '#49b35e' : '#ffd23f', s: rnd(5, 10), rot: rnd(0, 6) });
-      pop(M, B.x, hy - 46, T('cash'), '#ffd23f', 34);
-      M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.35, col: '#ffd23f', s: 48 });   // golden flourish only (no area knockout): looks flashy, still hits just the one it struck
+    if (B.sp === 'money') {   // flashy money blast (visual only - still a single-target hit, see v=26 balance)
+      var lite = G.lite, burst = lite ? 22 : 48, rain = lite ? 12 : 26, spk = lite ? 8 : 18;
+      for (var mi = 0; mi < burst; mi++) M.fx.push({ k: 'bill', x: B.x, y: hy, vx: rnd(-1, 1) * 480, vy: rnd(-1, 0.3) * 500 - 90, life: 0, max: rnd(1.0, 2.0), col: mi % 3 ? '#49b35e' : '#ffd23f', s: rnd(6, 12), rot: rnd(0, 6) });
+      for (var ri = 0; ri < rain; ri++) M.fx.push({ k: 'bill', x: B.x + rnd(-130, 130), y: hy - rnd(170, 360), vx: rnd(-50, 50), vy: rnd(30, 140), life: 0, max: rnd(1.2, 2.2), col: ri % 3 ? '#49b35e' : '#ffd23f', s: rnd(6, 11), rot: rnd(0, 6) });   // 돈벼락: cash rains down from above
+      for (var si = 0; si < spk; si++) M.fx.push({ k: 'sparkle', x: B.x + rnd(-70, 70), y: hy + rnd(-80, 30), vx: rnd(-60, 60), vy: rnd(-70, 10), life: 0, max: rnd(0.4, 0.9), col: si % 2 ? '#fff6c2' : '#ffd23f', s: rnd(6, 13) });
+      pop(M, B.x, hy - 46, T('cash'), '#ffd23f', 36);
+      M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.4, col: '#ffd23f', s: 90 });
+      M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.3, col: '#fff6c2', s: 46 });
     }
     G.sfx(pw > 1.2 ? 'bigHit' : 'hit'); if (pw > 1.2) G.audio.buzz(40);
     crowd(M, pw);
