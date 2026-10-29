@@ -86,6 +86,21 @@
   #over .box{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px; max-width:340px; width:100%; text-align:center; max-height:86vh; overflow:auto}
   #over h3{margin:0 0 6px; font-size:22px}
   #over p{color:var(--dim); font-size:13px; line-height:1.6}
+  /* ===== 드라마 레이어 ===== */
+  .assistbar{display:flex; gap:9px; align-items:center; background:#17223a; border:1px solid var(--line);
+    border-radius:14px; padding:8px 11px; margin:8px 0}
+  .assistbar img{width:42px; height:42px; border-radius:50%; object-fit:cover; object-position:top; flex:none; border:2px solid var(--blue)}
+  .assistbar .bubble{font-size:12.5px; line-height:1.45; color:#dbe6ff}
+  .assistbar .bubble b{color:var(--blue)}
+  .pprofile{display:flex; gap:11px; align-items:center; margin:2px 0 10px; padding-bottom:10px; border-bottom:1px dashed #27324a}
+  .pprofile img{width:62px; height:62px; border-radius:12px; object-fit:cover; object-position:top; flex:none; border:1px solid var(--line)}
+  .pprofile .nm{font-size:13.5px; font-weight:700}
+  .pprofile .st{font-size:11.5px; color:var(--dim); margin-top:2px; line-height:1.4}
+  .pprofile .qt{font-size:12px; color:#ffe39a; margin-top:3px}
+  .endcut{width:140px; height:140px; object-fit:cover; object-position:top; border-radius:14px; margin:0 auto 10px; display:block; border:1px solid var(--line)}
+  .dlg{text-align:left; background:#0b1424; border:1px solid var(--line); border-radius:12px;
+    padding:9px 11px; margin:7px 0; font-size:13px; line-height:1.5}
+  .dlg b{color:var(--gold)}
   .hide{display:none!important}
 
   /* ===== 그림 ===== */
@@ -130,6 +145,7 @@
       <div class="doc"></div>
       <div class="msg"><b>진단의 선생님 (당신)</b><br>차트를 읽고, 검사·약으로 떠보며 후보를 하나씩 지워 진짜 병명을 찾자.</div>
     </div>
+    <div class="assistbar"><img src="img/g009.png" alt="하리"><div class="bubble" id="assistMsg"></div></div>
     <div class="stats">
       <div class="stat" id="ddBox">
         <img class="statimg" src="img/g088.png" alt="">
@@ -362,6 +378,20 @@ const CASES = [
  {mode:"dx", title:"3주째 열나는 38살 (불명열)", desc:"원인을 못 찾은 고열로 의뢰됐어요",
   chart:{나이:"38세",과거병:"없음",알레르기:"없음",복용약:"해열제(잠깐만 들음)",증상:["3주째 원인 모를 고열","식은땀","체중 감소"]},
   temp:38.4, deadline:7, answer:"결핵", mystery:true, candidates:["불명열"],
+  world:"세 번째 병원에서도 이름을 못 붙여 넘어온 환자",
+  story:{name:"재현", age:"38살", img:"img/g024.png",
+    oneLine:"3주째 원인 모를 열에 밤마다 식은땀, 살만 빠져요.",
+    quote:"“무슨 병인지만이라도 알고 싶어요…”",
+    intro:[
+      {who:"하리",text:"세 번째 병원이에요. 검사란 검사는 다 했는데 결과가 '불명열'뿐이래요."},
+      {who:"재현",text:"3주째 열이 안 떨어지고 살만 빠져요. 혹시 암일까 봐 잠이 안 와요…"},
+      {who:"하리",text:"이름표가 '불명열'뿐이에요. 검사랑 약 반응으로 정체를 밝혀내요, 선생님."}],
+    win:[
+      {who:"하리",text:"결핵이었어요! 약이 듣기 시작했어요, 선생님."},
+      {who:"재현",text:"암이 아니라니… 그동안 얼마나 무서웠는지. 정말, 정말 감사합니다."}],
+    bad:[
+      {who:"하리",text:"선생님… 시간이 다 됐어요."},
+      {who:"재현",text:"(힘없이) 결국 원인도 못 찾는 건가요…"}]},
   tests:[
     {name:"흉부 영상·감염 검사",reveal:"폐 윗부분에 희미한 음영, 밤 식은땀. 감염·결핵이 의심된다.",elim:["불명열"],add:["결핵","림프종"]},
     {name:"CT·종양 표지자",reveal:"림프절이 조금 커져 있다. 혈액암·자가면역도 배제 못 한다.",add:["림프종","성인 스틸병"]},
@@ -384,13 +414,29 @@ const CASES = [
  {mode:"dx", title:"5일째 열나는 4살", desc:"고열이 안 떨어지는데 처음엔 열만 났어요",
   chart:{나이:"4세",과거병:"없음",알레르기:"없음",복용약:"해열제",증상:["5일 넘는 고열"]},
   temp:39.4, deadline:5, answer:"가와사키병", candidates:["가와사키병","성홍열","홍역","독감"],
+  world:"큰 병원 두 곳에서도 열 원인을 못 찾아 넘어온 아이",
+  story:{name:"소율", age:"4살", img:"img/g011.png",
+    oneLine:"내일 어린이집 소풍인데 5일째 열이 안 떨어져요.",
+    quote:"“엄마… 나 소풍 가고 싶어…”",
+    intro:[
+      {who:"하리",text:"선생님, 큰 병원 두 곳에서도 열 원인을 못 찾고 넘어온 아이예요."},
+      {who:"엄마",text:"열이 5일째예요… 해열제도 잠깐뿐이고. 선생님, 우리 소율이 좀 봐주세요."},
+      {who:"소율",text:"(힘없이) 엄마… 나 내일 소풍 가고 싶은데…"},
+      {who:"하리",text:"우리가 마지막이에요. 같이 풀어봐요, 선생님."}],
+    win:[
+      {who:"하리",text:"해냈어요 선생님! 가와사키병, 제때 잡았어요."},
+      {who:"엄마",text:"선생님 덕분에… 정말 감사합니다. 흑…"},
+      {who:"소율",text:"(방긋) 선생님 최고! 나 소풍 갈 수 있어요?"}],
+    bad:[
+      {who:"하리",text:"선생님… 시간이 다 됐어요."},
+      {who:"엄마",text:"(울먹) 또 다른 데로 가야 하나요…"}]},
   tests:[{name:"열 경과·근육통 확인",reveal:"5일 넘게 안 떨어지는 고열. 단순 독감 경과가 아니다.",elim:["독감"]},
     {name:"인후 도찰·발진 검사",reveal:"연쇄구균 음성, 발진이 성홍열·홍역과 다르다.",elim:["성홍열","홍역"]},
     {name:"심장 초음파·염증수치",reveal:"관상동맥 벽이 붓기 시작. 전형적 가와사키.",elim:[]}],
   treats:[{drug:"면역글로불린(IVIG)",worksFor:["가와사키병"],sxGood:["열이 떨어지고 붓기가 가라앉음"]},
     {drug:"광범위 항생제",worksFor:["성홍열"],sxBad:["열이 계속됨"]}],
   events:[{day:1,sx:["양쪽 눈 충혈"],note:"눈이 빨개졌다."},
-    {day:2,sx:["딸기혀"],note:"혀가 딸기처럼 붉고 오돌토돌해졌다."},
+    {day:2,sx:["딸기혀"],img:"img/g016.png",note:"혀가 딸기처럼 붉고 오돌토돌해졌다."},
     {day:3,sx:["손발 부종"],temp:39.9,note:"손발이 붓기 시작 — 가와사키 결정 단서!"}]},
 
  {mode:"dx", title:"입안 궤양이 반복되는 28살", desc:"입안이 자꾸 헐고 눈이 아파요",
@@ -565,17 +611,37 @@ function buildMenu(){
   });
 }
 
+/* ===== 드라마 레이어: 조수 캐릭터 ===== */
+const ASSIST={name:"하리", role:"1년차 레지던트", img:"img/g009.png"};
+function setAssist(t){ const b=$("#assistMsg"); if(b) b.innerHTML=`<b>${ASSIST.name}</b> &nbsp;${t}`; }
+
 function startCase(i){
   const c=CASES[i];
   S={c, dd:c.deadline, ddMax:c.deadline, temp:c.temp,
      out:new Set(), usedT:new Set(), usedTr:new Set(), armed:null,
      cands:[...c.candidates], sx:c.chart.증상.map(s=>({t:s,isNew:false})),
-     newCands:new Set(), seenEv:new Set(), over:false};
+     newCands:new Set(), seenEv:new Set(), over:false,
+     pImg:(c.story?c.story.img:null), _evMsg:null};
+  if(c.story){ showIntro(c); } else { enterGame(); }
+}
+function enterGame(){
+  const c=S.c;
   $("#menu").classList.add("hide"); $("#game").classList.remove("hide");
   logClear(); log(`<span class="info">${c.title}</span> — 환자 입원. 추리를 시작한다.`);
   if(c.mystery) log(`<span class="info">❓ 지금은 '불명열'뿐. 검사와 약 반응으로 정체를 밝혀내자.</span>`);
   if(c.events) log(`<span class="info">⏳ 시간이 흐르면 병이 진행돼 새 증상이 나타난다. 빨리 지를지, 지켜볼지.</span>`);
+  setAssist(c.story ? "또 다른 병원서도 못 고치고 넘어온 환자예요. 우리가 마지막이에요, 선생님." : "자, 추리를 시작해요 선생님.");
   render(); window.scrollTo(0,0);
+}
+function showIntro(c){
+  const s=c.story, ov=$("#over"), box=ov.querySelector(".box");
+  let h=`<img class="endcut" src="${s.img}" alt="">`;
+  h+=`<p style="color:var(--gold);font-size:12px;margin:0 0 8px">— ${c.world||"다른 병원에서 못 고쳐 넘어온 환자"} —</p>`;
+  s.intro.forEach(d=>{ h+=`<div class="dlg"><b>${d.who}</b> ${d.text}</div>`; });
+  box.innerHTML=h;
+  const b=el("button","btn primary"); b.style.marginTop="12px"; b.textContent="🩺 진료 시작";
+  b.onclick=()=>{ closeOver(); enterGame(); }; box.appendChild(b);
+  ov.style.display="flex";
 }
 
 function clearNew(){ S.sx.forEach(o=>o.isNew=false); S.newCands.clear(); }
@@ -592,6 +658,8 @@ function checkEvents(){
     (ev.add||[]).forEach(n=>addCand(n,"새 후보"));
     (ev.remove||[]).forEach(n=>S.out.add(n));
     if(ev.temp!=null) S.temp=ev.temp;
+    if(ev.img) S.pImg=ev.img;
+    S._evMsg="🆕 "+(ev.note||"새 증상이 나타났어요!");
     log(`🆕 <b>새 증상 나타남!</b> ${ev.note||""}`,"new");
   });
 }
@@ -606,8 +674,15 @@ function render(){
   $("#tempImg").src="img/"+(S.temp>=40?"g087":"g086")+".png";
   // chart
   const ch=$("#chart"); ch.innerHTML="<h2>📋 환자 차트</h2>";
+  const pim=S.pImg||("img/"+patImg(c)+".png");
   const hd=el("div","charthead");
-  hd.innerHTML=`<img class="pt" src="img/${patImg(c)}.png" alt=""><div><div class="nm2">${c.title}</div><div class="ds">${c.desc}</div></div>`;
+  if(c.story){
+    const s=c.story;
+    hd.innerHTML=`<img class="pt" src="${pim}" alt=""><div><div class="nm2">${s.name} · ${s.age}</div>`+
+      `<div class="ds">${s.oneLine}</div><div class="qt" style="font-size:12px;color:#ffe39a;margin-top:3px">${s.quote}</div></div>`;
+  } else {
+    hd.innerHTML=`<img class="pt" src="${pim}" alt=""><div><div class="nm2">${c.title}</div><div class="ds">${c.desc}</div></div>`;
+  }
   ch.appendChild(hd);
   for(const k in c.chart){
     const r=el("div","row"), kk=el("div","k"), vv=el("div","v"); kk.textContent=k;
@@ -669,7 +744,7 @@ function doTest(i){
   log(`🔬 <b>${t.name}</b> → ${t.reveal}`);
   (t.elim||[]).forEach(nm=>{ if(!S.out.has(nm)){S.out.add(nm); log(`　└ 칠판에서 <b>${nm}</b> 지움 ✗`,"bad")} });
   (t.add||[]).forEach(nm=>addCand(nm,"검사로"));
-  afterAction();
+  afterAction("결과 나왔어요. 칠판을 한 칸 좁혔네요, 선생님.");
 }
 
 function doTreat(i){
@@ -683,25 +758,30 @@ function doTreat(i){
     addSx(t.sxGood);
     log(`💊 <b>${t.drug}</b> → ${t.sxGood&&t.sxGood.length?t.sxGood[0]+". ":""}환자가 호전됐다! 데드라인 <b>+1일</b>.`,"ok");
     S.cands.forEach(nm=>{ if(!t.worksFor.includes(nm)&&!S.out.has(nm)){S.out.add(nm); log(`　└ 이 약에 반응 안 할 <b>${nm}</b> 지움 ✗`,"bad")} });
+    afterAction("역시 선생님! 환자가 한결 편해졌어요. 반응이 단서예요.");
   }else{
     S.dd-=1; S.temp=Math.min(41.5,S.temp+0.8);
     addSx(t.sxBad);
     log(`💊 <b>${t.drug}</b> → ${t.sxBad&&t.sxBad.length?t.sxBad[0]+". ":""}반응 없거나 악화. 데드라인 <b>-1일</b>.`,"bad");
     t.worksFor.forEach(nm=>{ if(!S.out.has(nm)){S.out.add(nm); log(`　└ 그 반응이면 아닌 <b>${nm}</b> 지움 ✗ (실패도 정보)`,"info")} });
+    afterAction("이 약은 아니었나 봐요… 그래도 후보 하나 지웠어요. 실패도 정보예요!");
   }
-  afterAction();
 }
 
 function doWatch(){
   if(S.over) return;
   clearNew(); S.armed=null; S.dd-=1;
   log(`⏳ <b>하루 지켜봤다.</b> 병이 그만큼 진행된다.`,"info");
-  afterAction();
+  afterAction("지켜보죠… 근데 너무 늦으면 안 돼요, 선생님.");
 }
 
-function afterAction(){
-  checkEvents();
+function afterAction(base){
+  S._evMsg=null; checkEvents();
   if(S.dd<=0){ S.dd=0; render(); return end(false,"⏳ 데드라인 초과","시간이 다 됐어. 환자를 다른 과로 넘겼어. 검사·관찰·약을 더 아껴 써보자."); }
+  let m=S._evMsg||base||"";
+  if(S.temp>=40 && !S._evMsg) m="🌡️ 열이 위험선을 넘었어요! 급해요, 선생님!";
+  if(S.dd<=1) m="⏳ 시간이 없어요! 서둘러요, 선생님!";
+  if(m) setAssist(m);
   render();
 }
 
@@ -735,8 +815,16 @@ function finalPick(nm){
 function end(win,t,p){
   S.over=true; render();
   const ov=$("#over"), box=ov.querySelector(".box");
-  const pic=win?`<div class="ovdoc"></div>`:`<img class="ovimg" src="img/g091.png" alt="">`;
-  box.innerHTML=`${pic}<h3>${t}</h3><p>${p}</p>`;
+  let h;
+  if(S.c.story){
+    const dl=win?S.c.story.win:S.c.story.bad;
+    h=`<img class="endcut" src="${win?'img/g008.png':'img/g006.png'}" alt=""><h3>${t}</h3>`;
+    (dl||[]).forEach(d=>{ h+=`<div class="dlg"><b>${d.who}</b> ${d.text}</div>`; });
+  } else {
+    const pic=win?`<div class="ovdoc"></div>`:`<img class="ovimg" src="img/g091.png" alt="">`;
+    h=`${pic}<h3>${t}</h3><p>${p}</p>`;
+  }
+  box.innerHTML=h;
   const b=el("button","btn primary"); b.style.marginTop="14px"; b.textContent="사례 목록으로";
   b.onclick=()=>{closeOver(); toMenu()}; box.appendChild(b);
   ov.style.display="flex";
