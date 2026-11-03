@@ -424,12 +424,18 @@
       c.fillStyle = INK; c.font = '900 ' + (r * 0.95).toFixed(1) + 'px ' + G.FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('$', 0, r * 0.04);
       c.restore(); c.restore();
     } else {
+      // 🏐 squash & stretch: 빠를수록 진행방향으로 타원, 느리면 원. 화면상 속도 = (vx, vz-vh) (2026-11-03)
+      var vxs = B.vx || 0, vys = (B.vz || 0) - (B.vh || 0), spd = Math.sqrt(vxs * vxs + vys * vys);
+      var st = B.st === 'fly' ? clamp((spd - 320) / 1350, 0, 1) : 0, stretch = st > 0.03;   // 선으로 안 보이게 상한: 길이 ×1.55, 폭 ×0.74
+      c.save();
+      if (stretch) { c.translate(x, y); c.rotate(Math.atan2(vys, vxs)); c.scale(1 + 0.55 * st, 1 - 0.26 * st); c.translate(-x, -y); }
       c.fillStyle = INK; c.beginPath(); c.arc(x, y, r + 3, 0, TAU); c.fill();
       c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
       c.save(); c.beginPath(); c.arc(x, y, r, 0, TAU); c.clip(); c.strokeStyle = sp ? 'rgba(255,255,255,0.7)' : '#fff'; c.lineWidth = r * 0.35; var o = Math.sin(B.spin) * r; c.beginPath(); c.ellipse(x + o * 0.5, y, Math.abs(Math.cos(B.spin)) * r * 0.5 + 1, r * 1.2, 0, 0, TAU); c.stroke(); c.restore();
       c.fillStyle = 'rgba(255,255,255,0.55)'; c.beginPath(); c.arc(x - r * 0.35, y - r * 0.4, r * 0.28, 0, TAU); c.fill();
       if (sp === 'giant' && r > 20) { c.fillStyle = INK; c.beginPath(); c.arc(x - r * 0.25, y - r * 0.05, r * 0.1, 0, TAU); c.arc(x + r * 0.25, y - r * 0.05, r * 0.1, 0, TAU); c.fill(); c.lineWidth = 3; c.strokeStyle = INK; c.beginPath(); c.arc(x, y + r * 0.2, r * 0.25, 0.2, Math.PI - 0.2); c.stroke(); }
       if (sp === 'sneeze' && B.ph === 1) { c.fillStyle = INK; c.beginPath(); c.arc(x - r * 0.3, y - r * 0.1, 1.8, 0, TAU); c.arc(x + r * 0.3, y - r * 0.1, 1.8, 0, TAU); c.fill(); c.beginPath(); c.ellipse(x, y + r * 0.35, r * 0.2, r * 0.3, 0, 0, TAU); c.fill(); }
+      c.restore();
     }
     c.globalAlpha = 1;
   }

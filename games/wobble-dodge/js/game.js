@@ -70,11 +70,11 @@
     { skin: '#d4ff5c', hat: 'bow', hs: 0.9, th: 0.95, st: [2, 3, 4], sp: 'bouncy' },
     // v2 roster (12-23): each borrows at most ONE generic archetype trait, drawn as a head item
     { skin: '#7fd3ff', hat: 'spiky', hs: 0.95, th: 0.9, st: [3, 5, 1], sp: 'zap' },        // 12 spiky electric hair
-    { skin: '#f2f2f7', hat: 'longhair', hs: 1.0, th: 0.9, st: [5, 3, 2], sp: 'banana' },   // 13 long-hair cool rival
+    { skin: '#f2f2f7', hat: 'longhair', hs: 1.0, th: 0.9, st: [5, 3, 2], sp: 'banana', bd: { tall: 0.06 } },   // 13 long-hair cool rival (tall)
     { skin: '#5b6b80', hat: 'scarf', hs: 0.9, th: 0.85, st: [4, 5, 1], sp: 'ghost' },      // 14 ninja scarf
-    { skin: '#ffb37a', hat: 'none', hs: 0.95, th: 1.6, st: [4, 1, 5], sp: 'giant' },       // 15 big wrestler build
-    { skin: '#e0d2b4', hat: 'gourd', hs: 1.05, th: 0.85, st: [2, 2, 5], sp: 'sway' },      // 16 old master with a gourd
-    { skin: '#ffc4e1', hat: 'headset', hs: 1.05, th: 0.9, st: [1, 4, 5], sp: 'bouncy' },   // 17 cheerful idol
+    { skin: '#ffb37a', hat: 'none', hs: 0.95, th: 1.6, st: [4, 1, 5], sp: 'giant', bd: { sh: 1.1, ft: 0.1 } },       // 15 big wrestler build (short, very wide)
+    { skin: '#e0d2b4', hat: 'gourd', hs: 1.05, th: 0.85, st: [2, 2, 5], sp: 'sway', bd: { lean: -5, tall: -0.04 } },      // 16 old master, hunched
+    { skin: '#ffc4e1', hat: 'headset', hs: 1.05, th: 0.9, st: [1, 4, 5], sp: 'bouncy', bd: { bob: 1.7, tall: 0.03 } },   // 17 cheerful idol (bouncy idle)
     { skin: '#ff7b3d', hat: 'flame', hs: 1.0, th: 1.1, st: [5, 3, 1], sp: 'fireball' },    // 18 fire (flaming hair)
     { skin: '#ffe9a8', hat: 'catears', hs: 1.0, th: 0.85, st: [2, 3, 5], sp: 'zigzag' },
     { skin: '#4a4e69', hat: 'shades', hs: 1.0, th: 1.0, st: [4, 3, 2], sp: 'boomer' },
@@ -84,7 +84,7 @@
     // story-only (not in the 24 unlock roster, never random): the kid from the opening video and his old friend Dex.
     // fit = own outfit instead of the team jersey (render.js drawToon): hoodie = red hoodie + jeans, tee = yellow t-shirt + shorts
     // 24 GOLD BOSS (new): rich tycoon, money shot. slicked blond hair + navy suit + red tie + pot belly.
-    { skin: '#f0c89a', hat: 'slick', hs: 1.05, th: 1.55, st: [5, 1, 4], sp: 'money', fit: 'suit', drawn: 1, isNew: 1 },
+    { skin: '#f0c89a', hat: 'slick', hs: 1.05, th: 1.55, st: [5, 1, 4], sp: 'money', fit: 'suit', drawn: 1, isNew: 1, bd: { broad: 0.06 } },
     { skin: '#f5c69a', hat: 'hero', hs: 1.0, th: 0.9, st: [1, 4, 4], sp: 'boomer', story: 1, fit: 'hoodie' },   // 25 HERO
     { skin: '#a8693f', hat: 'dexcap', hs: 1.0, th: 0.95, st: [3, 5, 2], sp: 'zigzag', story: 1, fit: 'tee' }    // 26 DEX
   ];
@@ -97,6 +97,29 @@
   G.CMDS = ['c_curve', 'c_drop', 'c_rocket', 'c_under', 'c_feint'];
   G.CMDSEQ = { c_curve: ['B'], c_drop: ['B', 'U'], c_rocket: ['F', 'F'], c_under: ['D', 'F'], c_feint: ['D', 'B'] };
   G.CHARS.forEach(function (C, i) { C.cmd = i === G.HERO ? 'c_under' : i === G.DEX ? 'c_feint' : ['c_curve', 'c_drop', 'c_rocket'][i % 3]; });
+  /* ---------- per-character BODY BUILD (silhouette + stance) ----------
+     Each player gets its own proportions and idle posture, mostly from its stats [power, speed, catch] so the look matches play:
+       power → shorter, broader shoulders, longer reach, wide stance;  speed → taller/leaner, feet together;  catch → hands held forward (ready).
+     An optional per-char `bd` nudges identity (wrestler extra-wide, old master hunched, idol bouncier, ...). Computed ONCE here (no per-frame cost):
+     bd = { hL head-neck, tL neck-hip, aL arm segment, lL leg segment, shF shoulder/arm spread, ftF foot spread, reach idle front-hand, lean0 posture, bob idle bob }.
+     _chain / _st are the verlet rest-lengths (shared by reference across all bodies of this char) so the solver actually draws the new proportions. */
+  G.CHARS.forEach(function (C) {
+    var s = C.st, pw = s[0], sv = s[1], cv = s[2], o = C.bd || {};
+    var tall = clamp(1 + 0.055 * (sv - 3) - 0.045 * (pw - 3) + (o.tall || 0), 0.78, 1.22);
+    var broad = clamp(1 + 0.12 * (pw - 3) - 0.055 * (sv - 3) + (o.broad || 0), 0.76, 1.34);
+    var armL = clamp(1 + 0.06 * (pw - 3) + 0.04 * (cv - 3) - 0.02 * (sv - 3) + (o.armL || 0), 0.85, 1.24);
+    var ftF = clamp(1 + 0.13 * (pw - 3) - 0.08 * (sv - 3) + (o.ft || 0), 0.66, 1.44);
+    var leanBase = 0.8 * (pw - 3) - 0.4 * (sv - 3);   // power leans in (aggressive), speed stands upright
+    var bd = {
+      hL: 14 * (o.neck || 1), tL: 31 * tall, aL: 18 * armL, lL: 21 * tall * (o.leg || 1),
+      shF: broad * (o.sh || 1), ftF: ftF, reach: 1.0 * (cv - 3) + (o.reach || 0),
+      lean0: leanBase + (o.lean || 0), bob: (o.bob == null ? 1 : o.bob)
+    };
+    C._bd = bd;
+    C._chain = [[2, 1, bd.tL], [1, 0, bd.hL], [1, 3, bd.aL], [3, 4, bd.aL], [1, 5, bd.aL], [5, 6, bd.aL], [2, 7, bd.lL], [7, 8, bd.lL], [2, 9, bd.lL], [9, 10, bd.lL]];
+    C._st = [[0, 1, bd.hL], [1, 2, bd.tL], [1, 3, bd.aL], [3, 4, bd.aL], [1, 5, bd.aL], [5, 6, bd.aL], [2, 7, bd.lL], [7, 8, bd.lL], [2, 9, bd.lL], [9, 10, bd.lL]];
+  });
+  var DEF_BD = { hL: 14, tL: 31, aL: 18, lL: 21, shF: 1, ftF: 1, reach: 0, lean0: 0, bob: 1 };
   G.cmdArrows = function (id, team) {   // the motion as arrows for a player on `team` (left team faces right)
     var r = team ? -1 : 1, A = { F: r > 0 ? '\u2192' : '\u2190', B: r > 0 ? '\u2190' : '\u2192', U: '\u2191', D: '\u2193' };
     return (G.CMDSEQ[id] || []).map(function (d) { return A[d]; }).join(' ');
@@ -118,15 +141,16 @@
   function mkBody(M, team, i, ch) {
     var C = G.CHARS[ch] || G.CHARS[0];
     var b = { id: team * M.n + i, team: team, i: i, ch: ch, skin: C.skin, hat: C.hat, hs: C.hs, th: C.th, sp: C.sp, cmd: C.cmd, cmdCD: G.CMD_CD0, cmdBuf: [], cmdDir: [0, 0], cmdTh: false, pw: C.st[0], sv: C.st[1], cv: C.st[2], outAt: 0, pts: [], tg: new Float32Array(22), x: 0, z: 0.5, h: 0, vh: 0, vx: 0, vz: 0,
-      face: team ? -1 : 1, mode: 'stand', role: 'in', pendingOut: false, hold: false, charge: 0, charging: false, throwT: 0, sweatT: 0, sweatMax: 0, catchT: 0, catchCD: 0,
+      face: team ? -1 : 1, mode: 'stand', role: 'in', pendingOut: false, hold: false, charge: 0, charging: false, throwT: 0, sweatT: 0, sweatMax: 0, catchT: 0, catchCD: 0, kbRemain: 0, kbDir: 0,
       animT: i * 0.7, runPh: 0, ragT: 0, eyes: 0, sc: 1, rsc: 1, rx: 0, ry: 0, spd: 0, noPick: 0, flipping: false, sad: false, cheer: false, flash: 0, dest: null,
       ai: { t: 0, tx: 0, tz: 0.5, holdT: null, dec: -1, dodgeT: 0, dodgeZ: 0 } };
+    b.bd = C._bd || DEF_BD; b.chain = C._chain || CHAIN; b.rig = C._st || ST;   // per-character proportions (shared by reference, visual only)
     for (var k = 0; k < 11; k++) b.pts.push({ x: 0, y: 0, px: 0, py: 0 });
     return b;
   }
   function place(b, x, z) {
     b.x = x; b.z = z; b.h = 0; b.vh = 0; b.vx = 0; b.vz = 0; b.mode = 'stand'; b.role = 'in'; b.pendingOut = false; b.hold = false; b.charging = false;
-    b.charge = 0; b.throwT = 0; b.sweatT = 0; b.sweatMax = 0; b.catchT = 0; b.catchCD = 0; b.eyes = 0; b.flipping = false; b.sad = false; b.cheer = false; b.flash = 0; b.dest = null; b.noPick = 0; b.outAt = 0;
+    b.charge = 0; b.throwT = 0; b.sweatT = 0; b.sweatMax = 0; b.catchT = 0; b.catchCD = 0; b.kbRemain = 0; b.kbDir = 0; b.eyes = 0; b.flipping = false; b.sad = false; b.cheer = false; b.flash = 0; b.dest = null; b.noPick = 0; b.outAt = 0;
     b.face = b.team ? -1 : 1; b.cmdCD = Math.min(b.cmdCD, G.CMD_CD0); b.cmdBuf = []; b.ai.holdT = null; b.ai.t = rnd(0.2, 0.8); b.ai.dec = -1; b.ai.dodgeT = 0;
     b.sc = scz(z); b.rx = x; b.ry = FY(z); pose(b);
     for (var k = 0; k < 11; k++) { var p = b.pts[k]; p.x = p.px = b.tg[k * 2]; p.y = p.py = b.tg[k * 2 + 1]; }
@@ -151,7 +175,7 @@
     _ik[0] = ax + dx * a / d - dy / d * h * bend; _ik[1] = ay + dy * a / d + dx / d * h * bend; return [ax + dx, ay + dy];
   }
   function pose(b) {
-    var t = b.animT, tg = b.tg, fc = b.face, air = b.h > 1, sc = b.sc;
+    var t = b.animT, tg = b.tg, fc = b.face, air = b.h > 1, sc = b.sc, bd = b.bd || DEF_BD;
     var hx = 0, hy = -40, lean = 3, hFx = 13, hFy = -44, hBx = -9, hBy = -40, fFx = 9, fFy = 0, fBx = -9, fBy = 0;
     if (b.cheer) {
       var bb = Math.abs(Math.sin(t * 7 + b.i)); hy = -40 - bb * 12; fFy = -bb * 9; fBy = -bb * 9; hFx = 15; hFy = -96 + Math.sin(t * 14) * 6; hBx = -15; hBy = -96 - Math.sin(t * 14) * 6; lean = Math.sin(t * 5 + b.i) * 9;
@@ -162,18 +186,23 @@
       var sn = Math.sin(b.runPh), cs = Math.cos(b.runPh);
       hy = -38 - Math.abs(cs) * 2.5; lean = 9; fFx = sn * 16; fFy = -Math.max(0, cs) * 10; fBx = -sn * 16; fBy = -Math.max(0, -cs) * 10;
       hFx = -sn * 15 + 7; hFy = -46; hBx = sn * 15 + 3; hBy = -46;
-    } else { var bob = Math.sin(t * 4 + b.i) * 1.5; hy = -39 + bob; hFy += bob; hBy += bob; }
-    if (b.sad) { hFx = 5; hFy = -34; hBx = -3; hBy = -34; lean = -2; }
-    if (b.catchT > 0) { hFx = 27; hFy = -62; hBx = 25; hBy = -50; lean = 7; }
-    else if (b.charging) { var c = b.charge; hFx = -20 - c * 9; hFy = -84 - c * 8 + Math.sin(t * 40) * c * 2; hBx = 18; hBy = -62; lean = -3 - c * 6; }
-    else if (b.throwT > 0) { hFx = 33; hFy = -58; hBx = -16; hBy = -40; lean = 13; }
-    else if (b.hold) { hFx = 17; hFy = -58; }
-    var nx = hx + lean, ny = hy - 31, r;
-    tg[0] = nx + lean * 0.35 + 1.5; tg[1] = ny - 14; tg[2] = nx; tg[3] = ny; tg[4] = hx; tg[5] = hy;
-    r = ik(nx, ny, hFx, hFy, 18, 18, 1); tg[6] = _ik[0]; tg[7] = _ik[1]; tg[8] = r[0]; tg[9] = r[1];
-    r = ik(nx, ny, hBx, hBy, 18, 18, 1); tg[10] = _ik[0]; tg[11] = _ik[1]; tg[12] = r[0]; tg[13] = r[1];
-    r = ik(hx, hy, fFx, fFy, 21, 21, -1); tg[14] = _ik[0]; tg[15] = _ik[1]; tg[16] = r[0]; tg[17] = r[1];
-    r = ik(hx, hy, fBx, fBy, 21, 21, -1); tg[18] = _ik[0]; tg[19] = _ik[1]; tg[20] = r[0]; tg[21] = r[1];
+    } else { var bob = Math.sin(t * 4 + b.i) * 1.5 * bd.bob; hy = -39 + bob; hFy += bob; hBy += bob; }
+    var action = false;
+    if (b.sad) { hFx = 5; hFy = -34; hBx = -3; hBy = -34; lean = -2; action = true; }
+    if (b.catchT > 0) { hFx = 27; hFy = -62; hBx = 25; hBy = -50; lean = 7; action = true; }
+    else if (b.charging) { var c = b.charge; hFx = -20 - c * 9; hFy = -84 - c * 8 + Math.sin(t * 40) * c * 2; hBx = 18; hBy = -62; lean = -3 - c * 6; action = true; }
+    else if (b.throwT > 0) { hFx = 33; hFy = -58; hBx = -16; hBy = -40; lean = 13; action = true; }
+    else if (b.hold) { hFx = 17; hFy = -58; action = true; }
+    // per-character stance: posture lean, shoulder/foot spread, and (when idle) a ready forward reach for catch-type players
+    lean += bd.lean0; hFx *= bd.shF; hBx *= bd.shF; fFx *= bd.ftF; fBx *= bd.ftF;
+    if (!action && !air && !b.cheer) hFx += bd.reach;   // front hand held forward when idle (reads as catch-ready)
+    if (!air) hy *= bd.lL / 21;   // hip rides at leg height so feet stay on the floor (taller = hip higher, shorter = lower)
+    var nx = hx + lean, ny = hy - bd.tL, r;
+    tg[0] = nx + lean * 0.35 + 1.5; tg[1] = ny - bd.hL; tg[2] = nx; tg[3] = ny; tg[4] = hx; tg[5] = hy;
+    r = ik(nx, ny, hFx, hFy, bd.aL, bd.aL, 1); tg[6] = _ik[0]; tg[7] = _ik[1]; tg[8] = r[0]; tg[9] = r[1];
+    r = ik(nx, ny, hBx, hBy, bd.aL, bd.aL, 1); tg[10] = _ik[0]; tg[11] = _ik[1]; tg[12] = r[0]; tg[13] = r[1];
+    r = ik(hx, hy, fFx, fFy, bd.lL, bd.lL, -1); tg[14] = _ik[0]; tg[15] = _ik[1]; tg[16] = r[0]; tg[17] = r[1];
+    r = ik(hx, hy, fBx, fBy, bd.lL, bd.lL, -1); tg[18] = _ik[0]; tg[19] = _ik[1]; tg[20] = r[0]; tg[21] = r[1];
     for (var i = 0; i < 22; i += 2) { tg[i] = b.rx + tg[i] * fc * sc; tg[i + 1] = b.ry + tg[i + 1] * sc; }
   }
   function springPts(b, dxr, dyr) {
@@ -183,7 +212,8 @@
       var st = SPK[i], d = SPD[i], vx = (p.x - p.px) * d, vy = (p.y - p.py) * d;
       p.px = p.x; p.py = p.y; p.x += vx + (tg[i * 2] - p.x) * st; p.y += vy + (tg[i * 2 + 1] - p.y) * st;
     }
-    for (i = 0; i < CHAIN.length; i++) { var a = pts[CHAIN[i][0]], q = pts[CHAIN[i][1]], dx = q.x - a.x, dy = q.y - a.y, dd = Math.sqrt(dx * dx + dy * dy) || 0.001, k = CHAIN[i][2] * sc / dd; q.x = a.x + dx * k; q.y = a.y + dy * k; }
+    var CH = b.chain || CHAIN;
+    for (i = 0; i < CH.length; i++) { var a = pts[CH[i][0]], q = pts[CH[i][1]], dx = q.x - a.x, dy = q.y - a.y, dd = Math.sqrt(dx * dx + dy * dy) || 0.001, k = CH[i][2] * sc / dd; q.x = a.x + dx * k; q.y = a.y + dy * k; }
     if (b.h <= 0) { if (pts[8].y > b.ry + 1) pts[8].y = b.ry + 1; if (pts[10].y > b.ry + 1) pts[10].y = b.ry + 1; }
   }
 
@@ -200,6 +230,13 @@
     var zn = zoneOf(b);
     b.x = clamp(b.x + b.vx * DT, zn[0], zn[1]); b.z = clamp(b.z + b.vz / ZPX * DT, 0, 1);
     if (b.x === zn[0] || b.x === zn[1]) b.vx = 0;
+    // 💥 힘모은 슛 캐치 넉백: 공 진행방향으로 주르륵(ease-out) 밀림. 총거리는 kbRemain(≤캐릭 2폭)로 상한, 벽/라인서 멈춤 + 발밑 먼지 (2026-11-03)
+    if (b.kbRemain > 0.5) {
+      var kstep = b.kbRemain * (1 - Math.exp(-9 * DT)), kbx = clamp(b.x + b.kbDir * kstep, zn[0], zn[1]), kmoved = Math.abs(kbx - b.x);
+      b.x = kbx; b.kbRemain -= kstep;
+      if (kbx === zn[0] || kbx === zn[1]) b.kbRemain = 0;
+      if (kmoved > 0.2) for (var kd = 0; kd < 2; kd++) M.fx.push({ k: 'puff', x: b.x - b.kbDir * rnd(6, 16) * b.sc, y: FY(b.z) - rnd(0, 5), vx: -b.kbDir * rnd(60, 150), vy: -rnd(25, 85), life: 0, max: rnd(0.3, 0.6), col: '#f6efe0', s: rnd(5, 9) * b.sc });
+    } else if (b.kbRemain) b.kbRemain = 0;
     if (inp.jump && b.h <= 0 && !b.catchT) { b.vh = 640; b.h = 0.01; G.sfx('jump'); }
     if (b.h > 0) { b.h += b.vh * DT; b.vh -= GRAV * DT; if (b.h <= 0) { b.h = 0; b.vh = 0; G.sfx('land'); } }
     if (b.charging) b.charge = Math.min(1, b.charge + DT * 1.3);
@@ -226,9 +263,10 @@
   function ragStep(M, b) {
     var i, j, p, it, s = b.rsc, fy = FY(b.z);
     for (i = 0; i < 11; i++) { p = b.pts[i]; var vx = clamp((p.x - p.px) * 0.995, -38, 38), vy = clamp((p.y - p.py) * 0.995, -38, 38); p.px = p.x; p.py = p.y; p.x += vx; p.y += vy + GRAV * DT * DT; }
+    var STb = b.rig || ST;
     for (it = 0; it < 8; it++) {
       var pts = b.pts;
-      for (j = 0; j < ST.length; j++) { var c = ST[j], a = pts[c[0]], q = pts[c[1]], dx = q.x - a.x, dy = q.y - a.y, d = Math.sqrt(dx * dx + dy * dy) || 0.001, df = (d - c[2] * s) / d * 0.5; a.x += dx * df; a.y += dy * df; q.x -= dx * df; q.y -= dy * df; }
+      for (j = 0; j < STb.length; j++) { var c = STb[j], a = pts[c[0]], q = pts[c[1]], dx = q.x - a.x, dy = q.y - a.y, d = Math.sqrt(dx * dx + dy * dy) || 0.001, df = (d - c[2] * s) / d * 0.5; a.x += dx * df; a.y += dy * df; q.x -= dx * df; q.y -= dy * df; }
       var hd = pts[0], hpp = pts[2], ddx = hpp.x - hd.x, ddy = hpp.y - hd.y, dd = Math.sqrt(ddx * ddx + ddy * ddy) || 0.001;
       if (dd < 40 * s) { var qq = (dd - 40 * s) / dd * 0.5; hd.x += ddx * qq; hd.y += ddy * qq; hpp.x -= ddx * qq; hpp.y -= ddy * qq; }
       for (i = 0; i < 11; i++) {
@@ -283,7 +321,7 @@
     var B = M.ball, tg = pickTarget(M, b), P = M.P[b.team], human = isHuman(M, b);
     if (b.h > 20 && !spId) charge = Math.min(1.3, charge + 0.35);   // jump-throw: extra power
     if (b.team === 0 && M.me) M.me.pr = 0;
-    STAT.thr++; B.st = 'fly'; B.holder = null; B.team = b.team; B.thrower = b; B.pow = charge; B.sp = spId || null; B.pass = false; B.r = 11; B.id = ++M.ballId; B.side = {}; B.trail = [];
+    STAT.thr++; B.st = 'fly'; B.holder = null; B.team = b.team; B.thrower = b; B.pow = charge; B.chg = charge; B.sp = spId || null; B.pass = false; B.r = 11; B.id = ++M.ballId; B.side = {}; B.trail = [];
     B.boost = 0; B.ph = 0; B.co = 0; B.fake = false; B.bn = 0; B.bk = 0;
     b.hold = false; b.charging = false; b.charge = 0; b.throwT = 0.22; b.noPick = 0.5;
     // 😓 '힘모아' 던지기(센 차지 또는 필살)만 던진 뒤 느려짐+땀. 약한(탭) 던지기엔 적용 X (2026-11-03)
@@ -550,7 +588,12 @@
   function catchBall(M, B, b) {
     var th = B.thrower;
     if (B.cmd) STAT.cmdCaught = (STAT.cmdCaught || 0) + 1;
+    // 💥 힘모은 슛(차지≥0.5 또는 필살)을 잡으면 공 진행방향으로 뒤로 주르륵 밀림 (잡기는 성공, 아웃 아님). 약한 탭 던지기엔 적용 X (2026-11-03)
+    var hardShot = !!B.sp || (B.chg || 0) >= 0.5;
+    var kbDir = B.vx !== 0 ? sgn(B.vx) : (b.team ? -1 : 1);
+    var kbFrac = B.sp ? 1 : Math.min(1, (B.chg || 0));   // 차지량 비례: 0.5=1폭, 만땅/필살=2폭
     giveBall(M, B, b); b.throwT = 0; STAT.cat++; M.lastSp = false;
+    if (hardShot) { b.kbDir = kbDir; b.kbRemain = 64 * b.sc * kbFrac; }   // 상한 = 캐릭터 2명 폭(64*sc), 라인/벽서 멈춤(standStep)
     var meC = b.team === 0 && isHuman(M, b); M.lastCatchMe = meC;
     if (meC) { M.me.cat++; if (b.h > 1) M.me.airCat++; if (M.guide) M.guide.cat++; }
     G.sfx('catch'); pop(M, b.x, FY(b.z) - 150 * b.sc, T('catch'), '#8ef0a8', 34); meterAdd(M, b.team, 0.4); ev(M, b.team === 0 ? 'catch' : 'catchFoe');
