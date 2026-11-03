@@ -283,6 +283,24 @@
     drawHat(c, b.hat, now);
     c.restore(); c.restore();
   }
+  // 💦 sweat: two little drops by the temples that bead up and fall while charging — reads as effort / weight. World space, drawn on top of the body. (2026-11-02)
+  function sweat(c, b, now) {
+    var hx = b.pts[0].x, hy = b.pts[0].y, z = b.sc, hr = 14 * (b.hs || 1) * z;
+    // 차징 중: 차지량만큼 / 던진 뒤: 느려짐이 회복될수록 옅어짐. 던진 뒤엔 방울 하나 더 (2~3개)
+    var amp, offs;
+    if (b.charging) { amp = 0.6 + 0.4 * Math.min(1, b.charge || 0); offs = [-1, 1]; }
+    else { var f = b.sweatMax ? b.sweatT / b.sweatMax : 0; amp = 0.4 + 0.6 * f; offs = [-1, 1, 0.25]; }
+    for (var i = 0; i < offs.length; i++) {
+      var ph = (now * 1.5 + i * 0.4) % 1, side = offs[i];
+      var rx = hx + side * hr, ry = hy - hr * 0.5 + ph * (hr * 1.8), r = 3.3 * z;
+      var a = (ph < 0.12 ? ph / 0.12 : 1 - (ph - 0.12) / 0.88) * amp;
+      c.globalAlpha = clamp(a, 0, 1);
+      c.fillStyle = INK; c.beginPath(); c.moveTo(rx, ry - r * 1.9); c.quadraticCurveTo(rx + r + 1, ry, rx, ry + r + 1); c.quadraticCurveTo(rx - r - 1, ry, rx, ry - r * 1.9); c.fill();   // ink outline so the drop reads against any skin
+      c.fillStyle = '#bfe8ff'; c.beginPath(); c.moveTo(rx, ry - r * 1.7); c.quadraticCurveTo(rx + r, ry, rx, ry + r); c.quadraticCurveTo(rx - r, ry, rx, ry - r * 1.7); c.fill();
+      c.fillStyle = 'rgba(255,255,255,.9)'; c.beginPath(); c.arc(rx - r * 0.3, ry - r * 0.2, r * 0.38, 0, TAU); c.fill();
+    }
+    c.globalAlpha = 1;
+  }
 
   /* ---------- background (cached) ---------- */
   var bg = null, bgK = 0;
@@ -330,7 +348,8 @@
   // the top of the gym (wall + bleachers) is one opaque canvas = bg + the current crowd frame. It is rebuilt only when the crowd frame
   // changes (6-12 times a second); every frame is then two plain 1:1 copies (top + rest of bg), same cost as the bg alone.
   var CY1 = CY0 + CFH * CP, topCv = null, topG = null, topBg = null, topFr = -1;
-  function drawBgCrowd(c, hype, now, ox, oy) {
+  function drawBgCrowd(c, hype, now, ox, oy, z) {
+    z = z || 1;
     if (!crowdAtlas) crowdAtlas = bakeCrowd();
     var dt = crowdLast < 0 ? 0 : Math.min(0.1, Math.max(0, now - crowdLast)); crowdLast = now;
     var cheer = hype > 0.4, n = cheer ? C_CHEER : C_IDLE;
@@ -342,7 +361,7 @@
       topG.setTransform(bg.width / W, 0, 0, bg.height / H, 0, 0); topG.imageSmoothingEnabled = false;
       topG.drawImage(crowdAtlas, 0, fr * CFH, CFW, CFH, 0, CY0, CFW * CP, CFH * CP);
     }
-    c.save(); c.setTransform(1, 0, 0, 1, ox, oy);
+    c.save(); c.setTransform(z, 0, 0, z, ox, oy);
     c.drawImage(topCv, 0, 0);
     c.drawImage(bg, 0, top, bg.width, bg.height - top, 0, top, bg.width, bg.height - top);
     c.restore();
@@ -447,10 +466,14 @@
     if (!bg || bgK !== k) buildBg(k);
     c.setTransform(1, 0, 0, 1, 0, 0);
     var sx = 0, sy = 0; if (M && M.shake > 0.3 && !G.lite) { sx = (Math.random() - 0.5) * M.shake * 1.4; sy = (Math.random() - 0.5) * M.shake * 1.4; }
-    var ox = Math.round((-V.camX + sx) * k), oy = Math.round(sy * k), hype = M ? M.crowd : 0, i;
+    // slight view zoom (landscape only): the court + players read a bit bigger, the crowd takes relatively less of the frame (형 2026-11-02 "약간만"). Purely visual — no world/physics constant changes.
+    var Z = V.port ? 1 : (V.zoom != null ? V.zoom : 1.08), FX = CX, FYZ = 500;
+    // 🏀 clutch punch-in: a gentle, eased extra zoom during slow-mo / match-point near-slow (landscape only). Pure view — no physics.
+    if (!V.port) { var zT = (M && (M.slow > 0 || M.nearSlow)) ? 0.05 : 0; V.zEx = (V.zEx || 0) + (zT - (V.zEx || 0)) * 0.16; if (V.zEx < 0.0015) V.zEx = 0; Z *= 1 + V.zEx; }
+    var ox = Math.round(k * ((FX - V.camX + sx) - FX * Z)), oy = Math.round(k * ((FYZ + sy) - FYZ * Z)), hype = M ? M.crowd : 0, i;
     // gym background + crowd (one frame of the pre-baked pixel strip)
-    drawBgCrowd(c, hype, now, ox, oy);
-    c.setTransform(k, 0, 0, k, ox, oy);
+    drawBgCrowd(c, hype, now, ox, oy, Z);
+    c.setTransform(k * Z, 0, 0, k * Z, ox, oy);
     if (!M) return;
     var ents = ENTS, b, ne = 0;
     ents.length = 0;
@@ -468,7 +491,7 @@
     var me = M.ctrl >= 0 ? M.bodies[M.ctrl] : null;
     if (me && me.hold && M.state === 'play') { var tg = G.pickTarget(M, me); if (tg) { c.strokeStyle = '#ff3b3b'; c.lineWidth = 4; c.beginPath(); c.ellipse(tg.x, FY(tg.z), 30 * tg.sc, 10 * tg.sc, 0, 0, TAU); c.stroke(); } }
     // special name banner + shot fx: drawn BEHIND the players (form 10/28) so sprites/ball/aim stay on top
-    c.setTransform(k, 0, 0, k, 0, 0); drawBanner(c, M, now, V); c.setTransform(k, 0, 0, k, ox, oy);
+    c.setTransform(k, 0, 0, k, 0, 0); drawBanner(c, M, now, V); c.setTransform(k * Z, 0, 0, k * Z, ox, oy);   // 2026-11-02 fix: restore to the ZOOMED world transform (was plain k → bodies/ball drawn un-zoomed while shadows were zoomed → shadows "floated" off feet)
     for (i = 0; i < M.fx.length; i++) {
       var f0 = M.fx[i], a0 = 1 - f0.life / f0.max;
       if (f0.k === 'puff') { c.fillStyle = hexA(f0.col, a0 * 0.75); c.beginPath(); c.arc(f0.x, f0.y, f0.s * (1 + (1 - a0) * 1.2), 0, TAU); c.fill(); }
@@ -485,7 +508,7 @@
     var fh = useFaces(M);
     for (i = 0; i < ents.length; i++) {
       var e = ents[i];
-      if (e.b) { var td = e.b.team ? M.team : M.myTm || G.MYTEAM; drawBody(c, e.b, td.uni, now, fh); }
+      if (e.b) { var td = e.b.team ? M.team : M.myTm || G.MYTEAM; drawBody(c, e.b, td.uni, now, fh); if ((e.b.charging || e.b.sweatT > 0) && e.b.mode !== 'rag') sweat(c, e.b, now); }   // 💦 effort sweat while winding up AND for a beat after a charged throw (2026-11-03)
       else if (e.B.alive && !(e.B.st === 'held' && e.B.holder.mode === 'rag')) drawBall(c, e.B, now);
     }
     // my marker + catch timing ring

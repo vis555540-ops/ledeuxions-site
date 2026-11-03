@@ -5,6 +5,18 @@
   var G = window.G;
   var W = 1280, H = 720, DT = 1 / 120, ZPX = 270, FY0 = 392, CX = 640, BL = 130, BR = 1150, GRAV = 2100, GB = 950;
   var ROUND_T = 90;
+  // ---- 박진감(game-feel) tuning, 2026-11-02 — all in ONE place so it's easy to dial back if it feels like too much ----
+  // These are pure FEEL layers (pace clock + brief slow-mo + micro-shake). No hitbox / physics / balance constant is touched.
+  var FEEL = {
+    paceEnd: 0.16,    // speed ramp: +16% pace by the END of a round (0 = off). early feels relaxed, late hurried.
+    paceRound: 0.04,  // + per round after the first (clutch later rounds run a touch faster), capped at 2 rounds.
+    paceMax: 1.24,    // hard cap on the pace multiplier so it never gets silly.
+    nearDz: 30,       // near-miss: a real enemy shot passing within this many px (vertical) of the controlled player → "아슬!".
+    nearSlow: 0.16,   // seconds of brief slow-mo on a near-miss (uses M.slow, which runs at 0.3× in main.js).
+    nearCD: 2.6,      // min seconds between near-miss moments (so it never spams / goes stale).
+    throwShake: 3     // tiny screen recoil on YOUR throw (scaled by charge). keep small — 5v5 would get busy otherwise.
+  };
+  G.FEEL = FEEL;
   G.W = W; G.H = H; G.DT = DT; G.ZPX = ZPX; G.CX = CX; G.BL = BL; G.BR = BR; G.ROUND_T = ROUND_T;
   function FY(z) { return FY0 + z * ZPX; } G.FY = FY;
   function scz(z) { return 0.8 + 0.28 * z; } G.scz = scz;
@@ -106,7 +118,7 @@
   function mkBody(M, team, i, ch) {
     var C = G.CHARS[ch] || G.CHARS[0];
     var b = { id: team * M.n + i, team: team, i: i, ch: ch, skin: C.skin, hat: C.hat, hs: C.hs, th: C.th, sp: C.sp, cmd: C.cmd, cmdCD: G.CMD_CD0, cmdBuf: [], cmdDir: [0, 0], cmdTh: false, pw: C.st[0], sv: C.st[1], cv: C.st[2], outAt: 0, pts: [], tg: new Float32Array(22), x: 0, z: 0.5, h: 0, vh: 0, vx: 0, vz: 0,
-      face: team ? -1 : 1, mode: 'stand', role: 'in', pendingOut: false, hold: false, charge: 0, charging: false, throwT: 0, catchT: 0, catchCD: 0,
+      face: team ? -1 : 1, mode: 'stand', role: 'in', pendingOut: false, hold: false, charge: 0, charging: false, throwT: 0, sweatT: 0, sweatMax: 0, catchT: 0, catchCD: 0,
       animT: i * 0.7, runPh: 0, ragT: 0, eyes: 0, sc: 1, rsc: 1, rx: 0, ry: 0, spd: 0, noPick: 0, flipping: false, sad: false, cheer: false, flash: 0, dest: null,
       ai: { t: 0, tx: 0, tz: 0.5, holdT: null, dec: -1, dodgeT: 0, dodgeZ: 0 } };
     for (var k = 0; k < 11; k++) b.pts.push({ x: 0, y: 0, px: 0, py: 0 });
@@ -114,7 +126,7 @@
   }
   function place(b, x, z) {
     b.x = x; b.z = z; b.h = 0; b.vh = 0; b.vx = 0; b.vz = 0; b.mode = 'stand'; b.role = 'in'; b.pendingOut = false; b.hold = false; b.charging = false;
-    b.charge = 0; b.throwT = 0; b.catchT = 0; b.catchCD = 0; b.eyes = 0; b.flipping = false; b.sad = false; b.cheer = false; b.flash = 0; b.dest = null; b.noPick = 0; b.outAt = 0;
+    b.charge = 0; b.throwT = 0; b.sweatT = 0; b.sweatMax = 0; b.catchT = 0; b.catchCD = 0; b.eyes = 0; b.flipping = false; b.sad = false; b.cheer = false; b.flash = 0; b.dest = null; b.noPick = 0; b.outAt = 0;
     b.face = b.team ? -1 : 1; b.cmdCD = Math.min(b.cmdCD, G.CMD_CD0); b.cmdBuf = []; b.ai.holdT = null; b.ai.t = rnd(0.2, 0.8); b.ai.dec = -1; b.ai.dodgeT = 0;
     b.sc = scz(z); b.rx = x; b.ry = FY(z); pose(b);
     for (var k = 0; k < 11; k++) { var p = b.pts[k]; p.x = p.px = b.tg[k * 2]; p.y = p.py = b.tg[k * 2 + 1]; }
@@ -179,6 +191,8 @@
   function standStep(M, b, inp) {
     var spd = (b.role === 'in' ? 255 : b.role === 'out' ? 235 : 430) * (inp.spd || 1) * (0.82 + 0.06 * b.sv);
     if (b.charging) spd *= 0.55; if (b.catchT > 0) spd *= 0.5;
+    // 😓 힘모아 던진 직후: 이동속도가 줄었다가 서서히 회복 (그 선수만). 던진 대가 = 리스크/드라마 (2026-11-03)
+    if (b.sweatT > 0) { b.sweatT = Math.max(0, b.sweatT - DT); var sf = b.sweatMax ? b.sweatT / b.sweatMax : 0; spd *= 1 - 0.45 * sf; }
     var mx = inp.mx || 0, mz = inp.mz || 0, l = Math.sqrt(mx * mx + mz * mz); if (l > 1) { mx /= l; mz /= l; }
     b.vx += clamp(mx * spd - b.vx, -3200 * DT, 3200 * DT); b.vz += clamp(mz * spd * 0.8 - b.vz, -3200 * DT, 3200 * DT);
     if (b.hold || b.charging || b.catchT > 0 || (b.role === 'in' && !mx) || b.role === 'out' && !mx) b.face = enemyDir(b);
@@ -197,7 +211,7 @@
 
   /* ---------- ragdoll ---------- */
   function launch(b, dirx, pw, upMul) {
-    b.mode = 'rag'; b.ragT = 0; b.hold = false; b.charging = false; b.catchT = 0; b.throwT = 0; b.eyes = 2; b.rsc = b.sc; b.flash = 0.14;
+    b.mode = 'rag'; b.ragT = 0; b.hold = false; b.charging = false; b.catchT = 0; b.throwT = 0; b.sweatT = 0; b.eyes = 2; b.rsc = b.sc; b.flash = 0.14;
     var vx = dirx * (330 + 470 * pw), vy = -(260 + 360 * pw) * (upMul == null ? 1 : upMul);
     for (var k = 0; k < 11; k++) {
       var p = b.pts[k], f = k === 0 ? 1.3 : k === 1 ? 1.15 : k === 2 ? 1 : k >= 7 ? 0.55 : 1.1, fy = k >= 7 ? 0.7 : 1;
@@ -245,7 +259,7 @@
   function mkBall() { return { x: CX, z: 0.5, h: 11, vx: 0, vz: 0, vh: 0, st: 'loose', holder: null, team: -1, thrower: null, sp: null, t: 0, path: null, prog: 0, r: 11, fake: false, pass: false, side: {}, alive: true, trail: [], id: 0, spin: 0, pow: 0, lx: 0, lz: 0, lh: 0 }; }
   function giveBall(M, B, b) {
     B.st = 'held'; B.holder = b; B.path = null; B.sp = null; B.cmd = 0; B.pass = false; B.team = b.team; B.r = 11; B.trail = []; B.fakeLook = null;
-    b.hold = true; b.charging = false; b.charge = 0; b.ai.holdT = null; b.catchT = 0; b.heldT = 0;
+    b.hold = true; b.charging = false; b.charge = 0; b.sweatT = 0; b.ai.holdT = null; b.catchT = 0; b.heldT = 0;
     if (b.team === 0 && M.ctrl >= 0) M.ctrl = b.id;
     if (b.team !== 0 && M.me) M.me.pr = 0;
     if (b.team === 1 && M.ctrl2 >= 0) M.ctrl2 = b.id;
@@ -272,6 +286,9 @@
     STAT.thr++; B.st = 'fly'; B.holder = null; B.team = b.team; B.thrower = b; B.pow = charge; B.sp = spId || null; B.pass = false; B.r = 11; B.id = ++M.ballId; B.side = {}; B.trail = [];
     B.boost = 0; B.ph = 0; B.co = 0; B.fake = false; B.bn = 0; B.bk = 0;
     b.hold = false; b.charging = false; b.charge = 0; b.throwT = 0.22; b.noPick = 0.5;
+    // 😓 '힘모아' 던지기(센 차지 또는 필살)만 던진 뒤 느려짐+땀. 약한(탭) 던지기엔 적용 X (2026-11-03)
+    if (spId) { b.sweatMax = 2.4; b.sweatT = 2.4; }
+    else if (charge >= 0.5) { b.sweatMax = 1.3 + 0.8 * Math.min(1, charge); b.sweatT = b.sweatMax; }
     var x0 = B.x, z0 = b.z, h0 = Math.max(30, B.h), x1, z1, h1;
     if (tg) { x1 = tg.x + tg.vx * 0.12; z1 = tg.z + tg.vz / ZPX * 0.12; h1 = 52 * tg.sc; }
     else { x1 = b.team ? 250 : 1030; z1 = b.z; h1 = 45; }
@@ -288,7 +305,7 @@
       M.ban = { txt: T('sp_' + spId), sub: T('ss_' + spId), k: 'sp_' + spId, ks: 'ss_' + spId, col: S.col, t: 0, dur: 1.5, sp: spId, team: b.team };
       M.flash = 0.22; M.shake = Math.max(M.shake, 6); G.sfx('special'); G.sfx('sp_' + spId); crowd(M, 1);
       if (human && b.team === 0) M.me.sp++; ev(M, b.team === 0 ? 'sp' : 'spFoe');
-    } else G.sfx('throw');
+    } else { G.sfx('throw'); if (isHuman(M, b)) M.shake = Math.max(M.shake, FEEL.throwShake * (0.5 + 0.5 * Math.min(1.3, charge))); }   // 💥 tiny recoil kick on YOUR throw
     if (human && b.team === 0) { M.me.thr++; if (M.guide) M.guide.thr++; if (M.guide && !spId && !M.guide.spGiven) { M.guide.spGiven = 1; meterAdd(M, 0, 1); } }
     if (human && b.role === 'out') { var n = nearestIn(M, b.team, b); if (n) setCtrl(M, b.team, n.id); }
   }
@@ -487,6 +504,11 @@
       if (!B.fake && B.side[b.id] && sgn(b.x - B.x) !== B.side[b.id]) {
         B.side[b.id] = 0;
         if (dz < 70 + r || (dx < 40 && b.h > 20)) { meterAdd(M, b.team, 0.17); STAT.dOk++; pop(M, b.x, FY(b.z) - b.h - 125 * sc, T('dodge'), '#9be7ff', 26); G.sfx('dodge'); if (b.team === 0) ev(M, 'dodge'); }
+        // 😮 near-miss: a real enemy shot grazed the player you control (at body height) → brief slow-mo + "아슬!". Rare (cooldown) so it stays special.
+        if (isHuman(M, b) && dz < FEEL.nearDz && M.nearMissCD <= 0 && M.slow <= 0 && B.h - r < top && B.h + r > b.h - 8) {
+          M.nearMissCD = FEEL.nearCD; M.slow = Math.max(M.slow, FEEL.nearSlow); M.shake = Math.max(M.shake, 4);
+          pop(M, b.x, FY(b.z) - b.h - 150 * sc, T('nearMiss'), '#ffd23f', 34); G.sfx('dodge'); crowd(M, 0.5);
+        }
       }
     }
   }
@@ -686,10 +708,12 @@
     var tm = opt.versus ? G.FRIEND : opt.tm || G.teamOf(opt.lvl), chs = [G.randomChars(N, opt.chars && opt.chars[0]), G.randomChars(N, opt.chars && opt.chars[1])];
     var M = { lvl: opt.lvl, team: tm, chars: chs, easy: !!opt.easy, outSeq: 0, round: 1, score: [0, 0], state: 'intro', st: 0, time: ROUND_T, bodies: [], ball: mkBall(), fakes: [],
       meter: [0, 0], nextSp: [G.CHARS[chs[0][0]].sp, G.CHARS[chs[1][0]].sp], fx: [], pops: [], wows: [], ban: null, shake: 0, hitstop: 0, slow: 0, flash: 0, crowd: 0,
-      n: N, ctrl: opt.auto ? -1 : 0, ctrl2: opt.versus ? N : -1, versus: !!opt.versus, auto: !!opt.auto, P: [params(1.8), params(opt.versus ? 1.8 : tm.L + (opt.boost || 0))], spFired: {}, hits: [0, 0], mp: 0, roundWin: -1, serve: 0, ballId: 0, passRR: 0, chaser: [null, null], winner: -1, hint: !!opt.hint, nearSlow: 0, frame: 0,
+      n: N, ctrl: opt.auto ? -1 : 0, ctrl2: opt.versus ? N : -1, versus: !!opt.versus, auto: !!opt.auto, P: [params(1.8), params(opt.versus ? 1.8 : tm.L + (opt.boost || 0))], spFired: {}, hits: [0, 0], mp: 0, roundWin: -1, serve: 0, ballId: 0, passRR: 0, chaser: [null, null], winner: -1, hint: !!opt.hint, nearSlow: 0, frame: 0, pace: 1, nearMissCD: 0,
       need: opt.need || 2, roundT: opt.roundT || ROUND_T, guide: opt.guide ? { thr: 0, cat: 0, slowN: 0, slowId: -1, aim: 2, spGiven: 0 } : null, waitInput: !!opt.waitInput, guideSlow: 0,
       me: { thr: 0, hit: 0, cat: 0, sp: 0, spKO: 0, flaw: 0, leftMax: 0, outs: 0, hurt: 0, rev: 0, ban: 0, flipAir: 0, airCat: 0, mpCatch: 0, pr: 0, passBest: 0 }, lastSp: false, lastCatchMe: false, story: opt.story || null, defend: !!opt.defend, free: !!opt.free, boss: !!opt.boss, sc: 0, scUsed: 0, scOk: !!opt.superCatch, sc2: 0, sc2Used: 0, ann: null };
     if (opt.guide) M.P[1] = params(-0.7);
+    // 😊 easy first opponent: the lowest ladder tier (and the tutorial) throws only plain, slow balls — no complex ↓→+J command shots at a newcomer. 2026-11-02
+    if (!opt.versus && !opt.story && !opt.defend && (opt.lvl === 0 || opt.guide)) M.noCmdAI = [false, true];
     for (var t = 0; t < 2; t++) for (var i = 0; i < N; i++) { var bb = mkBody(M, t, i, chs[t][i]); if (t === 0 && opt.hat) bb.hat = opt.hat; M.bodies.push(bb); }
     setupRound(M);
     if (M.waitInput) M.ban = null;
@@ -703,7 +727,7 @@
   function setupRound(M) {
     var F = FORM[M.n], X0 = F[0], Z0 = F[1];
     M.bodies.forEach(function (b) { place(b, b.team ? W - X0[b.i] : X0[b.i], Z0[b.i]); });
-    M.ball = mkBall(); M.fakes = []; M.outSeq = 0; M.time = M.roundT; M.state = 'intro'; M.st = 0; M.roundWin = -1; M.slow = 0; M.nearSlow = 0;
+    M.ball = mkBall(); M.fakes = []; M.outSeq = 0; M.time = M.roundT; M.state = 'intro'; M.st = 0; M.roundWin = -1; M.slow = 0; M.nearSlow = 0; M.pace = 1; M.nearMissCD = 0;
     giveBall(M, M.ball, M.bodies[M.serve * M.n]);
     if (M.ctrl >= 0) M.ctrl = 0;
     if (M.ctrl2 >= 0) M.ctrl2 = M.n;
@@ -726,6 +750,10 @@
     if (M.state === 'intro') { M.st += DT; if (M.waitInput && M.st > 1.2) M.st = 1.2; if (M.st > 1.5) { M.state = 'play'; M.ban = { txt: T('go'), k: 'go', col: '#ff5a4f', t: 0, dur: 0.9 }; G.sfx('whistle'); G.audio.intensity = 1; } }
     else if (M.state === 'play') {
       M.time -= DT; if (M.sc > 0) M.sc = Math.max(0, M.sc - DT); if (M.sc2 > 0) M.sc2 = Math.max(0, M.sc2 - DT);
+      if (M.nearMissCD > 0) M.nearMissCD -= DT;
+      // ⚡ speed ramp: pace creeps up as the round runs down (relaxed → breathless), a touch more in later rounds. FEEL layer only; applied to the sim clock in main.js (offline).
+      var _prog = M.roundT > 0 ? clamp(1 - M.time / M.roundT, 0, 1) : 0;
+      M.pace = Math.min(FEEL.paceMax, 1 + FEEL.paceEnd * _prog + FEEL.paceRound * Math.min(2, Math.max(0, M.round - 1)));
       if (M.story === 'pov' && alive(M.bodies[M.n])) {   // final chapter: the grown-up hero (rival side) runs SUPER CATCH 30 s on / 10 s off, all match long
         var sc2 = M.scCyc || (M.scCyc = { on: false, t: 6 }); sc2.t -= DT;
         if (sc2.t <= 0) { sc2.on = !sc2.on; sc2.t = sc2.on ? 30 : 10; M.sc2 = sc2.on ? 30 : 0; var sb = M.bodies[M.n]; if (sc2.on) { pop(M, sb.x, FY(sb.z) - 170, T('skPop'), '#ffd23f', 34); G.sfx('ready'); ev(M, 'heroSc'); } else ev(M, 'heroCd'); }

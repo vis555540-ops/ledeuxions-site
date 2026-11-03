@@ -14,7 +14,7 @@
       lv: 'LV {0}', streakN: 'Day {0}', daily: 'TODAY:', done: 'DONE', hat: 'HAT', hatOwn: 'own hats', charsN: 'Players {0}/{1}',
       h_star: 'Star Band', h_flower: 'Flower Crown', h_wizard: 'Wizard Hat', h_pirate: 'Pirate Hat', h_viking: 'Viking Helmet', h_goldcrown: 'Champion Crown',
       tier2: 'The teams are back, stronger. Beat the \u2605 teams!',
-      xpMatch: 'Match', xpPlay: 'Plays', xpNewTeam: 'New team', xpDaily: 'Daily',
+      xpMatch: 'Match', xpPlay: 'Plays', xpNewTeam: 'New team', xpDaily: 'Daily', xpWell: 'Nice one!',
       newChar: 'NEW PLAYER!', newHat: 'NEW HAT!', lvUp: 'LEVEL UP! LV {0}', dailyDone: 'DAILY CHALLENGE CLEAR!', streakDay: 'Day {0} streak!',
       winsToChar: '{0} more win(s): new player', teaseDaily: 'New challenge: {0}', teaseStreak: 'Come back for a Day {0} streak bonus',
       tease: 'Tomorrow (in {0}h):', teaseGift: 'a free mystery player', welcome: 'WELCOME BACK!', ok: 'OK!',
@@ -31,7 +31,7 @@
       play: 'PLAY', locked: 'LOCKED', beaten: 'CLEARED', next: 'NEXT UP', champion: 'CHAMPION!',
       t0: 'Jelly Jigglers', t1: 'Tummy Rumblers', t2: 'Peep Peep Chicks', t3: 'Clang Clang Pots', t4: 'Toot Toot Overlords', my: 'Underdog Squad',
       round: 'ROUND {0}', ready: 'READY...', go: 'DODGE!',
-      out: 'OUT!', catch: 'CATCH!', caughtOut: 'CAUGHT OUT!', dodge: 'WHOOSH!', backIn: 'BACK IN!', tooBig: 'TOO BIG!',
+      out: 'OUT!', catch: 'CATCH!', caughtOut: 'CAUGHT OUT!', dodge: 'WHOOSH!', nearMiss: 'CLOSE!', backIn: 'BACK IN!', tooBig: 'TOO BIG!',
       spReady: 'SPECIAL READY!', nextSp: 'NEXT', matchPoint: 'MATCH POINT!',
       roundWin: 'ROUND WON!', roundLose: 'ROUND LOST', draw: 'DRAW', timeUp: 'TIME UP!',
       win: 'YOU WIN!', lose: 'YOU LOSE...', nextTeam: 'NEXT TEAM', retry: 'RETRY', menu: 'MENU', resume: 'RESUME', paused: 'PAUSED',
@@ -76,7 +76,7 @@
       lv: 'LV {0}', streakN: '{0}일째', daily: '오늘:', done: '완료', hat: '모자', hatOwn: '기본 모자', charsN: '선수 {0}/{1}',
       h_star: '별 머리띠', h_flower: '꽃 왕관', h_wizard: '마법사 모자', h_pirate: '해적 모자', h_viking: '바이킹 투구', h_goldcrown: '챔피언 왕관',
       tier2: '팀들이 더 세져서 돌아왔어요. \u2605 팀을 이겨 봐요!',
-      xpMatch: '경기', xpPlay: '활약', xpNewTeam: '새 팀', xpDaily: '오늘 도전',
+      xpMatch: '경기', xpPlay: '활약', xpNewTeam: '새 팀', xpDaily: '오늘 도전', xpWell: '잘했어!',
       newChar: '새 선수!', newHat: '새 모자!', lvUp: '레벨 업! LV {0}', dailyDone: '오늘의 도전 성공!', streakDay: '{0}일 연속 출석!',
       winsToChar: '{0}번 더 이기면 새 선수', teaseDaily: '새 도전: {0}', teaseStreak: '오면 {0}일 연속 보너스',
       tease: '내일 ({0}시간 뒤):', teaseGift: '비밀 선수 선물', welcome: '다시 왔네요!', ok: '좋아!',
@@ -93,7 +93,7 @@
       play: '시작!', locked: '잠김', beaten: '격파', next: '도전', champion: '챔피언!',
       t0: '말랑 젤리단', t1: '꼬르륵 배꼽단', t2: '삐약 병아리단', t3: '우당탕 냄비단', t4: '뿡뿡 대마왕단', my: '언더독 동네단',
       round: '{0} 라운드', ready: '준비...', go: '피구 시작!',
-      out: '아웃!', catch: '잡았다!', caughtOut: '잡혀서 아웃!', dodge: '휙!', backIn: '부활!', tooBig: '너무 커!',
+      out: '아웃!', catch: '잡았다!', caughtOut: '잡혀서 아웃!', dodge: '휙!', nearMiss: '아슬!', backIn: '부활!', tooBig: '너무 커!',
       spReady: '필살 준비!', nextSp: '다음', matchPoint: '매치 포인트!',
       roundWin: '라운드 승리!', roundLose: '라운드 패배', draw: '무승부', timeUp: '시간 끝!',
       win: '이겼다!', lose: '졌다...', nextTeam: '다음 팀', retry: '다시 하기', menu: '메뉴', resume: '계속', paused: '일시정지',
@@ -175,7 +175,7 @@
   G.t = function (k) {
     var s = (T[G.lang] && T[G.lang][k]); if (s === undefined) s = T.en[k]; if (s === undefined) return k;
     if (typeof s !== 'string') return s;
-    for (var i = 1; i < arguments.length; i++) s = s.replace('{' + (i - 1) + '}', arguments[i]);
+    for (var i = 1; i < arguments.length; i++) s = s.split('{' + (i - 1) + '}').join(arguments[i]);   // replace ALL occurrences (some goal strings use {1} twice)
     return s;
   };
   G.tr = function (str, from) {   // a string translated in language `from` -> the same key in G.lang

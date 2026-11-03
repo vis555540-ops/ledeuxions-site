@@ -14,14 +14,16 @@
       cp6: 'Round and round, here it comes!', cp7: 'Zig! Zag! Try to follow me!', cp8: 'Peekaboo! Where\'s the ball?', cp9: 'Attack, attack! Whoosh!', cp10: 'Ah... ah... ACHOO!', cp11: 'Boing! I\'ll save my friends!',
       cp12: 'Zap! Fast as lightning!', cp13: 'My ball... bends.', cp14: 'Swish. Hit and gone.', cp15: 'Got it! Not letting go!', cp16: 'Ho ho! Catch this wobbly one.', cp17: 'Sparkle cheer, let\'s go!',
       cp18: 'Fired up! Flame shot!', cp19: 'Meow! Jump and snatch!', cp20: 'Stay cool... boomerang.', cp21: 'Buzz buzz! Pass it on!', cp22: 'Puff puff... nice and slow.', cp23: 'You jumped? Gotcha!', cp24: 'I fall down. I get up.', cp25: 'Okay, okay... I\'m in.', lazyArt: '(the artist got lazy)', pkFixed: 'Story: you play the kid. Pick the rest.',
-      pickHintP: 'Tap to look · tap again to pick · empty slots are random', tapAgain: 'Tap again to pick {0}!', vsSkip: 'tap to skip'
+      pickHintP: 'Tap to look · tap again to pick · empty slots are random', tapAgain: 'Tap again to pick {0}!', vsSkip: 'tap to skip',
+      pkgPow: 'Power', pkgSpd: 'Speed', pkgCat: 'Defense'
     },
     ko: {
       cp0: '파티 시작이다~ 뽀글뽀글!', cp1: '비켜라! 대장 나가신다!', cp2: '꼬꼬! 못 잡지롱~', cp3: '배꼽 힘으로... 쾅!', cp4: '진짜 공은 어느 쪽~?', cp5: '음냐... 다 잡을게...',
       cp6: '빙글빙글~ 돌아온다!', cp7: '지그재그! 따라와 봐!', cp8: '까꿍! 공이 안 보이지?', cp9: '공격 또 공격! 휘리릭!', cp10: '에... 에... 에취!', cp11: '통통! 친구 살리러 간다!',
       cp12: '찌릿! 번개처럼 피한다!', cp13: '내 공은... 휘어진다.', cp14: '슉. 치고 빠진다.', cp15: '꽉 잡았다! 안 놔!', cp16: '허허, 흔들흔들 받아 보거라.', cp17: '반짝반짝 응원 출동!',
       cp18: '활활! 불꽃 슛이다!', cp19: '냐옹~ 점프해서 낚아챈다!', cp20: '멋있게... 부메랑.', cp21: '윙윙~ 패스 패스!', cp22: '뭉게뭉게~ 천천히 가자.', cp23: '점프했지? 딱 걸렸어!', cp24: '넘어져도, 다시 일어나.', cp25: '알았어, 알았어... 나도 낄게.', lazyArt: '(그리는 사람이 귀찮았대)', pkFixed: '스토리: 주인공은 너야. 나머지를 골라.',
-      pickHintP: '눌러서 보기 · 한 번 더 누르면 넣기 · 빈 자리는 랜덤', tapAgain: '{0}: 한 번 더 누르면 넣어요!', vsSkip: '누르면 넘기기'
+      pickHintP: '눌러서 보기 · 한 번 더 누르면 넣기 · 빈 자리는 랜덤', tapAgain: '{0}: 한 번 더 누르면 넣어요!', vsSkip: '누르면 넘기기',
+      pkgPow: '힘', pkgSpd: '스피드', pkgCat: '수비'
     }
   });
 
@@ -72,6 +74,14 @@
     '.pkCell .lk{position:absolute;left:0;right:0;top:calc(var(--ft) + var(--fc)*.3);text-align:center;font-size:calc(var(--fc)*.3);line-height:1;color:#ffd23f;display:none;-webkit-text-stroke:3px #1b1b2f;paint-order:stroke fill}.pkCell.lock .lk{display:block}',
     '.pkCell .pg{position:absolute;left:12%;right:12%;bottom:calc(var(--nmh) + 3px);height:6px;border-radius:3px;background:#0d0b1e;display:none;overflow:hidden}.pkCell .pg i{display:block;height:100%;background:#ffd23f}',
     '.pkCell .fl{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}',
+    /* 3 display groups (power / speed / defense) — a colored top strip inside each cell + a legend. Visual tidiness only, not teams. 2026-11-02 */
+    '.pkCell[data-grp]{box-shadow:inset 0 5px 0 var(--gcol),0 3px 0 #1b1b2f}',
+    '#pkGridBox{flex-direction:column;gap:6px}',
+    '#pkLegend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;flex:none;padding:0 4px}',
+    '#pkLegend .lg{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#c9cbe0;font-weight:800;white-space:nowrap}',
+    '#pkLegend .lg i{width:12px;height:12px;border-radius:4px;border:2px solid #1b1b2f;display:inline-block}',
+    '@media (max-height:460px){#pkLegend{display:none}}',
+    '#pick.port #pkLegend{display:none}',   /* portrait is tight: keep the per-cell color tint, drop the legend bar so the grid never overlaps the bottom */
     '#pkCur{position:absolute;left:0;top:0;border:3px solid #fff;border-radius:13px;box-shadow:0 0 0 3px #ffd23f,0 0 16px 2px rgba(255,210,63,.55);pointer-events:none;z-index:2;transition:transform 60ms linear}',
     '#pkCur:after{content:"1P";position:absolute;left:-6px;top:-13px;background:#ffd23f;color:#1b1b2f;font-size:11px;line-height:14px;padding:0 5px;border-radius:6px;border:2px solid #1b1b2f}',
     '#pick.lite #pkCur{transition:none}',
@@ -138,7 +148,7 @@
     '<div id="pkMain">' +
       '<div id="pkPrev"><div id="pkArt"><div id="pkGlow"></div><div id="pkImgBox"></div><div id="pkLk"></div><div id="pkBand"><span class="ink" id="pkName"></span></div></div>' +
         '<div id="pkInfo"><div id="pkStats"></div><div id="pkSp"></div></div><div id="pkSay"></div></div>' +
-      '<div id="pkGridBox"><div id="pkGrid"><div id="pkCur"></div></div></div>' +
+      '<div id="pkGridBox"><div id="pkLegend"></div><div id="pkGrid"><div id="pkCur"></div></div></div>' +
       '<div id="pkFoeBox"><div id="pkFoeT"></div><div id="pkFoeName"></div><div id="pkFoeList"></div></div>' +
     '</div>' +
     '<div id="pkBottom"><span id="pkMine"></span><div id="pkSlots"></div>' +
@@ -163,19 +173,27 @@
     function pos(i) { return 'background-image:url(' + SHEET + ');background-position:' + (i % 6) * 20 + '% ' + ((i / 6) | 0) * 25 + '%'; }
     function face(i, cls) { return '<i class="fc' + (cls ? ' ' + cls : '') + '" style="' + pos(i) + '"></i>'; }
 
+    // ---- 3 display groups (visual tidiness, KOF-style; NOT teams): each roster character sorts into power / speed / defense by its strongest stat ----
+    var GRPDEF = [{ key: 'pkgPow', col: '#ff8a5c' }, { key: 'pkgSpd', col: '#6ecbff' }, { key: 'pkgCat', col: '#8ef0a8' }];
+    function grpOf(i) { var s = (G.CHARS[i] && G.CHARS[i].st) || [3, 3, 3], p = s[0], sp = s[1], ca = s[2]; return p >= sp && p >= ca ? 0 : sp >= ca ? 1 : 2; }
+    var ORD = [], POS = {}, GRP = {};
+    for (var _g = 0; _g < GRPDEF.length; _g++) for (var _i = 0; _i < G.NROSTER; _i++) if (grpOf(_i) === _g) { GRP[_i] = _g; POS[_i] = ORD.length; ORD.push(_i); }
+
     // build once
     var st = document.createElement('style'); st.id = 'pkCss'; st.textContent = CSS; document.head.appendChild(st);
     var root = $('pick'); root.innerHTML = HTML;
     var grid = $('pkGrid'), cur = $('pkCur');
-    G.CHARS.slice(0, G.NROSTER).forEach(function (C, i) {
-      var e = document.createElement('button'); e.className = 'pkCell'; e.dataset.i = i;
+    PK.cells = [];
+    ORD.forEach(function (i) {   // DOM / grid order follows the groups so the three blocks sit together; PK.cells stays indexed by character id so the cursor logic is unchanged
+      var e = document.createElement('button'); e.className = 'pkCell'; e.dataset.i = i; e.dataset.grp = GRP[i]; e.style.setProperty('--gcol', GRPDEF[GRP[i]].col);
       e.innerHTML = face(i) + '<span class="lk"></span><span class="pg"><i></i></span><span class="nm"></span><span class="no"></span>' + (G.CHARS[i] && G.CHARS[i].isNew ? '<span class="nw">' + G.t('charsNew') + '</span>' : '') + '<span class="fl"></span>';
       e.addEventListener('pointerdown', function (ev) { lastPtr = ev.pointerType || 'mouse'; });
       e.onclick = function () { X.A.unlock(); cellTap(i); };
       e.onpointerenter = function (ev) { if (ev.pointerType === 'mouse') setCur(i); };
-      grid.appendChild(e);
+      grid.appendChild(e); PK.cells[i] = e;
     });
-    PK.cells = Array.prototype.slice.call(grid.querySelectorAll('.pkCell'));
+    function fillLegend() { $('pkLegend').innerHTML = GRPDEF.map(function (g) { return '<span class="lg"><i style="background:' + g.col + '"></i>' + G.t(g.key) + '</span>'; }).join(''); }
+    fillLegend();
     var lastPtr = 'mouse';
 
     /* ---------- big portraits: loaded only when needed, kept as decoded <img> elements ---------- */
@@ -261,6 +279,7 @@
       var s = Math.max(28, Math.min(P ? 58 : 60, Math.floor((slW - (PK.n - 1) * 6) / PK.n))); if (window.innerHeight < 460) s = Math.min(s, 46);
       root.style.setProperty('--sl', s + 'px');
       var main = $('pkMain'), mw = main.clientWidth, mh = main.clientHeight, cw, ch;
+      var _lg = $('pkLegend'), legH = _lg && _lg.offsetParent !== null ? _lg.offsetHeight + 6 : 0; mh -= legH;   // the group legend sits above the grid inside pkGridBox — reserve its height so the grid still fits (2026-11-02)
       if (P) {
         cw = Math.floor((mw - gap * (PK.cols - 1)) / PK.cols);
         ch = Math.floor((mh - 8 - 190 - gap * (rows - 1)) / rows); ch = Math.max(56, Math.min(ch, cw, 76));
@@ -355,6 +374,7 @@
     }
     function refresh() {
       if (X.getState() !== 'pick') return;
+      fillLegend();
       var i, sg = PK.mode === 'single' || PK.mode === 'free';
       $('pkTitle').textContent = PK.mode === 'free' ? G.t('freeBtn') : G.t('pickTitle');
       // options live here now (not on the main menu): players, rules, rival, hat. Online: the host set them before the room, shown only.
@@ -511,7 +531,7 @@
       if (c === 'Escape') { back(); return; }
       if (PK.cd) { if (!e.repeat) { e.preventDefault(); vsSkip(); } return; }
       var mv = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1, ArrowUp: -cols, KeyW: -cols, ArrowDown: cols, KeyS: cols }[c];
-      if (mv) { e.preventDefault(); setCur(PK.cur >= n ? 0 : (PK.cur + mv + n) % n); G.sfx('click'); return; }
+      if (mv) { e.preventDefault(); var di = POS[PK.cur]; if (di == null) di = 0; setCur(ORD[((di + mv) % n + n) % n]); G.sfx('click'); return; }   // nav follows the grouped display order
       if (e.repeat) return;
       if (c === 'Enter' || c === 'KeyJ' || c === 'NumpadEnter') { e.preventDefault(); if (PK.picks.length >= cap() && PK.picks.indexOf(PK.cur) < 0 && !locked(PK.cur)) readyGo(); else togglePick(PK.cur); }
       else if (c === 'KeyK' || c === 'Backspace') { e.preventDefault(); undo(); }

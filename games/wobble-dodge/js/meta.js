@@ -166,9 +166,13 @@
   MT.reward = function (d, st, dt) {
     var ev = [], xp = 0, parts = [];
     var before = MT.level(d.xp);
-    xp += st.won ? 60 : 25; parts.push(['xpMatch', st.won ? 60 : 25]);
+    xp += st.won ? 80 : 40; parts.push(['xpMatch', st.won ? 80 : 40]);
     var play = 10 * st.hit + 15 * st.cat + 20 * st.sp; if (play) { xp += play; parts.push(['xpPlay', play]); }
-    if (st.firstBeat) { xp += 50; parts.push(['xpNewTeam', 50]); }
+    if (st.firstBeat) { xp += 80; parts.push(['xpNewTeam', 80]); }
+    // "nice one!" bonus: only for a strong win, so it feels earned and turns up now and then (가끔 잘했어 보너스)
+    var well = 0;
+    if (st.won && !st.guide) { if (!st.hurt) well += 30; if ((st.cat | 0) >= 3) well += 20; if ((st.outs | 0) >= 4) well += 20; }
+    if (well) { xp += well; parts.push(['xpWell', well]); }
     var c = MT.ensureDaily(d, dt), dailyNow = false;
     if (!d.daily.done && MT.meets(c, st)) { d.daily.done = true; d.dailyN++; xp += 150; parts.push(['xpDaily', 150]); dailyNow = true; ev.push({ k: 'daily', c: c }); }
     d.played = d.played; if (st.won) d.wins++; else if (!st.draw) d.losses++;

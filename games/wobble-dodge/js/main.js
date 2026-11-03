@@ -95,7 +95,6 @@
     if (setIsOpen()) { if (!navKey(e) && e.code === 'Escape') setOpen(false); return; }
     if (state === 'opening') { if (!e.repeat) { e.preventDefault(); S.openingKey(e.code); } return; }
     if (state === 'comic') { if (!e.repeat) { e.preventDefault(); if (e.code === 'Escape') S.comicClose(); else if (/^(Enter|Space|KeyJ|KeyK|NumpadEnter|ArrowRight)$/.test(e.code)) S.comicTap(); } return; }
-    if (state === 'train' && e.code === 'Escape') { S.endTrain(); return; }
     if (state === 'menu' && /^Key[A-Z]$/.test(e.code)) { typed = (typed + e.code.slice(3)).slice(-8); if (/(WOBBLE|UNDERDOG)$/.test(typed)) { typed = ''; secretFound(); } }
     if (state === 'pick') { if (PU) PU.key(e); return; }
     if (state === 'menu' && navKey(e)) return;
@@ -117,7 +116,7 @@
     return { mx: Math.max(-1, Math.min(1, mx)), mz: Math.max(-1, Math.min(1, mz)), throwHeld: !!keys.thr || tch.thr || press.thrP, catchP: press.catchP, jumpP: press.jumpP };
   }
   function clearPress() { press.catchP = press.jumpP = press.thrP = false; }
-  function setTouch(on) { touchOn = on; V.touch = on; $('touch').classList.toggle('on', on && (state === 'play' || state === 'pause' || state === 'train')); if (on) TBTN.forEach(function (id) { fitBtn($(id)); }); keyGuide(); }
+  function setTouch(on) { touchOn = on; V.touch = on; $('touch').classList.toggle('on', on && (state === 'play' || state === 'pause')); if (on) TBTN.forEach(function (id) { fitBtn($(id)); }); keyGuide(); }
   function keysOn() { return save.keys != null ? !!save.keys : save.played <= 3; }
   function keyGuide() { var on = state === 'play' && !touchOn && keysOn() && !!M && !M.guide; $('keys').style.display = on ? 'block' : 'none'; V.keys = on; if (on) $('keys').innerHTML = esc(G.t('hintK')) + ' <span>(' + esc(G.t('keyHelp')) + ')</span>'; }
   (function () {
@@ -151,7 +150,7 @@
   function storyGo() {
     var k = storyNext(); WD.log.push('story:' + k);
     if (k === 'defend') playDefend(); else if (k === 'final') storyFinale();
-    else { sel = Math.min(save.beaten, G.LADDER - 1); openPick('single', save.n, sel); }
+    else { sel = Math.min(save.beaten, G.LADDER - 1); loadStory(); play(sel, [myTeam(save.n), null]); }   // ⚡ instant play: one tap from the menu straight into the match (team select moved out of the front — reachable from the result screen "pick team" button and FREE PLAY). 2026-11-02
   }
   function refreshMenu() {
     G.applyI18n();
@@ -284,18 +283,7 @@
   }
   function storyEnd(then) { save.sto.end = 1; save.sto.season = Math.max(1, save.sto.season); commit(); comic('end', function () { comic('credits', then); }); }
   function playDefend() { var l = Math.max(0, Math.min(G.LADDER - 1, save.sto.dl)); start(l, storyChars([myTeam(save.n), null]), { defend: 1 }); }
-  // the optional training montage (from the result screen after some wins)
-  function startTrain() {
-    A.unlock(); Sdk.gameplayStart(); state = 'train'; show(null); $('btnPause').style.display = 'none'; storyScreen(true, true); setTouch(touchOn); WD.log.push('train');
-    M = null; var ch = STORY ? G.HERO : (save.picks && save.picks.length && unlocked(save.picks[0])) ? save.picks[0] : 0;
-    S.startTrain(ch, function (r) {
-      Sdk.gameplayStop(); storyScreen(false); $('touch').classList.remove('on');
-      var before = MT.level(save.xp); save.xp += r.xp; save.sto.train++; var after = MT.level(save.xp), ev = [];
-      if (after.lvl > before.lvl) ev.push({ k: 'lvl', from: before.lvl, to: after.lvl }); MT.hatCheck(save, ev); commit();
-      WD.lastTrain = r; M = G.M = lastM; state = 'result'; show('result'); $('bTrain').style.display = 'none';
-      reveal([{ k: 'xp', xp: r.xp, r: r }].concat(ev), null);
-    });
-  }
+  // training montage removed (형 2026-11-02: "아예 빼")
   var lastM = null;
   var vsChars = null;
   function startVersus(chars) {   // host: a fresh online match (host = left team)
@@ -366,7 +354,6 @@
     $('bNext').textContent = postgame ? G.t('dfBtn', save.sto.season + 1, save.sto.dl + 1) : finalWon ? G.t('stLast') : rival ? G.t('stNext') : G.t('nextTeam');
     if (rival || pov) { $('bTeam').style.display = 'none'; if (rival && seen('rival') || pov && won) $('bRetry').style.display = 'none'; }
     $('bSkipEnd').style.display = pov && !won && save.sto.sf >= S.FINAL.skipAfter ? '' : 'none'; $('bSkipEnd').textContent = G.t('povOk');
-    $('bTrain').style.display = storyOn() && won && !M.story && !free && (defend ? save.sto.dl % 3 === 0 : M.lvl % 2 === 1) ? '' : 'none'; $('bTrain').textContent = G.t('trBtn');
     var rc2 = $('resCoach'); rc2.style.display = coachTxt ? 'flex' : 'none';
     if (coachTxt) { rc2.innerHTML = '<canvas></canvas><div><b>' + esc(G.t(coachWho)) + '</b> ' + esc(coachTxt) + '</div>'; resCards.push({ cv: rc2.firstChild, ch: pov ? S.BOSS.ch : S.COACH, hat: pov ? S.BOSS.hat : 'cap', sil: false }); WD.log.push('coach'); }
     lastM = M;
@@ -392,7 +379,7 @@
       r.parts.map(function (p) { return '<span>' + esc(G.t(p[0])) + ' +' + p[1] + '</span>'; }).join('') + '</div>';
     var fill = $('rXpFill'), lv = $('rLv'), b = r.before, a = r.after;
     lv.textContent = G.t('lv', b.lvl); fill.style.transition = 'none'; fill.style.width = (100 * b.cur / b.need) + '%';
-    var t0 = performance.now(), dur = 900;
+    var t0 = performance.now(), dur = 420;   // ⚡ snappier result: shorter XP count-up so "one more match" is reachable fast (buttons are live immediately). 2026-11-02
     (function count() { var k = Math.min(1, (performance.now() - t0) / dur); if ($('rXp')) $('rXp').textContent = '+' + Math.round(r.xp * k) + ' XP'; if (k < 1 && state === 'result') requestAnimationFrame(count); })();
     setTimeout(function () {
       fill.style.transition = 'width .7s ease-out';
@@ -405,7 +392,7 @@
     setTimeout(function () {
       if (state !== 'result' || M !== me) return;
       reveal(q, function () { if (state !== 'result' || M !== me) return; restAfter(r); });
-    }, 850);
+    }, 380);
   }
   function restAfter(r) {
     if (!r.dailyNow) {
@@ -482,6 +469,9 @@
     else if (it.k === 'badge') { tag = G.t('babam') + ' ' + G.t('bdTag'); name = G.t('bdName'); sp = esc(G.t('bdSub')); hat = 'goldcrown'; ch = S.BOSS.ch; if (state === 'result') card('gold', G.t('bdTag'), name, ch, hat, 0, true); }
     else if (it.k === 'defOpen') { name = G.t('dfOpen'); sp = esc(G.t('dfOpenSub')); hat = 'goldcrown'; }
     else if (it.k === 'xp') { name = G.t('trDone') + ' +' + it.xp + ' XP'; sp = esc(G.t('trSub', it.r.dodged, it.r.hits)); if (state === 'result') card('green', G.t('trXp') + ' +' + it.xp + ' XP', G.t('trSub', it.r.dodged, it.r.hits), null, null, 0, true); }
+    // On the results screen we DON'T pop the big "character runs in + TA-DA!" overlay any more (형 10/23·11/02: 유치함 + 끝나고 뜨는 게 너무 많다).
+    // The reward is already shown as a calm card in the list above; just drain the queue and let the results screen stay put.
+    if (state === 'result') { popCh = -1; WD.log.push('fold:' + it.k); return popNext(); }
     $('upTag').textContent = tag; $('upName').textContent = name; $('upSp').innerHTML = sp; $('upStyle').textContent = sty; $('upStyle').style.display = sty ? '' : 'none';
     $('upQuote').textContent = quote; $('upQuote').style.display = quote ? '' : 'none'; $('upHow').textContent = how;
     $('bUpOk').textContent = G.t('unlOk');
@@ -536,14 +526,13 @@
       var l = M.lvl, mine = WD.chars() ? WD.chars()[0] : null, df = M.defend; between(function () { if (df) start(l, storyChars([myTeam(save.n, mine), null]), { defend: 1 }); else play(l, [myTeam(save.n, mine), null]); });
     }
   };
-  $('bTrain').onclick = function () { A.unlock(); G.sfx('click'); startTrain(); };
   $('bSkipEnd').onclick = function () { A.unlock(); G.sfx('click'); WD.log.push('skipEnd'); storyEnd(function () { toMenu(); reveal([{ k: 'defOpen' }]); }); };
   $('bOpening').onclick = function () { A.unlock(); G.sfx('click'); if (storyOn() && state === 'menu') { setOpen(false); opening(toMenu); } };
   $('bSet').onclick = function () { A.unlock(); G.sfx('click'); setOpen(!setIsOpen()); };
   $('bSetX').onclick = function () { A.unlock(); G.sfx('click'); setOpen(false); };
   $('set').addEventListener('click', function (e) { if (e.target === $('set')) setOpen(false); });   // tap outside the panel = close
   $('bFree').onclick = function () { A.unlock(); G.sfx('click'); openPick('free', save.free.n, save.free.lvl); };
-  $('stSkip').onclick = function (e) { e.stopPropagation(); A.unlock(); if (state === 'train') S.endTrain(); else S.comicClose(); };
+  $('stSkip').onclick = function (e) { e.stopPropagation(); A.unlock(); S.comicClose(); };
   $('cmCv').addEventListener('pointerdown', function (e) { e.preventDefault(); A.unlock(); S.comicTap(); });
   $('bTeam').onclick = function () { if (M && M.free) { var fm = M; between(function () { openPick('free', fm.n, fm.lvl); }); return; } var l = M && M.winner === 0 ? nextLvl() : M ? M.lvl : sel; between(function () { openPick('single', save.n, l); }); };
   $('bLite').onclick = function () { A.unlock(); G.sfx('click'); save.lite = save.lite ? 0 : 1; commit(); applySave(); layout(); refreshMenu(); WD.log.push('lite:' + save.lite); };
@@ -684,7 +673,8 @@
         if (M.hitstop > 0) { M.hitstop -= dt; if (M.shake > 0) M.shake *= 0.92; }
         else {
           var scale = M.slow > 0 ? 0.3 : M.nearSlow ? 0.4 : M.guideSlow ? 0.45 : 1; if (M.slow > 0) M.slow -= dt;
-          acc += dt * scale * WD.speed; var n = 0, inp = readInput(), cap = 12 * WD.speed, inp2 = NET === 'host' ? NETM.gin : null;
+          var pace = NET ? 1 : (M.pace || 1);   // ⚡ speed ramp (offline only — leaves netcode timing untouched)
+          acc += dt * scale * pace * WD.speed; var n = 0, inp = readInput(), cap = 14 * WD.speed, inp2 = NET === 'host' ? NETM.gin : null;
           while (acc >= DT && n < cap) {
             G.step(M, inp, inp2);
             if (n === 0) { clearPress(); inp.catchP = inp.jumpP = false; inp.throwHeld = !!keys.thr || tch.thr; if (inp2) NETM.afterStep(); }
@@ -703,19 +693,18 @@
       if (NET === 'host' && M && (state === 'play' || state === 'result')) NETM.hostSend(M, now);
       if (NET && (state === 'play' || state === 'result' || state === 'pick') && NETM.timedOut(now)) netMsg('lost');
       if (state === 'comic') { var cc = $('cmCv'); sizeCv(cc); S.drawComic(cc.getContext('2d'), cc.width, cc.height, now / 1000); }
-      if (state === 'train') { S.trainStep(dt * WD.speed, readInput(), V.SW); clearPress(); }
       // SUPER CATCH: hold CATCH for 1 s (once per match)
       if (state === 'play' && M && M.scOk && !M.scUsed && M.state === 'play' && !NET) { if (keys.cat || tch.cat) { scHold += dt / 1; if (scHold >= 1) { G.superCatch(M); scHold = 0; } } else scHold = 0; } else scHold = 0;
       if (resCards.length && (state === 'result' || state === 'menu' || (state === 'pick' && popCh >= 0))) drawCards(ts / 1000);   // pick: only under an unlock pop-up (rewarded-ad unlock)
-      if (state !== 'pick') G.render(ctx, state === 'menu' || state === 'net' || state === 'train' || state === 'comic' ? null : M, ts / 1000, V);   // the pick screen is opaque and still: no canvas work under it
-      if (state === 'train') S.drawTrain(ctx, ts / 1000, V);
-      else if (S && M && !NET && (state === 'play' || state === 'pause')) S.overlay(ctx, M, ts / 1000, V, scHold);
+      if (state !== 'pick') G.render(ctx, state === 'menu' || state === 'net' || state === 'comic' ? null : M, ts / 1000, V);   // the pick screen is opaque and still: no canvas work under it
+      if (S && M && !NET && (state === 'play' || state === 'pause')) S.overlay(ctx, M, ts / 1000, V, scHold);
       A.tick();
     } catch (e) { WD.errors.push(String(e && e.stack || e)); if (WD.errors.length > 20) WD.errors.shift(); }
   }
 
   /* ---------- debug hook ---------- */
   WD.start = function (lvl, auto, n, chars) { WD.auto = !!auto; if (n) save.n = n; start(lvl || 0, chars); return true; };
+  WD.V = V;   // debug/tuning handle (e.g. V.zoom for the match-view scale)
   WD.fire = function (id) { return !!(M && M.state === 'play' && G.fire(M, id)); };
   WD.pick = function () { return { screen: state, mode: PK.mode, n: PK.n, picks: PK.picks.slice(), cur: PK.cur, ready: PK.ready, foeReady: PK.foeReady, cd: PK.cd, teams: PK.teams, cols: PK.cols, easy: PK.easy }; };
   WD.chars = function () { return M ? [0, 1].map(function (t) { return M.bodies.filter(function (b) { return b.team === t; }).map(function (b) { return b.ch; }); }) : null; };
@@ -736,7 +725,7 @@
   WD.guide = function () { return M && M.guide ? { wait: !!M.waitInput, thr: M.guide.thr, cat: M.guide.cat, slowN: M.guide.slowN, spGiven: M.guide.spGiven, me: M.me, tip: G.guideTip(M, touchOn) } : null; };
   WD.startGuide = startGuide;
   WD.story = { on: storyOn, seen: function () { return save.sto.seen; }, sto: function () { return save.sto; }, comic: function () { return S ? S.comicState() : null; }, tap: function () { S.comicTap(); }, skip: function () { S.comicClose(); },
-    play: function (l) { play(l == null ? save.beaten : l, [myTeam(save.n), null]); }, rival: startRival, finale: storyFinale, pov: startPov, free: function () { $('bFree').click(); }, defend: playDefend, train: startTrain, trainState: function () { return S ? S.trainState() : null; }, endTrain: function () { S.endTrain(); },
+    play: function (l) { play(l == null ? save.beaten : l, [myTeam(save.n), null]); }, rival: startRival, finale: storyFinale, pov: startPov, free: function () { $('bFree').click(); }, defend: playDefend,
     ann: function () { return M && M.ann ? M.ann.txt : null; }, annLog: function () { return S ? S.log || (S.log = []) : []; }, superCatch: function () { return M ? G.superCatch(M) : false; }, sc: function () { return M ? { ok: M.scOk, used: M.scUsed, t: M.sc } : null; },
     reveal: function () { return { open: popCh, q: popQ.length, tag: $('upTag').textContent, name: $('upName').textContent, quote: $('upQuote').textContent }; } };
   WD.roomLink = roomLink;
