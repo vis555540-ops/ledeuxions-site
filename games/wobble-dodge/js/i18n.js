@@ -1,4 +1,4 @@
-/* 언더독 피구 / Underdog Dodgeball - i18n + global namespace */
+/* 언더독 피구 / Dodgeball Underdogs (was Underdog Dodgeball) - i18n + global namespace */
 (function () {
   'use strict';
   var G = window.G = {};
@@ -26,8 +26,8 @@
       roomCode: 'Room code', codeHint: 'Enter the 4-digit code', waitFriend: 'Waiting for your friend...', shareHint: 'Send the code or the link to your friend.',
       connecting: 'Connecting...', joining: 'Joining room {0}...', noroom: 'No room with that code.', full: 'That room is full.', netErr: 'Could not connect. Check your internet.',
       peerLeft: 'Your friend left the game.', hostLeft: 'The host left the game.', lost: 'Connection lost.', youHost: 'You: LEFT team (blue)', youGuest: 'You: RIGHT team (orange)',
-      vsWin: 'YOU WIN!', vsLose: 'YOU LOSE...', rematch: 'REMATCH', waitHost: 'Waiting for the host...', shareText: 'Play Underdog Dodgeball with me! Room {0}',
-      title1: 'UNDERDOG', title2: 'DODGEBALL', sub: 'From gym-class target to champion',
+      vsWin: 'YOU WIN!', vsLose: 'YOU LOSE...', rematch: 'REMATCH', waitHost: 'Waiting for the host...', shareText: 'Play Dodgeball Underdogs with me! Room {0}',
+      title1: 'DODGEBALL', title2: 'UNDERDOGS', sub: 'From gym-class target to champion',
       play: 'PLAY', locked: 'LOCKED', beaten: 'CLEARED', next: 'NEXT UP', champion: 'CHAMPION!',
       t0: 'Jelly Jigglers', t1: 'Tummy Rumblers', t2: 'Peep Peep Chicks', t3: 'Clang Clang Pots', t4: 'Toot Toot Overlords', my: 'Underdog Squad',
       round: 'ROUND {0}', ready: 'READY...', go: 'DODGE!',

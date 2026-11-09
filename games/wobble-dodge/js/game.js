@@ -31,7 +31,7 @@
   function sgn(v) { return v < 0 ? -1 : 1; }
   function tri(s) { return 2 / Math.PI * Math.asin(Math.sin(Math.PI * s)); }
   G.clamp = clamp; G.lerp = lerp; G.rnd = rnd;
-  function T(k) { return G.t(k); }
+  function T() { return G.t.apply(G, arguments); }
 
   /* ---------- skeleton (Wobble Brawl point layout, SC = 1) ---------- */
   // 0 head,1 neck,2 hip,3 elbowF,4 handF,5 elbowB,6 handB,7 kneeF,8 footF,9 kneeB,10 footB

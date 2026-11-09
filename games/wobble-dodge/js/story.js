@@ -51,7 +51,7 @@
       cm_n: 'CHAPTER 6 \u00B7 NATIONALS', n1c: 'Nationals. Lights. Cameras. Way too many mascots.', n1a: 'I lost my final here. Tripped on my own shoelace.', n2a: 'Then tie your shoes, Coach.', n2b: '...I wear slippers now.',
       cm_f: 'THE FINAL', f0c: 'Gym class. Three years of it.', f0a: 'Remember me? Still catching with your face?', f1a: 'Win, and the bulldozers roll on Monday.', f1b: 'My team. My captain. Your parking lot.', f2a: 'Not this time, Vance.', f2b: 'FOR THE REC CENTER!', f3a: 'Kid... go be the underdog.',
       sgSaved: 'SAVED!', e1a: 'I\'m gonna need a really long nap.', e2c: 'NATIONAL CHAMPIONS!', cm_credits: 'THANK YOU',
-      cr: ['UNDERDOG DODGEBALL', 'starring', 'THE UNDERDOG SQUAD', 'Coach Mo as himself', 'Dex as the old friend', 'Vance as the captain', 'the parking lot as... nothing', 'no rubber chickens were harmed', 'THANK YOU FOR PLAYING!', 'next: DEFEND THE TITLE'],
+      cr: ['DODGEBALL UNDERDOGS', 'starring', 'THE UNDERDOG SQUAD', 'Coach Mo as himself', 'Dex as the old friend', 'Vance as the captain', 'the parking lot as... nothing', 'no rubber chickens were harmed', 'THANK YOU FOR PLAYING!', 'next: DEFEND THE TITLE'],
       // recruit lines (said when a player joins)
       ru1: 'I tooted my way through three schools. Yours is next. I\'m in.', ru2: 'You won? BAWK! Put me on the team!', ru4: 'Two of me, zero of them. Count us in.',
       ru6: 'You catch like a vacuum, I spin like a fan. Team?', ru8: 'You keep bringing friends back. I want a team like that.', ru9: 'You won on the big court? Sign me up. Upside down.',
