@@ -72,14 +72,14 @@
   }
   function star5(c, x, y, r) { c.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * 0.45 : r; c.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } c.closePath(); c.fill(); }
   G.drawHat = drawHat;
-  /* ---------- in-match face heads: one small sprite sheet (art_game/faces/heads_64.png ~25 KB, or heads_96.png on hi-dpi; made by art/faces/gen_ingame.py).
-     Cell = 3.2R square, face circle centre at (1.6R, 2.1R), radius R, 6 x 4 cells in G.CHARS order. Not fetched before the first
+  /* ---------- in-match face heads: one small sprite sheet (art_game/faces/heads_match_64.png, or _96 on hi-dpi; 2026-11-09 front art made by art_new/tools/match.py,
+     mirrored by facing; the old side sheets heads_side_* stay on disk for A/B).
+     Cell = 3.2R square, face circle centre at (1.6R, 2.1R), radius R, 6 x 5 cells in G.CHARS order. Not fetched before the first
      input, so it never competes with the first "TAP TO PLAY"; a match decides once (before the ball is live) whether it
      shows faces, so heads never pop mid-rally. G.faceHeads = false -> the old drawn heads (A/B and fallback). */
   var HD = { ok: false, img: null, white: null, cell: 64, n: 24 }, FR = 13.5 * 1.4, COSM = { star: 1, flower: 1, wizard: 1, pirate: 1, viking: 1, goldcrown: 1 };
   // tight box of each face inside its cell, in 1/64 cell units (x, y, w, h): only these pixels are drawn (about half the cell = half the raster work)
-  var HBOX = [6,0,52,64,11,1,47,63,0,21,58,43,10,0,48,64,9,0,49,64,8,0,50,64,10,7,50,57,10,16,54,48,11,10,47,54,11,10,47,54,8,5,52,59,7,10,51,54,3,10,55,54,10,19,48,45,0,20,58,44,11,20,47,44,0,21,58,43,7,10,51,54,10,0,50,64,10,9,54,55,11,20,47,44,11,0,47,64,9,7,49,57,9,19,49,45,
-    1,13,58,51,0,12,58,52];   // side-view sheet (art/faces/side/HBOX_side.txt) + row 5: hero, Dex (art/faces/story/post_story.py)
+  var HBOX = [8,5,48,59,9,3,45,61,4,10,55,54,7,2,49,62,8,3,47,61,12,12,39,52,9,7,46,57,8,13,47,51,12,4,40,60,10,11,43,53,8,6,48,58,10,7,43,57,2,6,59,58,9,5,46,59,10,13,43,51,6,9,52,55,1,7,62,57,8,9,48,55,10,1,44,63,8,14,48,50,8,10,48,54,12,11,39,53,5,7,54,57,10,13,43,51,10,8,43,56,6,5,52,59,5,10,53,54];   // heads_match sheet, all 27 G.CHARS (art_new/tools/match.py -> match_js.txt)
   G.faceHeads = true; G.headSheet = HD;
   (function () {
     var vq = (/\?v=[^&#]*/.exec((document.currentScript && document.currentScript.src) || '') || [''])[0];
@@ -92,12 +92,12 @@
             g.drawImage(im, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,255,255,0.78)'; g.fillRect(0, 0, w.width, w.height);
             HD.white = w;
           } catch (e) { HD.white = im; }
-          HD.img = im; HD.cell = im.width / 6; HD.n = Math.min(G.GOLDBOSS || G.CHARS.length, Math.round(im.height / HD.cell) * 6, HBOX.length / 4); HD.ok = true;   // faces for the 0..23 roster only; gold boss(24)+ use the drawn head
+          HD.img = im; HD.cell = im.width / 6; HD.n = Math.min(G.CHARS.length, Math.round(im.height / HD.cell) * 6, HBOX.length / 4); HD.ok = true;   // every character incl. gold boss / hero / Dex
         }
         if (im.decode) im.decode().then(fin, fin); else fin();
       };
       // 64 px cells (face R 20) for 1x screens / LITE (the slow-laptop case); 96 px cells (R 30, ~42 KB) on hi-dpi so faces stay sharp
-      im.src = 'art_game/faces/heads_side_' + ((window.devicePixelRatio || 1) >= 1.5 && !G.lite ? 96 : 64) + '.png' + vq;
+      im.src = 'art_game/faces/heads_match_' + ((window.devicePixelRatio || 1) >= 1.5 && !G.lite ? 96 : 64) + '.png' + vq;
     }
     // first load stays untouched (검증/select_kof: no face art before the first tap): fetch on the first input, or when a match
     // that is not the waiting tutorial gets drawn. The tap that starts the tutorial leaves ~0.3 s of intro, usually enough.
@@ -115,14 +115,7 @@
     var ch = b.ch, cs = HD.cell, R = FR, u = cs / 64, d = 0.05 * R, j = ch * 4, bx = HBOX[j], by = HBOX[j + 1], bw = HBOX[j + 2], bh = HBOX[j + 3];
     if (e === 1 || e === 2) c.scale(1.07, 0.9);   // hit / KO squash
     c.drawImage(b.flash > 0 ? HD.white : HD.img, (ch % 6) * cs + bx * u, ((ch / 6) | 0) * cs + by * u, bw * u, bh * u, -1.6 * R + bx * d, -2.1 * R + by * d, bw * d, bh * d);
-    if (e === 2 || e === 1) {   // KO = X eyes, hit = > < eyes, stuck on over the art's eyes
-      var ex = 0.51 * R, ey = -0.08 * R, er = 0.27 * R, q = 0.17 * R;   // side view: one eye, forward of centre
-      c.fillStyle = '#fff'; c.beginPath(); c.arc(ex, ey, er, 0, TAU); c.fill();
-      c.strokeStyle = INK; c.lineWidth = 0.13 * R; c.lineCap = 'round'; c.beginPath();
-      if (e === 2) { c.moveTo(ex - q, ey - q); c.lineTo(ex + q, ey + q); c.moveTo(ex + q, ey - q); c.lineTo(ex - q, ey + q); }
-      else { c.moveTo(ex - q, ey - q); c.lineTo(ex + q, ey); c.lineTo(ex - q, ey + q); }
-      c.stroke();
-    }
+    // (the side sheet stuck > < / X eyes on its one eye here; the front art has two eyes in different spots per face, so hit/KO = flash + squash only)
     if (COSM[b.hat]) { c.save(); c.translate(0, -R * 0.62); c.scale(1.05, 1.05); drawHat(c, b.hat, now); c.restore(); }   // earned cosmetic hat on top of the art
   }
   var P = new Float32Array(22), SHADE = {};
@@ -139,9 +132,7 @@
      team-colour jersey, white shorts + belly stripe) in a hip->neck frame; plain fills measured cheaper than strokes or a
      rotated sprite. No shadows / filters. LITE tier: no ink under legs / back arm (front arm + jersey keep theirs).
      Cost vs the stick bodies: 검증/body_perf.mjs (G.cartoonBody = false draws the old renderer for A/B). */
-  var SKIN = ['#f9b7db', '#b5d55c', '#f8e5cb', '#fb9355', '#ca81f8', '#58ccf8', '#f8d72c', '#26c2b9', '#eccbf5', '#ee3b38', '#f4ad7f', '#d1eb63',
-    '#6ddaf9', '#ede8f4', '#5b83a5', '#f7a576', '#f0caa9', '#f9b7db', '#f98b4e', '#f9ebaf', '#494a6d', '#f8d72c', '#dcf1f9', '#87cf55',
-    '#f7c693', '#ae673d'];   // sampled from heads_96.png (G.CHARS order); last two = the story kids (hero, Dex)
+  var SKIN = ['#fca5b8', '#72b263', '#f7bb89', '#fd9552', '#7c579a', '#8eceed', '#fdde0a', '#4bb4a9', '#e8c9eb', '#e4433e', '#f3b584', '#c9e251', '#9ad3ed', '#d3dae2', '#36588d', '#fd8d4e', '#e7ba88', '#feacb3', '#febc84', '#fae9c5', '#43567c', '#fddc13', '#c3defb', '#71b87b', '#f8c7a6', '#f9bb8b', '#d38b4d'];   // arm/neck colour sampled from the heads_match art (G.CHARS order, 27)
   var TORSO = {}, TL = 31, OL = 2.3;   // neck-hip length in skeleton units, ink outline thickness
   // local frame: hip = (0,0), neck = (0,-TL); o grows the shape by o on every side (for the ink silhouette)
   function jersey(P, th, o) {
