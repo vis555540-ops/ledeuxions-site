@@ -729,8 +729,10 @@
   WD.story = { on: storyOn, seen: function () { return save.sto.seen; }, sto: function () { return save.sto; }, comic: function () { return S ? S.comicState() : null; }, tap: function () { S.comicTap(); }, skip: function () { S.comicClose(); },
     play: function (l) { play(l == null ? save.beaten : l, [myTeam(save.n), null]); }, rival: startRival, finale: storyFinale, pov: startPov, free: function () { $('bFree').click(); }, defend: playDefend,
     ann: function () { return M && M.ann ? M.ann.txt : null; }, annLog: function () { return S ? S.log || (S.log = []) : []; }, superCatch: function () { return M ? G.superCatch(M) : false; }, sc: function () { return M ? { ok: M.scOk, used: M.scUsed, t: M.sc } : null; },
+    open: function (id) { comic(id, toMenu); },
     reveal: function () { return { open: popCh, q: popQ.length, tag: $('upTag').textContent, name: $('upName').textContent, quote: $('upQuote').textContent }; } };
   WD.roomLink = roomLink;
+  WD.reveal = function (items) { reveal(items); };   // debug: show reward pop-ups (검증/old_art.mjs)
   WD.opening = function () { return S && S.openingState ? S.openingState() : null; };
 
   layout(); refreshMenu(); show('menu');

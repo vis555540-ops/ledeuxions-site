@@ -81,8 +81,9 @@
   // tight box of each face inside its cell, in 1/64 cell units (x, y, w, h): only these pixels are drawn (about half the cell = half the raster work)
   var HBOX = [8,5,48,59,9,3,45,61,4,10,55,54,7,2,49,62,8,3,47,61,12,12,39,52,9,7,46,57,8,13,47,51,12,4,40,60,10,11,43,53,8,6,48,58,10,7,43,57,2,6,59,58,9,5,46,59,10,13,43,51,6,9,52,55,1,7,62,57,8,9,48,55,10,1,44,63,8,14,48,50,8,10,48,54,12,11,39,53,5,7,54,57,10,13,43,51,10,8,43,56,6,5,52,59,5,10,53,54];   // heads_match sheet, all 27 G.CHARS (art_new/tools/match.py -> match_js.txt)
   G.faceHeads = true; G.headSheet = HD;
+  var VQ = (/\?v=[^&#]*/.exec((document.currentScript && document.currentScript.src) || '') || [''])[0];
   (function () {
-    var vq = (/\?v=[^&#]*/.exec((document.currentScript && document.currentScript.src) || '') || [''])[0];
+    var vq = VQ;
     function go() {
       var im = new Image(); im.decoding = 'async';
       im.onload = function () {
@@ -107,14 +108,15 @@
     HD.kick = kick;
   })();
   function useFaces(M) {
-    if (!M.waitInput) HD.kick();
+    if (!M.waitInput || M.st > 0.3) HD.kick();   // the tutorial now starts by itself (no tap): fetch during its intro so it never runs with old heads
     if (M.fh === undefined) { if (HD.ok && G.faceHeads) M.fh = 1; else if (M.state === 'play' && !M.waitInput) M.fh = 0; }
+    else if (M.fh === 0 && HD.ok && G.faceHeads && M.state !== 'play') M.fh = 1;   // sheet came late: switch at the next break (KO / intro), never mid-rally
     return M.fh === 1 && G.faceHeads;
   }
   function headSprite(c, b, e, now) {   // in head space (origin = head centre, x = facing, 1 unit = z*hs)
-    var ch = b.ch, cs = HD.cell, R = FR, u = cs / 64, d = 0.05 * R, j = ch * 4, bx = HBOX[j], by = HBOX[j + 1], bw = HBOX[j + 2], bh = HBOX[j + 3];
+    var S = b.sheet || HD, ch = b.ch, cs = S.cell, R = FR, u = cs / 64, d = 0.05 * R, j = ch * 4, bx = HBOX[j], by = HBOX[j + 1], bw = HBOX[j + 2], bh = HBOX[j + 3];
     if (e === 1 || e === 2) c.scale(1.07, 0.9);   // hit / KO squash
-    c.drawImage(b.flash > 0 ? HD.white : HD.img, (ch % 6) * cs + bx * u, ((ch / 6) | 0) * cs + by * u, bw * u, bh * u, -1.6 * R + bx * d, -2.1 * R + by * d, bw * d, bh * d);
+    c.drawImage(b.flash > 0 ? S.white : S.img, (ch % 6) * cs + bx * u, ((ch / 6) | 0) * cs + by * u, bw * u, bh * u, -1.6 * R + bx * d, -2.1 * R + by * d, bw * d, bh * d);
     // (the side sheet stuck > < / X eyes on its one eye here; the front art has two eyes in different spots per face, so hit/KO = flash + squash only)
     if (COSM[b.hat]) { c.save(); c.translate(0, -R * 0.62); c.scale(1.05, 1.05); drawHat(c, b.hat, now); c.restore(); }   // earned cosmetic hat on top of the art
   }
@@ -228,7 +230,7 @@
   G.cartoonBody = true;
   function drawBody(c, b, uni, now, fh) {
     var i, z = b.sc, col = b.flash > 0 ? '#ffffff' : b.skin, out = INK, th = b.th || 1, hs = b.hs || 1, zt = z * th;
-    fh = fh && b.ch >= 0 && b.ch < HD.n;
+    fh = fh && b.ch >= 0 && b.ch < (b.sheet || HD).n;
     for (i = 0; i < 11; i++) { P[i * 2] = b.pts[i].x; P[i * 2 + 1] = b.pts[i].y; }
     var p = P;
     c.save(); if (b.role === 'toOut' || b.role === 'toIn') c.globalAlpha = 0.55;
@@ -649,8 +651,24 @@
   }
   G.drawBody = drawBody;
   // a character portrait into a 2d context: feet at (x, y), height px tall; team decides the jersey colour
+  // Always the new face art (pop-ups, result cards, story comics): the 64/96 match sheet for small cards, the 192 sheet (heads_match_192.webp,
+  // fetched on the first call) once the head is big. Nothing is drawn until a sheet is decoded, so the old drawn head never shows. 2026-11-09
+  var HB = { ok: false, go: 0, img: null, white: null, cell: 192, n: 0 };
+  function bigSheet() {
+    if (HB.go) return; HB.go = 1;
+    var im = new Image(); im.decoding = 'async';
+    im.onload = function () { function fin() { HB.img = HB.white = im; HB.cell = im.width / 6; HB.n = Math.min(G.CHARS.length, Math.round(im.height / HB.cell) * 6, HBOX.length / 4); HB.ok = true; } if (im.decode) im.decode().then(fin, fin); else fin(); };
+    im.src = 'art_game/faces/heads_match_192.webp' + VQ;
+  }
   G.drawChar = function (c, ch, x, y, hpx, now, uni, cheer, flip, hat) {
-    var b = G.posed(ch, 0, now, cheer), s = hpx / 135; if (hat) b.hat = hat;
-    c.save(); c.translate(x, y); c.scale(flip ? -s : s, s); drawBody(c, b, uni || '#2a7fd4', now); c.restore();
+    var s = hpx / 135, S = null;
+    if (G.faceHeads) {
+      HD.kick(); bigSheet();
+      var m = c.getTransform ? c.getTransform() : null, k = m ? Math.sqrt(m.a * m.a + m.b * m.b) : 1, rpx = FR * s * k;   // head radius in device px
+      S = (rpx > 34 || !HD.ok) && HB.ok ? HB : HD.ok ? HD : HB.ok ? HB : null;
+      if (!S) return;
+    }
+    var b = G.posed(ch, 0, now, cheer); if (hat) b.hat = hat; b.sheet = S;
+    c.save(); c.translate(x, y); c.scale(flip ? -s : s, s); drawBody(c, b, uni || '#2a7fd4', now, !!S); c.restore();
   };
 })();
