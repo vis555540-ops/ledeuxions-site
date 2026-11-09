@@ -79,12 +79,13 @@
      shows faces, so heads never pop mid-rally. G.faceHeads = false -> the old drawn heads (A/B and fallback). */
   var HD = { ok: false, img: null, white: null, cell: 64, n: 24 }, FR = 13.5 * 1.4, COSM = { star: 1, flower: 1, wizard: 1, pirate: 1, viking: 1, goldcrown: 1 };
   // tight box of each face inside its cell, in 1/64 cell units (x, y, w, h): only these pixels are drawn (about half the cell = half the raster work)
-  var HBOX = [8,5,48,59,9,3,45,61,4,10,55,54,7,2,49,62,8,3,47,61,12,12,39,52,9,7,46,57,8,13,47,51,12,4,40,60,10,11,43,53,8,6,48,58,10,7,43,57,2,6,59,58,9,5,46,59,10,13,43,51,6,9,52,55,1,7,62,57,8,9,48,55,10,1,44,63,8,14,48,50,8,10,48,54,12,11,39,53,5,7,54,57,10,13,43,51,10,8,43,56,6,5,52,59,5,10,53,54];   // heads_match sheet, all 27 G.CHARS (art_new/tools/match.py -> match_js.txt)
+  var HBOX = [8,5,48,59,9,3,45,61,4,10,55,54,7,2,49,62,8,3,47,61,12,12,39,52,9,7,46,57,8,13,47,51,12,4,40,60,10,11,43,53,8,6,48,58,10,7,43,57,2,6,59,58,9,5,46,59,10,13,43,51,6,9,52,55,1,7,62,57,8,9,48,55,10,1,44,63,8,14,48,50,8,10,48,54,12,11,39,53,5,7,54,57,10,13,43,51,10,8,43,56,6,5,52,59,5,10,53,54,9,1,45,63,9,1,45,63,13,1,38,63];   // heads_match sheet, all 30 G.CHARS incl. story NPCs 27..29 (art_new/tools/match.py -> match_js.txt)
   G.faceHeads = true; G.headSheet = HD;
   var VQ = (/\?v=[^&#]*/.exec((document.currentScript && document.currentScript.src) || '') || [''])[0];
   (function () {
     var vq = VQ;
     function go() {
+      loadBody();   // the illustrated body sheet comes with the faces (a match switches to both at once)
       var im = new Image(); im.decoding = 'async';
       im.onload = function () {
         function fin() {
@@ -109,8 +110,8 @@
   })();
   function useFaces(M) {
     if (!M.waitInput || M.st > 0.3) HD.kick();   // the tutorial now starts by itself (no tap): fetch during its intro so it never runs with old heads
-    if (M.fh === undefined) { if (HD.ok && G.faceHeads) M.fh = 1; else if (M.state === 'play' && !M.waitInput) M.fh = 0; }
-    else if (M.fh === 0 && HD.ok && G.faceHeads && M.state !== 'play') M.fh = 1;   // sheet came late: switch at the next break (KO / intro), never mid-rally
+    if (M.fh === undefined) { if (HD.ok && G.faceHeads && bodyReady(M)) M.fh = 1; else if (M.state === 'play' && !M.waitInput) { if (HD.ok && G.faceHeads && BODY.ok) { while (!prebake(M)); M.fh = 1; } else M.fh = 0; } }   // play began before the spread-out bakes finished (no intro): bake the rest now, once
+    else if (M.fh === 0 && HD.ok && G.faceHeads && bodyReady(M) && M.state !== 'play') M.fh = 1;   // sheet came late: switch at the next break (KO / intro), never mid-rally
     return M.fh === 1 && G.faceHeads;
   }
   function headSprite(c, b, e, now) {   // in head space (origin = head centre, x = facing, 1 unit = z*hs)
@@ -134,7 +135,7 @@
      team-colour jersey, white shorts + belly stripe) in a hip->neck frame; plain fills measured cheaper than strokes or a
      rotated sprite. No shadows / filters. LITE tier: no ink under legs / back arm (front arm + jersey keep theirs).
      Cost vs the stick bodies: 검증/body_perf.mjs (G.cartoonBody = false draws the old renderer for A/B). */
-  var SKIN = ['#fca5b8', '#72b263', '#f7bb89', '#fd9552', '#7c579a', '#8eceed', '#fdde0a', '#4bb4a9', '#e8c9eb', '#e4433e', '#f3b584', '#c9e251', '#9ad3ed', '#d3dae2', '#36588d', '#fd8d4e', '#e7ba88', '#feacb3', '#febc84', '#fae9c5', '#43567c', '#fddc13', '#c3defb', '#71b87b', '#f8c7a6', '#f9bb8b', '#d38b4d'];   // arm/neck colour sampled from the heads_match art (G.CHARS order, 27)
+  var SKIN = ['#fca5b8', '#72b263', '#f7bb89', '#fd9552', '#7c579a', '#8eceed', '#fdde0a', '#4bb4a9', '#e8c9eb', '#e4433e', '#f3b584', '#c9e251', '#9ad3ed', '#d3dae2', '#36588d', '#fd8d4e', '#e7ba88', '#feacb3', '#febc84', '#fae9c5', '#43567c', '#fddc13', '#c3defb', '#71b87b', '#f8c7a6', '#f9bb8b', '#d38b4d', '#f2b88c', '#f4c29d', '#f4c39a'];   // arm/neck colour sampled from the heads_match art (G.CHARS order, 30; Coach Mo hand-set: the sampler hit his stubble)
   var TORSO = {}, TL = 31, OL = 2.3;   // neck-hip length in skeleton units, ink outline thickness
   // local frame: hip = (0,0), neck = (0,-TL); o grows the shape by o on every side (for the ink silhouette)
   function jersey(P, th, o) {
@@ -228,11 +229,132 @@
     c.strokeStyle = INK; c.lineWidth = ow * 1.1; c.stroke(); c.strokeStyle = flash ? '#fff' : uni; c.lineWidth = lw * 1.15; c.stroke(); c.lineCap = 'round';
   }
   G.cartoonBody = true;
+  /* ---------- illustrated body (2026-11-09): art_game/body/body_{hi,lo}.webp, made by art_new/tools/body.py from art_new/body6_gemini_v1.png
+     + body8_gemini_v1.png (normalised to the same scale by the neck-stump width). 14 side-view poses, facing right, headless; the face
+     sheet head sits on the neck stump: idle, run (single, spare), wind-up, catch, hit, KO lying, run cycle x4, release, cheer, hold ball, jump.
+     The sheet has 3 rows: art / kit mask / skin mask. Per (team colour, skin) one row is baked ONCE (GPU composite: mask x colour
+     'multiply', clipped by the mask) and cached, so a frame is still one drawImage per body.
+     The skeleton still runs underneath (ball hand, hit tests, ragdoll); the sprite borrows its spring wobble (rotation), its bob / squash
+     (vertical scale) and the ragdoll torso angle. Running = the 4-frame cycle stepped by distance (one cycle per drawn stride, so the feet
+     do not slide). ?oldbody=1 or G.spriteBody = false -> the drawn cartoon body. */
+  var BM = {};
+  BM['hi'] = { rh: 243, m: [0.0, 56.0, 161.0, 187.0, 78.4, 3.3, 70.9, 76.2, 185.1, 167.0, 44.0, 150.0, 199.0, 91.5, 3.9, 76.3, 73.3, 197.1, 323.0, 35.0, 189.0, 208.0, 84.8, 15.9, 84.9, 90.0, 206.1, 518.0, 53.0, 180.0, 190.0, 84.2, 3.6, 63.2, 81.8, 188.1, 704.0, 30.0, 243.0, 213.0, 97.7, 42.0, 119.5, 101.4, 211.2, 953.0, 178.0, 192.0, 65.0, 188.4, 24.6, 117.9, 27.9, 63.6, 1151.0, 53.0, 162.0, 190.0, 95.2, 4.2, 79.4, 74.1, 188.6, 1319.0, 67.0, 159.0, 176.0, 92.6, 4.2, 73.6, 71.6, 174.0, 1484.0, 55.0, 158.0, 188.0, 102.9, 3.9, 82.2, 79.5, 186.6, 1648.0, 44.0, 154.0, 199.0, 88.6, 3.9, 72.4, 75.4, 197.0, 1808.0, 58.0, 217.0, 185.0, 108.5, 4.2, 89.4, 72.6, 183.1, 2031.0, 6.0, 161.0, 237.0, 84.8, 51.9, 88.3, 118.9, 235.7, 2198.0, 44.0, 119.0, 199.0, 43.8, 4.2, 38.4, 85.7, 197.7, 2323.0, 60.0, 175.0, 183.0, 101.0, 4.5, 85.3, 64.8, 181.1] };
+  BM['lo'] = { rh: 125, m: [0.0, 32.0, 80.0, 93.0, 39.2, 1.6, 35.4, 38.1, 92.5, 86.0, 26.0, 75.0, 99.0, 45.8, 1.9, 38.1, 36.7, 98.5, 167.0, 21.0, 95.0, 104.0, 42.4, 7.9, 42.4, 45.0, 103.0, 268.0, 30.0, 90.0, 95.0, 42.1, 1.8, 31.6, 40.9, 94.0, 364.0, 19.0, 121.0, 106.0, 48.9, 21.0, 59.8, 50.7, 105.6, 491.0, 92.0, 96.0, 33.0, 94.2, 12.3, 58.9, 13.9, 31.8, 593.0, 30.0, 81.0, 95.0, 47.6, 2.1, 39.7, 37.0, 94.3, 680.0, 37.0, 79.0, 88.0, 46.3, 2.1, 36.8, 35.8, 87.0, 765.0, 31.0, 79.0, 94.0, 51.5, 1.9, 41.1, 39.8, 93.3, 850.0, 26.0, 77.0, 99.0, 44.3, 1.9, 36.2, 37.7, 98.5, 933.0, 33.0, 109.0, 92.0, 54.2, 2.1, 44.7, 36.3, 91.5, 1048.0, 6.0, 80.0, 119.0, 42.4, 26.0, 44.1, 59.5, 117.8, 1134.0, 25.0, 60.0, 100.0, 21.9, 2.1, 19.2, 42.9, 98.8, 1200.0, 34.0, 88.0, 91.0, 50.5, 2.3, 42.6, 32.4, 90.6] };
+  // per pose (idle run throw catch hit out run0 run1 run2 run3 release cheer hold jump): box x,y,w,h, neck x,y, torso x,y, feet y (sheet px, relative to the box except x,y)
+  var BP = { idle: 0, run: 1, windup: 2, cat: 3, hit: 4, ko: 5, run0: 6, release: 10, cheer: 11, hold: 12, jump: 13 };
+  var STRIDE = 92;   // skeleton units the drawn feet travel in one 4-frame run cycle (2 steps; run0/run2 contact spread x2)
+  var BODY = { ok: false, fail: false, go: 0, img: null, m: null, rh: 0, u: 1, cache: {}, nc: 0 };
+  G.spriteBody = !/[?&]oldbody=1/.test(location.search); G.bodySheet = BODY;
+  function loadBody() {
+    if (BODY.go || !G.spriteBody) return; BODY.go = 1;
+    var hi = (window.devicePixelRatio || 1) >= 1.5 && !G.lite, S = BM[hi ? 'hi' : 'lo'], im = new Image(); im.decoding = 'async';
+    im.onload = function () { function fin() { BODY.img = im; BODY.m = S.m; BODY.rh = S.rh; BODY.u = 71 / (S.m[8] - S.m[5]); BODY.ok = true; } if (im.decode) im.decode().then(fin, fin); else fin(); };   // u = skeleton units per sheet px (idle: neck->feet = 71 units)
+    im.onerror = function () { BODY.fail = true; };
+    im.src = 'art_game/body/body_' + (hi ? 'hi' : 'lo') + '.webp' + VQ;
+  }
+  function bodyReady(M) { return !G.spriteBody || BODY.fail || (BODY.ok && (!M || prebake(M))); }
+  function kitOf(b, uni) { var C = G.CHARS[b.ch], F = C && C.fit ? FIT[C.fit] : null; return F ? F.top : uni; }
+  function prebake(M) {   // bake each body's colour row ahead, ONE a frame (a bake ~16 ms at CPU x4, software canvas), before the match switches to sprites
+    if (M.bodyBaked) return true; var n = 0, all = true;
+    for (var i = 0; i < M.bodies.length; i++) {
+      var b = M.bodies[i], td = b.team ? M.team : M.myTm || G.MYTEAM, kit = kitOf(b, td.uni), sk = SKIN[b.ch];
+      if (BODY.cache[kit + sk]) continue;
+      if (n++ < 1) bodyRow(kit, sk); else all = false;
+    }
+    if (!BODY.cache.flash) { if (n++ < 1) bodyRow('flash', ''); else all = false; }   // the white hit-flash row too
+    return (M.bodyBaked = all);
+  }
+  function rgbOf(h) { var x = h.length === 4 ? '#' + h[1] + h[1] + h[2] + h[2] + h[3] + h[3] : h, n = parseInt(x.slice(1), 16); return isNaN(n) ? null : [n >> 16, (n >> 8) & 255, n & 255]; }
+  function kitVsSkin(kit, skin) {   // a kit too close to the skin (yellow team + yellow kid) melts into one blob: darken that kit 20%
+    var a = rgbOf(kit), b2 = rgbOf(skin); if (!a || !b2) return kit;
+    var d = Math.sqrt(Math.pow(a[0] - b2[0], 2) + Math.pow(a[1] - b2[1], 2) + Math.pow(a[2] - b2[2], 2));
+    return d > 80 ? kit : 'rgb(' + Math.round(a[0] * 0.8) + ',' + Math.round(a[1] * 0.8) + ',' + Math.round(a[2] * 0.8) + ')';
+  }
+  function bodyRow(kit, skin) {   // the art row with the kit in `kit` and the skin in `skin` (or the white hit-flash row when kit === 'flash')
+    var key = kit + skin, cv = BODY.cache[key]; if (cv) return cv;
+    if (BODY.nc > 48) { BODY.cache = {}; BODY.nc = 0; }
+    var im = BODY.img, w = im.width, rh = BODY.rh;
+    cv = document.createElement('canvas'); cv.width = w; cv.height = rh; var g = cv.getContext('2d');
+    g.drawImage(im, 0, 0, w, rh, 0, 0, w, rh);
+    if (kit === 'flash') { g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(255,255,255,0.8)'; g.fillRect(0, 0, w, rh); }
+    else {
+      var t = BODY.tmp; if (!t || t.width !== w || t.height !== rh) { t = BODY.tmp = document.createElement('canvas'); t.width = w; t.height = rh; } var tg = t.getContext('2d');   // one scratch canvas for every bake
+      [[1, kitVsSkin(kit, skin)], [2, skin]].forEach(function (L) {
+        tg.globalCompositeOperation = 'copy'; tg.drawImage(im, 0, L[0] * rh, w, rh, 0, 0, w, rh);
+        tg.globalCompositeOperation = 'multiply'; tg.fillStyle = L[1]; tg.fillRect(0, 0, w, rh);
+        tg.globalCompositeOperation = 'destination-in'; tg.drawImage(im, 0, L[0] * rh, w, rh, 0, 0, w, rh);
+        g.drawImage(t, 0, 0);
+      });
+    }
+    BODY.nc++; return (BODY.cache[key] = cv);
+  }
+  function runFrame(b) {   // run cycle frame from the distance run (game.js runPh = distance * 0.075), one cycle per drawn stride at this size
+    var d = (b.runPh || 0) / 0.075, st = STRIDE * (b.sc || 1) * (0.4 + 0.6 * (b.th || 1));
+    return ((Math.floor(d / st * 4) % 4) + 4) % 4;
+  }
+  function bodyPose(b, p) {
+    if (b.mode === 'rag') {
+      var lying = !b.flipping && b.ragT > 0.3 && p[3] > b.ry - 34 * b.sc && p[5] > b.ry - 34 * b.sc;   // neck and hip both down near the floor
+      return lying ? BP.ko : BP.hit;
+    }
+    if (b.cheer) return BP.cheer;
+    if (b.charging) return BP.windup;
+    if (b.throwT > 0) return BP.release;
+    if (b.catchT > 0 || (b.hold && b.kbRemain > 0.5)) return BP.cat;   // + sliding back with a caught ball: still the catch
+    if (b.h > 1) return BP.jump;
+    if (b.spd > 30) return BP.run0 + runFrame(b);
+    if (b.hold) return BP.hold;
+    return BP.idle;
+  }
+  var ang = function (x, y) { return Math.atan2(x, -y); };   // angle of a vector from straight up, clockwise
+  function drawSprite(c, b, uni, col, now) {
+    var p = P, k = bodyPose(b, p), M0 = BODY.m, j = k * 9, bx = M0[j], by = M0[j + 1], bw = M0[j + 2], bh = M0[j + 3], nx = M0[j + 4], ny = M0[j + 5], tx = M0[j + 6], ty = M0[j + 7], fy = M0[j + 8];
+    var th = b.th || 1, hs = b.hs || 1, bd = b.bd, z = b.sc, f = b.face < 0 ? -1 : 1;
+    var hg = bd ? (40 * bd.lL / 21 + bd.tL) / 71 : 1, sx = (0.4 + 0.6 * th) * z * BODY.u, sy = hg * z * BODY.u;
+    var row = b.flash > 0 ? bodyRow('flash', '') : bodyRow(kitOf(b, uni), col), tg = b.tg;
+    // wobble = how far the springs lag behind the pose target (torso and head), so the sprite still sways / jiggles like the old body
+    var vxn = p[2] - p[4], vyn = p[3] - p[5], wob = 0, hw = ang(p[0] - p[2], p[1] - p[3]) - ang(vxn, vyn), rot = 0, oy = 0, hrot = 0;
+    if (tg) wob = (ang(vxn, vyn) - ang(tg[2] - tg[4], tg[3] - tg[5])) * f;
+    if (tg) hw -= ang(tg[0] - tg[2], tg[1] - tg[3]) - ang(tg[2] - tg[4], tg[3] - tg[5]);
+    c.save(); if (b.role === 'toOut' || b.role === 'toIn') c.globalAlpha = 0.55;
+    if (k === BP.hit && b.mode === 'rag') {   // tumbling: the sprite's torso axis follows the ragdoll's hip->neck
+      rot = ang(vxn * f, vyn) - ang(nx - tx, ny - ty);
+      c.translate((p[2] + p[4]) / 2, (p[3] + p[5]) / 2); c.scale(f, 1); c.rotate(rot); c.scale(sx * 0.95, sy * 0.95); c.translate(-tx, -ty);
+    } else if (k === BP.ko) {   // lying: lies the way the ragdoll lies (neck side), feet on the floor
+      var nd = p[2] >= p[4] ? 1 : -1; f = nd;
+      c.translate((p[2] + p[4]) / 2, b.ry + 2 * z); c.scale(f, 1); c.scale(sx, sy * 0.95); c.translate(-tx, -fy);
+      hrot = Math.PI / 2;
+    } else {
+      var hs0 = tg ? Math.max(20, b.ry - tg[3]) : 71 * z * hg, sq = clamp((b.ry - p[3]) / hs0, 0.88, 1.12);   // squash / stretch from the skeleton's neck height (bob, landing, springs)
+      if (k === BP.cheer) { sq = 1; oy = -Math.max(0, b.ry - Math.max(p[17], p[21])); }   // cheer: the skeleton hops (feet leave the floor) -> lift the sprite with it
+      else if (k >= BP.run0 && k < BP.run0 + 4) sq = 1 + (sq - 1) * 0.4;   // the run frames carry their own bob
+      rot += clamp(wob, -0.45, 0.45) * 0.9;
+      c.translate(b.rx, b.ry + oy); c.scale(f, 1); c.rotate(rot); c.scale(sx / sq * 0.5 + sx * 0.5, sy * sq); c.translate(-tx, -fy);
+    }
+    c.drawImage(row, bx, by, bw, bh, 0, 0, bw, bh);   // the pose box
+    // head: on the neck stump, along the body's up axis, upright size (undo the body's x/y stretch)
+    c.translate(nx, ny); c.scale(1 / sx, 1 / sy); c.rotate(hrot + clamp(hw * f, -0.6, 0.6) * 0.8); c.scale(z * hs, z * hs); c.translate(0, -FR * 0.62);
+    headSprite(c, b, b.eyes, now);
+    c.restore();
+  }
+  // where the ball sits when held (game.js asks every step): the hand of the drawn pose, in hi-sheet px relative to the pose box
+  // idle front fist, wind-up raised hand, catch hands, run cycle = carried in front of the chest, hold = the ball drawn in the art (game ball hidden), jump
+  var HAND = { 0: [140, 43], 2: [17, 14], 3: [147, 46], 6: [118, 80], 7: [118, 80], 8: [118, 80], 9: [118, 80], 12: [84, 61], 13: [128, 92] }, HQ = { x: 0, y: 0 };
+  function spriteOn(b) { var M = G.M; return G.spriteBody && BODY.ok && M && M.fh === 1 && b.mode === 'stand' && b.role !== 'toOut' && b.role !== 'toIn'; }
+  G.ballHand = function (b) {
+    if (!spriteOn(b)) return null;
+    var k = bodyPose(b, P), h = HAND[k]; if (!h) return null;
+    var m = BM.hi.m, j = k * 9, u = 71 / (m[8] - m[5]), bd = b.bd, hg = bd ? (40 * bd.lL / 21 + bd.tL) / 71 : 1, z = b.sc;
+    HQ.x = b.rx + (b.face < 0 ? -1 : 1) * (h[0] - m[j + 6]) * u * (0.4 + 0.6 * (b.th || 1)) * z;
+    HQ.y = b.ry - (m[j + 8] - h[1]) * u * hg * z; return HQ;
+  };
+  function ballInArt(B) { return B.st === 'held' && B.holder && spriteOn(B.holder) && bodyPose(B.holder, P) === BP.hold; }   // the hold pose draws its own ball
   function drawBody(c, b, uni, now, fh) {
     var i, z = b.sc, col = b.flash > 0 ? '#ffffff' : b.skin, out = INK, th = b.th || 1, hs = b.hs || 1, zt = z * th;
     fh = fh && b.ch >= 0 && b.ch < (b.sheet || HD).n;
     for (i = 0; i < 11; i++) { P[i * 2] = b.pts[i].x; P[i * 2 + 1] = b.pts[i].y; }
     var p = P;
+    if (fh && G.spriteBody && BODY.ok) { drawSprite(c, b, uni, b.flash > 0 ? '#fff' : SKIN[b.ch], now); return; }
     c.save(); if (b.role === 'toOut' || b.role === 'toIn') c.globalAlpha = 0.55;
     c.lineCap = 'round'; c.lineJoin = 'round';
     if (G.cartoonBody) {
@@ -508,7 +630,7 @@
     for (i = 0; i < ents.length; i++) {
       var e = ents[i];
       if (e.b) { var td = e.b.team ? M.team : M.myTm || G.MYTEAM; drawBody(c, e.b, td.uni, now, fh); if ((e.b.charging || e.b.sweatT > 0) && e.b.mode !== 'rag') sweat(c, e.b, now); }   // 💦 effort sweat while winding up AND for a beat after a charged throw (2026-11-03)
-      else if (e.B.alive && !(e.B.st === 'held' && e.B.holder.mode === 'rag')) drawBall(c, e.B, now);
+      else if (e.B.alive && !(e.B.st === 'held' && e.B.holder.mode === 'rag') && !ballInArt(e.B)) drawBall(c, e.B, now);
     }
     // my marker + catch timing ring
     if (me) {
@@ -663,10 +785,10 @@
   G.drawChar = function (c, ch, x, y, hpx, now, uni, cheer, flip, hat) {
     var s = hpx / 135, S = null;
     if (G.faceHeads) {
-      HD.kick(); bigSheet();
+      HD.kick(); bigSheet(); loadBody();
       var m = c.getTransform ? c.getTransform() : null, k = m ? Math.sqrt(m.a * m.a + m.b * m.b) : 1, rpx = FR * s * k;   // head radius in device px
       S = (rpx > 34 || !HD.ok) && HB.ok ? HB : HD.ok ? HD : HB.ok ? HB : null;
-      if (!S) return;
+      if (!S || !bodyReady()) return;
     }
     var b = G.posed(ch, 0, now, cheer); if (hat) b.hat = hat; b.sheet = S;
     c.save(); c.translate(x, y); c.scale(flip ? -s : s, s); drawBody(c, b, uni || '#2a7fd4', now, !!S); c.restore();

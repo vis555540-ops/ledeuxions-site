@@ -4,9 +4,9 @@
 (function () {
   'use strict';
   var G = window.G, S = G.story = {}, TAU = Math.PI * 2, INK = '#1b1b2f';
-  S.HERO = G.HERO; S.COACH = 3; S.DEX = G.DEX; S.DEV = 1; S.CAPT = 6;   // character ids used in the comics
+  S.HERO = G.HERO; S.COACH = G.COACH; S.DEX = G.DEX; S.DEV = G.DEV; S.CAPT = 6;   // character ids used in the comics (coach / developer / Vance = own NPC faces since 2026-11-09)
   // the ringleader from gym class: captain of the developer's team in the final, and the one you play in the final chapter. Swap his look here.
-  S.BOSS = { ch: 20, hat: 'shades', uni: '#c9a227' };
+  S.BOSS = { ch: G.VANCE, hat: 'shades', uni: '#c9a227' };
   var TXT = {
     en: {
       nmCoach: 'Coach Mo', rvName: 'Dex', bsName: 'Vance', tBoss: 'Glossworth Platinum', stNext: 'CONTINUE ▶', stTap: 'TAP ▶', stSkip: 'SKIP ▶▶',

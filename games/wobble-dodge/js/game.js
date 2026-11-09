@@ -91,9 +91,13 @@
     // 24 GOLD BOSS (new): rich tycoon, money shot. slicked blond hair + navy suit + red tie + pot belly.
     { skin: '#f0c89a', hat: 'slick', hs: 1.05, th: 1.55, st: [5, 1, 4], sp: 'money', fit: 'suit', drawn: 1, isNew: 1, bd: { broad: 0.06 } },
     { skin: '#f5c69a', hat: 'hero', hs: 1.0, th: 0.9, st: [1, 4, 4], sp: 'boomer', story: 1, fit: 'hoodie' },   // 25 HERO
-    { skin: '#a8693f', hat: 'dexcap', hs: 1.0, th: 0.95, st: [3, 5, 2], sp: 'zigzag', story: 1, fit: 'tee' }    // 26 DEX
+    { skin: '#a8693f', hat: 'dexcap', hs: 1.0, th: 0.95, st: [3, 5, 2], sp: 'zigzag', story: 1, fit: 'tee' },   // 26 DEX
+    // story NPCs with their own face art (2026-11-09, art_new/npc3_gemini_v1.png): never in the roster / random fill (all loops stop at NROSTER)
+    { skin: '#f2b88c', hat: 'none', hs: 1.05, th: 1.15, st: [3, 2, 5], sp: 'slow', story: 1 },   // 27 COACH MO (comics, result-card coach)
+    { skin: '#f4c29d', hat: 'none', hs: 1.05, th: 1.3, st: [5, 1, 4], sp: 'money', story: 1, fit: 'suit' },   // 28 THE DEVELOPER (comics)
+    { skin: '#f4c39a', hat: 'none', hs: 1.0, th: 1.0, st: [4, 3, 2], sp: 'boomer', story: 1, bd: { tall: 0.05 } }   // 29 VANCE, final boss (plays in the final + the last chapter; stats = Cooly's, who stood in before)
   ];
-  G.NROSTER = 25; G.GOLDBOSS = 24; G.HERO = 25; G.DEX = 26;
+  G.NROSTER = 25; G.GOLDBOSS = 24; G.HERO = 25; G.DEX = 26; G.COACH = 27; G.DEV = 28; G.VANCE = 29;
   /* ---------- COMMAND shots (fighting-game motion + THROW) ----------
      seq: directions relative to the rivals: F = toward them, B = back, U = up (far side), D = down (near side).
      The motion must be entered within CMD_WIN s before THROW is pressed (or released), the last direction within CMD_LAST s.
@@ -505,7 +509,7 @@
     }
   }
   function ballStep(M, B) {
-    if (B.st === 'held') { var hb = B.holder, hp = hb.pts[4]; B.x = hp.x + hb.face * 3; B.z = hb.z; B.h = Math.max(B.r, FY(hb.z) - hp.y); B.vx = B.vz = B.vh = 0; return; }
+    if (B.st === 'held') { var hb = B.holder, hp = (G.ballHand && G.ballHand(hb)) || hb.pts[4]; B.x = hp.x + hb.face * 3; B.z = hb.z; B.h = Math.max(B.r, FY(hb.z) - hp.y); B.vx = B.vz = B.vh = 0; return; }   // G.ballHand: illustrated body -> the ball sits in the drawn hands
     B.lx = B.x; B.lz = B.z; B.lh = B.h; B.t += DT;
     if (B.path) pathStep(M, B);
     else {

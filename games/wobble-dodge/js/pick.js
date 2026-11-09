@@ -7,7 +7,7 @@
   'use strict';
   var G = window.G;
   var IDS = ['curly', 'tootboss', 'clucky', 'bigbelly', 'twinny', 'snoozy', 'spinny', 'ziggy', 'peekaboo', 'flippy', 'sniffles', 'boingo',
-    'zappy', 'swooshy', 'scarfy', 'hulky', 'grampy', 'twinkle', 'blazey', 'meowy', 'cooly', 'buzzy', 'puffy', 'goggly', 'goldboss', 'hero', 'dex'];   // 24 = gold boss (in the grid); 25,26 = the story kids (not in the grid)
+    'zappy', 'swooshy', 'scarfy', 'hulky', 'grampy', 'twinkle', 'blazey', 'meowy', 'cooly', 'buzzy', 'puffy', 'goggly', 'goldboss', 'hero', 'dex', 'coachmo', 'developer', 'vance'];   // 24 = gold boss (in the grid); 25,26 = the story kids, 27..29 story NPCs (not in the grid; Vance shows on the final's VS screen)
   G.addStr({
     en: {
       cp0: 'Party time! Let\'s bounce!', cp1: 'Make way! The Boss is here!', cp2: 'Bawk! Can\'t catch me!', cp3: 'Belly power... BOOM!', cp4: 'Which ball is real? Hehe!', cp5: 'Zzz... I\'ll catch it all...',
