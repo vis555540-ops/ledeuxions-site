@@ -26,7 +26,7 @@
   G.ROOM_SERVER = ROOM_SERVER;
   function $(id) { return document.getElementById(id); }
   var cv = $('cv'), ctx = cv.getContext('2d');
-  var state = 'menu', M = null, sel = 0, touchOn = false, acc = 0, last = 0, resT = 0;
+  var state = 'menu', M = null, sel = 0, touchOn = false, acc = 0, last = 0, resT = 0, autoGo = 0;
   var NET = null, ovl = false, netView = null, hostTries = 0, gAcc = 0;   // NET: null | 'host' | 'guest'
   var V = { SW: 1280, k: 1, camX: 0, touch: false, port: false };
   var WD = window.__wd = { auto: false, speed: 1, errors: [], log: [] };
@@ -670,6 +670,8 @@
       if (NET === 'guest' && (state === 'play' || state === 'result') && NETM.gotSnap) guestFrame(dt, now);
       else if (state === 'play' && M && !Sdk.adPlaying) {
         var my = M.myTeam || 0;
+        // ⚡ first visit: the tutorial no longer waits for a tap — it kicks off by itself right after the intro (0 taps to gameplay; a tap still starts it sooner). 2026-11-09
+        if (M.waitInput && M.state === 'intro' && M.st >= 0.9) { autoGo += dt; if (autoGo > 0.1) { WD.log.push('autoGo'); guideGo(); } } else autoGo = 0;
         if (M.hitstop > 0) { M.hitstop -= dt; if (M.shake > 0) M.shake *= 0.92; }
         else {
           var scale = M.slow > 0 ? 0.3 : M.nearSlow ? 0.4 : M.guideSlow ? 0.45 : 1; if (M.slow > 0) M.slow -= dt;

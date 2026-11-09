@@ -5,7 +5,7 @@
   var T = {
     en: {
       teamSize: 'PLAYERS', vs: '{0} vs {1}',
-      gTapStart: 'TAP TO PLAY!', gKeyStart: 'PRESS ANY KEY!', gHowT: 'Left side: move  ·  right buttons: THROW / CATCH / JUMP', gHowK: 'Move: WASD / arrows  ·  J: throw  ·  K: catch  ·  Space: jump',
+      gTapStart: 'GET READY!', gKeyStart: 'GET READY!', gHowT: 'Left side: move  ·  right buttons: THROW / CATCH / JUMP', gHowK: 'Move: WASD / arrows  ·  J: throw  ·  K: catch  ·  Space: jump',
       gThrowT: 'Hold THROW... then let go!', gThrowK: 'Hold J... then let go to throw!', gRelease: 'Let go to throw!',
       gCatchT: 'Ball coming! Tap CATCH!', gCatchK: 'Ball coming! Press K to catch!',
       gSpT: 'SPECIAL! Tap JUMP, then THROW in the air!', gSpK: 'SPECIAL! Space to jump, then J in the air!',
@@ -67,7 +67,7 @@
     },
     ko: {
       teamSize: '인원', vs: '{0}대{1}',
-      gTapStart: '눌러서 시작!', gKeyStart: '아무 키나 누르면 시작!', gHowT: '왼쪽: 움직이기  ·  오른쪽 버튼: 던지기 / 잡기 / 점프', gHowK: '이동: WASD / 방향키  ·  J: 던지기  ·  K: 잡기  ·  Space: 점프',
+      gTapStart: '준비!', gKeyStart: '준비!', gHowT: '왼쪽: 움직이기  ·  오른쪽 버튼: 던지기 / 잡기 / 점프', gHowK: '이동: WASD / 방향키  ·  J: 던지기  ·  K: 잡기  ·  Space: 점프',
       gThrowT: '던지기 꾹 눌렀다가... 떼기!', gThrowK: 'J를 꾹 눌렀다가 떼면 던져요!', gRelease: '떼면 던져요!',
       gCatchT: '공이 와요! 잡기!', gCatchK: '공이 와요! K로 잡기!',
       gSpT: '필살기! 점프 누르고 공중에서 던지기!', gSpK: '필살기! Space로 점프, 공중에서 J!',

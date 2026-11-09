@@ -14,8 +14,13 @@
     nearDz: 30,       // near-miss: a real enemy shot passing within this many px (vertical) of the controlled player → "아슬!".
     nearSlow: 0.16,   // seconds of brief slow-mo on a near-miss (uses M.slow, which runs at 0.3× in main.js).
     nearCD: 2.6,      // min seconds between near-miss moments (so it never spams / goes stale).
-    throwShake: 3     // tiny screen recoil on YOUR throw (scaled by charge). keep small — 5v5 would get busy otherwise.
+    throwShake: 3,    // tiny screen recoil on YOUR throw (scaled by charge). keep small — 5v5 would get busy otherwise.
+    // 2026-11-09 hit feel: hit-stop 80–120 ms scaled by ball power, shake scaled too but HARD-capped (never stacks: always max(), never +=)
+    hitStop0: 0.08, hitStop1: 0.12, shakeMax: 18,
+    catchStop: 0.07,  // catch: short freeze + white ring + big CATCH! text
+    counter: [0.3, 0.55]   // a rival who catches throws back fast (seconds holding) — not in the tutorial
   };
+  try { G.reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { G.reduceMotion = false; }
   G.FEEL = FEEL;
   G.W = W; G.H = H; G.DT = DT; G.ZPX = ZPX; G.CX = CX; G.BL = BL; G.BR = BR; G.ROUND_T = ROUND_T;
   function FY(z) { return FY0 + z * ZPX; } G.FY = FY;
@@ -562,7 +567,7 @@
     M.lastCatchMe = false;
     M.lastSp = B.team === 0 && !!B.sp && !B.cmd;
     // the hit feel: hit-stop, shake, white body flash, impact ring + sparks, crunchy thump
-    M.hitstop = 0.06 + 0.06 * pw; M.shake = Math.max(M.shake, 8 + 9 * pw); M.flash = Math.max(M.flash, 0.06 + 0.05 * pw);
+    M.hitstop = Math.max(M.hitstop, clamp(FEEL.hitStop0 + 0.02 * (pw - 0.55), FEEL.hitStop0, FEEL.hitStop1)); M.shake = Math.max(M.shake, Math.min(FEEL.shakeMax, 6 + 6 * pw)); M.flash = Math.max(M.flash, 0.06 + 0.05 * pw);
     M.fx.push({ k: 'ring', x: B.x, y: hy, life: 0, max: 0.28, col: '#fff', s: 20 + 30 * pw });
     M.fx.push({ k: 'burst', x: B.x, y: hy, life: 0, max: 0.12, col: '#fff', s: 26 + 22 * pw });
     sparks(M, B.x, hy, 10 + (pw * 6 | 0), '#ffe45c', 380 + 260 * pw);
@@ -596,9 +601,13 @@
     if (hardShot) { b.kbDir = kbDir; b.kbRemain = 64 * b.sc * kbFrac; }   // 상한 = 캐릭터 2명 폭(64*sc), 라인/벽서 멈춤(standStep)
     var meC = b.team === 0 && isHuman(M, b); M.lastCatchMe = meC;
     if (meC) { M.me.cat++; if (b.h > 1) M.me.airCat++; if (M.guide) M.guide.cat++; }
-    G.sfx('catch'); pop(M, b.x, FY(b.z) - 150 * b.sc, T('catch'), '#8ef0a8', 34); meterAdd(M, b.team, 0.4); ev(M, b.team === 0 ? 'catch' : 'catchFoe');
-    M.hitstop = 0.08; M.shake = Math.max(M.shake, 6); crowd(M, 0.8); sparks(M, B.x, bsy(B), 8, '#8ef0a8', 300);
+    var bigC = b.team === 0 || isHuman(M, b);   // your side's catch = the big moment; a rival's catch stays smaller
+    G.sfx('catch'); pop(M, b.x, FY(b.z) - 150 * b.sc, T('catch'), '#8ef0a8', bigC ? 62 : 40); meterAdd(M, b.team, 0.4); ev(M, b.team === 0 ? 'catch' : 'catchFoe');
+    M.hitstop = Math.max(M.hitstop, FEEL.catchStop); M.shake = Math.max(M.shake, 6); crowd(M, 0.8); sparks(M, B.x, bsy(B), 8, '#8ef0a8', 300);
     M.fx.push({ k: 'ring', x: B.x, y: bsy(B), life: 0, max: 0.25, col: '#8ef0a8', s: 40 });
+    M.fx.push({ k: 'ring', x: B.x, y: bsy(B), life: 0, max: 0.22, col: '#ffffff', s: bigC ? 78 : 52 });   // white flash ring
+    if (bigC) M.flash = Math.max(M.flash, 0.05);
+    if (!isHuman(M, b) && !(M.guide && b.team === 1)) b.ai.fast = 1;   // fast counter: the AI catcher throws straight back
     if (M.easy) return;   // easy rules: a catch only keeps the ball
     // American rules: the thrower is out, and the catcher's teammate who went out first comes back in
     if (th && th.team !== b.team && th.role === 'in' && !th.pendingOut) {
@@ -681,7 +690,8 @@
     a.t -= DT;
     if (M.state !== 'play') { if (b.hold && M.state === 'intro') return o; return o; }
     if (b.hold) {
-      if (a.holdT == null) { a.holdT = rnd(P.hold, P.hold * 1.7); a.tx = b.role === 'in' ? (b.team ? rnd(CX + 40, CX + 190) : rnd(CX - 190, CX - 40)) : b.x; a.tz = clamp(b.z + rnd(-0.25, 0.25), 0.05, 0.95); a.useSp = M.meter[b.team] >= 1; a.jt = a.useSp || Math.random() < 0.25 * (P.pow + 0.3); }
+      if (a.holdT == null) { a.holdT = rnd(P.hold, P.hold * 1.7); a.tx = b.role === 'in' ? (b.team ? rnd(CX + 40, CX + 190) : rnd(CX - 190, CX - 40)) : b.x; a.tz = clamp(b.z + rnd(-0.25, 0.25), 0.05, 0.95); a.useSp = M.meter[b.team] >= 1; a.jt = a.useSp || Math.random() < 0.25 * (P.pow + 0.3); if (a.fast) { a.holdT = Math.min(a.holdT, rnd(FEEL.counter[0], FEEL.counter[1])); a.jt = a.useSp; } }
+      a.fast = 0;
       a.holdT -= DT; walkTo(o, b, a.tx, a.tz, 0.8);
       if (a.holdT < 0.5 && !b.charging && !a.useSp) { b.charging = true; b.charge = Math.max(0, P.pow - 0.6); }
       if (a.jt && a.holdT < 0.2 && b.h <= 0 && !b.catchT) { o.jump = true; a.jt = false; }

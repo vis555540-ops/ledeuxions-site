@@ -471,7 +471,7 @@
     var k = V.k, SW = V.SW;
     if (!bg || bgK !== k) buildBg(k);
     c.setTransform(1, 0, 0, 1, 0, 0);
-    var sx = 0, sy = 0; if (M && M.shake > 0.3 && !G.lite) { sx = (Math.random() - 0.5) * M.shake * 1.4; sy = (Math.random() - 0.5) * M.shake * 1.4; }
+    var sx = 0, sy = 0; if (M && M.shake > 0.3 && !G.lite && !G.reduceMotion) { var shA = Math.min(M.shake, (G.FEEL && G.FEEL.shakeMax) || 18) * 1.4; sx = (Math.random() - 0.5) * shA; sy = (Math.random() - 0.5) * shA; }   // capped: overlapping hits never add up
     // slight view zoom (landscape only): the court + players read a bit bigger, the crowd takes relatively less of the frame (형 2026-11-02 "약간만"). Purely visual — no world/physics constant changes.
     var Z = V.port ? 1 : (V.zoom != null ? V.zoom : 1.08), FX = CX, FYZ = 500;
     // 🏀 clutch punch-in: a gentle, eased extra zoom during slow-mo / match-point near-slow (landscape only). Pure view — no physics.
