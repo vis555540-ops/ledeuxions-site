@@ -62,7 +62,7 @@
 <div id="more"><div id="sent"><div id="sentT"></div><button id="back" type="button">⌫</button><button id="logB" type="button" title="쓴 기록">📒</button><button id="full" type="button" title="전체 화면">⛶</button></div>
 <div id="alts"></div></div>
 <canvas id="ink"></canvas>
-<script src="../call.js?v=14"></script>
+<script src="../call.js?v=15"></script>
 <div id="big"><img alt="쓴 글씨 크게"><span>톡 하면 닫힘</span></div>
 <div id="log"><header><b>📒 쓴 기록 (이 기기 안에만)</b><button id="logClose" type="button">닫기</button></header><div id="logL"></div></div>
 <script>
@@ -189,7 +189,7 @@ function move(e){ if(!P.has(e.pointerId)||!cur) return; if(e.cancelable) e.preve
 function up(e){ if(!P.has(e.pointerId)) return; P.delete(e.pointerId); if(P.size){ relink(); return; }
   var s=cur; cur=null; clearTimeout(timer);
   if(s && window.malhaeCall && e.isTrusted!==false){ var d=0; for(var i=1;i<s[0].length;i++) d+=Math.hypot(s[0][i]-s[0][i-1], s[1][i]-s[1][i-1]);
-    if(malhaeCall.tap({x:s[0][0], y:s[1][0], start:downAt, end:Date.now(), len:d, small:Math.max(14,Math.min(W,H)/30)})){ strokes.splice(-2,2); redraw(); return; } }   // 톡톡 = 부르기, 두 점은 지움
+    if(malhaeCall.tap({x:s[0][0], y:s[1][0], start:downAt, end:Date.now(), len:d, n:strokes.length})){ strokes.splice(-2,2); redraw(); return; } }   // 톡톡 = 부르기, 두 점은 지움
   if(strokes.length) timer=setTimeout(recog,1200); }
 if(window.PointerEvent){
   cv.addEventListener('pointerdown',down); cv.addEventListener('pointermove',move,{passive:false});

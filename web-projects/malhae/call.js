@@ -6,9 +6,12 @@
 (function(){
   "use strict";
   const DEFAULT_NAME = "순남아", KEY = "malhae_callname";
-  const GAP = 400;      // 두 번째 톡이 첫 톡 뗀 뒤 이 안에 닿아야 함 (ms)
-  const TAP_MS = 350;   // 이보다 오래 누르면 톡이 아님
-  const NEAR = 80;      // 두 톡 사이 거리 (px) — 손톱이라 넉넉히
+  // 11/11 고침: 형 「글자가 될 때 되고 안 될 때 안 되고」 — ㅑ·ㅕ 의 짧은 획 두 개가 톡톡으로 먹혔다.
+  //   이제 칸이 「비어 있을 때」 친 두 번만 부르기. 칸에 획이 하나라도 있으면 절대 안 부름 (노란 단추는 언제나 됨)
+  const GAP = 350;      // 두 번째 톡이 첫 톡 뗀 뒤 이 안에 닿아야 함 (ms)
+  const TAP_MS = 180;   // 이보다 오래 누르면 톡이 아님
+  const MOVE = 6;       // 이보다 많이 움직이면 톡이 아님 (px)
+  const NEAR = 60;      // 두 톡 사이 거리 (px)
   try{
     const q = new URLSearchParams(location.search);
     if(q.has("name")){ const v = (q.get("name")||"").trim(); if(v) localStorage.setItem(KEY, v); else localStorage.removeItem(KEY); }
@@ -45,11 +48,11 @@
 
   // 글씨 칸에서 획 하나가 끝날 때마다 부른다. 두 번째 톡이면 이름을 부르고 true (→ 칸은 두 점을 지운다)
   let last = null;
-  function tap(s){ // {x, y, start, end, len, small}
-    const isTap = (s.end - s.start) <= TAP_MS && s.len <= s.small;
+  function tap(s){ // {x, y, start, end, len, n}  n = 이 획까지 칸에 있는 획 수
+    const isTap = (s.end - s.start) < TAP_MS && s.len < MOVE;
     if(!isTap){ last = null; return false; }
-    if(last && s.start - last.end <= GAP && Math.hypot(s.x - last.x, s.y - last.y) <= NEAR){ last = null; say(); return true; }
-    last = s; return false;
+    if(last && s.n === 2 && s.start - last.end < GAP && Math.hypot(s.x - last.x, s.y - last.y) < NEAR){ last = null; say(); return true; }
+    last = s.n === 1 ? s : null; return false;   // 첫 톡은 빈 칸에 친 것만
   }
   window.malhaeCall = { name, say, mount, tap };
 })();

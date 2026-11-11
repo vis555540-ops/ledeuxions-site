@@ -88,7 +88,7 @@
 <script src="emergency.js?v=12"></script>
 <script src="feedback.js?v=13"></script>
 <!-- 2026-11-11 형: 글씨 칸 톡톡 두 번 / 노란 단추 = 「순남아」 부르기 -->
-<script src="call.js?v=14"></script>
+<script src="call.js?v=15"></script>
 
 <script>
 // ── 문구 세트 v0.1 (이음 작성: 위관로·석션·신앙 반영, 8카테고리 89문구. 나중에 서버 동기화='빌드업 통로') ──
@@ -236,7 +236,7 @@ function renderGrid(){
     const s=cur; cur=null; clearTimeout(timer);
     // 톡톡 두 번 = 이름 부르기 (2026-11-11). 두 점은 지운다
     if(s && window.malhaeCall && e.isTrusted!==false){ let d=0; for(let i=1;i<s[0].length;i++) d+=Math.hypot(s[0][i]-s[0][i-1], s[1][i]-s[1][i-1]);
-      if(malhaeCall.tap({x:s[0][0], y:s[1][0], start:downAt, end:Date.now(), len:d, small:Math.max(14,Math.min(W,H)/30)})){ strokes.splice(-2,2); redraw(); return; } }
+      if(malhaeCall.tap({x:s[0][0], y:s[1][0], start:downAt, end:Date.now(), len:d, n:strokes.length})){ strokes.splice(-2,2); redraw(); return; } }
     if(strokes.length) timer=setTimeout(recog,800);
   }
   if(window.PointerEvent){
