@@ -15,11 +15,22 @@
   html,body{height:100%; margin:0; overflow:hidden; overscroll-behavior:none}
   body{background:var(--bg); color:var(--on); font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
        display:flex; flex-direction:column; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-  #top{display:flex; gap:8px; padding:8px; flex:0 0 auto}
-  #cand{flex:1; min-width:0; font:inherit; font-size:clamp(26px,7vw,48px); font-weight:800; text-align:left; padding:10px 14px; border-radius:14px;
+  /* 2026-11-11 형 「화면 하얀색 크게만」: 위에 얇은 줄 하나(말하기·순남아·지우기·⚙) + 나머지는 다 흰 칸. 기타 단추는 ⚙ 안에 */
+  #top{display:flex; gap:6px; padding:4px; flex:0 0 auto; height:68px}
+  #top > button{min-width:88px}
+  #top #say{background:#3DD68C; color:#06210f; font:inherit; font-size:clamp(20px,4.6vw,28px); font-weight:900; border:0; border-radius:14px; padding:0 12px}
+  #top .callBtn{font-size:clamp(20px,4.6vw,28px); padding:0 12px}
+  #gear{min-width:56px!important; flex:0 0 auto; font-size:26px; border:0; border-radius:14px; background:#2B3440; color:#E9F0F8}
+  #top > button{white-space:nowrap}
+  @media (max-width:640px){ #top > button, #top #say, #top .callBtn, #clr{min-width:0; padding:0 8px; font-size:19px} #gear{min-width:44px!important; font-size:22px} #cand{flex:1 1 40px} }
+  #more{display:none; flex-direction:column; flex:0 0 auto}
+  #more.on{display:flex}
+  #sentT{display:block}
+  #cand{flex:1; min-width:0; font:inherit; font-size:clamp(22px,5.5vw,40px); font-weight:800; text-align:left; padding:10px 14px; border-radius:14px;
         border:2px solid var(--hi); background:var(--panel); color:var(--on); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  #cand.idle{border-color:var(--line); color:var(--muted); font-size:clamp(18px,4.6vw,26px); font-weight:600}
-  #clr{flex:0 0 auto; font:inherit; font-size:clamp(20px,5vw,30px); font-weight:800; padding:0 18px; border-radius:14px; border:0; background:#c62828; color:#fff}
+  #cand.idle{border-color:var(--line); color:var(--muted); font-size:clamp(16px,3.6vw,22px); font-weight:600}
+  #cand small{display:block; font-size:.5em; color:var(--muted); overflow:hidden; text-overflow:ellipsis}
+  #clr{flex:0 0 auto; font:inherit; font-size:clamp(20px,4.6vw,28px); font-weight:800; padding:0 12px; border-radius:14px; border:0; background:#c62828; color:#fff}
   #sent{display:flex; gap:8px; padding:8px 8px 0; align-items:stretch}
   #sentT{flex:1; min-width:0; min-height:56px; font-size:clamp(22px,5.5vw,36px); font-weight:800; padding:8px 12px; border-radius:14px; background:#fffdf5; color:#111; line-height:1.3; word-break:keep-all; overflow-wrap:anywhere}
   #sentT:empty::before{content:"쓴 말이 여기 이어 붙어요"; color:#9aa; font-weight:600; font-size:18px}
@@ -27,7 +38,7 @@
   #say{background:#3DD68C; color:#06210f} #back,#full{background:#2B3440; color:#E9F0F8}
   #alts{display:flex; gap:8px; padding:0 8px 8px; flex:0 0 auto; overflow-x:auto; min-height:8px}
   #alts button{font:inherit; font-size:22px; font-weight:700; padding:8px 14px; border-radius:12px; border:1px solid var(--line); background:var(--panel); color:var(--on); white-space:nowrap}
-  #ink{flex:1; min-height:0; margin:0 8px 56px; border-radius:16px; background:#fffdf5; touch-action:none; display:block; width:calc(100% - 16px)}
+  #ink{flex:1; min-height:0; margin:0 4px 56px; border-radius:16px; background:#fffdf5; touch-action:none; display:block; width:calc(100% - 8px)}
   #big{position:fixed; inset:0; background:#fffdf5; display:none; z-index:5}
   #big.on{display:block}
   #big img{width:100%; height:100%; object-fit:contain}
@@ -47,9 +58,9 @@
 </style>
 </head>
 <body>
-<div id="sent"><div id="sentT"></div><button id="say" type="button">🔊 말하기</button><button id="back" type="button">⌫</button><button id="logB" type="button" title="쓴 기록">📒</button><button id="full" type="button" title="전체 화면">⛶</button></div>
-<div id="top"><button id="cand" class="idle" type="button">✍️ 손 전체로 문질러 써도 돼요 · 화면 맨 아래는 종이로 가리고 쓰세요</button><button id="clr" type="button">다 지우기</button></div>
-<div id="alts"></div>
+<div id="top"><button id="cand" class="idle" type="button">✍️ 아래 흰 칸에 쓰세요</button><button id="say" type="button">🔊 말하기</button><button id="clr" type="button">지우기</button><button id="gear" type="button" title="더 보기">⚙</button></div>
+<div id="more"><div id="sent"><div id="sentT"></div><button id="back" type="button">⌫</button><button id="logB" type="button" title="쓴 기록">📒</button><button id="full" type="button" title="전체 화면">⛶</button></div>
+<div id="alts"></div></div>
 <canvas id="ink"></canvas>
 <script src="../call.js?v=14"></script>
 <div id="big"><img alt="쓴 글씨 크게"><span>톡 하면 닫힘</span></div>
@@ -62,10 +73,13 @@
 //  · 여러 손가락·손바닥 = 펜 하나(닿은 손가락들 가운데). 다 떼야 획 끝
 //  · 손 떼고 1.2초 → 글자로(구글 손글씨, 인터넷 필요). 글자 톡 = 소리. 안 바뀌면 그림 그대로 — 「크게」로 보여 줌
 var cv=document.getElementById('ink'), cx=cv.getContext('2d'), cand=document.getElementById('cand'), alts=document.getElementById('alts'), big=document.getElementById('big');
-var HINT='✍️ 손 전체로 문질러 써도 돼요 · 화면 맨 아래는 종이로 가리고 쓰세요';
+var HINT='✍️ 아래 흰 칸에 쓰세요';
 // 문장 이어 쓰기 (형 10/19 「잘 인식되니까 글자 수 늘려 달라고」) — 글자로 바뀐 뒤 다시 쓰기 시작하면 그 말이 위 줄에 붙고 칸이 비워진다
 var sent=[], sentT=document.getElementById('sentT');
-function drawSent(){ sentT.textContent = sent.join(' '); }
+function drawSent(){ sentT.textContent = sent.join(' '); showSent(); }
+function showSent(){ var o=cand.querySelector('small'); if(o) o.remove(); if(sent.length){ var m=document.createElement('small'); m.textContent=sent.join(' '); cand.insertBefore(m, cand.firstChild); } }
+function candText(){ var o=cand.querySelector('small'); return o ? cand.textContent.slice(o.textContent.length) : cand.textContent; }
+document.getElementById('gear').onclick=function(){ document.getElementById('more').classList.toggle('on'); requestAnimationFrame(fit); };
 // 쓴 기록 (형 10/19 「아버지 쓴 거 저장 좀 해 줘」) — 칸을 비우기 직전마다 그림+글자를 이 기기 안(localStorage)에 남긴다. 밖으로는 안 보낸다
 var LOGK='malhae_write_log';
 function loadLog(){ try{ return JSON.parse(localStorage.getItem(LOGK)||'[]'); }catch(e){ return []; } }
@@ -76,7 +90,7 @@ function keep(why){
   try{
     var sc=Math.min(1, 700/Math.max(W,H)), c=document.createElement('canvas'); c.width=Math.round(W*sc); c.height=Math.round(H*sc);
     var g=c.getContext('2d'); g.fillStyle='#fffdf5'; g.fillRect(0,0,c.width,c.height); g.drawImage(cv,0,0,c.width,c.height);
-    var item={ t:Date.now(), img:c.toDataURL('image/jpeg',0.7), tx: cand.classList.contains('idle') ? '' : cand.textContent, s: sent.join(' ') };
+    var item={ t:Date.now(), img:c.toDataURL('image/jpeg',0.7), tx: cand.classList.contains('idle') ? '' : candText(), s: sent.join(' ') };
     var L=loadLog(); L.push(item);
     for(;;){ try{ localStorage.setItem(LOGK, JSON.stringify(L.slice(-300))); break; }catch(e){ if(L.length<=1) break; L.shift(); } }
   }catch(e){}
@@ -98,10 +112,10 @@ function showLog(){
 document.getElementById('logB').onclick=function(){ keep('look'); showLog(); };
 document.getElementById('logClose').onclick=function(){ document.getElementById('log').classList.remove('on'); };
 document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='hidden') keep('hide'); });
-function commit(){ if(cand.classList.contains('idle')) return; keep('next'); sent.push(cand.textContent); drawSent(); strokes=[]; cur=null; P.clear(); seq++; redraw(); setCand([], true); }
+function commit(){ if(cand.classList.contains('idle')) return; keep('next'); sent.push(candText()); drawSent(); strokes=[]; cur=null; P.clear(); seq++; redraw(); setCand([], true); }
 // 전체 화면 (형 10/19: 「밑에 닫기 칸 같은 게 나와서 글자 쓰는 데 방해돼」 — 브라우저 아래 줄을 숨긴다)
 document.getElementById('full').onclick=function(){ var d=document.documentElement; try{ if(document.fullscreenElement) document.exitFullscreen(); else (d.requestFullscreen||d.webkitRequestFullscreen).call(d); }catch(e){} };
-document.getElementById('say').onclick=function(){ var t=sent.join(' '); if(!cand.classList.contains('idle')) t=(t+' '+cand.textContent).trim(); if(t) speak(t); };
+document.getElementById('say').onclick=function(){ var t=sent.join(' '); if(!cand.classList.contains('idle')) t=(t+' '+candText()).trim(); if(t) speak(t); };
 document.getElementById('back').onclick=function(){ if(!cand.classList.contains('idle')){ keep('back'); strokes=[]; redraw(); setCand([], true); return; } sent.pop(); drawSent(); };
 var strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null, P=new Map(), off=[0,0], downAt=0;
 // 2026-11-11 형: 「두드리면 '순남아' 라고 말하게」 — 노란 단추 + 글씨 칸 톡톡 두 번 (../call.js)
@@ -122,10 +136,10 @@ addEventListener('resize', function(){ requestAnimationFrame(fit); });
 
 function setCand(list, quiet){
   alts.innerHTML='';
-  if(!list.length){ cand.textContent=HINT; cand.classList.add('idle'); return; }
-  cand.textContent=list[0]; cand.classList.remove('idle'); if(!quiet) speak(list[0]);
+  if(!list.length){ cand.textContent=HINT; cand.classList.add('idle'); showSent(); return; }
+  cand.textContent=list[0]; showSent(); cand.classList.remove('idle'); if(!quiet) speak(list[0]);
   list.slice(1,5).forEach(function(t){ var b=document.createElement('button'); b.type='button'; b.textContent=t;
-    b.onclick=function(){ cand.textContent=t; speak(t); }; alts.appendChild(b); });
+    b.onclick=function(){ cand.textContent=t; showSent(); speak(t); }; alts.appendChild(b); });
   var g=document.createElement('button'); g.type='button'; g.textContent='🔍 그림 크게';
   g.onclick=function(){ showBig(); }; alts.appendChild(g);
 }
@@ -133,7 +147,7 @@ function showBig(){ if(!strokes.length) return; big.querySelector('img').src=cv.
 big.onclick=function(){ big.classList.remove('on'); };
 function clear(){ keep('clear'); strokes=[]; cur=null; P.clear(); seq++; clearTimeout(timer); if(ctl)try{ctl.abort();}catch(e){} redraw(); setCand([]); sent=[]; drawSent(); }
 document.getElementById('clr').onclick=clear;
-cand.onclick=function(){ if(!cand.classList.contains('idle')) speak(cand.textContent); else showBig(); };
+cand.onclick=function(){ if(!cand.classList.contains('idle')) speak(candText()); else showBig(); };
 
 function recog(){
   if(!strokes.length) return;
