@@ -87,6 +87,8 @@
 <!-- 2026-10-02 형: 아무 데나 2초 꾹 = 긴급 알람 (빨간 화면·사이렌·「도와주세요」, 멈춤 톡으로 끔) -->
 <script src="emergency.js?v=12"></script>
 <script src="feedback.js?v=13"></script>
+<!-- 2026-11-11 형: 글씨 칸 톡톡 두 번 / 노란 단추 = 「순남아」 부르기 -->
+<script src="call.js?v=14"></script>
 
 <script>
 // ── 문구 세트 v0.1 (이음 작성: 위관로·석션·신앙 반영, 8카테고리 89문구. 나중에 서버 동기화='빌드업 통로') ──
@@ -153,7 +155,8 @@ function renderGrid(){
   const cand=document.getElementById('cand'), alts=document.getElementById('alts'), bigBtn=document.getElementById('bigBtn');
   const big=document.getElementById('inkBig');
   const HINT='✍️ 아래에 손가락으로 쓰세요';
-  let strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null;
+  let strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null, downAt=0;
+  if(window.malhaeCall) malhaeCall.mount(document.getElementById('clr'));
   function pen(){ cx.lineWidth=Math.max(7,Math.min(W,H)/32); cx.lineCap='round'; cx.lineJoin='round'; cx.strokeStyle='#111'; cx.fillStyle='#111'; }
   function redraw(){
     cx.clearRect(0,0,W,H); pen();
@@ -217,7 +220,7 @@ function renderGrid(){
     try{ cv.setPointerCapture(e.pointerId); }catch(_){}
     P.set(e.pointerId, pt(e));
     if(cur){ relink(); return; }               // 획 도중 손가락이 하나 더 닿음 — 선은 그대로 이어진다
-    clearTimeout(timer); off=[0,0];
+    clearTimeout(timer); off=[0,0]; downAt=Date.now();
     if(!strokes.length) t0=Date.now();
     const [x,y]=cen(); cur=[[x],[y],[Date.now()-t0]]; strokes.push(cur);
     pen(); cx.beginPath(); cx.arc(x,y,cx.lineWidth/2,0,7); cx.fill();
@@ -230,7 +233,11 @@ function renderGrid(){
   function up(e){
     if(!P.has(e.pointerId)) return; P.delete(e.pointerId);
     if(P.size){ relink(); return; }            // 아직 닿은 손가락이 있으면 획을 안 끊는다
-    cur=null; clearTimeout(timer); timer=setTimeout(recog,800);
+    const s=cur; cur=null; clearTimeout(timer);
+    // 톡톡 두 번 = 이름 부르기 (2026-11-11). 두 점은 지운다
+    if(s && window.malhaeCall && e.isTrusted!==false){ let d=0; for(let i=1;i<s[0].length;i++) d+=Math.hypot(s[0][i]-s[0][i-1], s[1][i]-s[1][i-1]);
+      if(malhaeCall.tap({x:s[0][0], y:s[1][0], start:downAt, end:Date.now(), len:d, small:Math.max(14,Math.min(W,H)/30)})){ strokes.splice(-2,2); redraw(); return; } }
+    if(strokes.length) timer=setTimeout(recog,800);
   }
   if(window.PointerEvent){
     cv.addEventListener('pointerdown',down); cv.addEventListener('pointermove',move,{passive:false});

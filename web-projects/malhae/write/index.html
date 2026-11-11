@@ -51,6 +51,7 @@
 <div id="top"><button id="cand" class="idle" type="button">✍️ 손 전체로 문질러 써도 돼요 · 화면 맨 아래는 종이로 가리고 쓰세요</button><button id="clr" type="button">다 지우기</button></div>
 <div id="alts"></div>
 <canvas id="ink"></canvas>
+<script src="../call.js?v=14"></script>
 <div id="big"><img alt="쓴 글씨 크게"><span>톡 하면 닫힘</span></div>
 <div id="log"><header><b>📒 쓴 기록 (이 기기 안에만)</b><button id="logClose" type="button">닫기</button></header><div id="logL"></div></div>
 <script>
@@ -102,7 +103,10 @@ function commit(){ if(cand.classList.contains('idle')) return; keep('next'); sen
 document.getElementById('full').onclick=function(){ var d=document.documentElement; try{ if(document.fullscreenElement) document.exitFullscreen(); else (d.requestFullscreen||d.webkitRequestFullscreen).call(d); }catch(e){} };
 document.getElementById('say').onclick=function(){ var t=sent.join(' '); if(!cand.classList.contains('idle')) t=(t+' '+cand.textContent).trim(); if(t) speak(t); };
 document.getElementById('back').onclick=function(){ if(!cand.classList.contains('idle')){ keep('back'); strokes=[]; redraw(); setCand([], true); return; } sent.pop(); drawSent(); };
-var strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null, P=new Map(), off=[0,0];
+var strokes=[], cur=null, t0=0, W=0, H=0, timer=null, seq=0, ctl=null, P=new Map(), off=[0,0], downAt=0;
+// 2026-11-11 형: 「두드리면 '순남아' 라고 말하게」 — 노란 단추 + 글씨 칸 톡톡 두 번 (../call.js)
+window.malhaeSpeak=function(t){ speak(t); };
+if(window.malhaeCall) malhaeCall.mount(document.getElementById('clr'));
 
 function speak(t){ try{ speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='ko-KR'; u.rate=0.9; speechSynthesis.speak(u); }catch(e){} }
 function pen(){ cx.lineWidth=Math.max(5,Math.min(W,H)/45); cx.lineCap='round'; cx.lineJoin='round'; cx.strokeStyle='#111'; cx.fillStyle='#111'; }
@@ -163,13 +167,16 @@ function add(x,y){ var l=cur[0].length-1; if(Math.abs(x-cur[0][l])+Math.abs(y-cu
 function down(e){ if(e.cancelable!==false) e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(_){}
   if(!cur && !P.size && !cand.classList.contains('idle')) commit();   // 글자로 바뀐 뒤 새로 쓰기 시작 = 앞 말을 문장에 붙임
   P.set(e.pointerId, pt(e)); if(cur){ relink(); return; }
-  clearTimeout(timer); off=[0,0]; if(!strokes.length) t0=Date.now();
+  clearTimeout(timer); off=[0,0]; downAt=Date.now(); if(!strokes.length) t0=Date.now();
   var c=cen(); cur=[[c[0]],[c[1]],[Date.now()-t0]]; strokes.push(cur);
   pen(); cx.beginPath(); cx.arc(c[0],c[1],cx.lineWidth/2,0,7); cx.fill(); }
 function move(e){ if(!P.has(e.pointerId)||!cur) return; if(e.cancelable) e.preventDefault();
   var evs=e.getCoalescedEvents?e.getCoalescedEvents():[]; (evs.length?evs:[e]).forEach(function(ev){ P.set(e.pointerId, pt(ev)); var c=cen(); add(c[0]+off[0], c[1]+off[1]); }); }
 function up(e){ if(!P.has(e.pointerId)) return; P.delete(e.pointerId); if(P.size){ relink(); return; }
-  cur=null; clearTimeout(timer); timer=setTimeout(recog,1200); }
+  var s=cur; cur=null; clearTimeout(timer);
+  if(s && window.malhaeCall && e.isTrusted!==false){ var d=0; for(var i=1;i<s[0].length;i++) d+=Math.hypot(s[0][i]-s[0][i-1], s[1][i]-s[1][i-1]);
+    if(malhaeCall.tap({x:s[0][0], y:s[1][0], start:downAt, end:Date.now(), len:d, small:Math.max(14,Math.min(W,H)/30)})){ strokes.splice(-2,2); redraw(); return; } }   // 톡톡 = 부르기, 두 점은 지움
+  if(strokes.length) timer=setTimeout(recog,1200); }
 if(window.PointerEvent){
   cv.addEventListener('pointerdown',down); cv.addEventListener('pointermove',move,{passive:false});
   cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
