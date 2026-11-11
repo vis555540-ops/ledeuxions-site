@@ -1,3 +1,8 @@
+# 2026-11-11 — pdf300 영어판 원본 폴더가 ledeuxions.com 에서도 200 으로 열려(canonical 만 pdf300.com)
+#   구글이 pdf300 도구 페이지를 이 복사본으로 먼저 찾고 있었다(URL 검사 「참조 페이지」). 신호를 pdf300.com 하나로 모은다.
+/web-projects/pdf300/en    https://pdf300.com/         301
+/web-projects/pdf300/en/*  https://pdf300.com/:splat   301
+
 # 2026-09-28 — 서치콘솔 404 중 502개가 옛 v1 사이트 주소(www.ledeuxions.com/v1/…).
 #   대부분 상대링크가 겹쳐 생긴 가짜 주소(/v1/applications/web-projects/pdf300/…). 첫 칸 7개만 짝이 있고 나머지는 홈으로.
 #   Cloudflare 영역 규칙을 못 만들어서(계정 A 로그인 없음) 여기서 받는다. 대상은 절대주소라 www 로 와도 비www 로 간다.
