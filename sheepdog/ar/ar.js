@@ -10,9 +10,69 @@
 import * as THREE from "./three.module.min.js";
 
 const $ = (id) => document.getElementById(id);
-const 그림들 = ["back_1", "back_2", "back_3", "back_4", "sit"];
-const 이미지 = {};
-for (const n of 그림들) { const im = new Image(); im.src = "ar/" + n + ".png"; 이미지[n] = im; }
+
+// ── 🐶 형 강아지 (v5.58 형 「강아지 얼굴 안 보이고 뒷모습만… 내 강아지만 보고 싶은데」)
+//   게임 저장(양몰이_v5)의 선택개 → 견종·털색·이름. 없으면 보더콜리(게임 첫 강아지).
+//   ar/dogs/<견종>_ar.png = 128px 8칸: 0-3 옆 걷기(머리 오른쪽) · 4-5 얼굴(정면) · 6-7 앉기 (게임 시트에서 최근접으로 뽑음)
+const 견종파일 = { 보더콜리: "border_collie", 코기: "corgi", 골든리트리버: "golden", 진도견: "jindo", 삽살개: "sapsal", 저먼셰퍼드: "shepherd" };
+const 견종영어 = { 보더콜리: "Border Collie", 코기: "Corgi", 골든리트리버: "Golden", 진도견: "Jindo", 삽살개: "Sapsal", 저먼셰퍼드: "Shepherd" };
+const 털색회전 = { 1: { h: -20, s: 1.1, l: 0.75 }, 2: { h: 25, s: 0.6, l: 1.25 } };   // 자료.js 와 같게
+const 걷칸 = 0, 얼칸 = 4, 앉칸 = 6;
+const 내개 = (() => {
+  let d = null; try { d = JSON.parse(localStorage.getItem("양몰이_v5") || "null"); } catch (e) {}
+  let g = null; if (d && Array.isArray(d.개)) g = d.개.find((x) => x && x.아이디 === d.선택개) || d.개[0];
+  if (!g || !견종파일[g.견종]) g = { 견종: "보더콜리", 털색: 0, 이름: "" };
+  const en = !!(d && d.언어 === "en");
+  return { 견종: g.견종, 털색: g.털색 || 0, 이름: g.이름 || (en ? 견종영어[g.견종] : g.견종), en,
+    소리: !(d && d.설정 && d.설정.효과음 === false) };
+})();
+// 이름 뒤 조사 (받침 있으면 이/을/이도, 없으면 가/를/도)
+const 받침 = (() => { const c = 내개.이름.charCodeAt(내개.이름.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0; })();
+const 이가 = 내개.이름 + (받침 ? "이" : "가"), 을를 = 내개.이름 + (받침 ? "을" : "를");
+const 칸들 = [];          // [{ R: canvas(원래), L: canvas(좌우 뒤집음) }] × 8
+let 칸준비 = null;        // AR 이 켜질 때 텍스처로 바꿀 함수
+function 털색칠(cx, w, h, r) {
+  const d = cx.getImageData(0, 0, w, h), p = d.data;
+  for (let i = 0; i < p.length; i += 4) {
+    if (p[i + 3] < 10) continue; const R = p[i] / 255, G = p[i + 1] / 255, B = p[i + 2] / 255, mx = Math.max(R, G, B), mn = Math.min(R, G, B); let hh = 0, s = 0, l = (mx + mn) / 2;
+    if (l < 0.18 || (l > 0.92 && mx - mn < 0.1)) continue;
+    if (mx !== mn) { const dd = mx - mn; s = l > 0.5 ? dd / (2 - mx - mn) : dd / (mx + mn); hh = mx === R ? ((G - B) / dd + (G < B ? 6 : 0)) : mx === G ? ((B - R) / dd + 2) : ((R - G) / dd + 4); hh /= 6; }
+    hh = (hh + r.h / 360 + 1) % 1; s = Math.min(1, s * r.s); l = Math.min(0.95, l * r.l);
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s, pp = 2 * l - q, f = (t) => { t = (t + 1) % 1; return t < 1 / 6 ? pp + (q - pp) * 6 * t : t < 0.5 ? q : t < 2 / 3 ? pp + (q - pp) * (2 / 3 - t) * 6 : pp; };
+    p[i] = f(hh + 1 / 3) * 255; p[i + 1] = f(hh) * 255; p[i + 2] = f(hh - 1 / 3) * 255;
+  }
+  cx.putImageData(d, 0, 0);
+}
+{
+  const im = new Image();
+  im.onload = () => {
+    const n = Math.round(im.width / im.height) || 8, w = im.height;
+    for (let i = 0; i < n; i++) {
+      const R = document.createElement("canvas"); R.width = R.height = w;
+      const rc = R.getContext("2d"); rc.imageSmoothingEnabled = false; rc.drawImage(im, i * w, 0, w, w, 0, 0, w, w);
+      if (털색회전[내개.털색]) try { 털색칠(rc, w, w, 털색회전[내개.털색]); } catch (e) {}
+      const L = document.createElement("canvas"); L.width = L.height = w;
+      const lc = L.getContext("2d"); lc.translate(w, 0); lc.scale(-1, 1); lc.drawImage(R, 0, 0);
+      칸들.push({ R, L });
+    }
+    try { const ri = document.querySelector("#rest img"); if (ri && 칸들[얼칸]) { ri.src = 칸들[얼칸].R.toDataURL(); ri.style.imageRendering = "pixelated"; } } catch (e) {}
+    if (칸준비) 칸준비();
+  };
+  im.src = "ar/dogs/" + 견종파일[내개.견종] + "_ar.png";
+}
+// 짖기 — 게임 소리 그대로 (견종별 없으면 기본 짖기). 효과음 꺼 두면 안 냄
+function 짖기() {
+  if (!내개.소리) return;
+  try { const a = new Audio("소리/짖기_" + 내개.견종 + ".mp3"); a.volume = 0.8;
+    a.play().catch(() => { try { const b = new Audio("소리/짖기.mp3"); b.volume = 0.8; b.play().catch(() => {}); } catch (e) {} }); } catch (e) {}
+}
+function 하트그림(c, x, y, s) {
+  c.fillStyle = "#ff5a7a"; c.beginPath();
+  c.moveTo(x, y + s * 0.35);
+  c.bezierCurveTo(x - s * 1.1, y - s * 0.45, x - s * 0.45, y - s * 1.1, x, y - s * 0.45);
+  c.bezierCurveTo(x + s * 0.45, y - s * 1.1, x + s * 1.1, y - s * 0.45, x, y + s * 0.35);
+  c.fill();
+}
 
 const 돌아가기 = () => { location.href = "./"; };
 for (const id of ["back1", "back3", "back4"]) $(id).onclick = 돌아가기;
@@ -54,21 +114,52 @@ setInterval(() => {
 }, 1000);
 
 // ── 2D 미리보기 (시작 화면에서 늘 돈다 — AR 안 되는 폰에서는 이게 전부)
+//   형 강아지가 마루를 왔다 갔다(옆모습) → 멈추면 돌아서 얼굴 보여 주고 꼬리 살랑 → 가끔 앉음. 톡 = 하트·짖기·이름
 const pv = $("preview"), pc = pv.getContext("2d");
 let pvT = 0, pvLast = performance.now();
+const pv개 = { x: 70, 쪽: 1, 단계: "걷기", 남: 2.6, 톡: -9, 하트: [] };
+pv.setAttribute("aria-label", 내개.이름);
+pv.style.cursor = "pointer";
+pv.addEventListener("pointerdown", () => {
+  pv개.톡 = pvT; 짖기(); 진동(30);
+  for (let i = 0; i < 5; i++) pv개.하트.push({ x: pv개.x + (Math.random() - 0.5) * 50, y: 95, vy: 22 + Math.random() * 18, t: 0, s: 5 + Math.random() * 4 });
+});
 function 미리보기(now) {
   const dt = Math.max(0, Math.min(0.1, (now - pvLast) / 1000)); pvLast = now; pvT += dt;
-  const W = pv.width, H = pv.height;
+  const W = pv.width, H = pv.height, 바닥 = 150;
+  pc.imageSmoothingEnabled = false;
   pc.fillStyle = "#c8955a"; pc.fillRect(0, 0, W, H);
-  pc.fillStyle = "#b07e48";                              // 멀어지는 마루 줄
-  for (let i = 0; i < 8; i++) { const k = ((i + pvT * 0.8) % 8) / 8, y = 40 + k * k * (H - 40); pc.fillRect(0, y, W, 1 + k * 2); }
-  pc.fillStyle = "#e9dcc5"; pc.fillRect(0, 0, W, 40);   // 벽
-  for (let i = 0; i < 6; i++) {                          // 발자국 (강아지 뒤로 남음)
-    const k = ((i / 6) + pvT * 0.25) % 1, y = 150 - (1 - k) * 90, s = 3 + k * 5;
-    pc.globalAlpha = 0.25 + k * 0.5; 발자국그림(pc, W / 2 + (i % 2 ? -8 : 8) * (0.5 + k), y + 20, s); }
-  pc.globalAlpha = 1;
-  const im = 이미지["back_" + (1 + (Math.floor(pvT * 6) % 4))];
-  if (im.complete && im.naturalWidth) pc.drawImage(im, W / 2 - 55, 42 + Math.abs(Math.sin(pvT * 6 * Math.PI / 2)) * -3, 110, 110);
+  pc.fillStyle = "#b07e48"; for (let i = 0; i < 6; i++) { const y = 52 + i * i * 4; pc.fillRect(0, y, W, 1 + i * 0.4); }   // 마루 줄
+  pc.fillStyle = "#e9dcc5"; pc.fillRect(0, 0, W, 48);   // 벽
+  const 톡중 = pvT - pv개.톡 < 2.2;
+  // 걷기 → 멈춤(얼굴) → 걷기 … 세 번에 한 번은 앉기
+  if (!톡중) { pv개.남 -= dt;
+    if (pv개.남 <= 0) {
+      if (pv개.단계 === "걷기") { pv개.단계 = Math.random() < 0.3 ? "앉기" : "얼굴"; pv개.남 = 2.2; }
+      else { pv개.단계 = "걷기"; pv개.남 = 2 + Math.random() * 1.5; if (Math.random() < 0.5) pv개.쪽 *= -1; }
+    } }
+  if (!톡중 && pv개.단계 === "걷기") {
+    pv개.x += pv개.쪽 * 34 * dt;
+    if (pv개.x > W - 48) { pv개.x = W - 48; pv개.쪽 = -1; } if (pv개.x < 48) { pv개.x = 48; pv개.쪽 = 1; }
+  }
+  let i = 얼칸 + (Math.floor(pvT * 4) % 2), 뒤집 = false, 흔들 = 0, 깡 = 0;
+  if (톡중) { 깡 = Math.abs(Math.sin((pvT - pv개.톡) * 9)) * 6; }
+  else if (pv개.단계 === "걷기") { i = 걷칸 + (Math.floor(pvT * 7) % 4); 뒤집 = pv개.쪽 < 0; 깡 = Math.abs(Math.sin(pvT * 7 * Math.PI / 2)) * 2; }
+  else if (pv개.단계 === "앉기") i = 앉칸 + (Math.floor(pvT * 1.5) % 2);
+  else 흔들 = Math.sin(pvT * 9) * 0.05;
+  pc.fillStyle = "rgba(0,0,0,.18)"; pc.beginPath(); pc.ellipse(pv개.x, 바닥, 30, 6, 0, 0, Math.PI * 2); pc.fill();
+  const f = 칸들[i];
+  if (f) { pc.save(); pc.translate(pv개.x, 바닥 - 깡); pc.rotate(흔들); pc.drawImage(뒤집 ? f.L : f.R, -48, -92, 96, 96); pc.restore(); }
+  for (const h of pv개.하트) { h.t += dt; h.y -= h.vy * dt; pc.globalAlpha = Math.max(0, 1 - h.t / 1.4); 하트그림(pc, h.x, h.y, h.s); }
+  pc.globalAlpha = 1; pv개.하트 = pv개.하트.filter((h) => h.t < 1.4);
+  // 이름 말풍선 (톡 했을 때)
+  if (톡중) {
+    pc.font = "bold 15px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif"; pc.textAlign = "center"; pc.textBaseline = "middle";
+    const 글 = 내개.이름 + (내개.en ? " ♥" : " 💕"), w = pc.measureText(글).width + 20, bx = Math.max(w / 2 + 4, Math.min(W - w / 2 - 4, pv개.x)), by = 24;
+    pc.fillStyle = "#fffaf0"; pc.strokeStyle = "#b07e48"; pc.lineWidth = 2;
+    pc.beginPath(); pc.roundRect(bx - w / 2, by - 13, w, 26, 12); pc.fill(); pc.stroke();
+    pc.fillStyle = "#4a3218"; pc.fillText(글, bx, by + 1);
+  }
   requestAnimationFrame(미리보기);
 }
 function 발자국그림(c, x, y, s) {
@@ -112,8 +203,8 @@ $("ok").onclick = () => {
 
 // ── AR
 let 끝낼까 = null, 세션시작 = 0;
-let house, 집놓음 = false, 귀가 = null, renderer, scene, camera, session, hitSource, reticle, dog, dogMat, tex = {}, paws = [], pawGeo, pawTex, leash, leashMat;
-const 상태 = { 놓음: false, 기다림: false, 방향: new THREE.Vector3(0, 0, -1), 걸은: 0, 발: 0, t: 0, 칸: 0, 마지막: 0 };
+let 하트텍, 이름표, 하트들 = [], house, 집놓음 = false, 귀가 = null, renderer, scene, camera, session, hitSource, reticle, dog, dogMat, tex = {}, paws = [], pawGeo, pawTex, leash, leashMat;
+const 상태 = { 놓음: false, 기다림: false, 방향: new THREE.Vector3(0, 0, -1), 걸은: 0, 발: 0, t: 0, 칸: 0, 마지막: 0, 왼: false, 톡때: -99, 멈춤초: 0 };
 const 키 = 0.26, 속도 = 0.12, 발간격 = 0.07, 발최대 = 60;
 // 줄: 손(폰 0.3m 아래·0.2m 앞) ↔ 목줄(강아지 키의 62%). 길이 1.2m
 const 줄길이 = 1.2, 줄굵기 = 0.004, 목높이 = 키 * 0.62, 팽팽 = 0.95, 느려짐 = 0.8, 진동간격 = 1.5, 멈춤초 = 3;
@@ -141,13 +232,27 @@ function 준비() {
     new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.9, premultipliedAlpha: true }));
   reticle.matrixAutoUpdate = false; reticle.visible = false; scene.add(reticle);
 
-  const ld = new THREE.TextureLoader();
-  for (const n of 그림들) { const t = ld.load("ar/" + n + ".png"); t.colorSpace = THREE.SRGBColorSpace; tex[n] = t; }
+  // 형 강아지 칸 → 텍스처 (R=원래, L=좌우 뒤집음). 그림이 아직이면 다 받은 뒤에 만든다
+  칸준비 = () => { 칸들.forEach((f, i) => { for (const k of ["R", "L"]) { if (tex[i + k]) continue;
+    const t = new THREE.CanvasTexture(f[k]); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; tex[i + k] = t; } });
+    if (dogMat && !dogMat.map && tex[얼칸 + "R"]) { dogMat.map = tex[얼칸 + "R"]; dogMat.needsUpdate = true; } };
   // ★ 그림은 오려낸 불투명(transparent:false + alphaTest) — 남은 픽셀은 알파가 꼭 1.0 으로 써진다(three 의 OPAQUE).
   //   transparent:true 면 반투명 섞기 길로 가서 AR 합성기에서 밝은 색일수록 카메라가 비쳐 보였다(형 「하얀색 다 투명해」)
-  dogMat = new THREE.MeshBasicMaterial({ map: tex.back_1, transparent: false, alphaTest: 0.5, side: THREE.DoubleSide });
+  dogMat = new THREE.MeshBasicMaterial({ map: null, transparent: false, alphaTest: 0.5, side: THREE.DoubleSide });
   dog = new THREE.Mesh(new THREE.PlaneGeometry(키, 키).translate(0, 키 / 2, 0), dogMat);   // 발이 바닥에 닿게
   dog.visible = false; scene.add(dog);
+  칸준비();
+  // 톡 하면 떠오르는 하트 + 이름표 (늘 폰을 보는 Sprite)
+  { const hc = document.createElement("canvas"); hc.width = hc.height = 64; 하트그림(hc.getContext("2d"), 32, 36, 22);
+    하트텍 = new THREE.CanvasTexture(hc); 하트텍.colorSpace = THREE.SRGBColorSpace; }
+  { const nc = document.createElement("canvas"); nc.width = 512; nc.height = 128; const x = nc.getContext("2d");
+    x.font = "bold 64px 'Apple SD Gothic Neo','Noto Sans KR',sans-serif"; x.textAlign = "center"; x.textBaseline = "middle";
+    const 글 = 내개.이름 + (내개.en ? " ♥" : " 💕"), w = Math.min(500, x.measureText(글).width + 56);
+    x.fillStyle = "#fffaf0"; x.strokeStyle = "#b07e48"; x.lineWidth = 8; x.beginPath(); x.roundRect(256 - w / 2, 10, w, 108, 50); x.fill(); x.stroke();
+    x.fillStyle = "#4a3218"; x.fillText(글, 256, 66, 460);
+    const t = new THREE.CanvasTexture(nc); t.colorSpace = THREE.SRGBColorSpace;
+    이름표 = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, depthTest: false }));
+    이름표.scale.set(0.32, 0.08, 1); 이름표.visible = false; 이름표.renderOrder = 10; scene.add(이름표); }
   // 그림자 한 점 (떠 보이지 않게)
   const sh = new THREE.Mesh(new THREE.CircleGeometry(0.07, 24).rotateX(-Math.PI / 2),
     new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22, depthWrite: false, premultipliedAlpha: true }));
@@ -214,8 +319,9 @@ async function AR시작() {
 
 function 힌트(s) { const h = $("hint"); if (h.textContent !== s) h.textContent = s; }
 
-function 톡() {
-  if (!reticle.visible || 집놓음) return;
+function 톡(e) {
+  if (집놓음) { if (dog.visible && !귀가 && 강아지맞음(e)) 쓰다듬(); return; }
+  if (!reticle.visible) return;
   const p = new THREE.Vector3(), q = new THREE.Quaternion(), sc = new THREE.Vector3();
   reticle.matrix.decompose(p, q, sc);
   house.position.copy(p); house.visible = true; 집놓음 = true;     // 집은 놓은 자리에 그대로 (바닥 기준 고정)
@@ -229,6 +335,29 @@ function 톡() {
   // 처음 방향 = 폰이 보는 쪽 (뒷모습이 보이게) — 없으면 폰에서 집 쪽
   상태.방향.copy(쪽).negate();
   $("home").hidden = false;
+}
+
+// 톡한 줄(레이)이 강아지 몸 가까이(22cm) 지나가면 맞음. 레이를 못 얻으면 화면 어디든 맞음으로 친다
+function 강아지맞음(e) {
+  try {
+    const pose = e && e.frame && e.frame.getPose(e.inputSource.targetRaySpace, renderer.xr.getReferenceSpace());
+    if (!pose) return true;
+    const o = pose.transform.position, r = pose.transform.orientation;
+    const 원 = new THREE.Vector3(o.x, o.y, o.z), 쪽 = new THREE.Vector3(0, 0, -1).applyQuaternion(new THREE.Quaternion(r.x, r.y, r.z, r.w));
+    const 몸 = dog.position.clone(); 몸.y += 키 / 2;
+    const k = Math.max(0, 몸.clone().sub(원).dot(쪽));
+    return 원.addScaledVector(쪽, k).distanceTo(몸) < 0.22;
+  } catch (_) { return true; }
+}
+function 쓰다듬() {
+  상태.톡때 = 상태.t; 짖기(); 진동(30);
+  for (let i = 0; i < 5; i++) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: 하트텍, transparent: true, depthWrite: false }));
+    sp.scale.setScalar(0.045 + Math.random() * 0.025);
+    sp.position.copy(dog.position); sp.position.y += 키 * (0.7 + Math.random() * 0.3);
+    sp.userData = { t: 0, vx: (Math.random() - 0.5) * 0.12, vz: (Math.random() - 0.5) * 0.12, vy: 0.14 + Math.random() * 0.1 };
+    scene.add(sp); 하트들.push(sp);
+  }
 }
 
 // 집으로: 줄을 풀고 강아지가 집 문 앞까지 걸어가 쏙 들어감 → 쉬는 시간
@@ -275,9 +404,9 @@ function 그리기(time, frame) {
     if (남 > 0.02 && 귀가.들어감 === 0) {
       const 걸음 = Math.min(남, 속도 * 1.6 * dt); dog.position.addScaledVector(쪽.divideScalar(남), 걸음);
       상태.걸은 += 걸음; if (상태.걸은 >= 발간격) { 상태.걸은 = 0; 발자국(dog.position, 쪽); }
-      dogMat.map = tex["back_" + (1 + Math.floor(상태.t * 8) % 4)];
-    } else { 귀가.들어감 += dt; dog.scale.setScalar(Math.max(0.01, 1 - 귀가.들어감 * 2)); dogMat.map = tex.back_1; }
-    dog.rotation.set(0, Math.atan2(폰.x - dog.position.x, 폰.z - dog.position.z), 0); 눕힘(폰);
+      옆보기(쪽); 모습(걷칸 + Math.floor(상태.t * 8) % 4, 상태.왼);
+    } else { 귀가.들어감 += dt; dog.scale.setScalar(Math.max(0.01, 1 - 귀가.들어감 * 2)); 모습(얼칸 + Math.floor(상태.t * 6) % 2); }   // 안녕 하고 들어감
+    눕힘(0);
     힌트("강아지가 집으로 가요 🏠 잘 가~ 👋");
   }
   else if (vp) {
@@ -313,12 +442,12 @@ function 그리기(time, frame) {
       줄.당김초 -= dt;
       const 쪽 = new THREE.Vector3(줄.손.x - dog.position.x, 0, 줄.손.z - dog.position.z), 남은 = 쪽.length();
       if (남은 > 최대 * 0.55) dog.position.addScaledVector(쪽.divideScalar(남은), Math.min(남은 - 최대 * 0.55, 0.5 * dt));
-      dogMat.map = tex.back_1; 힌트("당겼어요! 강아지가 따라와요 🐕");
+      옆보기(쪽); 모습(걷칸 + Math.floor(상태.t * 8) % 4, 상태.왼); 힌트("당겼어요! 강아지가 따라와요 🐕");
     } else if (줄.앉음) {
-      dogMat.map = tex.sit;   // 앉아서 기다림
+      모습(앉칸 + Math.floor(상태.t * 1.5) % 2);   // 앉아서 나를 보며 기다림
       힌트("강아지가 기다려요 🐾 같이 걸어 볼까요?");
     } else if (상태.t < 1.0) {
-      dogMat.map = tex.back_1; 힌트("강아지를 따라가요! 🐾");
+      모습(얼칸 + Math.floor(상태.t * 4) % 2); 힌트(내개.이름 + " 나왔어요! 🐾");   // 나오자마자 얼굴 보여 줌
     } else {
       // 폰이 보는 쪽(수평)으로 천천히 방향을 튼다
       if (앞있음) 상태.방향.lerp(앞, Math.min(1, dt * 1.2)).normalize();
@@ -337,23 +466,34 @@ function 그리기(time, frame) {
     줄.비율 = 줄.손.distanceTo(줄.목) / 줄길이;
     줄.팽팽 = 수평() / 최대 >= 팽팽 && !줄.앉음;
     if (줄.팽팽 && 지금 - 줄.진동때 >= 진동간격) { 진동(60); 줄.진동때 = 지금; }
-    if (줄.팽팽 && 줄.당김초 <= 0) {
-      dogMat.map = tex.back_1;   // 멈춰서 뒤돌아봄 (살짝 고개 흔들기)
-      dog.rotation.z = Math.sin(상태.t * 5) * 0.06;
-      힌트("줄이 팽팽해요! 강아지가 돌아봐요 🐕 따라가요");
+    // 얼굴 보여 줄 때: 줄 팽팽(돌아봄) · 잠깐 멈춤 · 톡 한 뒤 2.5초 — 정면 그림 + 꼬리 살랑(두 칸) + 살짝 흔들
+    const 걷는중 = 걸음 > 속도 * dt * 0.1;
+    상태.멈춤초 = 걷는중 ? 0 : 상태.멈춤초 + dt;
+    const 톡중 = 상태.t - 상태.톡때 < 2.5;
+    let 흔들 = 0;
+    if (줄.당김초 > 0 || 상태.t < 1.0) {}
+    else if (줄.앉음) { if (톡중) 힌트(내개.이름 + " — 좋아요 💕"); }
+    else if (톡중 || 줄.팽팽 || 상태.멈춤초 > 0.5) {
+      모습(얼칸 + Math.floor(상태.t * 4) % 2);
+      흔들 = Math.sin(상태.t * (톡중 ? 9 : 5)) * 0.06;
+      힌트(톡중 ? 이가 + " 좋아해요 💕" : 줄.팽팽 ? "줄이 팽팽해요! " + 이가 + " 돌아봐요 🐕 따라가요" : 이가 + " 기다려요 🐾");
     } else {
-      dog.rotation.z = 0;
-      if (!줄.앉음 && 줄.당김초 <= 0 && 상태.t >= 1.0) {
-        if (걸음 > 속도 * dt * 0.1) 상태.칸 = Math.floor(상태.t * 6) % 4;
-        dogMat.map = tex["back_" + (상태.칸 + 1)]; 힌트("강아지를 따라가요! 🐾");
-      }
+      // 옆모습으로 걸어감 — 화면에서 오른쪽으로 가면 그대로, 왼쪽이면 뒤집음
+      옆보기(상태.방향);
+      상태.칸 = Math.floor(상태.t * 6) % 4;
+      모습(걷칸 + 상태.칸, 상태.왼); 힌트(을를 + " 따라가요! 🐾");
     }
     줄그리기(dog.position.y);
-    // 폰 쪽을 보게 (세로축만) — 뒷모습 그림이라 늘 등이 보인다
-    dog.rotation.y = Math.atan2(폰.x - dog.position.x, 폰.z - dog.position.z);
-    눕힘(폰);
+    눕힘(흔들);
+    { const s = dog.scale.x; dog.scale.y = s * (1 + (흔들 ? Math.abs(Math.sin(상태.t * 9)) * 0.04 : 0)); }   // 깡충
     for (const m of paws) { m.userData.t += dt; m.material.opacity = Math.max(0, 0.85 - m.userData.t / 25); }
   }
+  // 하트 떠오름 · 이름표는 강아지 머리 위
+  for (const sp of 하트들) { const u = sp.userData; u.t += dt;
+    sp.position.x += u.vx * dt; sp.position.z += u.vz * dt; sp.position.y += u.vy * dt; sp.material.opacity = Math.max(0, 1 - u.t / 1.4); }
+  하트들 = 하트들.filter((sp) => { if (sp.userData.t < 1.4) return true; scene.remove(sp); sp.material.dispose(); return false; });
+  if (이름표) { 이름표.visible = dog.visible && !귀가 && 상태.t - 상태.톡때 < 2.5;
+    if (이름표.visible) { 이름표.position.copy(dog.position); 이름표.position.y += 키 * dog.scale.x + 0.06; } }
   if (곧쉼 && !귀가) 힌트("⏰ 곧 쉬는 시간이에요. 강아지한테 인사해요 👋");
   renderer.render(scene, camera);
 }
@@ -367,17 +507,23 @@ function 끝남() {
   dog.visible = false; reticle.visible = false; 상태.놓음 = false; if (leash) leash.visible = false;
   if (house) house.visible = false; 집놓음 = false; 귀가 = null; if (dog) dog.scale.setScalar(1); $("home").hidden = true;
   for (const m of paws) { scene.remove(m); m.material.dispose(); } paws = [];
+  for (const sp of 하트들) { scene.remove(sp); sp.material.dispose(); } 하트들 = []; if (이름표) 이름표.visible = false;
   renderer.domElement.style.display = "none";
   $("overlay").classList.remove("on"); 보이기("start"); 화면정하기();
 }
 
 화면정하기();
-if (location.search.includes("artest")) window.__ar = { 줄, 상태, get dog() { return dog; }, get 귀가() { return 귀가; }, get leash() { return leash; }, get house() { return house; } };   // 시험용 (가짜 XR)
+if (location.search.includes("artest")) window.__ar = { 줄, 상태, get dog() { return dog; }, get 귀가() { return 귀가; }, get leash() { return leash; }, get house() { return house; }, 쓰다듬, 내개 };   // 시험용 (가짜 XR)
 
 // 폰으로 내려다볼 때 세운 그림이 옆면(선)으로 납작하게 보이던 것 — 폰 높이만큼 뒤로 눕혀 늘 얼굴이 폰을 보게 (2026-11-12 형 캡처)
-function 눕힘(폰) {
-  // v5.58: 기울이기만으론 형 폰에서 여전히 찌부 → 완전 빌보드(폰과 같은 방향을 봄 = 늘 정면). 흔들림(z)은 유지
-  const 흔들 = dog.rotation.z || 0;
+function 눕힘(흔들) {
+  // v5.57: 기울이기만으론 형 폰에서 여전히 찌부 → 완전 빌보드(폰과 같은 방향을 봄 = 늘 정면). 흔들(z)은 꼬리 살랑
   dog.quaternion.copy(폰q);
   if (흔들) dog.rotateZ(흔들);
 }
+// 칸 바꾸기 (i: 0-7, 왼: 좌우 뒤집음). 그림이 아직이면 그대로 둠
+function 모습(i, 왼) { const t = tex[i + (왼 ? "L" : "R")]; if (t && dogMat.map !== t) { const 처음 = !dogMat.map; dogMat.map = t; if (처음) dogMat.needsUpdate = true; } }
+// 가는 쪽을 폰 화면의 좌우로 — 옆으로 확실히 갈 때만 바꿈(앞뒤로 갈 땐 그대로)
+const 오른 = new THREE.Vector3();
+function 옆보기(쪽) { 오른.set(1, 0, 0).applyQuaternion(폰q); const l = 쪽.x * 오른.x + 쪽.z * 오른.z, n = Math.hypot(쪽.x, 쪽.z) || 1;
+  if (l / n > 0.15) 상태.왼 = false; else if (l / n < -0.15) 상태.왼 = true; }
