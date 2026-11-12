@@ -277,7 +277,7 @@ function 그리기(time, frame) {
       상태.걸은 += 걸음; if (상태.걸은 >= 발간격) { 상태.걸은 = 0; 발자국(dog.position, 쪽); }
       dogMat.map = tex["back_" + (1 + Math.floor(상태.t * 8) % 4)];
     } else { 귀가.들어감 += dt; dog.scale.setScalar(Math.max(0.01, 1 - 귀가.들어감 * 2)); dogMat.map = tex.back_1; }
-    dog.rotation.set(0, Math.atan2(폰.x - dog.position.x, 폰.z - dog.position.z), 0);
+    dog.rotation.set(0, Math.atan2(폰.x - dog.position.x, 폰.z - dog.position.z), 0); 눕힘(폰);
     힌트("강아지가 집으로 가요 🏠 잘 가~ 👋");
   }
   else if (vp) {
@@ -351,6 +351,7 @@ function 그리기(time, frame) {
     줄그리기(dog.position.y);
     // 폰 쪽을 보게 (세로축만) — 뒷모습 그림이라 늘 등이 보인다
     dog.rotation.y = Math.atan2(폰.x - dog.position.x, 폰.z - dog.position.z);
+    눕힘(폰);
     for (const m of paws) { m.userData.t += dt; m.material.opacity = Math.max(0, 0.85 - m.userData.t / 25); }
   }
   if (곧쉼 && !귀가) 힌트("⏰ 곧 쉬는 시간이에요. 강아지한테 인사해요 👋");
@@ -372,3 +373,10 @@ function 끝남() {
 
 화면정하기();
 if (location.search.includes("artest")) window.__ar = { 줄, 상태, get dog() { return dog; }, get 귀가() { return 귀가; }, get leash() { return leash; }, get house() { return house; } };   // 시험용 (가짜 XR)
+
+// 폰으로 내려다볼 때 세운 그림이 옆면(선)으로 납작하게 보이던 것 — 폰 높이만큼 뒤로 눕혀 늘 얼굴이 폰을 보게 (2026-11-12 형 캡처)
+function 눕힘(폰) {
+  dog.rotation.order = 'YXZ';
+  const 가로 = Math.hypot(폰.x - dog.position.x, 폰.z - dog.position.z);
+  dog.rotation.x = -Math.min(1.25, Math.max(0, Math.atan2(폰.y - dog.position.y, 가로)));
+}
