@@ -376,7 +376,8 @@ if (location.search.includes("artest")) window.__ar = { 줄, 상태, get dog() {
 
 // 폰으로 내려다볼 때 세운 그림이 옆면(선)으로 납작하게 보이던 것 — 폰 높이만큼 뒤로 눕혀 늘 얼굴이 폰을 보게 (2026-11-12 형 캡처)
 function 눕힘(폰) {
-  dog.rotation.order = 'YXZ';
-  const 가로 = Math.hypot(폰.x - dog.position.x, 폰.z - dog.position.z);
-  dog.rotation.x = -Math.min(1.25, Math.max(0, Math.atan2(폰.y - dog.position.y, 가로)));
+  // v5.58: 기울이기만으론 형 폰에서 여전히 찌부 → 완전 빌보드(폰과 같은 방향을 봄 = 늘 정면). 흔들림(z)은 유지
+  const 흔들 = dog.rotation.z || 0;
+  dog.quaternion.copy(폰q);
+  if (흔들) dog.rotateZ(흔들);
 }
