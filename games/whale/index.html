@@ -61,6 +61,9 @@
   .cell .e { font-size: 34px; line-height: 1.25; display: block; }
   .cell.no .e { filter: brightness(0) opacity(.18); }
   .cell.no { color: #a9bfca; }
+  .cell[data-c] { cursor: pointer; }
+  .cell.go { box-shadow: 0 0 0 2px #8fcbe0 inset; background: rgba(226,244,250,.95); }
+  .cell .go-tag { display: block; font-size: 9.5px; color: #5ea8c4; margin-top: 1px; }
   .sec { text-align: left; font-size: 12.5px; margin: 12px 2px 0; color: #5f8294; }
   .adbar { height: 4px; background: rgba(80,140,170,.18); border-radius: 4px; overflow: hidden; margin: 14px 0 4px; }
   .adbar i { display: block; height: 100%; width: 0; background: #8fcbe0; transition: width 3s linear; }
@@ -767,7 +770,7 @@ function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x 
 // ---------- 고래 (늘 오른쪽으로) ----------
 let stage = 1;
 const whale = { x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0, pose: 'baby_glide', pop: 0, poseUntil: 0, nextWander: 0, nextAccent: 15,
-                happyUntil: 0, mode: 'swim', modeUntil: 0, nextSurface: 50 };
+                happyUntil: 0, mode: 'swim', modeUntil: 0, nextSurface: 50, mo: 0, gulp: 0, snack: null, nextSnackCheck: 30, sickSay: 0 };
 const whaleW = () => Math.min(W, 560) * SIZE[stage - 1];
 function poseScale(name) {   // 비스듬한 자세도 몸 크기가 비슷하게 (넓이 기준)
   const set = setFor(stage), ref = set ? IMG[set.base] : IMG[name], im = IMG[name] || ref;
@@ -789,10 +792,31 @@ function setPose(p) {
 }
 const mouth = () => ({ x: whale.x + whaleW() * .38, y: whale.y + whaleW() * .06 });
 
+function getSick() {   // 쓰레기를 삼키면 살짝 아픔 (안 죽음). 등 세 번 쓰다듬으면 나음, 하루 지나면 저절로 나음
+  S.sick = { at: now(), pets: 0 }; save(); whale.sickSay = T + 4;
+  speak('배가 살짝 아파…', 4);
+  const h = document.getElementById('hint'); h.dataset.t0 = h.dataset.t0 || h.textContent; h.textContent = '등을 세 번 쓰다듬어 주세요'; showHint();
+}
+function petSick() {
+  if (!S.sick) return;
+  S.sick.pets++; for (let i = 0; i < 4; i++) hearts.push({ x: whale.x + rnd(-30, 30), y: whale.y - whaleW() * .2, s: rnd(9, 14), t: 0, p: rnd(0, 6) });
+  if (S.sick.pets >= 3) { S.sick = null; hideHint(); setTimeout(() => { const h = document.getElementById('hint'); if (h.dataset.t0) h.textContent = h.dataset.t0; }, 3000); speak('고마워, 이제 괜찮아', 4); whale.happyUntil = T + 4;
+    for (let i = 0; i < 10; i++) sparks.push({ x: whale.x + rnd(-.4, .4) * whaleW(), y: whale.y + rnd(-.2, .2) * whaleW(), t: rnd(-.6, 0) }); }
+  save();
+}
 function updateWhale(dt, t) {
   const set = setFor(stage);
+  if (S.sick && now() - S.sick.at > DAY) { S.sick = null; save(); }
+  const m0 = mouth(), near = (x, y) => Math.hypot(x - m0.x, y - m0.y) < whaleW() * .75;
+  const mouthNear = whale.mode !== 'surface' && (krill.some(k => !k.eaten && k.y > SKY + 10 && near(k.x, k.y)) || (whale.snack && (p => near(p.x, p.y))(trashPos(whale.snack, t))));
   let tx = whale.tx, ty = whale.ty, maxV = 8 + stage;
   const food = krill.filter(k => !k.eaten && k.y > SKY + 10);
+  // 쓰레기가 많으면 가끔 먹이인 줄 알고 다가감 (치우면 막을 수 있음)
+  if (whale.snack && !S.trash.includes(whale.snack)) whale.snack = null;
+  if (!whale.snack && !food.length && t > whale.nextSnackCheck) { whale.nextSnackCheck = t + 20;
+    if (S.trash.length >= 4 && !S.sick && Math.random() < (S.trash.length - 3) * .08) {
+      let best = null, bd = 1e9; S.trash.forEach(o => { const p = trashPos(o, t), d = Math.hypot(p.x - whale.x, p.y - whale.y); if (d < bd) { bd = d; best = o; } }); whale.snack = best; } }
+  if (whale.snack && !food.length && whale.mode === 'swim') { const p = trashPos(whale.snack, t); tx = clamp(p.x - whaleW() * .38, W * .15, W * .75); ty = clamp(p.y - whaleW() * .06, SKY + poseH() * .5, FL()); maxV = 7 + stage; }
   if (food.length && whale.mode !== 'surface') {
     let n = food[0]; for (const k of food) if (Math.hypot(k.x - whale.x, k.y - whale.y) < Math.hypot(n.x - whale.x, n.y - whale.y)) n = k;
     tx = clamp(n.x - whaleW() * .35, W * .2, W * .72); ty = Math.max(n.y, SKY + poseH() * .5); maxV = 22 + stage * 3;
@@ -808,6 +832,7 @@ function updateWhale(dt, t) {
     if (Math.random() < dt * 6) splash(whale.x + rnd(-.4, .4) * whaleW());
     if (!set) for (let i = 0; i < 3; i++) spray.push({ x: whale.x + whaleW() * .22 + rnd(-3, 3), y: whale.y - poseH() * .4, vx: rnd(-14, 14), vy: rnd(-70, -45), t: 0 });
     if (t > whale.modeUntil) { whale.mode = 'swim'; whale.nextSurface = t + (DEBUG ? 40 : rnd(70, 150)); pickTarget(t); } }
+  if (S.sick) maxV *= .6;
   if (petting) maxV = 1.5;
   const dx = tx - whale.x, dy = ty - whale.y, dist = Math.hypot(dx, dy) || 1, want = Math.min(maxV, dist * .3);
   whale.vx += ((dx / dist) * want - whale.vx) * Math.min(1, dt * .35);
@@ -816,6 +841,7 @@ function updateWhale(dt, t) {
   // 자세 (방향은 절대 안 바뀜)
   if (set) {
     if (t < whale.happyUntil) setPose(set.happy);
+    else if (whale.mo > .05 || mouthNear) setPose(set.base);     // 먹을 땐 입이 보이는 자세
     else if (whale.mode === 'surface') setPose(set.spout);
     else if (whale.mode === 'rise' && whale.y - ty > 40) setPose(set.rise);
     else if (t < whale.poseUntil) {}
@@ -824,7 +850,13 @@ function updateWhale(dt, t) {
   } else setPose('stage' + stage);
   whale.pop = Math.max(0, whale.pop - dt * 1.5);
   const m = mouth();
-  krill.forEach(k => { if (!k.eaten && Math.hypot(k.x - m.x, k.y - m.y) < whaleW() * .28) { k.eaten = true; k.a = 1; } });
+  krill.forEach(k => { if (!k.eaten && Math.hypot(k.x - m.x, k.y - m.y) < whaleW() * .28) { k.eaten = true; k.a = 1; whale.gulp = 1; } });
+  // 입 벌리기: 먹이(또는 쓰레기)가 입 가까이 오면 천천히 벌리고, 삼키면 꿀꺽
+  whale.mo += ((mouthNear && t >= whale.happyUntil ? 1 : 0) - whale.mo) * Math.min(1, dt * 2.5);
+  whale.gulp = Math.max(0, whale.gulp - dt * 2.2);
+  if (whale.snack && whale.mo > .5) { const p = trashPos(whale.snack, t);
+    if (Math.hypot(p.x - m.x, p.y - m.y) < whaleW() * .22) { S.trash.splice(S.trash.indexOf(whale.snack), 1); whale.snack = null; whale.gulp = 1; getSick(); } }
+  if (S.sick && t > whale.sickSay) { whale.sickSay = t + 45; speak('😣', 3); }
 }
 let ripples = [];
 function splash(x) { ripples.push({ x, t: 0 }); }
@@ -848,17 +880,40 @@ function drawSwim(im, w, h, t) {
       octx.drawImage(BUF.c, x0, cut, cw, phh - cut, x0, dy + cut, cw, (phh - cut) * k);
     } else octx.drawImage(BUF.c, x0, 0, cw, phh, x0, dy, cw, phh);
   }
-  if (TINT) { octx.globalCompositeOperation = 'source-atop'; octx.fillStyle = TINT; octx.fillRect(0, 0, OUT.width, OUT.height); octx.globalCompositeOperation = 'source-over'; }
+  if (TINT) { octx.globalCompositeOperation = 'source-atop'; octx.fillStyle = TINT; octx.fillRect(0, 0, OUT.width, OUT.height);
+    if (S.sick) { octx.fillStyle = 'rgba(214,222,200,.42)'; octx.fillRect(0, 0, OUT.width, OUT.height); }   // 아플 땐 살짝 창백
+    octx.globalCompositeOperation = 'source-over'; }
   ctx.drawImage(OUT, -w / 2, -h / 2 - pad / DPR, w, (phh + pad * 2) / DPR);
+}
+// 입: 그림엔 입 벌린 자세가 없어서, 입선(주둥이 끝→입꼬리) 아래로 아래턱이 내려가는 어두운 틈을 살짝 그림
+const MOUTH = { baby_glide: [.985, .33, .79, .47], juv_glide: [.985, .33, .79, .47], ad_glide: [.985, .31, .76, .44] };
+function drawMouth(w, h, t) {
+  const M = MOUTH[whale.pose]; if (!M) return;
+  const oy = -Math.sin(t * 2 * Math.PI * .38) * (WAVE[whale.pose] ?? .35) * h * .07 * .08;
+  const P = (u, v) => [-w / 2 + u * w, -h / 2 + v * h + oy], [tx, ty] = P(M[0], M[1]), [cx, cy] = P(M[2], M[3]);
+  const d = whale.mo * h * .14 * (1 - whale.gulp * .6), lx = tx - w * .035, ly = ty + d;
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(tx, ty); ctx.quadraticCurveTo((tx + cx) / 2, (ty + cy) / 2 - h * .01, cx, cy);
+  ctx.quadraticCurveTo((cx + lx) / 2, ly + d * .25, lx, ly); ctx.closePath();
+  ctx.fillStyle = 'rgba(62,72,96,.88)'; ctx.fill();
+  ctx.clip();
+  ctx.fillStyle = 'rgba(236,160,172,.75)'; ctx.beginPath(); ctx.ellipse(cx + (tx - cx) * .35, cy + d * .35, w * .07, d * .3 + .5, -.2, 0, 6.28); ctx.fill();   // 혀
+  ctx.strokeStyle = 'rgba(244,236,222,.7)'; ctx.lineWidth = Math.max(.8, w * .004);                                                                     // 수염판
+  for (let i = 1; i < 7; i++) { const k = i / 7, x = tx + (cx - tx) * k, y = ty + (cy - ty) * k; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - w * .004, y + d * .45); ctx.stroke(); }
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(70,96,120,.85)'; ctx.lineWidth = Math.max(1, w * .006);
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.quadraticCurveTo((cx + lx) / 2, ly + d * .25, lx, ly); ctx.stroke();   // 아래턱 선
 }
 function drawWhale(t) {
   if (loaded < NSPR) return;
   const im = IMG[whale.pose], s = poseScale(whale.pose), w = im.naturalWidth * s, h = im.naturalHeight * s;
   const bob = whale.mode === 'surface' ? Math.sin(t * .8) * 2 : Math.sin(t * .55) * 6 + Math.sin(t * .23) * 3;
   const tilt = clamp(whale.vy / 50, -.1, .1) + Math.sin(t * .4) * .015;
-  const sc = 1 + Math.sin(whale.pop * Math.PI) * .025;
-  ctx.save(); ctx.translate(whale.x, whale.y + bob); ctx.rotate(tilt); ctx.scale(sc, 2 - sc);
+  const sc = 1 + Math.sin(whale.pop * Math.PI) * .025, gq = Math.sin(whale.gulp * Math.PI) * .035;
+  ctx.save(); ctx.translate(whale.x, whale.y + bob); ctx.rotate(tilt - whale.mo * .05); ctx.scale(sc + gq, 2 - sc - gq);
   drawSwim(im, w, h, t);
+  const set = setFor(stage);
+  if (whale.mo > .02 && set && whale.pose === set.base) drawMouth(w, h, t);
   ctx.restore();
 }
 function drawSurfaceFx(dt, t) {
@@ -1118,7 +1173,7 @@ cv.addEventListener('pointerdown', e => {
       return;
     }
   }
-  if (onWhale(x, y)) { petting = true; petNext = 0; whale.happyUntil = T + 5; hideHint(); }
+  if (onWhale(x, y)) { petting = true; petNext = 0; whale.happyUntil = T + 5; if (S.sick) petSick(); else hideHint(); }
 });
 const stopPet = () => { if (petting) whale.happyUntil = T + 3; petting = false; };
 addEventListener('pointerup', stopPet); addEventListener('pointercancel', stopPet);
@@ -1185,6 +1240,54 @@ function iconImg(id) {   // 배경화면(캔버스)에 그릴 때 쓰는 그림
   return ICON_IMG[id];
 }
 
+// ---------- 같이 여행하는 친구 (도감 손님 누구나, 셋까지) ----------
+const COMP_MAX = 3;
+const NAME_OF = id => (ITEMS.find(i => i[0] === id) || [])[2] || '';
+function toggleComp(id, forceOn) {
+  S.comp = S.comp || [];
+  const i = S.comp.indexOf(id);
+  if (i >= 0 && !forceOn) S.comp.splice(i, 1);
+  else if (i < 0) { S.comp.push(id); if (S.comp.length > COMP_MAX) S.comp.shift(); speak(NAME_OF(id) + '랑 같이 가요', 4); }
+  save();
+}
+// 친구마다 작은 버릇 (조용하게)
+function compMove(id, t, i) {
+  const k = t + i * 1.7; let dx = Math.sin(k * .5) * 10, dy = Math.sin(k * .7) * 7, rot = Math.sin(k * .8) * .06, sc = 1, at = null;
+  switch (id) {
+    case 'turtle': dx = Math.sin(k * .25) * 14; dy = Math.sin(k * .3) * 5; rot = Math.sin(k * .3) * .08; break;                 // 느릿느릿 미끄러짐
+    case 'otter': at = 'surface'; dy = Math.sin(k * 1.1) * 1.5; rot = -.25 + Math.sin(k * .9) * .05; break;                     // 수면에 누워 둥실
+    case 'dolphin': dy = -Math.abs(Math.sin(k * 1.1)) * 26; rot = -Math.cos(k * 1.1) * Math.sign(Math.sin(k * 1.1)) * .35; break; // 통통 뛰기
+    case 'jelly': dx = Math.sin(k * .2) * 6; dy = Math.sin(k * .45) * 16; rot = 0; sc = 1 + Math.max(0, Math.sin(k * 1.4)) * .06; break; // 둥둥
+    case 'penguin': { const d = Math.sin(k * .55); dy = d * 28; rot = Math.cos(k * .55) * .5; break; }                         // 쏙 잠수
+    case 'seal': rot = Math.sin(k * .35) * .45; break;                                                                         // 데굴
+    case 'puffer': sc = 1 + Math.max(0, Math.sin(k * .4)) * .18; break;                                                        // 뽀옥 부풀기
+    case 'squid': dx = (k * .6 % 3 < .5 ? (k * .6 % 3) * 30 : 15 - ((k * .6 % 3) - .5) * 6); break;                              // 쭉 나아가기
+    case 'octopus': sc = 1 + Math.sin(k * 1.2) * .05; dy = Math.sin(k * .6) * 10; break;
+    case 'crab': at = 'floor'; dx = Math.sin(k * .4) * 18; dy = 0; rot = 0; break;                                             // 바닥에서 옆걸음
+    case 'krill': case 'sardine': case 'tropical': dy = Math.sin(k * 1.3) * 5; rot = Math.sin(k * 2.4) * .08; break;
+  }
+  return { dx, dy, rot, sc, at };
+}
+const compPos = {};
+const SLOTS = [[-.66, -.55, -18], [.08, .62, 16], [-.8, .32, 4]];   // 고래 기준 자리 (폭 비율, 높이 비율, 덧붙임)
+function drawCompanions(t, front) {
+  const list = S.comp || [], w = whaleW(), h = poseH();
+  list.forEach((id, i) => {
+    if ((i === 1) !== front) return;
+    const im = iconImg(id); if (!im.complete || !im.naturalWidth) return;
+    const m = compMove(id, t, i), sl = SLOTS[i] || SLOTS[0];
+    let tx = whale.x + sl[0] * w + m.dx, ty = whale.y + sl[1] * h + sl[2] + m.dy;
+    if (m.at === 'surface') { tx = whale.x + w * .45 + m.dx; ty = surf(tx, t) - 4 + m.dy; }
+    else if (m.at === 'floor') { tx = whale.x - w * .2 + m.dx; ty = nearY(tx) + 4; }
+    else ty = clamp(ty, SKY + 26, FL() + 10);
+    tx = clamp(tx, 24, W - 24);
+    const c = compPos[id] || (compPos[id] = { x: tx, y: ty });
+    c.x += (tx - c.x) * .04; c.y += (ty - c.y) * .04;
+    const z = clamp(w * .24, 38, 60) * m.sc;
+    ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(m.rot); ctx.globalAlpha = .95;
+    ctx.drawImage(im, -z / 2, -z / 2, z, z); ctx.restore();
+  });
+}
 // ---------- 바다 선물 (뽑기) · 도감 — 하루 하나 무료, 광고 보고 하루 3번까지 더 ----------
 const ITEMS = [
   // 바다 손님
@@ -1226,7 +1329,8 @@ function giftResult(res) {
   $('giftBox').innerHTML = `<h3>${kind === 'v' ? '새 바다 손님' : '바다 꾸미기'}</h3><div class="gift-icon">${e}</div>
     <div style="font-size:17px;font-weight:600;margin-top:2px">${name}</div><span class="rar ${tier}">${RAR[tier][0]}</span>
     <p>${res.dup ? `이미 만난 친구라 진주 ${res.pearls}개로 바꿨어요.` : '도감에 담았어요.'}</p>
-    <button class="b2 main" data-a="dogam">도감 보기</button><button class="b2" data-a="menu">다시 보기</button><button class="b2" data-a="close">닫기</button>`;
+    ${kind === 'v' && !res.dup && !(S.comp || []).includes(id) ? `<p style="margin-top:2px">「같이 갈래?」</p><button class="b2 main" data-a="comp" data-id="${id}">같이 가기</button><br>` : ''}
+    <button class="b2 ${kind === 'v' && !res.dup ? '' : 'main'}" data-a="dogam">도감 보기</button><button class="b2" data-a="menu">다시 보기</button><button class="b2" data-a="close">닫기</button>`;
 }
 function showRewardedAd(cb) {   // 광고 자리 (시험): 나중에 진짜 보상형 광고 SDK로 바꿀 곳
   $('giftBox').innerHTML = '<h3>광고 자리 (시험)</h3><p>여기에 짧은 광고가 나와요.</p><div class="adbar"><i id="adFill"></i></div>';
@@ -1235,16 +1339,22 @@ function showRewardedAd(cb) {   // 광고 자리 (시험): 나중에 진짜 보�
 }
 function dogam() {
   const g = G(), vis = ITEMS.filter(i => i[4] === 'v'), dec = ITEMS.filter(i => i[4] === 'd'), fnd = ITEMS.filter(i => i[4] === 's'), n = ITEMS.filter(i => g.got[i[0]]).length;
-  const cells = list => list.map(([id, e, name]) => g.got[id] ? `<div class="cell"><span class="e">${e}</span>${name}</div>` : `<div class="cell no"><span class="e">${e}</span>?</div>`).join('');
+  const cm = S.comp || [];
+  const cells = list => list.map(([id, e, name, , kind]) => !g.got[id] ? `<div class="cell no"><span class="e">${e}</span>?</div>`
+    : kind === 'v' ? `<div class="cell${cm.includes(id) ? ' go' : ''}" data-c="${id}"><span class="e">${e}</span>${name}${cm.includes(id) ? '<span class="go-tag">같이 가는 중</span>' : ''}</div>`
+    : `<div class="cell"><span class="e">${e}</span>${name}</div>`).join('');
   $('dogamBox').innerHTML = `<h3>도감</h3><p>만난 친구 ${n} / ${ITEMS.length} · 진주 ${g.pearls} · 조개 ${SH().n}</p>
-    <div class="sec">바다 손님</div><div class="grid">${cells(vis)}</div><div class="sec">꾸미기</div><div class="grid">${cells(dec)}</div><div class="sec">밤바다에서 주운 것</div><div class="grid">${cells(fnd)}</div>
+    <div class="sec">바다 손님 <span style="opacity:.7">· 누르면 같이 여행해요 (셋까지)</span></div><div class="grid">${cells(vis)}</div><div class="sec">꾸미기</div><div class="grid">${cells(dec)}</div><div class="sec">밤바다에서 주운 것</div><div class="grid">${cells(fnd)}</div>
     <button class="b2" data-a="close">닫기</button>`;
   $('ovGift').classList.remove('on'); $('ovDogam').classList.add('on');
 }
 function ovClick(e) {
+  const cc = e.target.closest && e.target.closest('[data-c]');
+  if (cc) { toggleComp(cc.dataset.c); dogam(); return; }
   const a = e.target.dataset && e.target.dataset.a; if (!a) { if (e.target.classList.contains('ov')) { e.target.classList.remove('on'); if (e.target.id === 'ovStamp') visitorGo(); } return; }
   const g = G();
   if (a === 'close') { const st = $('ovStamp').classList.contains('on'); ['ovGift', 'ovDogam', 'ovMore', 'ovShell', 'ovStamp'].forEach(i => $(i).classList.remove('on')); if (st) visitorGo(); }
+  else if (a === 'comp') { toggleComp(e.target.dataset.id, true); e.target.outerHTML = '<p>이제 같이 여행해요.</p>'; }
   else if (a === 'menu') giftMenu();
   else if (a === 'dogam') dogam();
   else if (a === 'free' && !g.free) { g.free = true; save(); giftResult(pull()); }
@@ -1484,7 +1594,7 @@ function start() {
   } else { greet(); if (S.cleaned < 3) setTimeout(showHint, 5000); }
   if (DEBUG) {
     window._jump = (i, f) => { const k = SEG.slice(0, i).reduce((a, b) => a + b, 0) + f * SEG[i]; S.offset = S.born + k / LOOP_KM * LOOP_DAYS * DAY - Date.now(); S.trashDay = ''; daily(T); };
-    window._w = whale; window._S = S; window._ev = startEvent; window._tod = tod; window._map = v => mapBig = v;
+    window._w = whale; window._S = S; window._sick = getSick; window._comp = toggleComp; window._krill = () => document.getElementById('bFeed').onclick(); window._ev = startEvent; window._tod = tod; window._map = v => mapBig = v;
     whale.nextSurface = 25;
     const d = document.getElementById('dbg'); d.style.display = 'flex';
     d.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { S.offset = (S.offset || 0) + DAY * +b.dataset.d; daily(T); });
@@ -1515,7 +1625,9 @@ function loop(f) {
   drawTrash(T);
   updateWhale(dt, T);
   { const dpt = clamp((whale.y - SKY) / (FL() - SKY), 0, 1), wc = mixC(c.top, c.bot, .3 + dpt * .5); TINT = `rgba(${wc[0]},${wc[1]},${wc[2]},${.06 + dpt * .16 + c.night * .12})`; }
+  drawCompanions(T, false);
   drawWhale(T);
+  drawCompanions(T, true);
   drawPouch(dt, T);
   drawSurfaceFx(dt, T);
   drawFx(dt, T);
