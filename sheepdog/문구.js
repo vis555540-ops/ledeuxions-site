@@ -28,7 +28,7 @@ const 문구 = {
   코인_부족:{ko:"코인이 모자라요",en:"Not enough coins"},
   확률표:{ko:"확률",en:"Odds"}, 일반:{ko:"일반",en:"Common"}, 희귀:{ko:"희귀",en:"Rare"}, 전설:{ko:"전설",en:"Legend"},
   새_친구:{ko:"새 친구!",en:"New friend!"}, 중복:{ko:"이미 있어요 (경험 +50)",en:"Already have (XP +50)"},
-  광고_뼈다귀:{ko:"광고 보고 뼈다귀 +1",en:"Watch ad: +1 bone"}, 광고_준비중:{ko:"광고 준비 중",en:"Ads coming soon"},
+  광고_뼈다귀:{ko:"광고 보고 뼈다귀 +1",en:"Watch ad: +1 bone"}, 광고_준비중:{ko:"광고 준비 중",en:"Ads coming soon"}, 광고_없음:{ko:"지금은 광고가 없어요",en:"No ad right now"},
   광고_다봄:{ko:"오늘은 다 봤어요",en:"No more ads today"}, 광고_한번더:{ko:"광고 보고 한 번 더",en:"Watch ad: 1 more"},
   교배_준비중:{ko:"30탄을 깨면 열려요",en:"Opens after stage 30"},
   출석:{ko:"출석 보상",en:"Daily gift"}, 일차:{ko:"일차",en:"Day"}, 받기:{ko:"받기",en:"Claim"},
