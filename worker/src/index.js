@@ -67,6 +67,7 @@ const ALLOWED_TOOLS = ["transcribe", "remove-bg", "ocr", "pdf-compress", "restor
     ...PDF_SERVER_TOOLS];
 
 import { handleAlliance } from "./alliance.js";
+import { handleSheepdogMove } from "./sheepdog_move.js";
 export { AlliancePresence } from "./alliance.js";
 
 // ---------- Helpers ----------
@@ -891,6 +892,12 @@ export default {
         // 연맹 광장 (unlisted 시제품) — /alliance/*, /admin/alliance/*
         if (url.pathname.startsWith("/alliance/") || url.pathname.startsWith("/admin/alliance/")) {
             const r = await handleAlliance(request, env, corsHeaders(origin));
+            if (r) return r;
+        }
+
+        // 양몰이 이사 코드 — /sheepdog/move, /sheepdog/move/:code
+        if (url.pathname.startsWith("/sheepdog/move")) {
+            const r = await handleSheepdogMove(request, env, url, json, corsHeaders(origin));
             if (r) return r;
         }
 
