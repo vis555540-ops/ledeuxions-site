@@ -12,7 +12,11 @@ const 광고_설정 = {
   전면_간격판: 3,     // 전면광고: 깬 판 3개마다 한 번
   전면_간격초: 180,   // 그리고 3분 이상 띄워서
   전면_첫판: 3,       // 1·2탄 다음에는 절대 안 냄
+  앱광고: true,       // ★ v5.60 진짜 앱(v4, AdMob) 안 광고 스위치. false 면 앱에서도 광고 0 (바꾸면 앱 다시 빌드)
 };
+// ★ v5.60 진짜 앱(Capacitor, versionCode 4+) 안이면 웹 광고 대신 AdMob(가족 정책 인증 SDK)을 쓴다.
+//   아이디는 admob_ids.json 한 곳(앱 꾸러미에만 들어감). 아이 대상 표시·G 등급·맞춤광고 X(npa).
+const 앱네이티브 = (() => { try { return !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()); } catch (e) { return false; } })();
 const 광고 = {
   준비됨: false,      // adConfig onReady 가 불려야 true. 광고 막힘·오프라인이면 끝까지 false
   결제준비됨: false,
@@ -25,6 +29,7 @@ const 광고 = {
   } catch (e) { return false; } })(),
   켜기() {
     if (광고._켬) return; 광고._켬 = true;
+    if (앱네이티브) { if (광고_설정.앱광고) 광고.앱_켜기(); return; }
     const 켬 = 광고.시험 || (광고_설정.승인됨 && (!광고.앱안 || 광고_설정.앱에서도));
     if (!켬) return;
     try {
@@ -42,11 +47,42 @@ const 광고 = {
       window.adConfig({ preloadAdBreaks: "on", sound: "on", onReady: () => { 광고.준비됨 = true; } });
     } catch (e) { 광고.준비됨 = false; }
   },
-  준비됨확인() { return 광고.준비됨 && typeof window.adBreak === "function"; },
+  준비됨확인() { return 광고.준비됨 && (앱네이티브 || typeof window.adBreak === "function"); },
+  // ── AdMob (앱 안) ──
+  앱: null, 앱아이디: null,
+  async 앱_켜기() {
+    try {
+      const A = Capacitor.Plugins && Capacitor.Plugins.AdMob; if (!A) return;
+      const r = await fetch("admob_ids.json", { cache: "no-store" }); const id = await r.json();
+      await A.initialize({ initializeForTesting: !!id.test, tagForChildDirectedTreatment: true, tagForUnderAgeOfConsent: true, maxAdContentRating: "General" });
+      광고.앱 = A; 광고.앱아이디 = id; 광고.준비됨 = true;
+    } catch (e) { 광고.준비됨 = false; }
+  },
+  _앱옵션(종류) { const id = 광고.앱아이디; return { adId: id[종류], isTesting: !!id.test, npa: true }; },
+  // 전체화면 광고 하나를 띄우고 닫힐 때까지 기다린다. 보상형은 끝까지 봐서 Reward 가 왔을 때만 true.
+  async _앱띄우기(보상형) {
+    const A = 광고.앱, ev = 보상형
+      ? { 상: "onRewardedVideoAdReward", 닫: "onRewardedVideoAdDismissed", 실: "onRewardedVideoAdFailedToShow" }
+      : { 닫: "interstitialAdDismissed", 실: "interstitialAdFailedToShow" };
+    try { 보상형 ? await A.prepareRewardVideoAd(광고._앱옵션("rewarded")) : await A.prepareInterstitial(광고._앱옵션("interstitial")); }
+    catch (e) { 광고.마지막상태 = "notReady"; return false; }
+    const hs = []; let 봄 = false, 끝 = false, 타 = 0, 풀기;
+    const 결과 = new Promise(r => 풀기 = r);
+    const 마침 = (v, 상태) => { if (끝) return; 끝 = true; clearTimeout(타); 광고.마지막상태 = 상태; hs.forEach(h => { try { h.remove(); } catch (e) {} });
+      try { 소리.배경음_재개(); } catch (e) {} 풀기(v); };
+    if (ev.상) hs.push(await A.addListener(ev.상, () => { 봄 = true; }));
+    hs.push(await A.addListener(ev.닫, () => 마침(보상형 ? 봄 : true, 보상형 ? (봄 ? "viewed" : "dismissed") : "viewed")));
+    hs.push(await A.addListener(ev.실, () => 마침(false, "other")));
+    타 = setTimeout(() => 마침(false, "other"), 180000);
+    try { 소리.배경음_멈춤(); } catch (e) {}
+    (보상형 ? A.showRewardVideoAd() : A.showInterstitial()).catch(() => 마침(false, "other"));
+    return 결과;
+  },
   // 보상형. 끝까지 봤을 때(adViewed)만 true. 광고가 없으면(beforeReward 안 불림) false.
   재생(자리) {
     광고.마지막상태 = "notReady";
     if (!광고.준비됨확인()) return Promise.resolve(false);
+    if (앱네이티브) return 광고._앱띄우기(true);
     return new Promise(res => {
       let 봄 = false, 끝 = false;
       const 마침 = v => { if (끝) return; 끝 = true; clearTimeout(타); res(v); };
@@ -66,6 +102,7 @@ const 광고 = {
   // 전면(next). 판과 판 사이에서만 부른다. 끝나면(나왔든 안 나왔든) resolve.
   전면(이름) {
     if (!광고.준비됨확인()) return Promise.resolve(false);
+    if (앱네이티브) return 광고._앱띄우기(false);
     return new Promise(res => {
       let 끝 = false; const 마침 = v => { if (끝) return; 끝 = true; clearTimeout(타); res(v); };
       const 타 = setTimeout(() => 마침(false), 30000);

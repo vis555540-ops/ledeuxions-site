@@ -106,11 +106,13 @@ function 성장(개){ const 날=(개.함께&&개.함께.날)||0; return 날<2 ? 
 function 아기냐(개){ return 성장(개)!=="어른"; }
 // ★ 2026-10-22 v3 앱 — 폰 위젯·라이브 배경화면. 앱(versionCode 3+)이 시작 주소에 ?app=3 을 달아 준다.
 //   그 꼬리표가 있을 때만(이 탭 동안 sessionStorage 로 기억) 설정에 버튼이 보인다. 크롬·옛 앱에선 안 보임.
-function 폰앱판(){ try { const m=/[?&]app=(\d+)/.exec(location.search); if (m) sessionStorage.setItem("양몰이_앱판", m[1]);
+function 폰앱판(){ try { if (typeof 앱네이티브!=="undefined" && 앱네이티브) return 4;   // v4 진짜 앱(Capacitor)
+  const m=/[?&]app=(\d+)/.exec(location.search); if (m) sessionStorage.setItem("양몰이_앱판", m[1]);
   return +(sessionStorage.getItem("양몰이_앱판")||0); } catch(e) { return 0; } }
 폰앱판();
 function 폰강아지링크(할일){ const 개=저장.선택개(); const 기분 = 개.배<배고픔선 ? "hungry" : 개.기분>=70 ? "happy" : "ok";
   const q="breed="+encodeURIComponent(개.견종)+"&baby="+(성장(개)==="아기"?1:0)+"&mood="+기분;
+  if (typeof 앱네이티브!=="undefined" && 앱네이티브) return "sheepdogpet://"+할일+"?"+q;   // v4 앱 웹뷰는 intent:// 를 못 엶
   return "intent://"+할일+"?"+q+"#Intent;scheme=sheepdogpet;package=com.ledeuxions.sheepdog;end"; }
 // 처음 해 본 일은 한 번만 기념한다
 function 처음이면(코드, 말){ const p = 저장.자료.처음 || (저장.자료.처음={});
