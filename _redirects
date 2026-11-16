@@ -1,3 +1,6 @@
+# 🚨 2026-11-16 실측: 이 파일은 규칙 약 100줄까지만 먹는다(101번째 줄부터 무시됨 — simon/ranking 이 102번째로 밀리자 404).
+#   규칙을 더하기 전에 `grep -vE '^\s*(#|$)' _redirects | wc -l` 로 세고 100 아래로 유지. 한글 그대로 쓴 줄은 안 걸려서(퍼센트 인코딩만 걸림) 같은 날 18줄 지움.
+
 # 2026-11-11 — pdf300 영어판 원본 폴더가 ledeuxions.com 에서도 200 으로 열려(canonical 만 pdf300.com)
 #   구글이 pdf300 도구 페이지를 이 복사본으로 먼저 찾고 있었다(URL 검사 「참조 페이지」). 신호를 pdf300.com 하나로 모은다.
 /web-projects/pdf300/en    https://pdf300.com/         301
@@ -36,34 +39,18 @@
 /%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4-2  /work/  301
 /%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4-2/*  /work/  301
 /%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD  /contact/  301
-/생각들-1/merci-aux-français-de-la-guerre-de-corée-6-25  /%EA%B8%80/merci-aux-francais-de-la-guerre-de-coree/  301
-/생각들-1/건축가-입장에서-보는-근린생활시설-건축과-대지-사업성과의-관계-1부  /%EA%B8%80/%EA%B7%BC%EB%A6%B0%EC%83%9D%ED%99%9C%EC%8B%9C%EC%84%A4-%EA%B1%B4%EC%B6%95%EA%B3%BC-%EB%8C%80%EC%A7%80-%EC%82%AC%EC%97%85%EC%84%B1-1%EB%B6%80/  301
-/생각들-1/건축가-입장에서-보는-근린생활시설-건축과-대지-사업성과의-관계-2부-건축-내부-프로그램-설계는-상가의-수익성  /%EA%B8%80/%EA%B7%BC%EB%A6%B0%EC%83%9D%ED%99%9C%EC%8B%9C%EC%84%A4-%EA%B1%B4%EC%B6%95%EA%B3%BC-%EB%8C%80%EC%A7%80-%EC%82%AC%EC%97%85%EC%84%B1-2%EB%B6%80/  301
-/생각들-1  /%EA%B8%80/  301
-/생각들-1/  /%EA%B8%80/  301
-/포트폴리오-2  /work/  301
-/포트폴리오-2/*  /work/  301
-/문의사항  /contact/  301
 
 # 옛 홈페이지(위키 시절) 주소를 새 자리로 넘긴다. 2026-08-20 형 지시.
 #   왜: 구글에 LeDeuxions 를 치면 옛 주소만 나왔고, 그 주소들이 전부
 #       첫 화면을 200 으로 돌려줘서 같은 페이지가 여러 개로 보였다.
 #   ⚠️ 한글 주소는 퍼센트 인코딩한 형태로 적어야 걸린다 (2026-08-20 실측).
 
-/포트폴리오                                                           /work/       301
-/포트폴리오/*                                                         /work/       301
 /%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4                   /work/       301
 /%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4/*                 /work/       301
 /%EB%B3%B4%EB%8F%84                                              /history/    301
 /%EB%B3%B4%EB%8F%84/*                                            /history/    301
-/보도                                                              /history/    301
-/보도/*                                                            /history/    301
 /%EA%B0%9C%EC%9D%B8%EC%9D%B4%EB%A0%A5                            /history/    301
 /%EA%B0%9C%EC%9D%B8%EC%9D%B4%EB%A0%A5/*                          /history/    301
-/개인이력                                                            /history/    301
-/개인이력/*                                                          /history/    301
-/생각들-1                                                           /history/    301
-/생각들-1/*                                                         /history/    301
 /%EC%83%9D%EA%B0%81%EB%93%A4-1                                   /history/    301
 /%EC%83%9D%EA%B0%81%EB%93%A4-1/*                                 /history/    301
 /medication-log                                                  /            301
@@ -74,8 +61,6 @@
 #   없는 페이지가 뜨면 그것부터가 신뢰를 깎는다.
 /l-histoire-de-ledeuxions                                        /history/    301
 /l-histoire-de-ledeuxions/*                                      /history/    301
-/연락처-1                                                          /contact/    301
-/연락처-1/*                                                        /contact/    301
 /%EC%97%B0%EB%9D%BD%EC%B2%98-1                                   /contact/    301
 /%EC%97%B0%EB%9D%BD%EC%B2%98-1/*                                 /contact/    301
 /meeting   /회의실/   302
