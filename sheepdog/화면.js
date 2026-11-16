@@ -772,6 +772,7 @@ S3: { 개들:[], 공:null, 밥그릇:null, 쓰담:null, 탭들:[], 버튼:[], �
       const t=this.탭들.find(b=>그림.안에(b,x,y)); if (t) { 소리.재생("누름"); if (t.코드!==현재코드) 전환(t.코드); return; }
       if (톱니누름(x,y)) return;
       if (this.던지기모드<=0 && !this.밥놓기모드 && 그림.안에(현수막자리,x,y)) {         // ★ v5.58 감사 현수막 톡 → 하트·꽃종이
+        if (현수막이사()) { 소리.재생("누름"); 이사.받기창(); return; }
         this.현수막t = 1; 소리.재생("별"); 소리.진동(15);
         for (let i=0;i<4;i++) this.효과("하트", 30+i*40+Math.random()*10, 70);
         for (let i=0;i<14;i++) this.이펙트.push({종류:"종이", x:20+Math.random()*140, y:62+Math.random()*8, 색:["#ff8aa0","#ffd23f","#8fd0ff","#a8e070","#ffffff"][i%5], 흔:Math.random()*6, t:0, 수명:1.2});
@@ -1897,5 +1898,12 @@ function 감사현수막(톡) {
     if ((x>>1)%4===0) 그림.네모(x, 위+물+천높+1, 2, 2, ["#ff8aa0","#8fd0ff","#a8e070"][(x>>3)%3]);   // 깃발 술
   }
   const 물 = 정수(Math.sin(t*2.2+90*0.07)*1.2)+3+깡;
-  그림.글자(글안전("감사_현수막", 저장.자료.언어==="en" ? "Thanks for playing! 🐑" : "설치해 주셔서 감사해요! 🐑"), 90, 위+물+3, 7, "#7a3a1a", "center", true, 150);
+  const 이사알림 = 현수막이사();
+  const 문구 = 이사알림 ? (저장.자료.언어==="en" ? "📦 New app soon! Tap for a move code" : "📦 새 앱 곧 나와요! 톡 → 이사 코드")
+                        : 글안전("감사_현수막", 저장.자료.언어==="en" ? "Thanks for playing! 🐑" : "설치해 주셔서 감사해요! 🐑");
+  그림.글자(문구, 90, 위+물+3, 7, "#7a3a1a", "center", true, 150);
+}
+// ★ v5.62 (11/16 형 「이사코드 받아두라고 전달」) — 옛 앱·크롬에서 아직 코드 안 받은 사람에게만 현수막이 이사 안내로 바뀜
+function 현수막이사() {
+  try { return typeof 이사!=="undefined" && !이사.새앱 && 이사.기간() && 저장.자료 && (저장.자료.최고탄>0 || 저장.자료.개.length>1) && !localStorage.getItem("양몰이_이사코드"); } catch (e) { return false; }
 }
