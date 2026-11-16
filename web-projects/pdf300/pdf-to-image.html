@@ -659,6 +659,11 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
 .lp .qa b{display:block;margin-bottom:6px}
 .lp .qa p{margin:0;line-height:1.85;color:var(--text-secondary,#B7B0A4);word-break:keep-all}
 .lp .back{display:block;margin-top:40px;color:var(--text-muted,#837C70)}
+.lp>p{line-height:1.85;color:var(--text-secondary,#B7B0A4);word-break:keep-all;margin:0 0 14px}
+.lp ul{padding-left:20px;line-height:1.85;color:var(--text-secondary,#B7B0A4)}
+.lp ul li{margin-bottom:10px;word-break:keep-all}
+.lp ul b,.lp>p b{color:var(--text-primary,#F6F2EA)}
+.lp main a,.lp>p a,.lp ul a{color:var(--accent,#E8906C)}
 </style>
 </head>
 <body>
@@ -692,6 +697,15 @@ html,body{background:var(--bg-canvas,#14110F);color:var(--text-primary,#F6F2EA)}
   <h2>자주 묻는 것</h2>
   <div class="qa"><b>파일이 서버로 올라가나요?</b><p>올라가지 않습니다. 이 도구는 브라우저 안에서만 돌아갑니다. 화면이 다 뜬 뒤에는 인터넷을 꺼도 작동합니다. 파일이 컴퓨터를 떠나지 않으니 계약서나 통장 같은 것도 마음 놓고 다루셔도 됩니다.</p></div><div class="qa"><b>가입해야 하나요? 워터마크가 찍히나요?</b><p>둘 다 아닙니다. 가입도 없고 결과물에 아무 표시도 남지 않습니다. 한계는 기기 성능뿐입니다 — 스캔본처럼 무거운 파일은 메모리를 많이 씁니다.</p></div>
 
+  <h2>형식과 해상도 고르기</h2>
+  <p>PDF를 안 받는 곳이 있습니다. 카카오톡 미리보기, SNS 게시물, 발표 슬라이드, "자격증 사본을 JPG로 올려 주세요" 같은 칸. 이럴 때 쪽을 그림 파일로 바꿉니다.</p>
+  <ul>
+    <li><b>PNG</b> — 손실이 없어 글자·선이 또렷합니다. 대신 큽니다. 글자 위주 문서와 도면에.</li>
+    <li><b>JPG</b> — 사진이 많은 쪽에서 훨씬 작습니다. 품질을 너무 낮추면 글자 가장자리가 번집니다. 제출처가 JPG를 지정했을 때.</li>
+    <li><b>WebP</b> — 같은 화질에서 JPG보다 작지만, 오래된 프로그램이나 일부 업로드 칸은 받지 않습니다.</li>
+  </ul>
+  <p><b>해상도</b>는 72~288 DPI 중에서 고릅니다. 화면으로 볼 거면 기본값 144 DPI면 충분하고, 인쇄하거나 확대해서 읽어야 하면 216·288 DPI. 숫자가 클수록 파일도 커집니다.</p>
+  <p>여러 쪽은 ZIP 하나로 한꺼번에 내려받습니다. 반대로 사진 여러 장을 PDF로 묶으려면 <a href="image-to-pdf">이미지 → PDF</a>를 쓰세요.</p>
   <a class="back" href="./">← PDF 도구 24개 전부 보기</a>
 </main>
 <footer class="site-footer">

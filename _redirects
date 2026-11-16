@@ -31,6 +31,8 @@
 /%EC%83%9D%EA%B0%81%EB%93%A4-1/%EA%B1%B4%EC%B6%95%EA%B0%80-%EC%9E%85%EC%9E%A5%EC%97%90%EC%84%9C-%EB%B3%B4%EB%8A%94-%EA%B7%BC%EB%A6%B0%EC%83%9D%ED%99%9C%EC%8B%9C%EC%84%A4-%EA%B1%B4%EC%B6%95%EA%B3%BC-%EB%8C%80%EC%A7%80-%EC%82%AC%EC%97%85%EC%84%B1%EA%B3%BC%EC%9D%98-%EA%B4%80%EA%B3%84-2%EB%B6%80-%EA%B1%B4%EC%B6%95-%EB%82%B4%EB%B6%80-%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%A8-%EC%84%A4%EA%B3%84%EB%8A%94-%EC%83%81%EA%B0%80%EC%9D%98-%EC%88%98%EC%9D%B5%EC%84%B1/  /%EA%B8%80/%EA%B7%BC%EB%A6%B0%EC%83%9D%ED%99%9C%EC%8B%9C%EC%84%A4-%EA%B1%B4%EC%B6%95%EA%B3%BC-%EB%8C%80%EC%A7%80-%EC%82%AC%EC%97%85%EC%84%B1-2%EB%B6%80/  301
 /%EC%83%9D%EA%B0%81%EB%93%A4-1  /%EA%B8%80/  301
 /%EC%83%9D%EA%B0%81%EB%93%A4-1/  /%EA%B8%80/  301
+# 2026-11-16 — 옛 위키 태그 주소(/생각들-1/tag/…)가 인코딩된 채로 와서 아래 한글 /생각들-1/* 줄에 안 걸리고 404 였다. 글 목록으로.
+/%EC%83%9D%EA%B0%81%EB%93%A4-1/*  /%EA%B8%80/  301
 /%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4-2  /work/  301
 /%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4-2/*  /work/  301
 /%EB%AC%B8%EC%9D%98%EC%82%AC%ED%95%AD  /contact/  301
@@ -126,3 +128,10 @@
 /web-projects/game-world/jump/ranking     /web-projects/game-world/ranking/  301
 /web-projects/game-world/snake/ranking    /web-projects/game-world/ranking/  301
 /web-projects/game-world/simon/ranking    /web-projects/game-world/ranking/  301
+# 2026-11-16 — 서치콘솔 404 에 남은 옛 주소. 탑 랭킹도 한 곳으로, 옛 갤러리 파일(모두의 갤러리 v2·방 편집기)은 갤러리 첫 화면으로.
+/web-projects/game-world/tower/ranking/*  /web-projects/game-world/ranking/  301
+/web-projects/game-world/tower/ranking    /web-projects/game-world/ranking/  301
+/gallery/modu_gallery_v2.html  /gallery/  301
+/gallery/modu_room_editor.html  /gallery/  301
+/gallery/rooms  /gallery/  301
+/gallery/rooms/*  /gallery/  301
