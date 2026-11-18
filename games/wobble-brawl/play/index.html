@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Wobble Brawl - Stickman Ragdoll Duel</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;background:#0d0b1e;overflow:hidden;touch-action:none;overscroll-behavior:none}
+body{display:flex;align-items:center;justify-content:center;font-family:"Arial Black","Segoe UI","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;font-weight:900;color:#fff}
+#stage{position:relative;--u:1px;overflow:hidden;background:#17132f}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+.screen{position:absolute;inset:0;display:none}
+.screen.on{display:block}
+.ink{-webkit-text-stroke:calc(var(--u)*9) #1b1b2f;paint-order:stroke fill}
+.btn{font:inherit;color:#1b1b2f;background:#fff;border:calc(var(--u)*4) solid #1b1b2f;border-radius:calc(var(--u)*16);box-shadow:0 calc(var(--u)*6) 0 #1b1b2f;padding:0 calc(var(--u)*18);height:calc(var(--u)*56);font-size:calc(var(--u)*22);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:calc(var(--u)*8);transition:transform .06s,box-shadow .06s,filter .1s;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(calc(var(--u)*4));box-shadow:0 calc(var(--u)*2) 0 #1b1b2f}
+.btn.pri{background:#ffd23f}
+.btn.big{height:calc(var(--u)*92);font-size:calc(var(--u)*46);border-radius:calc(var(--u)*24);font-style:italic}
+.btn.blue{background:#6ecbff}.btn.pink{background:#ff9ecb}.btn.green{background:#8ef0a8}
+.btn.sm{height:calc(var(--u)*44);font-size:calc(var(--u)*16);padding:0 calc(var(--u)*12);border-radius:calc(var(--u)*12);box-shadow:0 calc(var(--u)*4) 0 #1b1b2f;border-width:calc(var(--u)*3)}
+.btn.off{background:#8d8fa8;color:#2b2d42}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:calc(var(--u)*8);background:rgba(27,27,47,.88);border:calc(var(--u)*3) solid #1b1b2f;border-radius:calc(var(--u)*40);height:calc(var(--u)*44);padding:0 calc(var(--u)*16) 0 calc(var(--u)*8);font-size:calc(var(--u)*20)}
+.coin{width:calc(var(--u)*28);height:calc(var(--u)*28);border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc400 55%,#c98a00);border:calc(var(--u)*3) solid #1b1b2f;display:inline-block;flex:none}
+.flame{width:calc(var(--u)*22);height:calc(var(--u)*26);background:#ff7b3d;border:calc(var(--u)*3) solid #1b1b2f;border-radius:50% 50% 50% 50%/65% 65% 35% 35%;display:inline-block;flex:none;margin-left:calc(var(--u)*4)}
+/* menu */
+#topL{position:absolute;left:calc(var(--u)*24);top:calc(var(--u)*20);display:flex;gap:calc(var(--u)*10)}
+#topR{position:absolute;right:calc(var(--u)*24);top:calc(var(--u)*20);display:flex;gap:calc(var(--u)*10)}
+#logo{position:absolute;left:calc(var(--u)*64);top:calc(var(--u)*92);line-height:.98;transform:rotate(-4deg);transform-origin:left center}
+#logo .l1{font-size:calc(var(--u)*100);font-style:italic;color:#fff}
+#logo .l2{font-size:calc(var(--u)*100);font-style:italic;color:#ffd23f}
+#logo .l3{font-size:calc(var(--u)*22);margin-top:calc(var(--u)*12);-webkit-text-stroke:calc(var(--u)*5) #1b1b2f;paint-order:stroke fill;color:#9be7ff;letter-spacing:.04em}
+html[lang=ko] #logo .l1,html[lang=ko] #logo .l2{font-size:calc(var(--u)*84)}
+#mainCol{position:absolute;left:calc(var(--u)*64);top:calc(var(--u)*378);width:calc(var(--u)*400);display:flex;flex-direction:column;gap:calc(var(--u)*16)}
+.seg{display:flex;gap:calc(var(--u)*8)}
+.seg .btn{flex:1;padding:0}
+.row{display:flex;gap:calc(var(--u)*12)}
+.row .btn{flex:1}
+#rightCol{position:absolute;right:calc(var(--u)*40);bottom:calc(var(--u)*34);width:calc(var(--u)*430);display:flex;flex-direction:column;gap:calc(var(--u)*14)}
+.card{background:rgba(27,27,47,.9);border:calc(var(--u)*4) solid #1b1b2f;border-radius:calc(var(--u)*20);padding:calc(var(--u)*16) calc(var(--u)*18)}
+.card h3{margin:0 0 calc(var(--u)*8);font-size:calc(var(--u)*18);color:#ffd23f;letter-spacing:.05em}
+.card .txt{font-size:calc(var(--u)*20);font-weight:700}
+.prog{height:calc(var(--u)*18);background:#3a3c5a;border-radius:calc(var(--u)*10);margin-top:calc(var(--u)*10);overflow:hidden;border:calc(var(--u)*3) solid #1b1b2f}
+.prog i{display:block;height:100%;background:#8ef0a8;width:0}
+.sub{font-size:calc(var(--u)*16);font-weight:700;color:#c9cbe0;margin-top:calc(var(--u)*8);display:flex;align-items:center;gap:calc(var(--u)*6)}
+#maps{display:grid;grid-template-columns:repeat(4,1fr);gap:calc(var(--u)*8)}
+#maps .btn{padding:0;font-size:calc(var(--u)*13);height:calc(var(--u)*40)}
+#tip{position:absolute;left:calc(var(--u)*64);bottom:calc(var(--u)*30);font-size:calc(var(--u)*17);font-weight:700;color:#e8e9f5;-webkit-text-stroke:calc(var(--u)*4) #1b1b2f;paint-order:stroke fill;max-width:calc(var(--u)*640)}
+/* overlay panels */
+.dim{background:rgba(13,11,30,.72)}
+.panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(var(--u)*600);background:#2b2d52;border:calc(var(--u)*5) solid #1b1b2f;border-radius:calc(var(--u)*28);box-shadow:0 calc(var(--u)*10) 0 #1b1b2f;padding:calc(var(--u)*28);text-align:center;display:flex;flex-direction:column;gap:calc(var(--u)*14);align-items:stretch}
+.panel h2{margin:0;font-size:calc(var(--u)*58);font-style:italic;color:#ffd23f}
+.panel .line{font-size:calc(var(--u)*22);font-weight:700;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.22);border-radius:calc(var(--u)*12);padding:calc(var(--u)*8) calc(var(--u)*16)}
+.panel .line b{display:inline-flex;align-items:center;gap:calc(var(--u)*6);color:#ffd23f}
+.panel .help{font-size:calc(var(--u)*15);font-weight:700;color:#c9cbe0;line-height:1.5}
+#score{font-size:calc(var(--u)*40)}
+@keyframes popIn{0%{transform:translate(-50%,-50%) scale(.7);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.screen.on .panel{animation:popIn .18s ease-out}
+/* shop */
+#shop{background:rgba(13,11,30,.9)}
+#shopHead{position:absolute;left:calc(var(--u)*40);right:calc(var(--u)*40);top:calc(var(--u)*24);display:flex;gap:calc(var(--u)*12);align-items:center}
+#shopHead .sp{flex:1}
+#grid{position:absolute;left:calc(var(--u)*40);right:calc(var(--u)*40);top:calc(var(--u)*104);bottom:calc(var(--u)*24);display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(2,1fr);gap:calc(var(--u)*14)}
+.item{background:#2b2d52;border:calc(var(--u)*4) solid #1b1b2f;border-radius:calc(var(--u)*20);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(var(--u)*8) calc(var(--u)*8) calc(var(--u)*12);position:relative;min-height:0}
+.item.sel{background:#3f4a8a;border-color:#ffd23f}
+.item canvas{width:calc(var(--u)*120);height:calc(var(--u)*130);flex:none}
+.item .nm{font-size:calc(var(--u)*17);margin-bottom:calc(var(--u)*6)}
+.item .acts{display:flex;gap:calc(var(--u)*6);width:100%;justify-content:center}
+.item .acts .btn{flex:1;min-width:0;padding:0 calc(var(--u)*4);font-size:calc(var(--u)*14)}
+.item .tag{position:absolute;top:calc(var(--u)*8);left:calc(var(--u)*8);font-size:calc(var(--u)*12);background:#8ef0a8;color:#1b1b2f;border-radius:calc(var(--u)*8);padding:calc(var(--u)*2) calc(var(--u)*8)}
+.coin.s{width:calc(var(--u)*18);height:calc(var(--u)*18);border-width:calc(var(--u)*2)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(calc(var(--u)*-8))}75%{transform:translateX(calc(var(--u)*8))}}
+.shake{animation:shake .12s 3}
+/* in-game */
+#btnPause{position:absolute;left:50%;top:calc(var(--u)*96);transform:translateX(-50%);width:calc(var(--u)*46);height:calc(var(--u)*38);padding:0;display:none}
+#touch{position:absolute;inset:0;display:none;pointer-events:none}
+#touch.on{display:block}
+#stick{position:absolute;left:0;bottom:0;width:42%;height:62%;pointer-events:auto}
+#stickBase{position:absolute;left:calc(var(--u)*50);bottom:calc(var(--u)*44);width:calc(var(--u)*170);height:calc(var(--u)*170);border-radius:50%;background:rgba(255,255,255,.14);border:calc(var(--u)*4) solid rgba(255,255,255,.4)}
+#stickKnob{position:absolute;left:50%;top:50%;width:calc(var(--u)*76);height:calc(var(--u)*76);margin:calc(var(--u)*-38) 0 0 calc(var(--u)*-38);border-radius:50%;background:rgba(255,255,255,.75);border:calc(var(--u)*4) solid #1b1b2f}
+.tb{position:absolute;pointer-events:auto;border-radius:50%;border:calc(var(--u)*4) solid #1b1b2f;display:flex;align-items:center;justify-content:center;font-size:calc(var(--u)*19);color:#1b1b2f;opacity:.82}
+.tb.dn{opacity:1;transform:scale(.92)}
+#tJump{right:calc(var(--u)*40);bottom:calc(var(--u)*36);width:calc(var(--u)*124);height:calc(var(--u)*124);background:#8ef0a8}
+#tHit{right:calc(var(--u)*176);bottom:calc(var(--u)*30);width:calc(var(--u)*112);height:calc(var(--u)*112);background:#ffd23f}
+#tKick{right:calc(var(--u)*150);bottom:calc(var(--u)*154);width:calc(var(--u)*100);height:calc(var(--u)*100);background:#ff9ecb}
+#tGrab{right:calc(var(--u)*36);bottom:calc(var(--u)*172);width:calc(var(--u)*100);height:calc(var(--u)*100);background:#6ecbff}
+#rot{position:fixed;inset:0;background:#0d0b1e;display:none;align-items:center;justify-content:center;font-size:22px;z-index:9;text-align:center;padding:24px}
+@media (orientation:portrait) and (pointer:coarse){#rot{display:flex}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv"></canvas>
+
+  <div id="menu" class="screen on">
+    <div id="topL">
+      <div class="chip" id="coinChip"><span class="coin"></span><span id="coins">0</span></div>
+      <div class="chip" id="streakChip"><span class="flame"></span><span data-i18n="streak">WIN STREAK</span>&nbsp;<span id="streak">0</span></div>
+    </div>
+    <div id="topR">
+      <button class="btn sm" id="bMusic"></button>
+      <button class="btn sm" id="bSfx"></button>
+      <button class="btn sm" id="bLang"></button>
+    </div>
+    <div id="logo"><div class="l1 ink" data-i18n="title1">WOBBLE</div><div class="l2 ink" data-i18n="title2">BRAWL</div><div class="l3" data-i18n="sub"></div></div>
+    <div id="mainCol">
+      <button class="btn pri big" id="bPlay" data-i18n="play">PLAY</button>
+      <div class="seg" id="diff">
+        <button class="btn sm" data-lvl="0" data-i18n="easy"></button>
+        <button class="btn sm" data-lvl="1" data-i18n="normal"></button>
+        <button class="btn sm" data-lvl="2" data-i18n="hard"></button>
+      </div>
+      <div class="row">
+        <button class="btn blue" id="b2p" data-i18n="twop"></button>
+        <button class="btn pink" id="bShop" data-i18n="shop"></button>
+      </div>
+    </div>
+    <div id="rightCol">
+      <div class="card" id="dailyCard">
+        <h3 data-i18n="daily"></h3>
+        <div class="txt" id="dailyTxt"></div>
+        <div class="prog"><i id="dailyBar"></i></div>
+        <div class="sub"><span id="dailySub"></span></div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="map"></h3>
+        <div id="maps"></div>
+      </div>
+    </div>
+    <div id="tip" data-i18n="tip"></div>
+  </div>
+
+  <div id="shop" class="screen">
+    <div id="shopHead">
+      <button class="btn sm" id="bShopBack" data-i18n="back"></button>
+      <button class="btn sm" id="tabSkins" data-i18n="skins"></button>
+      <button class="btn sm" id="tabHats" data-i18n="hats"></button>
+      <div class="sp"></div>
+      <div class="chip" id="coinChip2"><span class="coin"></span><span id="coins2">0</span></div>
+    </div>
+    <div id="grid"></div>
+  </div>
+
+  <div id="result" class="screen dim">
+    <div class="panel">
+      <h2 class="ink" id="resTitle"></h2>
+      <div id="score" class="ink"></div>
+      <div class="line"><span data-i18n="coinsEarned"></span><b><span class="coin s"></span><span id="resCoins"></span></b></div>
+      <div class="line" id="resStreakLine"><span data-i18n="streak"></span><b id="resStreak"></b></div>
+      <div class="line" id="resDailyLine"><span id="resDailyTxt"></span><b id="resDaily"></b></div>
+      <button class="btn green" id="bDouble"></button>
+      <div class="row">
+        <button class="btn pri" id="bRematch" data-i18n="next"></button>
+        <button class="btn" id="bResMenu" data-i18n="menu"></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pause" class="screen dim">
+    <div class="panel">
+      <h2 class="ink" data-i18n="paused"></h2>
+      <button class="btn pri" id="bResume" data-i18n="resume"></button>
+      <div class="row">
+        <button class="btn sm" id="bMusic2"></button>
+        <button class="btn sm" id="bSfx2"></button>
+      </div>
+      <div class="help" id="pauseHelp"></div>
+      <button class="btn" id="bQuit" data-i18n="menu"></button>
+    </div>
+  </div>
+
+  <button class="btn sm" id="btnPause" aria-label="Pause">II</button>
+  <div id="touch">
+    <div id="stick"><div id="stickBase"><div id="stickKnob"></div></div></div>
+    <div class="tb" id="tKick">KICK</div>
+    <div class="tb" id="tGrab">GRAB</div>
+    <div class="tb" id="tHit">HIT</div>
+    <div class="tb" id="tJump">JUMP</div>
+  </div>
+</div>
+<div id="rot" data-i18n="rotate"></div>
+<script src="js/i18n.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/sdk.js"></script>
+<script src="js/maps.js"></script>
+<script src="js/core.js"></script>
+<script src="js/render.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
