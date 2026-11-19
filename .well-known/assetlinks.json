@@ -21,7 +21,10 @@
       "namespace": "android_app",
       "package_name": "com.ledeuxions.hanpan",
       "sha256_cert_fingerprints": [
-        "90:58:74:6B:FC:CD:AD:67:16:B3:E1:D2:C3:BA:51:3C:1C:61:54:81:79:86:CB:9E:71:90:F5:7B:AB:55:38:DD"
+        "90:58:74:6B:FC:CD:AD:67:16:B3:E1:D2:C3:BA:51:3C:1C:61:54:81:79:86:CB:9E:71:90:F5:7B:AB:55:38:DD",
+        "90:F4:EF:26:AE:FB:7D:D8:57:1F:9F:64:21:3C:C5:C6:55:0E:8B:C7:11:FA:7A:3E:87:DA:37:8C:E2:93:EB:5D",
+        "C7:2A:68:57:A7:2F:D7:5F:06:13:07:50:BD:04:24:6F:F7:1A:31:1C:5B:87:FC:C7:DB:D0:85:0C:9F:83:EB:96",
+        "15:61:26:3E:2E:BB:30:97:EE:AF:93:A8:3D:9D:B6:58:D4:1C:E8:4B:E5:60:EA:08:2B:0C:A2:4D:61:66:00:34"
       ]
     }
   }
