@@ -31,8 +31,16 @@
 .c-essay{--cc:#7d5a12;--ct:#f2ead8}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+/* 브랜드 (2026-11-20 형: 「브랜드명 좀 크게, 중간에도」) — 위쪽 로고 키우고, 검색창 위 가운데에 큰 워드마크 */
+.site-head .wordmark{font-size:19px;letter-spacing:.42em}
+.brand{display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 0 22px;text-align:center}
+.brand p{margin:0}
+.brand .wm{font-family:var(--font-heading);font-weight:500;font-size:clamp(30px,4.2vw,44px);line-height:1;letter-spacing:.32em;margin-right:-.32em;color:var(--color-text);text-transform:uppercase}
+.brand .tag{font-size:12px;letter-spacing:.24em;color:color-mix(in srgb,var(--color-text) 58%,transparent)}
+.brand .tag i{font-style:normal;color:var(--color-accent)}
+@media (max-width:760px){.site-head .wordmark{font-size:17px}.brand{margin-bottom:16px;gap:6px}.brand .wm{font-size:27px;letter-spacing:.26em;margin-right:-.26em}.brand .tag{font-size:11px;letter-spacing:.18em}}
 /* ── 검색 ── */
-.top{padding-block:32px 0;display:flex;flex-direction:column;align-items:center}
+.top{padding-block:36px 0;display:flex;flex-direction:column;align-items:center}
 .ss{position:relative;width:100%;max-width:var(--search-w);margin:0}
 .ss-bar{display:flex;align-items:center;background:#fff;border:2px solid var(--color-accent);border-radius:99px;padding:4px 4px 4px 22px;box-shadow:0 6px 22px color-mix(in srgb,var(--color-accent-900) 9%,transparent)}
 .ss-bar:focus-within{box-shadow:0 0 0 4px color-mix(in srgb,var(--color-accent) 22%,transparent)}
@@ -185,6 +193,7 @@
 </nav>
 </header>
 <div class="wrap top">
+<div class="brand"><p class="wm" aria-hidden="true">LeDeuxions</p><p class="tag">건축 <i>·</i> 미술 <i>·</i> 도구 <i>·</i> 놀이</p></div>
 <form class="ss" data-site-search action="https://www.google.com/search" role="search">
 <div class="ss-bar">
 <input type="search" name="q" placeholder="도구·게임·글 검색 — 예) pdf 용량, heic, 도장" autocomplete="off" spellcheck="false" aria-label="사이트 검색" role="combobox" aria-expanded="false" aria-controls="ss-results" aria-autocomplete="list">
