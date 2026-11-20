@@ -157,6 +157,87 @@
 .gcard.big.mag-feature{padding:16px}
 .gcard.big.mag-feature img{width:84px;height:68px}
 }
+/* 카테고리 한 줄 — 들어오자마자 보이게 (2026-11-20 형: 「딱 들어올 때 그 카테고리가 보였으면」) */
+.cat-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;max-width:760px;margin:22px auto 0}
+.cat-tabs a{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 4px 12px;border-radius:14px;background:var(--color-surface);border:1px solid var(--color-divider);color:var(--color-text);transition:border-color .12s ease,transform .12s ease}
+.cat-tabs a:hover{border-color:var(--color-accent);color:var(--color-accent-700)}
+.cat-tabs a:active{transform:scale(.96)}
+.cat-tabs .e{font-size:30px;line-height:1}
+.cat-tabs .n{font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.2;text-align:center;word-break:keep-all}
+.cat-tabs .n small{display:block;font-size:11px;font-weight:400;color:color-mix(in srgb,var(--color-text) 55%,transparent)}
+@media (max-width:760px){
+.cat-tabs{gap:6px;margin-top:14px}
+.cat-tabs a{padding:10px 2px 9px;gap:4px;border-radius:12px}
+.cat-tabs .e{font-size:26px}
+.cat-tabs .n{font-size:14px}
+}
+/* 카테고리 (2026-11-20 형: 「유틸리티·게임·작업(건축)·미술·에세이로 나누고 오른쪽엔 이번 에세이」) */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.cats{padding-block:26px 18px}
+.cat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.cat{background:var(--color-surface);border:1px solid var(--color-divider);border-radius:14px;padding:16px 18px;min-width:0}
+.cat.wide{grid-column:1/-1}
+.cat-head{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"e n all" "e d d";column-gap:12px;align-items:center;color:var(--color-text);padding-bottom:12px;border-bottom:1px solid var(--color-divider)}
+.cat-head:hover{color:var(--color-text)}
+.cat-head:hover .n{color:var(--color-accent-700)}
+.cat-head .e{grid-area:e;font-size:30px;line-height:1}
+.cat-head .n{grid-area:n;font-family:var(--font-heading);font-weight:600;font-size:23px;line-height:1.1}
+.cat-head .n small{font-size:14px;font-weight:400;color:color-mix(in srgb,var(--color-text) 55%,transparent)}
+.cat-head .d{grid-area:d;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 58%,transparent);word-break:keep-all}
+.cat-head .all{grid-area:all;font-size:13px;border-bottom:1px solid var(--color-accent);padding-bottom:1px;white-space:nowrap}
+.cat-links{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:2px}
+.cat.wide .cat-links{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:12px}
+.cat-links a{display:block;padding:5px 4px;font-size:14.5px;color:var(--color-text);border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-links a:hover{background:color-mix(in srgb,var(--color-accent) 10%,transparent);color:var(--color-accent-700)}
+.cat-more{margin:14px 2px 0;font-size:14px;color:color-mix(in srgb,var(--color-text) 50%,transparent)}
+.cat-more a{color:var(--color-text);border-bottom:1px solid var(--color-divider)}
+@media (max-width:1000px){.cat.wide .cat-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+.cats{padding-block:20px 8px}
+.cat-grid{gap:10px}
+.cat{padding:14px}
+.cat-head .e{font-size:26px}
+.cat-head .n{font-size:20px}
+.cat-links a{font-size:14px;padding:6px 2px}
+}
+@media (max-width:480px){.cat-grid{grid-template-columns:minmax(0,1fr)}}
+/* 검색창 (2026-11-20 형: 「네이버처럼 검색창」) — 맨 위 한가운데. 동작은 /assets/site-search.js */
+.ss-band{padding-block:26px 4px}
+.ss{position:relative;max-width:680px;margin:0 auto}
+.ss-bar{display:flex;align-items:center;background:#fff;border:2px solid var(--color-accent);border-radius:99px;padding:4px 4px 4px 22px;box-shadow:0 4px 18px color-mix(in srgb,var(--color-accent-900) 10%,transparent)}
+.ss-bar:focus-within{box-shadow:0 0 0 4px color-mix(in srgb,var(--color-accent) 22%,transparent)}
+.ss-bar input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:18px;color:var(--color-text);padding:12px 0}
+.ss-bar input::placeholder{color:color-mix(in srgb,var(--color-text) 42%,transparent)}
+.ss-bar input::-webkit-search-cancel-button{cursor:pointer}
+.ss-bar button{flex:none;border:0;cursor:pointer;background:var(--color-accent);color:#1a1917;border-radius:99px;width:52px;height:46px;display:grid;place-items:center}
+.ss-bar button:hover{background:var(--color-accent-400)}
+.ss-results{position:absolute;z-index:50;left:0;right:0;top:calc(100% + 6px);list-style:none;margin:0;padding:6px;background:#fff;border:1px solid var(--color-divider);border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.14);max-height:min(70vh,520px);overflow:auto}
+.ss-results li a{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:10px;color:var(--color-text)}
+.ss-results li a:hover,.ss-results li[aria-selected=true] a{background:color-mix(in srgb,var(--color-accent) 12%,transparent)}
+.ss-cat{flex:none;font-size:11.5px;line-height:1;padding:5px 8px;border-radius:99px;margin-top:2px;background:var(--color-surface);color:color-mix(in srgb,var(--color-text) 75%,transparent);min-width:38px;text-align:center}
+.ss-cat-도구{background:#e4ecf3;color:#1f4a6e}
+.ss-cat-게임{background:#f3e6d2;color:#7d5411}
+.ss-cat-글,.ss-cat-노트{background:#e5eee5;color:#2d5a34}
+.ss-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ss-t{font-size:15.5px;font-weight:600;word-break:keep-all}
+.ss-t mark{background:none;color:var(--color-accent-700);text-decoration:underline;text-underline-offset:3px}
+.ss-d{font-size:12.5px;color:color-mix(in srgb,var(--color-text) 58%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss-empty{padding:14px 12px;font-size:14px;color:color-mix(in srgb,var(--color-text) 70%,transparent)}
+.ss-google{border-top:1px solid var(--color-divider);margin-top:4px;padding-top:4px}
+.ss-google .ss-cat{background:#e8eaed;color:#3c4043}
+.ss-pop{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;margin:12px 0 0;font-size:13px}
+.ss-pop .lbl{color:color-mix(in srgb,var(--color-text) 55%,transparent)}
+.ss-pop button{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--color-divider);background:var(--color-surface);color:var(--color-text);border-radius:99px;padding:5px 12px}
+.ss-pop button:hover{border-color:var(--color-accent);color:var(--color-accent-700)}
+@media (max-width:760px){
+.ss-band{padding-block:16px 0}
+.ss-bar{padding-left:16px}
+.ss-bar input{font-size:16px;padding:10px 0}
+.ss-bar button{width:46px;height:42px}
+.ss-pop{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;margin-top:10px;padding-bottom:2px;scrollbar-width:none}
+.ss-pop::-webkit-scrollbar{display:none}
+.ss-pop button,.ss-pop .lbl{flex:none}
+}
 </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
 </head>
@@ -172,80 +253,91 @@
 <a href="/en/" hreflang="en" lang="en">EN</a>
 </nav>
 </header>
+<div class="wrap ss-band">
+<form class="ss" data-site-search action="https://www.google.com/search" role="search">
+<div class="ss-bar">
+<input type="search" name="q" placeholder="르듀종 사이트에서 검색  예) pdf 용량, heic, 도장" autocomplete="off" spellcheck="false" aria-label="사이트 검색" role="combobox" aria-expanded="false" aria-controls="ss-results" aria-autocomplete="list">
+<button type="submit" aria-label="검색"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></button>
+</div>
+<ul class="ss-results" id="ss-results" role="listbox" hidden></ul>
+<div class="ss-pop"><span class="lbl">많이 찾는</span>
+<button type="button" data-q="pdf 용량">PDF 용량 줄이기</button>
+<button type="button" data-q="heic">HEIC → JPG</button>
+<button type="button" data-q="도장">도장 배경 제거</button>
+<button type="button" data-q="mp3">MP3 변환</button>
+<button type="button" data-q="한글 hwp">HWP 뷰어</button>
+<button type="button" data-q="게임">게임</button>
+</div>
+</form>
+<nav class="cat-tabs" aria-label="카테고리">
+<a href="/web-projects/"><span class="e" aria-hidden="true">🛠</span><span class="n">유틸리티</span></a>
+<a href="/games/"><span class="e" aria-hidden="true">🎮</span><span class="n">게임</span></a>
+<a href="/work/"><span class="e" aria-hidden="true">🏛</span><span class="n">작업<small>건축</small></span></a>
+<a href="/artists/"><span class="e" aria-hidden="true">🎨</span><span class="n">미술</span></a>
+<a href="/글/"><span class="e" aria-hidden="true">✍️</span><span class="n">에세이</span></a>
+</nav>
+</div>
 <main>
 <div class="wrap home-split">
-<section class="play" aria-labelledby="play-title">
-<div class="play-head">
-<h2 id="play-title">게임</h2>
-<span class="sub">설치·가입 없이 누르면 바로 시작합니다.</span>
-<a class="all" href="/games/">전체 게임 →</a>
+<section class="cats" aria-labelledby="cats-title">
+<h2 id="cats-title" class="sr">카테고리</h2>
+<div class="cat-grid">
+<article class="cat wide">
+<a class="cat-head" href="/web-projects/"><span class="e" aria-hidden="true">🛠</span><span class="n">유틸리티</span><span class="d">설치·가입 없이 브라우저에서 끝나는 도구</span><span class="all">전체 →</span></a>
+<ul class="cat-links">
+<li><a href="https://pdf300.com">PDF 편집·용량 줄이기</a></li>
+<li><a href="/applications/iphoneheic/">HEIC → JPG</a></li>
+<li><a href="/web-projects/stamp/">도장 배경 제거</a></li>
+<li><a href="/web-projects/freecomfortlab/video-to-mp3">영상 → MP3</a></li>
+<li><a href="/tools/hwp/">HWP 뷰어</a></li>
+<li><a href="/web-projects/video-compress/">동영상 압축</a></li>
+<li><a href="/web-projects/inspection-score/">점검 상태평가 점수</a></li>
+<li><a href="/%EB%A7%90%ED%95%B4%EC%9A%94/">말해요 (의사소통 도구)</a></li>
+</ul>
+</article>
+<article class="cat">
+<a class="cat-head" href="/games/"><span class="e" aria-hidden="true">🎮</span><span class="n">게임</span><span class="d">누르면 바로 시작</span><span class="all">전체 →</span></a>
+<ul class="cat-links">
+<li><a href="/web-projects/game-world/dozer/">🪙 동전 밀기</a></li>
+<li><a href="/web-projects/game-world/suika/">🍉 수박 게임</a></li>
+<li><a href="/games/2048/">🔢 2048</a></li>
+<li><a href="/web-projects/game-world/quake/">🏚 버텨라 (지진 보강)</a></li>
+</ul>
+</article>
+<article class="cat">
+<a class="cat-head" href="/work/"><span class="e" aria-hidden="true">🏛</span><span class="n">작업 <small>건축</small></span><span class="d">설계 작품과 현장 이야기</span><span class="all">전체 →</span></a>
+<ul class="cat-links">
+<li><a href="/work/">작품</a></li>
+<li><a href="/notes/ko/">현장 노트</a></li>
+<li><a href="/의뢰/">이런 일을 맡습니다</a></li>
+<li><a href="/history/">이야기</a></li>
+</ul>
+</article>
+<article class="cat">
+<a class="cat-head" href="/artists/"><span class="e" aria-hidden="true">🎨</span><span class="n">미술</span><span class="d">작가 읽기와 모두의 그림</span><span class="all">전체 →</span></a>
+<ul class="cat-links">
+<li><a href="/artists/">이번 주의 작가</a></li>
+<li><a href="/gallery/">모두의 갤러리</a></li>
+<li><a href="/museum/">모두의 미술관 (VR)</a></li>
+<li><a href="/그림판/">그림판</a></li>
+</ul>
+</article>
+<article class="cat">
+<a class="cat-head" href="/글/"><span class="e" aria-hidden="true">✍️</span><span class="n">에세이</span><span class="d">건축과 미술, 일하며 쓴 글</span><span class="all">전체 →</span></a>
+<ul class="cat-links">
+<li><a href="/magazine/">매거진</a></li>
+<li><a href="/글/#lastwinter">마지막 겨울 연재</a></li>
+<li><a href="/글/">칼럼·실무 노트</a></li>
+<li><a href="/글/현대미술-어렵다-어려워/">현대미술, 어렵다 어려워</a></li>
+</ul>
+</article>
 </div>
-<div class="play-grid">
-<a class="gcard big" href="/web-projects/game-world/dozer/">
-<span class="e" aria-hidden="true">🪙</span>
-<span class="txt">
-<span class="tag">요즘 제일 많이 하는 게임</span>
-<span class="n">동전 밀기</span>
-<span class="d">오락실에 있던 그 기계. 동전을 쌓아서 우르르 떨어뜨립니다.</span>
-</span>
-<span class="go">바로 하기 ▶</span>
-</a>
-<div class="mini">
-<a class="gcard" href="/web-projects/game-world/suika/"><span class="e" aria-hidden="true">🍉</span><span class="n">수박 게임</span><span class="d">같은 과일끼리 합치기</span></a>
-<a class="gcard" href="/wriggle/"><span class="e" aria-hidden="true">🪱</span><span class="n">꿈틀</span><span class="d">지렁이 구멍까지 뛰기</span></a>
-<a class="gcard" href="/games/2048/"><span class="e" aria-hidden="true">🔢</span><span class="n">2048</span><span class="d">숫자 밀어 합치기</span></a>
-<a class="gcard" href="/web-projects/game-world/tower/"><span class="e" aria-hidden="true">🏗️</span><span class="n">타워 쌓기</span><span class="d">블록 정확히 겹치기</span></a>
-<a class="gcard" href="/games/clumsybird/"><span class="e" aria-hidden="true">🐦</span><span class="n">날아라 새</span><span class="d">톡톡 눌러 날기</span></a>
-<a class="gcard hub" href="/games/"><span class="e" aria-hidden="true">🎮</span><span class="n">게임 나라</span><span class="d">게임 전부 보기</span></a>
-</div>
-</div>
-<div class="world ours" aria-labelledby="ours-title">
-<div class="world-head">
-<h3 id="ours-title">⭐ 우리가 만든 게임</h3>
-<span class="sub">직접 만들어 게임 가게에 올렸어요.</span>
-<a class="all" href="/games/#ours">더 보기 →</a>
-</div>
-<div class="ogrid">
-<a class="gcard" href="https://www.crazygames.com/game/wobble-brawl" target="_blank" rel="noopener"><img src="/assets/ourgames/wobble-brawl.webp" alt="" width="52" height="52" loading="lazy"><span class="txt"><span class="n">Wobble Brawl</span><span class="by">CrazyGames ↗</span></span></a>
-<a class="gcard" href="https://play.google.com/store/apps/details?id=com.ledeuxions.sheepdog" target="_blank" rel="noopener"><img src="/assets/ourgames/sheepdog.webp" alt="" width="52" height="52" loading="lazy"><span class="txt"><span class="n">양몰이 — 달빛 목장</span><span class="by">Google Play ↗</span></span></a>
-<a class="gcard" href="/games/stay-standing/"><img src="/assets/ourgames/stay-standing.webp" alt="" width="52" height="52" loading="lazy"><span class="txt"><span class="n">버텨라!</span><span class="by">건축가가 만든 지진 퍼즐</span></span></a>
-</div>
-</div>
-<div class="world" aria-labelledby="world-title">
-<div class="world-head">
-<h3 id="world-title">🌍 외국 친구들이 만든 게임</h3>
-<span class="sub">다른 나라 사람들이 공개한 게임을 옮겨 담았어요.</span>
-<a class="all" href="/games/#world">14개 다 보기 →</a>
-</div>
-<div class="wgrid">
-<a class="gcard" href="/games/dino/"><span class="e" aria-hidden="true">🦖</span><span class="n">공룡 달리기</span><span class="by">Chromium · wayou</span></a>
-<a class="gcard" href="/games/ellaz/memory/"><span class="e" aria-hidden="true">🐶</span><span class="n">짝 맞추기</span><span class="by">Ellaz</span></a>
-<a class="gcard" href="/games/ellaz/balloons/"><span class="e" aria-hidden="true">🎈</span><span class="n">풍선 터뜨리기</span><span class="by">Ellaz</span></a>
-<a class="gcard" href="/games/yumyum/"><span class="e" aria-hidden="true">🟡</span><span class="n">냠냠 미로</span><span class="by">路人甲 · 중국</span></a>
-<a class="gcard" href="/games/ellaz/coloring/"><span class="e" aria-hidden="true">🖍️</span><span class="n">색칠 놀이</span><span class="by">Ellaz</span></a>
-<a class="gcard" href="/games/friedlander/bubbles/"><span class="e" aria-hidden="true">🫧</span><span class="n">거품 쏘기</span><span class="by">M. Friedlander</span></a>
-</div>
-</div>
-<nav aria-label="바로 가기"><ul class="jump">
-<li><a href="/web-projects/">🛠 도구</a></li>
-<li><a href="https://pdf300.com">📄 PDF300</a></li>
-<li><a href="/tools/hwp/">📑 HWP 뷰어</a></li>
-<li><a href="/applications/">📱 앱</a></li>
-<li><a href="/오늘/">🐑 오늘의 양몰이</a></li>
-<li><a href="/gallery/">🎨 갤러리</a></li>
-<li><a href="/글/">✍️ 글</a></li>
-<li><a href="/magazine/">📰 매거진</a></li>
-<li><a href="/notes/ko/">📐 현장 노트</a></li>
-<li><a href="/work/">🏠 작품</a></li>
-<li><a href="/history/">📖 이야기</a></li>
-<li><a href="/모아보기/">🗂 모아보기</a></li>
-<li><a href="/contact/">✉️ 연락</a></li>
-</ul></nav>
+<p class="cat-more"><a href="/모아보기/">🗂 전체 페이지 모아보기</a> · <a href="/contact/">✉️ 연락</a></p>
 </section>
 <section class="mag" aria-labelledby="mag-title">
 <div class="mag-head">
-<h2 id="mag-title">매거진</h2>
-<span class="sub">연재 「이번 주의 작가」와 칼럼.</span>
+<h2 id="mag-title">이번 에세이</h2>
+<span class="sub">이번 주의 작가, 연재, 칼럼.</span>
 <a class="all" href="/magazine/">매거진 보기 →</a>
 </div>
 <a class="mag-feature gcard big" href="/artists/el-lissitzky/">
@@ -275,19 +367,6 @@
 </ul>
 </section>
 </div><!-- /.home-split -->
-<section class="wrap quick" aria-labelledby="quick-title">
-<h2 id="quick-title">자주 쓰는 도구</h2>
-<ul class="qlist">
-<li><a href="/web-projects/freecomfortlab/"><span class="n">미디어 변환</span><span class="d">영상·소리 파일 바꾸기 — 브라우저에서 끝</span><span class="arrow">→</span></a></li>
-<li><a href="/web-projects/freecomfortlab/video-to-mp3"><span class="n">영상 → MP3</span><span class="d">영상에서 소리만 뽑기</span><span class="arrow">→</span></a></li>
-<li><a href="/applications/iphoneheic/"><span class="n">HEIC → JPG</span><span class="d">아이폰 사진을 어디서나 열리게</span><span class="arrow">→</span></a></li>
-<li><a href="/notes/cad-hwp-vector/"><span class="n">캐드 → 한글 벡터</span><span class="d">도면 글자가 뭉개지지 않게 붙이기</span><span class="arrow">→</span></a></li>
-<li><a href="/%EB%A7%90%ED%95%B4%EC%9A%94/"><span class="n">말해요</span><span class="d">말 못 하는 분을 위한 무료 말하기 도구</span><span class="arrow">→</span></a></li>
-<li><a href="/web-projects/malhae/write/"><span class="n">✍️ 글씨만</span><span class="d">화면 가득 손가락으로 쓰면 소리로 읽어 줘요 (손에 힘이 없어도)</span><span class="arrow">→</span></a></li>
-<li><a href="/web-projects/malhae/yesno/"><span class="n">👀 눈으로 말하기</span><span class="d">왼쪽 보면 「예」, 오른쪽 「아니요」, 위는 다음 말 (폰·노트북 카메라)</span><span class="arrow">→</span></a></li>
-<li><a href="/web-projects/"><span class="n">도구 전체</span><span class="d">PDF·도장·HWP 뷰어 등 모두 보기</span><span class="arrow">→</span></a></li>
-</ul>
-</section>
 <section class="wrap band top more-head">
 <figure class="plate">
 <img src="assets/img/portrait-studio.png" alt="작업실의 초상" style="aspect-ratio:4/3;object-position:50% 42%">
@@ -507,5 +586,6 @@
   <script src="/count.js" defer></script>
 <script src="/assets/office-badge.js" defer></script>
 <script src="/assets/remote-nav.js" defer></script>
+<script src="/assets/site-search.js" defer></script>
 </body>
 </html>
