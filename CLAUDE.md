@@ -155,6 +155,18 @@ git push origin main
 - 핵심 로직: `js/stamp.js`, `js/pdf-stamp.js`
 - 스타일: `css/style.css`
 
+### 첫 화면(`index.html`) 구조 — 2026-11 개편
+- 위에서부터: 가운데 워드마크 → 검색창 → 카테고리 아이콘 5개 → [탭 판 | 이번 에세이] → [새로 올라온 것 | 연재·의뢰] → 기존 작품·Index → 바닥 워드마크
+- **카테고리 5개**: 유틸리티 · 게임 · 작업(건축) · 미술 · 에세이. 색은 `.c-util/.c-game/.c-work/.c-art/.c-essay` 의 `--cc`(글자)·`--ct`(바탕)
+- 탭 판의 대표 8개, "이번 에세이", "새로 올라온 것"은 손으로 고친다(자동 아님)
+- **줄 맞춤 규칙**: 바깥선은 `.wrap`(로고와 같은 선), 칸 사이 `--g`(24px), 판 안 여백 `--pad`(20px), 검색창·아이콘 줄은 같은 폭 `--search-w`. 탭 판과 에세이 카드는 같은 그리드 줄이라 위·아랫선이 같다
+- 섹션 머리표는 `.kicker.ld-k` 형식 `LeDeuxions — …`. 브랜드를 크게 반복하지 않는다
+
+### 사이트 검색
+- 홈 검색창: 입력 중엔 `/assets/search-index.json`으로 사이트 안 바로가기(초성 검색 포함), Enter는 구글 `site:ledeuxions.com`
+- 동작: `assets/site-search.js` / 색인: `scripts/build-search-index.py`가 `sitemap.xml`에서 만든다
+- **새 페이지를 sitemap.xml에 넣었으면** `python3 scripts/build-search-index.py` 한 번 실행. 사람들이 치는 말(동의어)은 스크립트의 `KEYWORDS`, 분류는 `category()`
+
 ### 광고/분석 업데이트
 - AdSense 클라이언트 ID: `ca-pub-2824624880449066`
 - 광고 유닛은 HTML 페이지에 인라인으로 삽입
