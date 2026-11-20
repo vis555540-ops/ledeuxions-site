@@ -39,6 +39,11 @@
 .brand .tag{font-size:12px;letter-spacing:.24em;color:color-mix(in srgb,var(--color-text) 58%,transparent)}
 .brand .tag i{font-style:normal;color:var(--color-accent)}
 @media (max-width:760px){.site-head .wordmark{font-size:17px}.brand{margin-bottom:16px;gap:6px}.brand .wm{font-size:27px;letter-spacing:.26em;margin-right:-.26em}.brand .tag{font-size:11px;letter-spacing:.18em}}
+/* 섹션 머리표·바닥 워드마크 (2026-11-20 「중간중간 브랜드」 — 크게 반복하지 않고 작게 잇는다) */
+.ld-k{margin:0 0 8px}
+.ld-big{padding-block:56px 8px}
+.ld-big svg{display:block;width:100%;height:auto;overflow:visible}
+.ld-big text{font-family:var(--font-heading);font-weight:500;font-size:112px;fill:color-mix(in srgb,var(--color-text) 9%,transparent)}
 /* ── 검색 ── */
 .top{padding-block:36px 0;display:flex;flex-direction:column;align-items:center}
 .ss{position:relative;width:100%;max-width:var(--search-w);margin:0}
@@ -308,6 +313,7 @@
 </span>
 </a>
 <section class="news-sec" aria-labelledby="new-title">
+<div class="kicker ld-k">LeDeuxions — New</div>
 <div class="sec-head"><h2 id="new-title">새로 올라온 것</h2><a href="/%EC%83%88%EB%A1%9C%EC%9A%B4%EA%B2%83/">전체 →</a></div>
 <ul class="news">
 <li class="c-essay"><a href="/%EA%B8%80/%ED%95%B4%EC%B2%B4-%EA%B5%AC%EC%A1%B0%EA%B3%84%EC%82%B0-%EC%A0%95%EB%A7%90-%EC%9D%98%EB%AF%B8%EA%B0%80-%EC%9E%88%EB%82%98/"><span class="pill">에세이</span><span class="t">해체 구조계산, 정말 의미가 있나</span><span class="d">실무 노트 · 2026</span></a></li>
@@ -402,6 +408,7 @@
 </figure>
 </section>
 <section class="section-index">
+<div class="kicker ld-k">LeDeuxions — Field</div>
 <div class="index-head">
 <h2>점검·구조 일 하시는 분께</h2>
 <span class="note">현장에서 쓰려고 만든 것들</span>
@@ -423,6 +430,7 @@
 </a>
 </section>
 <section class="section-index">
+<div class="kicker ld-k">LeDeuxions — Index</div>
 <div class="index-head">
 <h2>Index</h2>
 <span class="note">각 갈래로 들어가는 문</span>
@@ -489,6 +497,8 @@
 </a>
 </section>
 </main>
+<!-- 바닥 큰 워드마크: 좌우 끝을 .wrap 바깥선에 정확히 맞추려고 SVG textLength로 폭을 채운다 -->
+<div class="wrap ld-big" aria-hidden="true"><svg viewBox="0 0 1000 118" preserveAspectRatio="xMidYMid meet"><text x="0" y="100" textLength="1000" lengthAdjust="spacing">LEDEUXIONS</text></svg></div>
 <footer class="site-foot">
 <div class="wrap">
 <span class="wordmark">Ledeuxions</span>
