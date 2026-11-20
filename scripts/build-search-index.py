@@ -12,12 +12,22 @@ from urllib.parse import unquote, urlparse
 ROOT = Path(__file__).resolve().parent.parent
 SKIP_LANG = re.compile(r'/(en|ja|es|pt|de)(/|$)|_en$|/privacy/$|/terms/$|/edit$|/개인정보/$')
 
-# 경로 앞부분 → 분류
-CATS = [('/games/', '게임'), ('/web-projects/game-world/', '게임'), ('/wriggle/', '게임'),
-        ('/글/', '글'), ('/magazine/', '글'), ('/artists/', '글'), ('/notes/', '노트'),
-        ('/web-projects/', '도구'), ('/tools/', '도구'), ('/applications/', '도구'),
-        ('/silent-scribe/', '도구'), ('/photo-revive/', '도구'), ('/gallery/', '그림'),
-        ('/draw/', '그림'), ('/그림판/', '그림'), ('/museum/', '그림')]
+# 분류 — 홈 카테고리 5개와 같다 (2026-11-20 전체 분류표 기준). 위에서부터 먼저 맞는 것.
+STUDENT_WORK = ('유치원-레지오', '무엇이-옳은-건축', '미술관-면의', '종교시설-종교의', '공원-맵핑')
+ART_ESSAYS = ('현대미술-어렵다', '아름다움에-대해', '그림자-adoration')
+def category(path):
+    if path in ('/모아보기/', '/새로운것/'):
+        return '사이트'
+    if path.startswith(('/notes/', '/work/', '/history/', '/의뢰/', '/사무실/', '/contact/')) or any(k in path for k in STUDENT_WORK):
+        return '작업'
+    if path.startswith(('/artists/', '/gallery/', '/museum/', '/draw/', '/그림판/', '/sheepdog/draw', '/sheepdog/그림판',
+                        '/web-projects/paintcomfortfro', '/web-projects/game-world/pixel/')) or any(k in path for k in ART_ESSAYS):
+        return '미술'
+    if path.startswith(('/글/', '/magazine/', '/someday/', '/maejeum/')):
+        return '에세이'
+    if path.startswith(('/games/', '/web-projects/game-world/', '/wriggle/', '/sheepdog/', '/오늘/')):
+        return '게임'
+    return '유틸리티'
 
 # 사람들이 실제로 치는 말 (경로 앞부분 기준, 겹치면 모두 붙음)
 KEYWORDS = {
@@ -100,7 +110,7 @@ def main():
         desc = clean(m.group(1)) if m else ''
         m = re.search(r'<h1[^>]*>(.*?)</h1>', src, re.S | re.I)
         h1 = clean(m.group(1)) if m else ''
-        cat = next((c for pre, c in CATS if path.startswith(pre)), '사이트')
+        cat = category(path)
         kw = ' '.join(v for k, v in KEYWORDS.items() if path.startswith(k) and (k.endswith('/') or path == k))
         item = {'t': title, 'u': path, 'c': cat}
         if desc: item['d'] = desc[:120]

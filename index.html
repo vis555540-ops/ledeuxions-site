@@ -20,223 +20,154 @@
 <link rel="stylesheet" href="assets/css/ledeuxions-classical.css">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://ledeuxions.com/#website", "url": "https://ledeuxions.com/", "name": "LeDeuxions", "inLanguage": "ko", "description": "건축과 그림, 그리고 브라우저에서 끝나는 웹 도구들."}, {"@type": "Person", "@id": "https://ledeuxions.com/#person", "name": "LeDeuxions", "url": "https://ledeuxions.com/", "jobTitle": "건축가"}]}</script>
 <style>
-/* 첫 화면 손보기 (2026-10-06 형: 「게임을 메인으로 당기고, 첫화면 부담스럽고 게임까지 들어가기 힘들어」)
-   게임을 맨 위로, 자주 쓰는 도구는 짧은 목록으로. 나머지(이야기·작품·전체 목록)는 그 아래 그대로. */
-.play{padding-block:34px 18px}
-.play-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:18px}
-.play-head h2{font-family:var(--font-heading);font-weight:600;font-size:clamp(28px,3.4vw,38px);margin:0;letter-spacing:-.01em}
-.play-head .sub{font-size:13.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent);word-break:keep-all}
-.play-head .all{margin-left:auto;font-size:14px;border-bottom:1px solid var(--color-accent);padding-bottom:2px;white-space:nowrap}
-.play-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,2fr);gap:14px}
-.gcard{display:flex;flex-direction:column;justify-content:center;gap:4px;background:var(--color-surface);border:1px solid var(--color-divider);border-radius:14px;padding:16px;color:var(--color-text);min-width:0;transition:transform .12s ease,border-color .12s ease}
-.gcard:hover{border-color:var(--color-accent);color:var(--color-text)}
-.gcard:active{transform:scale(.97)}
-.gcard .e{font-size:30px;line-height:1}
-.gcard .n{font-family:var(--font-heading);font-weight:600;font-size:19px;margin-top:6px}
-.gcard .d{font-size:12.5px;line-height:1.45;color:color-mix(in srgb,var(--color-text) 60%,transparent);word-break:keep-all}
-.gcard.big{background:var(--color-colophon);border-color:var(--color-colophon);color:var(--color-colophon-text);padding:24px 22px;gap:6px}
-.gcard.big:hover{color:var(--color-colophon-text);border-color:var(--color-accent)}
-.gcard.big .e{font-size:52px}
-.gcard.big .n{font-size:28px}
-.gcard.big .n,.gcard.big .d{display:block}
-.gcard.big .d{font-size:14px;color:color-mix(in srgb,#ece9e4 72%,transparent)}
-.gcard.big .go{align-self:flex-start;margin-top:12px;background:var(--color-accent);color:#1a1917;font-weight:600;font-size:15px;padding:10px 20px;border-radius:99px}
-.gcard.big .tag{align-self:flex-start;font-size:11px;letter-spacing:.12em;color:var(--color-accent-400)}
-.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.mini .gcard{align-items:center;text-align:center;padding:14px 8px}
-.mini .gcard .n{font-size:17px}
-.mini .gcard.hub{background:color-mix(in srgb,var(--color-accent) 16%,var(--color-surface));border-color:var(--color-accent)}
-.world{margin-top:16px}
-.world-head{display:flex;align-items:baseline;gap:10px;margin:0 0 10px;flex-wrap:wrap}
-.world-head h3{font-family:var(--font-heading);font-weight:600;font-size:18px;margin:0}
-.world-head .sub{font-size:12.5px;color:color-mix(in srgb,var(--color-text) 58%,transparent);word-break:keep-all}
-.world-head .all{margin-left:auto;font-size:13px;border-bottom:1px solid var(--color-accent);padding-bottom:2px;white-space:nowrap}
-.wgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
-.wgrid .gcard{align-items:center;text-align:center;padding:12px 6px;gap:2px}
-.wgrid .gcard .e{font-size:26px}
-.wgrid .gcard .n{font-size:15px;margin-top:4px;word-break:keep-all}
-.wgrid .gcard .by{font-size:10.5px;line-height:1.3;color:color-mix(in srgb,var(--color-text) 50%,transparent);overflow-wrap:anywhere}
-@media (max-width:760px){.wgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.wgrid .gcard{padding:10px 4px}.wgrid .gcard .n{font-size:14px}.world-head .all{margin-left:0}}
-/* 우리가 만든 게임 (2026-10-15) — 게임 칸 안의 작은 줄. 바깥 가게로 나가는 링크 */
-.ours{margin-top:16px}
-.ogrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.ogrid .gcard{flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;padding:10px}
-.ogrid .gcard img{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none}
-.ogrid .gcard .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
-.ogrid .gcard .n{font-size:15px;margin-top:0;line-height:1.25;word-break:keep-all}
-.ogrid .gcard .by{font-size:11.5px;line-height:1.3;color:color-mix(in srgb,var(--color-text) 55%,transparent);word-break:keep-all}
-.ogrid .gcard.soon{cursor:default;opacity:.85}
-.ogrid .gcard.soon:hover{border-color:var(--color-divider)}
-.ogrid .gcard.soon:active{transform:none}
-@media (max-width:1000px){
-.ogrid{gap:8px}
-.ogrid .gcard{flex-direction:column;text-align:center;padding:10px 4px;gap:6px}
-.ogrid .gcard img{width:56px;height:56px}
-.ogrid .gcard .txt{align-items:center}
-.ogrid .gcard .n{font-size:14px}
-}
-.quick{padding-block:22px 30px}
-.quick h2{font-family:var(--font-heading);font-weight:600;font-size:22px;margin:0 0 6px}
-.qlist{list-style:none;margin:0;padding:0;border-top:1px solid var(--color-text)}
-.qlist a{display:flex;align-items:baseline;gap:12px;padding:13px 4px;border-bottom:1px solid var(--color-divider);color:var(--color-text)}
-.qlist a:hover{background:color-mix(in srgb,var(--color-accent) 6%,transparent)}
-.qlist .n{font-family:var(--font-heading);font-size:18px;font-weight:600;white-space:nowrap}
-.qlist .d{font-size:13px;color:color-mix(in srgb,var(--color-text) 58%,transparent);word-break:keep-all;min-width:0}
-.qlist .arrow{margin-left:auto;font-size:13px;color:color-mix(in srgb,var(--color-text) 45%,transparent)}
-.jump{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
-.jump a{display:inline-block;white-space:nowrap;font-size:14px;padding:8px 14px;border:1px solid var(--color-divider);border-radius:99px;background:var(--color-surface);color:var(--color-text)}
-.jump a:hover{border-color:var(--color-accent);color:var(--color-accent-700)}
-.more-head{margin-top:12px;padding-top:26px;border-top:1px solid var(--color-divider)}
-@media (max-width:760px){
-.jump{gap:6px;margin-top:12px}
-.jump a{font-size:13px;padding:7px 10px}
-.gcard.big .d{display:none}
-.play-head .sub{font-size:12.5px}
-.play{padding-block:22px 12px}
-.play-head{margin-bottom:14px}
-.play-head .sub{order:3;flex-basis:100%}
-.play-grid{grid-template-columns:minmax(0,1fr);gap:12px}
-.gcard.big{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:14px;padding:18px}
-.gcard.big .e{font-size:44px}
-.gcard.big .txt{flex:1;min-width:0}
-.gcard.big .go{margin-top:6px;flex-basis:100%;text-align:center}
-.mini{gap:10px}
-.mini .gcard{padding:12px 4px}
-.mini .gcard .e{font-size:26px}
-.mini .gcard .n{font-size:15.5px}
-.mini .gcard .d{display:none}
-.qlist a{flex-wrap:wrap;gap:2px 10px}
-.qlist .d{flex-basis:100%;order:3}
-.qlist .arrow{order:2}
-.band.top{padding-block:40px 56px}
-}
-/* 게임(좌) + 매거진(우) 양옆 배치 (2026-10-13). 760 이하에선 게임 → 매거진 순으로 쌓임.
-   매거진 칸 내용은 /magazine/ 대문과 손으로 맞춘다(자동 연동 아님): 이번 주의 작가 최신 1편, 마지막 겨울 연재 최신 2편, 칼럼 2편. */
-.home-split{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:32px;align-items:start}
-.mag{padding-block:34px 18px}
-.mag-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:18px}
-.mag-head h2{font-family:var(--font-heading);font-weight:600;font-size:clamp(28px,3.4vw,38px);margin:0;letter-spacing:-.01em}
-.mag-head .sub{font-size:13.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent);word-break:keep-all}
-.mag-head .all{margin-left:auto;font-size:14px;border-bottom:1px solid var(--color-accent);padding-bottom:2px;white-space:nowrap}
-.gcard.big.mag-feature{flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px 16px;padding:18px}
-.gcard.big.mag-feature img{width:96px;height:80px;object-fit:cover;border-radius:8px;flex:none}
-.gcard.big.mag-feature .txt{flex:1 1 140px;min-width:0}
-.gcard.big.mag-feature .n{font-size:20px;margin-top:4px;word-break:keep-all}
-.gcard.big.mag-feature .d{display:block;font-size:13.5px}
-.gcard.big.mag-feature .go{margin-top:0;flex-basis:100%;text-align:center}
-.mag-sub{display:flex;align-items:baseline;gap:10px;margin:18px 0 8px}
-.mag-sub h3{font-family:var(--font-heading);font-weight:600;font-size:15px;margin:0;word-break:keep-all}
-.mag-sub .all{margin-left:auto;font-size:13px;border-bottom:1px solid var(--color-accent);padding-bottom:2px;white-space:nowrap}
-.mag-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--color-divider)}
-.mag-list li{border-bottom:1px solid var(--color-divider)}
-.mag-list a{display:block;padding:13px 2px;color:var(--color-text)}
-.mag-list a:hover{background:color-mix(in srgb,var(--color-accent) 6%,transparent)}
-.mag-list .t{display:block;font-family:var(--font-heading);font-weight:600;font-size:16px;line-height:1.35;word-break:keep-all}
-.mag-list .d{display:block;margin-top:4px;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 58%,transparent);word-break:keep-all}
-/* 두 칸이 나란한데 칸이 좁은 폭(761~1000): 게임 칸은 폰 배치를 빌려 쓰고, 매거진 머리·카드는 줄을 나눈다 */
-@media (max-width:1100px){
-.mag-head .sub{order:3;flex-basis:100%}
-}
-@media (min-width:761px) and (max-width:1000px){
-.home-split{gap:24px}
-.play-grid{grid-template-columns:minmax(0,1fr);gap:12px}
-.play .gcard.big{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:14px;padding:18px}
-.play .gcard.big .e{font-size:44px}
-.play .gcard.big .txt{flex:1;min-width:0}
-.play .gcard.big .go{margin-top:6px;flex-basis:100%;text-align:center}
-.mini{gap:10px}
-.mini .gcard{padding:12px 4px}
-.wgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.play-head .sub,.world-head .sub{flex-basis:100%;order:3}
-}
-@media (max-width:760px){
-.home-split{grid-template-columns:minmax(0,1fr);gap:0}
-.mag{padding-block:22px 12px}
-.mag-head{margin-bottom:14px}
-.mag-head .sub{order:3;flex-basis:100%}
-.gcard.big.mag-feature{padding:16px}
-.gcard.big.mag-feature img{width:84px;height:68px}
-}
-/* 카테고리 한 줄 — 들어오자마자 보이게 (2026-11-20 형: 「딱 들어올 때 그 카테고리가 보였으면」) */
-.cat-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;max-width:760px;margin:22px auto 0}
-.cat-tabs a{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 4px 12px;border-radius:14px;background:var(--color-surface);border:1px solid var(--color-divider);color:var(--color-text);transition:border-color .12s ease,transform .12s ease}
-.cat-tabs a:hover{border-color:var(--color-accent);color:var(--color-accent-700)}
-.cat-tabs a:active{transform:scale(.96)}
-.cat-tabs .e{font-size:30px;line-height:1}
-.cat-tabs .n{font-family:var(--font-heading);font-weight:600;font-size:17px;line-height:1.2;text-align:center;word-break:keep-all}
-.cat-tabs .n small{display:block;font-size:11px;font-weight:400;color:color-mix(in srgb,var(--color-text) 55%,transparent)}
-@media (max-width:760px){
-.cat-tabs{gap:6px;margin-top:14px}
-.cat-tabs a{padding:10px 2px 9px;gap:4px;border-radius:12px}
-.cat-tabs .e{font-size:26px}
-.cat-tabs .n{font-size:14px}
-}
-/* 카테고리 (2026-11-20 형: 「유틸리티·게임·작업(건축)·미술·에세이로 나누고 오른쪽엔 이번 에세이」) */
+/* 첫 화면 v3 (2026-11-20 형: 「카테고리로 정확하게」「선들 잘 맞춰줘」)
+   기준선: 바깥은 .wrap(로고와 같은 선), 칸 사이는 모두 --g(24px), 판 안쪽 여백은 --pad(20px).
+   검색창과 카테고리 아이콘 줄은 같은 폭(--search-w)으로 가운데. 왼쪽 판과 오른쪽 칸은 윗선을 맞춘다. */
+:root{--g:24px;--pad:20px;--r:16px;--search-w:680px;--line:var(--color-divider)}
+.c-util{--cc:#2c5a85;--ct:#e3ecf4}
+.c-game{--cc:#a8521a;--ct:#f6e7da}
+.c-work{--cc:#3d6a4c;--ct:#e2ede5}
+.c-art{--cc:#94374a;--ct:#f4e2e6}
+.c-essay{--cc:#7d5a12;--ct:#f2ead8}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.cats{padding-block:26px 18px}
-.cat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.cat{background:var(--color-surface);border:1px solid var(--color-divider);border-radius:14px;padding:16px 18px;min-width:0}
-.cat.wide{grid-column:1/-1}
-.cat-head{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"e n all" "e d d";column-gap:12px;align-items:center;color:var(--color-text);padding-bottom:12px;border-bottom:1px solid var(--color-divider)}
-.cat-head:hover{color:var(--color-text)}
-.cat-head:hover .n{color:var(--color-accent-700)}
-.cat-head .e{grid-area:e;font-size:30px;line-height:1}
-.cat-head .n{grid-area:n;font-family:var(--font-heading);font-weight:600;font-size:23px;line-height:1.1}
-.cat-head .n small{font-size:14px;font-weight:400;color:color-mix(in srgb,var(--color-text) 55%,transparent)}
-.cat-head .d{grid-area:d;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 58%,transparent);word-break:keep-all}
-.cat-head .all{grid-area:all;font-size:13px;border-bottom:1px solid var(--color-accent);padding-bottom:1px;white-space:nowrap}
-.cat-links{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:2px}
-.cat.wide .cat-links{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:12px}
-.cat-links a{display:block;padding:5px 4px;font-size:14.5px;color:var(--color-text);border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cat-links a:hover{background:color-mix(in srgb,var(--color-accent) 10%,transparent);color:var(--color-accent-700)}
-.cat-more{margin:14px 2px 0;font-size:14px;color:color-mix(in srgb,var(--color-text) 50%,transparent)}
-.cat-more a{color:var(--color-text);border-bottom:1px solid var(--color-divider)}
-@media (max-width:1000px){.cat.wide .cat-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:760px){
-.cats{padding-block:20px 8px}
-.cat-grid{gap:10px}
-.cat{padding:14px}
-.cat-head .e{font-size:26px}
-.cat-head .n{font-size:20px}
-.cat-links a{font-size:14px;padding:6px 2px}
-}
-@media (max-width:480px){.cat-grid{grid-template-columns:minmax(0,1fr)}}
-/* 검색창 (2026-11-20 형: 「네이버처럼 검색창」) — 맨 위 한가운데. 동작은 /assets/site-search.js */
-.ss-band{padding-block:26px 4px}
-.ss{position:relative;max-width:680px;margin:0 auto}
-.ss-bar{display:flex;align-items:center;background:#fff;border:2px solid var(--color-accent);border-radius:99px;padding:4px 4px 4px 22px;box-shadow:0 4px 18px color-mix(in srgb,var(--color-accent-900) 10%,transparent)}
+
+/* ── 검색 ── */
+.top{padding-block:32px 0;display:flex;flex-direction:column;align-items:center}
+.ss{position:relative;width:100%;max-width:var(--search-w);margin:0}
+.ss-bar{display:flex;align-items:center;background:#fff;border:2px solid var(--color-accent);border-radius:99px;padding:4px 4px 4px 22px;box-shadow:0 6px 22px color-mix(in srgb,var(--color-accent-900) 9%,transparent)}
 .ss-bar:focus-within{box-shadow:0 0 0 4px color-mix(in srgb,var(--color-accent) 22%,transparent)}
-.ss-bar input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:18px;color:var(--color-text);padding:12px 0}
-.ss-bar input::placeholder{color:color-mix(in srgb,var(--color-text) 42%,transparent)}
-.ss-bar input::-webkit-search-cancel-button{cursor:pointer}
-.ss-bar button{flex:none;border:0;cursor:pointer;background:var(--color-accent);color:#1a1917;border-radius:99px;width:52px;height:46px;display:grid;place-items:center}
+.ss-bar input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:17px;color:var(--color-text);padding:12px 0}
+.ss-bar input::placeholder{color:color-mix(in srgb,var(--color-text) 45%,transparent)}
+.ss-bar button{flex:none;border:0;cursor:pointer;background:var(--color-accent);color:#1a1917;border-radius:99px;width:54px;height:48px;display:grid;place-items:center}
 .ss-bar button:hover{background:var(--color-accent-400)}
-.ss-results{position:absolute;z-index:50;left:0;right:0;top:calc(100% + 6px);list-style:none;margin:0;padding:6px;background:#fff;border:1px solid var(--color-divider);border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.14);max-height:min(70vh,520px);overflow:auto}
+.ss-results{position:absolute;z-index:50;left:0;right:0;top:calc(100% + 6px);list-style:none;margin:0;padding:6px;background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:0 14px 40px rgba(0,0,0,.14);max-height:min(70vh,520px);overflow:auto}
 .ss-results li a{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-radius:10px;color:var(--color-text)}
 .ss-results li a:hover,.ss-results li[aria-selected=true] a{background:color-mix(in srgb,var(--color-accent) 12%,transparent)}
 .ss-cat{flex:none;font-size:11.5px;line-height:1;padding:5px 8px;border-radius:99px;margin-top:2px;background:var(--color-surface);color:color-mix(in srgb,var(--color-text) 75%,transparent);min-width:38px;text-align:center}
-.ss-cat-도구{background:#e4ecf3;color:#1f4a6e}
-.ss-cat-게임{background:#f3e6d2;color:#7d5411}
-.ss-cat-글,.ss-cat-노트{background:#e5eee5;color:#2d5a34}
+.ss-cat-도구,.ss-cat-유틸리티{background:#e3ecf4;color:#2c5a85}
+.ss-cat-게임{background:#f6e7da;color:#a8521a}
+.ss-cat-작업,.ss-cat-노트{background:#e2ede5;color:#3d6a4c}
+.ss-cat-미술,.ss-cat-그림{background:#f4e2e6;color:#94374a}
+.ss-cat-에세이,.ss-cat-글{background:#f2ead8;color:#7d5a12}
 .ss-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
 .ss-t{font-size:15.5px;font-weight:600;word-break:keep-all}
 .ss-t mark{background:none;color:var(--color-accent-700);text-decoration:underline;text-underline-offset:3px}
-.ss-d{font-size:12.5px;color:color-mix(in srgb,var(--color-text) 58%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss-d{font-size:12.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ss-empty{padding:14px 12px;font-size:14px;color:color-mix(in srgb,var(--color-text) 70%,transparent)}
-.ss-google{border-top:1px solid var(--color-divider);margin-top:4px;padding-top:4px}
+.ss-google{border-top:1px solid var(--line);margin-top:4px;padding-top:4px}
 .ss-google .ss-cat{background:#e8eaed;color:#3c4043}
-.ss-pop{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 8px;margin:12px 0 0;font-size:13px}
-.ss-pop .lbl{color:color-mix(in srgb,var(--color-text) 55%,transparent)}
-.ss-pop button{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--color-divider);background:var(--color-surface);color:var(--color-text);border-radius:99px;padding:5px 12px}
+.ss-pop{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:12px 0 0;font-size:13px}
+.ss-pop .lbl{color:color-mix(in srgb,var(--color-text) 60%,transparent)}
+.ss-pop button{font:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--color-surface);color:var(--color-text);border-radius:99px;padding:5px 12px}
 .ss-pop button:hover{border-color:var(--color-accent);color:var(--color-accent-700)}
+
+/* ── 카테고리 아이콘 줄 (검색창과 같은 폭) ── */
+.cat-icons{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;max-width:var(--search-w);margin:22px 0 0;padding:0;list-style:none}
+.cat-icons button{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;padding:4px 0;cursor:pointer;font:inherit;color:var(--color-text)}
+.cat-icons .ring{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:var(--ct);color:var(--cc);transition:transform .15s ease,box-shadow .15s ease}
+.cat-icons button:hover .ring{transform:translateY(-2px)}
+.cat-icons button[aria-pressed=true] .ring{box-shadow:0 0 0 2px var(--color-bg),0 0 0 4px var(--cc)}
+.cat-icons .lb{font-size:14.5px;font-weight:700;line-height:1.2}
+.cat-icons .lb small{font-weight:400;font-size:12px;color:color-mix(in srgb,var(--color-text) 60%,transparent)}
+
+/* ── 본문 두 칸: 왼쪽 판 + 오른쪽 이번 에세이 ── */
+.home-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:var(--g);align-items:stretch;padding-block:28px 40px}
+/* 1줄: 탭 판 | 이번 에세이 (위·아랫선 같이)  2줄: 새로 올라온 것 | 연재·의뢰 (윗선 같이) */
+.news-sec,.side-rest{align-self:start;min-width:0}
+.side-rest{display:flex;flex-direction:column;gap:var(--g)}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r)}
+
+/* 탭 판 */
+.panel{overflow:hidden}
+.tabs{display:flex;align-items:stretch;border-bottom:1px solid var(--line);padding:0 calc(var(--pad) - 14px);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs [role=tab]{flex:none;font:inherit;font-size:15.5px;font-weight:500;color:color-mix(in srgb,var(--color-text) 72%,transparent);background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;padding:15px 14px 12px;cursor:pointer}
+.tabs [role=tab]:hover{color:var(--cc)}
+.tabs [role=tab][aria-selected=true]{color:var(--cc);font-weight:700;border-bottom-color:var(--cc)}
+.tabpanel{padding:16px var(--pad) var(--pad)}
+.tabpanel[hidden]{display:none}
+.tp-head{display:flex;align-items:baseline;gap:12px;margin:0 0 14px}
+.tp-head p{margin:0;font-size:13.5px;color:color-mix(in srgb,var(--color-text) 68%,transparent);word-break:keep-all}
+.tp-head a{margin-left:auto;flex:none;font-size:13px;color:var(--cc);border-bottom:1px solid currentColor;padding-bottom:1px;white-space:nowrap}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:1fr;gap:12px;list-style:none;margin:0;padding:0}
+.tiles a{height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:12px;border:1px solid var(--line);background:#faf9f7;color:var(--color-text);transition:border-color .12s ease,background .12s ease}
+.tiles a:hover{border-color:var(--cc);background:#fff;color:var(--color-text)}
+.tiles .tg{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--cc)}
+.tiles .t{font-size:15px;font-weight:700;line-height:1.35;word-break:keep-all}
+.tiles .d{font-size:12.5px;line-height:1.45;color:color-mix(in srgb,var(--color-text) 64%,transparent);word-break:keep-all}
+
+/* 새로 올라온 것 */
+.sec-head{display:flex;align-items:baseline;gap:12px;margin:0 0 12px}
+.sec-head h2{margin:0;font-family:var(--font-heading);font-weight:600;font-size:22px}
+.sec-head a{margin-left:auto;font-size:13px;border-bottom:1px solid var(--color-accent);padding-bottom:1px}
+.news{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;gap:12px;list-style:none;margin:0;padding:0}
+.news a{height:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--color-surface);color:var(--color-text)}
+.news a:hover{border-color:var(--cc);color:var(--color-text)}
+.pill{align-self:flex-start;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--ct);color:var(--cc)}
+.news .t{font-size:15px;font-weight:700;line-height:1.35;word-break:keep-all}
+.news .d{font-size:12.5px;color:color-mix(in srgb,var(--color-text) 64%,transparent)}
+
+/* 오른쪽: 이번 에세이 */
+.essay{background:var(--color-colophon,#1f1e1c);color:#ece9e4;border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.essay img{width:100%;flex:1 1 180px;min-height:180px;height:auto;object-fit:cover;display:block}
+.essay .in{padding:var(--pad);display:flex;flex-direction:column;gap:6px}
+.essay .k{font-size:11.5px;letter-spacing:.14em;color:var(--color-accent-400)}
+.essay h2{margin:0;font-family:var(--font-heading);font-weight:600;font-size:24px;line-height:1.25}
+.essay p{margin:0;font-size:13.5px;color:#c9c4bc}
+.essay .go{margin-top:10px;text-align:center;background:var(--color-accent);color:#1a1917;font-weight:600;border-radius:99px;padding:11px 16px}
+.essay .go:hover{background:var(--color-accent-400);color:#1a1917}
+.side-list{padding:16px var(--pad)}
+.side-list .h{display:flex;align-items:baseline;gap:8px;margin:0 0 6px}
+.side-list h3{margin:0;font-size:14.5px;font-weight:700;word-break:keep-all}
+.side-list .h a{margin-left:auto;font-size:12.5px;white-space:nowrap}
+.side-list ul{list-style:none;margin:0;padding:0}
+.side-list li a{display:block;padding:10px 0;border-top:1px solid var(--line);color:var(--color-text)}
+.side-list li a:hover .t{color:var(--color-accent-700)}
+.side-list .t{display:block;font-size:14.5px;font-weight:700;line-height:1.35;word-break:keep-all}
+.side-list .d{display:block;margin-top:2px;font-size:12.5px;color:color-mix(in srgb,var(--color-text) 62%,transparent)}
+.hire{background:var(--color-surface);padding:16px var(--pad);display:flex;flex-direction:column;gap:10px}
+.hire h3{margin:0;font-size:14.5px;font-weight:700}
+.hire p{margin:0;font-size:13px;color:color-mix(in srgb,var(--color-text) 72%,transparent);word-break:keep-all}
+.hire a{text-align:center;background:var(--color-text);color:var(--color-bg);border-radius:10px;padding:11px 14px;font-weight:600}
+.hire a:hover{color:var(--color-bg);opacity:.9}
+
+/* 아래쪽 기존 칸 */
+.more-head{padding-top:26px;border-top:1px solid var(--line)}
+
+@media (max-width:1000px){
+.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.panel{grid-column:1/-1}
+.essay{grid-row:2;grid-column:1}
+.side-rest{grid-row:2;grid-column:2;align-self:stretch}
+.side-rest .hire{flex:1}
+.news-sec{grid-row:3;grid-column:1/-1}
+.essay img{flex:none;height:200px}
+.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media (max-width:760px){
-.ss-band{padding-block:16px 0}
+:root{--g:16px;--pad:16px}
+.top{padding-block:18px 0}
 .ss-bar{padding-left:16px}
 .ss-bar input{font-size:16px;padding:10px 0}
 .ss-bar button{width:46px;height:42px}
-.ss-pop{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;margin-top:10px;padding-bottom:2px;scrollbar-width:none}
+.ss-pop{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;margin-top:10px;width:100%;scrollbar-width:none}
 .ss-pop::-webkit-scrollbar{display:none}
 .ss-pop button,.ss-pop .lbl{flex:none}
+.cat-icons{margin-top:16px}
+.cat-icons .ring{width:54px;height:54px;border-radius:17px}
+.cat-icons .ring svg{width:26px;height:26px}
+.cat-icons .lb{font-size:13px}
+.cat-icons .lb small{display:block;font-size:11px}
+.home-grid{padding-block:20px 28px}
+.home-grid{grid-template-columns:minmax(0,1fr)}
+.essay,.side-rest,.news-sec{grid-row:auto;grid-column:auto}
+.essay img{height:180px}
+.tp-head{flex-wrap:wrap}
+.tp-head a{margin-left:0}
+.tiles{gap:10px}
+.tiles a{padding:12px}
+.news{grid-template-columns:minmax(0,1fr);grid-auto-rows:auto}
+.band.top{padding-block:40px 56px}
 }
 </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2824624880449066" crossorigin="anonymous"></script>
@@ -253,10 +184,10 @@
 <a href="/en/" hreflang="en" lang="en">EN</a>
 </nav>
 </header>
-<div class="wrap ss-band">
+<div class="wrap top">
 <form class="ss" data-site-search action="https://www.google.com/search" role="search">
 <div class="ss-bar">
-<input type="search" name="q" placeholder="르듀종 사이트에서 검색  예) pdf 용량, heic, 도장" autocomplete="off" spellcheck="false" aria-label="사이트 검색" role="combobox" aria-expanded="false" aria-controls="ss-results" aria-autocomplete="list">
+<input type="search" name="q" placeholder="도구·게임·글 검색 — 예) pdf 용량, heic, 도장" autocomplete="off" spellcheck="false" aria-label="사이트 검색" role="combobox" aria-expanded="false" aria-controls="ss-results" aria-autocomplete="list">
 <button type="submit" aria-label="검색"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></button>
 </div>
 <ul class="ss-results" id="ss-results" role="listbox" hidden></ul>
@@ -264,109 +195,159 @@
 <button type="button" data-q="pdf 용량">PDF 용량 줄이기</button>
 <button type="button" data-q="heic">HEIC → JPG</button>
 <button type="button" data-q="도장">도장 배경 제거</button>
-<button type="button" data-q="mp3">MP3 변환</button>
+<button type="button" data-q="동전">동전 밀기</button>
 <button type="button" data-q="한글 hwp">HWP 뷰어</button>
-<button type="button" data-q="게임">게임</button>
 </div>
 </form>
-<nav class="cat-tabs" aria-label="카테고리">
-<a href="/web-projects/"><span class="e" aria-hidden="true">🛠</span><span class="n">유틸리티</span></a>
-<a href="/games/"><span class="e" aria-hidden="true">🎮</span><span class="n">게임</span></a>
-<a href="/work/"><span class="e" aria-hidden="true">🏛</span><span class="n">작업<small>건축</small></span></a>
-<a href="/artists/"><span class="e" aria-hidden="true">🎨</span><span class="n">미술</span></a>
-<a href="/글/"><span class="e" aria-hidden="true">✍️</span><span class="n">에세이</span></a>
-</nav>
+<ul class="cat-icons" aria-label="카테고리">
+<li class="c-util"><button type="button" data-cat="util" aria-pressed="true"><span class="ring"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></span><span class="lb">유틸리티</span></button></li>
+<li class="c-game"><button type="button" data-cat="game" aria-pressed="false"><span class="ring"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 12.5h4M9 10.5v4"/><circle cx="15.5" cy="11.5" r=".9"/><circle cx="17.5" cy="13.8" r=".9"/></svg></span><span class="lb">게임</span></button></li>
+<li class="c-work"><button type="button" data-cat="work" aria-pressed="false"><span class="ring"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M4 10h16M12 3l9 7H3zM6 10v11M10 10v11M14 10v11M18 10v11"/></svg></span><span class="lb">작업 <small>건축</small></span></button></li>
+<li class="c-art"><button type="button" data-cat="art" aria-pressed="false"><span class="ring"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.9 1.2-1.8-.5-1 .2-2.2 1.3-2.2H17a4 4 0 0 0 4-4c0-5.5-4-10-9-10z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/></svg></span><span class="lb">미술</span></button></li>
+<li class="c-essay"><button type="button" data-cat="essay" aria-pressed="false"><span class="ring"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></span><span class="lb">에세이</span></button></li>
+</ul>
 </div>
 <main>
-<div class="wrap home-split">
-<section class="cats" aria-labelledby="cats-title">
-<h2 id="cats-title" class="sr">카테고리</h2>
-<div class="cat-grid">
-<article class="cat wide">
-<a class="cat-head" href="/web-projects/"><span class="e" aria-hidden="true">🛠</span><span class="n">유틸리티</span><span class="d">설치·가입 없이 브라우저에서 끝나는 도구</span><span class="all">전체 →</span></a>
-<ul class="cat-links">
-<li><a href="https://pdf300.com">PDF 편집·용량 줄이기</a></li>
-<li><a href="/applications/iphoneheic/">HEIC → JPG</a></li>
-<li><a href="/web-projects/stamp/">도장 배경 제거</a></li>
-<li><a href="/web-projects/freecomfortlab/video-to-mp3">영상 → MP3</a></li>
-<li><a href="/tools/hwp/">HWP 뷰어</a></li>
-<li><a href="/web-projects/video-compress/">동영상 압축</a></li>
-<li><a href="/web-projects/inspection-score/">점검 상태평가 점수</a></li>
-<li><a href="/%EB%A7%90%ED%95%B4%EC%9A%94/">말해요 (의사소통 도구)</a></li>
-</ul>
-</article>
-<article class="cat">
-<a class="cat-head" href="/games/"><span class="e" aria-hidden="true">🎮</span><span class="n">게임</span><span class="d">누르면 바로 시작</span><span class="all">전체 →</span></a>
-<ul class="cat-links">
-<li><a href="/web-projects/game-world/dozer/">🪙 동전 밀기</a></li>
-<li><a href="/web-projects/game-world/suika/">🍉 수박 게임</a></li>
-<li><a href="/games/2048/">🔢 2048</a></li>
-<li><a href="/web-projects/game-world/quake/">🏚 버텨라 (지진 보강)</a></li>
-</ul>
-</article>
-<article class="cat">
-<a class="cat-head" href="/work/"><span class="e" aria-hidden="true">🏛</span><span class="n">작업 <small>건축</small></span><span class="d">설계 작품과 현장 이야기</span><span class="all">전체 →</span></a>
-<ul class="cat-links">
-<li><a href="/work/">작품</a></li>
-<li><a href="/notes/ko/">현장 노트</a></li>
-<li><a href="/의뢰/">이런 일을 맡습니다</a></li>
-<li><a href="/history/">이야기</a></li>
-</ul>
-</article>
-<article class="cat">
-<a class="cat-head" href="/artists/"><span class="e" aria-hidden="true">🎨</span><span class="n">미술</span><span class="d">작가 읽기와 모두의 그림</span><span class="all">전체 →</span></a>
-<ul class="cat-links">
-<li><a href="/artists/">이번 주의 작가</a></li>
-<li><a href="/gallery/">모두의 갤러리</a></li>
-<li><a href="/museum/">모두의 미술관 (VR)</a></li>
-<li><a href="/그림판/">그림판</a></li>
-</ul>
-</article>
-<article class="cat">
-<a class="cat-head" href="/글/"><span class="e" aria-hidden="true">✍️</span><span class="n">에세이</span><span class="d">건축과 미술, 일하며 쓴 글</span><span class="all">전체 →</span></a>
-<ul class="cat-links">
-<li><a href="/magazine/">매거진</a></li>
-<li><a href="/글/#lastwinter">마지막 겨울 연재</a></li>
-<li><a href="/글/">칼럼·실무 노트</a></li>
-<li><a href="/글/현대미술-어렵다-어려워/">현대미술, 어렵다 어려워</a></li>
-</ul>
-</article>
+<div class="wrap home-grid">
+<section class="card panel" aria-label="카테고리별 바로가기">
+<div class="tabs" role="tablist" aria-label="카테고리">
+<button class="c-util" role="tab" id="tab-util" aria-controls="tp-util" aria-selected="true">유틸리티</button>
+<button class="c-game" role="tab" id="tab-game" aria-controls="tp-game" aria-selected="false" tabindex="-1">게임</button>
+<button class="c-work" role="tab" id="tab-work" aria-controls="tp-work" aria-selected="false" tabindex="-1">작업</button>
+<button class="c-art" role="tab" id="tab-art" aria-controls="tp-art" aria-selected="false" tabindex="-1">미술</button>
+<button class="c-essay" role="tab" id="tab-essay" aria-controls="tp-essay" aria-selected="false" tabindex="-1">에세이</button>
 </div>
-<p class="cat-more"><a href="/모아보기/">🗂 전체 페이지 모아보기</a> · <a href="/contact/">✉️ 연락</a></p>
+
+<div class="tabpanel c-util" role="tabpanel" id="tp-util" aria-labelledby="tab-util">
+<div class="tp-head"><p>설치·가입 없이 브라우저에서 끝나는 도구. 파일은 내 컴퓨터 밖으로 나가지 않아요.</p><a href="/web-projects/">유틸리티 전체 →</a></div>
+<ul class="tiles">
+<li><a href="/web-projects/pdf300/compress"><span class="tg">PDF</span><span class="t">PDF 용량 줄이기</span><span class="d">메일·제출 용량 제한 맞추기</span></a></li>
+<li><a href="/web-projects/pdf300/"><span class="tg">PDF</span><span class="t">PDF 합치기·나누기 외 20가지</span><span class="d">회전·서명·암호·OCR까지</span></a></li>
+<li><a href="/applications/iphoneheic/"><span class="tg">사진</span><span class="t">HEIC → JPG</span><span class="d">아이폰 사진을 어디서나 열리게</span></a></li>
+<li><a href="/web-projects/stamp/"><span class="tg">도장</span><span class="t">도장 만들기·배경 제거</span><span class="d">이름만 넣으면 직인 PNG</span></a></li>
+<li><a href="/web-projects/freecomfortlab/video-to-mp3"><span class="tg">소리</span><span class="t">영상 → MP3</span><span class="d">영상에서 소리만 뽑기</span></a></li>
+<li><a href="/tools/hwp/"><span class="tg">문서</span><span class="t">HWP 뷰어</span><span class="d">한글 없이 hwp 파일 열기</span></a></li>
+<li><a href="/web-projects/video-compress/"><span class="tg">영상</span><span class="t">동영상 압축</span><span class="d">용량 줄여서 보내기</span></a></li>
+<li><a href="/%EB%A7%90%ED%95%B4%EC%9A%94/"><span class="tg">돌봄</span><span class="t">말해요</span><span class="d">말하기 어려운 분의 의사소통 버튼판</span></a></li>
+</ul>
+</div>
+
+<div class="tabpanel c-game" role="tabpanel" id="tp-game" aria-labelledby="tab-game" hidden>
+<div class="tp-head"><p>설치·가입 없이 누르면 바로 시작합니다.</p><a href="/games/">게임 전체 →</a></div>
+<ul class="tiles">
+<li><a href="/web-projects/game-world/dozer/"><span class="tg">인기</span><span class="t">동전 밀기</span><span class="d">오락실 그 기계, 우르르 떨어뜨리기</span></a></li>
+<li><a href="/web-projects/game-world/suika/"><span class="tg">퍼즐</span><span class="t">수박 게임</span><span class="d">같은 과일끼리 합치기</span></a></li>
+<li><a href="/wriggle/"><span class="tg">액션</span><span class="t">꿈틀</span><span class="d">지렁이 구멍까지 뛰기</span></a></li>
+<li><a href="/games/2048/"><span class="tg">퍼즐</span><span class="t">2048</span><span class="d">숫자 밀어 합치기</span></a></li>
+<li><a href="/web-projects/game-world/tower/"><span class="tg">캐주얼</span><span class="t">타워 쌓기</span><span class="d">블록 정확히 겹치기</span></a></li>
+<li><a href="/games/clumsybird/"><span class="tg">캐주얼</span><span class="t">날아라 새</span><span class="d">톡톡 눌러 날기</span></a></li>
+<li><a href="/games/stay-standing/"><span class="tg">우리가 만든</span><span class="t">버텨라!</span><span class="d">건축가가 만든 지진 보강 퍼즐</span></a></li>
+<li><a href="/sheepdog/"><span class="tg">우리가 만든</span><span class="t">양몰이 — 달빛 목장</span><span class="d">강아지로 양을 우리에</span></a></li>
+</ul>
+</div>
+
+<div class="tabpanel c-work" role="tabpanel" id="tp-work" aria-labelledby="tab-work" hidden>
+<div class="tp-head"><p>건축가의 작업과 현장에서 배운 것들.</p><a href="/work/">작업 전체 →</a></div>
+<ul class="tiles">
+<li><a href="/work/"><span class="tg">작품</span><span class="t">흰 벽, 열린 모서리</span><span class="d">설계 작품 모음</span></a></li>
+<li><a href="/%EC%9D%98%EB%A2%B0/"><span class="tg">의뢰</span><span class="t">이런 일을 맡습니다</span><span class="d">설계·리모델링·점검 상담</span></a></li>
+<li><a href="/notes/concrete-waterproofing-admixture/ko/"><span class="tg">현장 노트</span><span class="t">방수콘크리트 혼화제는 방수하지 않는다</span><span class="d">지하 누수의 진짜 원인</span></a></li>
+<li><a href="/notes/radiant-barrier-air-gap/ko/"><span class="tg">현장 노트</span><span class="t">공기층 없는 복사차단재는 은박지다</span><span class="d">단열재 시공의 함정</span></a></li>
+<li><a href="/notes/west-facing-windows-heat/ko/"><span class="tg">현장 노트</span><span class="t">서향 방이 밤에도 안 식는 이유</span><span class="d">창과 축열</span></a></li>
+<li><a href="/notes/what-seismic-rating-means/ko/"><span class="tg">현장 노트</span><span class="t">내진등급이 실제로 약속하는 것</span><span class="d">숫자 읽는 법</span></a></li>
+<li><a href="/web-projects/inspection-score/"><span class="tg">실무 도구</span><span class="t">노후건축물 점검 점수</span><span class="d">안전점검 등급 계산</span></a></li>
+<li><a href="/notes/ko/"><span class="tg">현장 노트</span><span class="t">현장 노트 전체</span><span class="d">건축 문제를 쉽게 설명</span></a></li>
+</ul>
+</div>
+
+<div class="tabpanel c-art" role="tabpanel" id="tp-art" aria-labelledby="tab-art" hidden>
+<div class="tp-head"><p>작가를 천천히 읽고, 누구나 그림을 걸 수 있는 곳.</p><a href="/artists/">미술 전체 →</a></div>
+<ul class="tiles">
+<li><a href="/artists/el-lissitzky/"><span class="tg">이번 주의 작가</span><span class="t">엘 리시츠키</span><span class="d">그림을 구조로 그린 사람</span></a></li>
+<li><a href="/gallery/"><span class="tg">전시</span><span class="t">모두의 갤러리</span><span class="d">누구나 거는 1층 전시장</span></a></li>
+<li><a href="/museum/"><span class="tg">VR</span><span class="t">모두의 미술관</span><span class="d">블록으로 짓는 미술관</span></a></li>
+<li><a href="/%EA%B7%B8%EB%A6%BC%ED%8C%90/"><span class="tg">그리기</span><span class="t">그림판</span><span class="d">손가락으로 바로 그리기</span></a></li>
+<li><a href="/%EA%B8%80/%ED%98%84%EB%8C%80%EB%AF%B8%EC%88%A0-%EC%96%B4%EB%A0%B5%EB%8B%A4-%EC%96%B4%EB%A0%A4%EC%9B%8C/"><span class="tg">미술 글</span><span class="t">현대미술, 어렵다 어려워!</span><span class="d">어디서부터 볼까</span></a></li>
+<li><a href="/%EA%B8%80/%EC%95%84%EB%A6%84%EB%8B%A4%EC%9B%80%EC%97%90-%EB%8C%80%ED%95%B4/"><span class="tg">미술 글</span><span class="t">아름다움에 대해</span><span class="d">건축가가 보는 아름다움</span></a></li>
+<li><a href="/web-projects/game-world/pixel/"><span class="tg">그리기</span><span class="t">픽셀 그림판</span><span class="d">칸칸이 이어 그리기</span></a></li>
+<li><a href="/artists/"><span class="tg">작가</span><span class="t">이번 주의 작가 전체</span><span class="d">지난 연재 모음</span></a></li>
+</ul>
+</div>
+
+<div class="tabpanel c-essay" role="tabpanel" id="tp-essay" aria-labelledby="tab-essay" hidden>
+<div class="tp-head"><p>건축과 미술, 일하며 쓴 글.</p><a href="/%EA%B8%80/">에세이 전체 →</a></div>
+<ul class="tiles">
+<li><a href="/magazine/"><span class="tg">매거진</span><span class="t">매거진</span><span class="d">이번 주의 작가와 칼럼</span></a></li>
+<li><a href="/%EA%B8%80/%EC%98%88%EB%B0%B0%EB%8B%B9-%EC%99%9C-%EC%BB%A4%EB%8B%A4%EB%9E%97%EA%B2%8C-%EC%A7%80%EC%9D%84-%EC%88%98-%EB%B0%96%EC%97%90-%EC%97%86%EC%9D%84%EA%B9%8C-1/"><span class="tg">연재</span><span class="t">예배당 왜 커다랗게 지을 수밖에 없을까?</span><span class="d">마지막 겨울 연재</span></a></li>
+<li><a href="/%EA%B8%80/%EC%A7%80%ED%95%98-%EC%98%88%EB%B0%B0%EB%8B%B9%EC%9D%80-%EB%90%98%EB%8F%84%EB%A1%9D-%ED%94%BC%ED%95%B4%EC%A3%BC%EC%84%B8%EC%9A%94/"><span class="tg">연재</span><span class="t">지하 예배당은 되도록 피해주세요</span><span class="d">마지막 겨울 연재</span></a></li>
+<li><a href="/%EA%B8%80/%EA%B1%B4%EC%B6%95%EA%B0%80%EA%B0%80-%EB%B3%B4%EB%8A%94-%EC%B2%9C%EA%B5%AD%EC%9D%98-%EC%9A%B0%EB%A6%AC%EC%9D%98-%EC%A7%91-1/"><span class="tg">연재</span><span class="t">건축가가 보는 천국의 우리의 집</span><span class="d">1·2편</span></a></li>
+<li><a href="/%EA%B8%80/%ED%95%B4%EC%B2%B4-%EA%B5%AC%EC%A1%B0%EA%B3%84%EC%82%B0-%EC%A0%95%EB%A7%90-%EC%9D%98%EB%AF%B8%EA%B0%80-%EC%9E%88%EB%82%98/"><span class="tg">칼럼</span><span class="t">해체 구조계산, 정말 의미가 있나</span><span class="d">실무 노트 · 2026</span></a></li>
+<li><a href="/%EA%B8%80/pdf-%EC%9A%A9%EB%9F%89-%EC%A0%95%ED%99%95%ED%9E%88-%EB%A7%9E%EC%B6%94%EA%B8%B0/"><span class="tg">칼럼</span><span class="t">PDF를 정확히 300KB로 맞춰야 할 때</span><span class="d">입찰·제출 서류</span></a></li>
+<li><a href="/%EA%B8%80/%EA%B7%BC%EB%A6%B0%EC%83%9D%ED%99%9C%EC%8B%9C%EC%84%A4-%EA%B1%B4%EC%B6%95%EA%B3%BC-%EB%8C%80%EC%A7%80-%EC%82%AC%EC%97%85%EC%84%B1-1%EB%B6%80/"><span class="tg">칼럼</span><span class="t">근린생활시설 건축과 대지, 사업성</span><span class="d">1부 · 땅과 건물과 돈</span></a></li>
+<li><a href="/%EA%B8%80/2013-%ED%94%84%EB%9E%91%EC%8A%A4%EC%97%90%EC%84%9C-%EA%B5%90%EC%88%98%EB%8B%98%EA%BB%98/"><span class="tg">편지</span><span class="t">2013, 프랑스에서, 친애하는 교수님께</span><span class="d">사람과 편지</span></a></li>
+</ul>
+</div>
 </section>
-<section class="mag" aria-labelledby="mag-title">
-<div class="mag-head">
-<h2 id="mag-title">이번 에세이</h2>
-<span class="sub">이번 주의 작가, 연재, 칼럼.</span>
-<a class="all" href="/magazine/">매거진 보기 →</a>
-</div>
-<a class="mag-feature gcard big" href="/artists/el-lissitzky/">
-<img src="/artists/img/el-lissitzky-red-wedge.jpg" alt="붉은 삼각형이 흰 원을 뚫고 들어가는 석판 포스터" width="96" height="80" loading="lazy">
-<span class="txt">
-<span class="tag">이번 주의 작가</span>
-<span class="n">엘 리시츠키 (1890–1941)</span>
-<span class="d">1편 · 그림을 구조로 그린 사람</span>
-</span>
+
+<a class="essay" href="/artists/el-lissitzky/">
+<img src="/artists/img/el-lissitzky-red-wedge.jpg" alt="붉은 삼각형이 흰 원을 뚫고 들어가는 석판 포스터" width="320" height="180" loading="lazy">
+<span class="in">
+<span class="k">이번 에세이 · 이번 주의 작가</span>
+<h2>엘 리시츠키 (1890–1941)</h2>
+<p>1편 · 그림을 구조로 그린 사람</p>
 <span class="go">읽기 →</span>
+</span>
 </a>
-<div class="mag-sub">
-<h3>르듀종의 건축과 미술 — 마지막 겨울 연재</h3>
-<a class="all" href="/글/#lastwinter">전체 보기 →</a>
-</div>
-<ul class="mag-list">
-<li><a href="/글/예배당-왜-커다랗게-지을-수-밖에-없을까-1/"><span class="t">예배당 왜 커다랗게 지을 수 밖에 없을까? 우리가 몰랐던 진실 - 1</span><span class="d">더 복잡한 교회내 사회적, 심리적 요인이 작용합니다</span></a></li>
-<li><a href="/글/지하-예배당은-되도록-피해주세요/"><span class="t">지하 예배당은 되도록 피해주세요</span><span class="d">지하층이 꼭 필요한지 고민해 볼 필요가 있습니다</span></a></li>
-</ul>
-<div class="mag-sub">
-<h3>칼럼</h3>
-<a class="all" href="/글/">전체 보기 →</a>
-</div>
-<ul class="mag-list">
-<li><a href="/글/pdf-용량-정확히-맞추기/"><span class="t">PDF를 정확히 300KB로 맞춰야 할 때</span><span class="d">입찰·제출 서류 용량 제한을 압축 반복 없이 넘기는 법 · 2026</span></a></li>
-<li><a href="/글/근린생활시설-건축과-대지-사업성-1부/"><span class="t">건축가 입장에서 보는 근린생활시설 건축과 대지, 사업성과의 관계 — 1부</span><span class="d">땅과 건물과 돈이 어떻게 얽히는가</span></a></li>
+<section class="news-sec" aria-labelledby="new-title">
+<div class="sec-head"><h2 id="new-title">새로 올라온 것</h2><a href="/%EC%83%88%EB%A1%9C%EC%9A%B4%EA%B2%83/">전체 →</a></div>
+<ul class="news">
+<li class="c-essay"><a href="/%EA%B8%80/%ED%95%B4%EC%B2%B4-%EA%B5%AC%EC%A1%B0%EA%B3%84%EC%82%B0-%EC%A0%95%EB%A7%90-%EC%9D%98%EB%AF%B8%EA%B0%80-%EC%9E%88%EB%82%98/"><span class="pill">에세이</span><span class="t">해체 구조계산, 정말 의미가 있나</span><span class="d">실무 노트 · 2026</span></a></li>
+<li class="c-game"><a href="/games/stay-standing/"><span class="pill">게임</span><span class="t">버텨라! — 지진 보강 퍼즐</span><span class="d">정해진 예산으로 옛 집 보강하기</span></a></li>
+<li class="c-util"><a href="/web-projects/pdf300/target-size"><span class="pill">유틸리티</span><span class="t">PDF 목표 용량 압축</span><span class="d">300KB, 5MB처럼 정한 크기로</span></a></li>
 </ul>
 </section>
-</div><!-- /.home-split -->
+
+<div class="side-rest">
+<section class="card side-list" aria-labelledby="series-title">
+<div class="h"><h3 id="series-title">마지막 겨울 연재</h3><a href="/%EA%B8%80/#lastwinter">전체 →</a></div>
+<ul>
+<li><a href="/%EA%B8%80/%EC%98%88%EB%B0%B0%EB%8B%B9-%EC%99%9C-%EC%BB%A4%EB%8B%A4%EB%9E%97%EA%B2%8C-%EC%A7%80%EC%9D%84-%EC%88%98-%EB%B0%96%EC%97%90-%EC%97%86%EC%9D%84%EA%B9%8C-1/"><span class="t">예배당 왜 커다랗게 지을 수밖에 없을까?</span><span class="d">교회 안의 사회적·심리적 요인</span></a></li>
+<li><a href="/%EA%B8%80/%EC%A7%80%ED%95%98-%EC%98%88%EB%B0%B0%EB%8B%B9%EC%9D%80-%EB%90%98%EB%8F%84%EB%A1%9D-%ED%94%BC%ED%95%B4%EC%A3%BC%EC%84%B8%EC%9A%94/"><span class="t">지하 예배당은 되도록 피해주세요</span><span class="d">지하층이 꼭 필요한지부터</span></a></li>
+</ul>
+</section>
+<section class="card hire" aria-labelledby="hire-title">
+<h3 id="hire-title">건축 설계 · 점검 의뢰</h3>
+<p>상처난 벽에 빛을 설계합니다. 리모델링, 안전점검, 상태평가 상담.</p>
+<a href="/%EC%9D%98%EB%A2%B0/">이런 일을 맡습니다</a>
+</section>
+</div>
+</div>
+<script>
+/* 카테고리 탭: 위 아이콘 줄과 판의 탭이 같은 것을 고른다. 고른 탭은 이 브라우저에만 기억. */
+(function(){
+  var keys=['util','game','work','art','essay'];
+  var tabs=document.querySelectorAll('.tabs [role=tab]'), icons=document.querySelectorAll('.cat-icons [data-cat]');
+  function show(k,focus){
+    keys.forEach(function(x,i){
+      var on=x===k, t=tabs[i];
+      t.setAttribute('aria-selected',on); t.tabIndex=on?0:-1;
+      document.getElementById('tp-'+x).hidden=!on;
+      icons[i].setAttribute('aria-pressed',on);
+      if(on&&focus)t.focus();
+    });
+    try{localStorage.setItem('homeCat',k)}catch(e){}
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener('click',function(){show(keys[i])});
+    t.addEventListener('keydown',function(e){
+      var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;
+      if(d){e.preventDefault();show(keys[(i+d+keys.length)%keys.length],true)}
+    });
+  });
+  icons.forEach(function(b,i){b.addEventListener('click',function(){show(keys[i])})});
+  try{var s=localStorage.getItem('homeCat');if(keys.indexOf(s)>0)show(s)}catch(e){}
+})();
+</script>
 <section class="wrap band top more-head">
 <figure class="plate">
 <img src="assets/img/portrait-studio.png" alt="작업실의 초상" style="aspect-ratio:4/3;object-position:50% 42%">

@@ -75,7 +75,7 @@
       }
       if (!ok && words.length > 1) { total = score(e, whole); ok = total > 0; }  // “용량줄이기”처럼 붙여 쓴 경우
       if (!ok) continue;
-      if (e.x.c === '도구') total += 6;  // 동점이면 도구를 먼저
+      if (e.x.c === '유틸리티') total += 6;  // 동점이면 도구를 먼저
       total -= Math.min(e.t.length, 60) / 20; // 짧은 제목이 조금 앞
       res.push({ s: total, x: e.x });
     }
